@@ -2,69 +2,91 @@ package agents;
 
 import common.GroupConstants;
 import domain.Job;
+import domain.ServerData;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import static common.CommonUtils.getAgentsFromDF;
+import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
 
 public class CloudNetworkAgent extends Agent {
 
-    private List<Job> currentJobs;
-    private List<Job> futureJobs;
-    private int availablePower;
-    private int inUsePower;
+    private List<AID> agentSAList;
+    private ServerData serverData;
 
     @Override
     protected void setup() {
         super.setup();
 
-        final Object[] args = getArguments();
+        serverData = new ServerData();
 
-        currentJobs = new ArrayList<>();
-        futureJobs = new ArrayList<>();
-        inUsePower = 0;
-
-        try {
-            availablePower = (args.length == 1) ? Integer.parseInt(args[0].toString()) : 0;
-        } catch (NumberFormatException e) {
-            System.out.printf("The given available power is not a number!");
-            doDelete();
-        }
+        //TODO registration should be renewed after 2h
         registerCNAInDF();
+        agentSAList = getSAAgentList(this);
 
         final Behaviour getMessages = new CyclicBehaviour() {
             @Override
             public void action() {
                 final ACLMessage message = receive();
+                final Object[] args = getArguments();
+
+                try {
+                    final int power = (args.length == 1) ? Integer.parseInt(args[0].toString()) : 0;
+                    serverData.setAvailablePower(power);
+                } catch (NumberFormatException e) {
+                    System.out.printf("The given available power is not a number!");
+                    doDelete();
+                }
 
                 if (Objects.nonNull(message)) {
 
                     switch (message.getPerformative()) {
                         case REQUEST:
                             try {
-                                if (inUsePower + ((Job) message.getContentObject()).getPower() > availablePower) {
+                                if (serverData.getInUsePower() + ((Job) message.getContentObject()).getPower() > serverData.getAvailablePower()) {
                                     final ACLMessage respond = new ACLMessage(ACLMessage.REFUSE);
-                                    respond.setContent("refuse");
+                                    respond.setContent("I cannot do this job");
                                     respond.addReceiver(message.getSender());
                                     send(respond);
                                 } else {
                                     final ACLMessage respond = new ACLMessage(ACLMessage.AGREE);
-                                    respond.setContent("agree");
+                                    respond.setContentObject(serverData);
                                     respond.addReceiver(message.getSender());
                                     send(respond);
                                 }
-                                System.out.println("Message got!");
+                            } catch (UnreadableException | IOException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        case PROPOSE:
+                            serverData.setJobsCount(serverData.getJobsCount() + 1);
+                            try {
+                                final Job newJob = (Job) message.getContentObject();
+                                serverData.getCurrentJobs().add(newJob);
+                                agentSAList.forEach(agent -> {
+                                    final ACLMessage proposal = new ACLMessage(PROPOSE);
+                                    try {
+                                        proposal.setContentObject(newJob);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    proposal.addReceiver(agent);
+                                    send(proposal);
+                                });
                             } catch (UnreadableException e) {
                                 e.printStackTrace();
                             }
@@ -74,8 +96,18 @@ public class CloudNetworkAgent extends Agent {
                 }
             }
         };
-
         addBehaviour(getMessages);
+    }
+
+    private List<AID> getSAAgentList(final Agent agent) {
+
+        final DFAgentDescription template = new DFAgentDescription();
+        final ServiceDescription serviceDescription = new ServiceDescription();
+        serviceDescription.setType(GroupConstants.CNA_SERVICE_TYPE);
+        serviceDescription.setOwnership(agent.getAID().getLocalName());
+        template.addServices(serviceDescription);
+
+        return getAgentsFromDF(agent, template);
     }
 
     private void registerCNAInDF() {

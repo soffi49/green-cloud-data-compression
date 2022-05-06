@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
-@JsonInclude
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Job implements Serializable {
 
     @JsonProperty(value = "AID")

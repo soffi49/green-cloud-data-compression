@@ -2,7 +2,10 @@ package common;
 
 import exception.IncorrectTaskDateException;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -13,7 +16,9 @@ public class TimeUtils {
 
     public static OffsetDateTime convertToOffsetDateTime(final String date) {
         try {
-            return OffsetDateTime.parse(date, DATE_TIME_FORMATTER);
+            final LocalDateTime datetime = LocalDateTime.parse(date, DATE_TIME_FORMATTER);
+            final ZonedDateTime zoned = datetime.atZone(ZoneId.of("Europe/Berlin"));
+            return zoned.toOffsetDateTime();
         } catch (DateTimeParseException e) {
             //TODO we should apply some logging class (to not use sout...)
             System.out.printf("The provided date format is incorrect");
