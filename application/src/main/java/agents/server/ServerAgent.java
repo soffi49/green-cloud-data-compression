@@ -1,4 +1,4 @@
-package agents;
+package agents.server;
 
 import common.GroupConstants;
 import domain.GreenSourceData;

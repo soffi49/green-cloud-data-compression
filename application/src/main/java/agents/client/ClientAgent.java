@@ -1,15 +1,16 @@
-package agents;
+package agents.client;
 
+
+import agents.client.behaviour.SendJobRequest;
 import common.GroupConstants;
 import common.TimeUtils;
 import domain.Job;
-import domain.CloudNetworkData;
+import agents.cloudnetwork.AbstractCloudNetworkAgent;
 import exception.IncorrectTaskDateException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
@@ -18,14 +19,17 @@ import jade.lang.acl.UnreadableException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static common.CommonUtils.getAgentsFromDF;
-import static common.CommonUtils.sendJobRequestToAgents;
 import static jade.lang.acl.ACLMessage.AGREE;
 
 public class ClientAgent extends Agent {
 
-    private Map<AID, CloudNetworkData> agentCNAList;
+    private static Logger logger = LoggerFactory.getLogger(ClientAgent.class);
+
+    private Map<AID, AbstractCloudNetworkAgent> agentCNAList;
     private AID chosenCNA;
 
     private int messagesSentCount;
@@ -45,28 +49,21 @@ public class ClientAgent extends Agent {
 
         if (Objects.nonNull(args) && args.length == 3) {
             jobToBeExecuted = createAgentJob(args);
-            addBehaviour(sendJobRequest);
+            addBehaviour(SendJobRequest.createFor(this, jobToBeExecuted));
             addBehaviour(waitForMessages);
 
         } else {
-            System.out.print("I have no task to be executed");
+            logger.info("I have no task to be executed");
             doDelete();
         }
     }
 
     @Override
     protected void takeDown() {
-        System.out.print("I'm finished. Bye!");
+        logger.info("I'm finished. Bye!");
         super.takeDown();
     }
 
-    private final Behaviour sendJobRequest = new OneShotBehaviour() {
-        @Override
-        public void action() {
-            final List<AID> agentsCNA = getCNAAgentList(myAgent);
-            sendJobRequestToAgents(myAgent, agentsCNA, jobToBeExecuted);
-        }
-    };
 
     private final Behaviour waitForMessages = new CyclicBehaviour() {
         @Override
@@ -80,7 +77,7 @@ public class ClientAgent extends Agent {
                     case AGREE:
                         if (responsesReceivedCount <  messagesSentCount) {
                             try {
-                                agentCNAList.put(message.getSender(), (CloudNetworkData) message.getContentObject());
+                                agentCNAList.put(message.getSender(), (AbstractCloudNetworkAgent) message.getContentObject());
                             } catch (UnreadableException e) {
                                 e.printStackTrace();
                             }
@@ -104,7 +101,7 @@ public class ClientAgent extends Agent {
     };
 
     private AID chooseCNAToExecuteJob() {
-        final Comparator<Map.Entry<AID, CloudNetworkData>> compareCNA =
+        final Comparator<Map.Entry<AID, AbstractCloudNetworkAgent>> compareCNA =
                 Comparator.comparingInt(cna -> cna.getValue().getJobsCount());
         return agentCNAList.entrySet().stream().min(compareCNA).orElseThrow().getKey();
     }
@@ -125,7 +122,7 @@ public class ClientAgent extends Agent {
         return null;
     }
 
-    private List<AID> getCNAAgentList(final Agent agent) {
+    public List<AID> getCNAAgentList(final Agent agent) {
 
         final DFAgentDescription template = new DFAgentDescription();
         final ServiceDescription serviceDescription = new ServiceDescription();

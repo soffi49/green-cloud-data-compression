@@ -1,4 +1,4 @@
-package agents;
+package agents.greenenergy;
 
 import jade.core.Agent;
 

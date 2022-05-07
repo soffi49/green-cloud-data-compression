@@ -1,15 +1,16 @@
-package domain;
+package agents.cloudnetwork;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import domain.Job;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CloudNetworkData implements Serializable {
+public abstract class AbstractCloudNetworkAgent implements Serializable {
 
     @JsonIgnore
     private List<Job> currentJobs;
@@ -20,7 +21,7 @@ public class CloudNetworkData implements Serializable {
     @JsonProperty("jobsCount")
     private int jobsCount;
 
-    public CloudNetworkData() {
+    protected AbstractCloudNetworkAgent() {
         inUsePower = 0;
         currentJobs = new ArrayList<>();
         futureJobs = new ArrayList<>();

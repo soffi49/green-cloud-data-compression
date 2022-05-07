@@ -31,7 +31,7 @@ public class CommonUtils {
         return agentsDF;
     }
 
-    public static void sendJobRequestToAgents(final Agent currentAgent,final List<AID> agents, final Job job) {
+    public static void sendJobRequestToAgents(final Agent currentAgent, final List<AID> agents, final Job job) {
         agents.forEach(agent -> {
             try {
                 final ACLMessage proposal = new ACLMessage(REQUEST);

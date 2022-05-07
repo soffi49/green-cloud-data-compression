@@ -1,4 +1,4 @@
-package agents;
+package agents.monitoring;
 
 import jade.core.Agent;
 
