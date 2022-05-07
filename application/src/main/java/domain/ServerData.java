@@ -13,21 +13,42 @@ public class ServerData implements Serializable {
 
     @JsonIgnore
     private List<Job> currentJobs;
-    @JsonIgnore
-    private List<Job> futureJobs;
-    @JsonProperty("inUsePower")
-    private int inUsePower;
-    @JsonProperty("availablePower")
-    private int availablePower;
-    @JsonProperty("jobsCount")
-    private int jobsCount;
+    @JsonProperty("pricePerHour")
+    private double pricePerHour;
+    @JsonProperty("powerInUse")
+    private int powerInUse;
+    @JsonProperty("availableCapacity")
+    private int availableCapacity;
 
-    public ServerData() {
-        inUsePower = 0;
-        availablePower = 0;
+    public ServerData(double pricePerHour, int availableCapacity) {
+        this.pricePerHour = pricePerHour;
+        this.availableCapacity = availableCapacity;
         currentJobs = new ArrayList<>();
-        futureJobs = new ArrayList<>();
-        jobsCount = 0;
+        powerInUse = 0;
+    }
+
+    public int getAvailableCapacity() {
+        return availableCapacity;
+    }
+
+    public void setAvailableCapacity(int availableCapacity) {
+        this.availableCapacity = availableCapacity;
+    }
+
+    public int getPowerInUse() {
+        return powerInUse;
+    }
+
+    public void setPowerInUse(int powerInUse) {
+        this.powerInUse = powerInUse;
+    }
+
+    public double getPricePerHour() {
+        return pricePerHour;
+    }
+
+    public void setPricePerHour(double pricePerHour) {
+        this.pricePerHour = pricePerHour;
     }
 
     public List<Job> getCurrentJobs() {
@@ -36,37 +57,5 @@ public class ServerData implements Serializable {
 
     public void setCurrentJobs(List<Job> currentJobs) {
         this.currentJobs = currentJobs;
-    }
-
-    public List<Job> getFutureJobs() {
-        return futureJobs;
-    }
-
-    public void setFutureJobs(List<Job> futureJobs) {
-        this.futureJobs = futureJobs;
-    }
-
-    public int getInUsePower() {
-        return inUsePower;
-    }
-
-    public void setInUsePower(int inUsePower) {
-        this.inUsePower = inUsePower;
-    }
-
-    public int getJobsCount() {
-        return jobsCount;
-    }
-
-    public void setJobsCount(int jobsCount) {
-        this.jobsCount = jobsCount;
-    }
-
-    public int getAvailablePower() {
-        return availablePower;
-    }
-
-    public void setAvailablePower(int availablePower) {
-        this.availablePower = availablePower;
     }
 }
