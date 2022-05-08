@@ -1,9 +1,11 @@
+package runner;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import utils.ScenarioService;
+import runner.utils.ScenarioService;
 
 public class EngineRunner {
     public static void main(String[] args) {

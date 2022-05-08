@@ -1,4 +1,4 @@
-package domain;
+package runner.domain;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
