@@ -1,5 +1,11 @@
 package agents.server;
 
+import static common.CommonUtils.getAgentsFromDF;
+import static common.CommonUtils.sendJobProposalToAgents;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
+import static jade.lang.acl.ACLMessage.PROPOSE;
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+
 import common.GroupConstants;
 import domain.GreenSourceData;
 import domain.Job;
@@ -14,14 +20,18 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
-
-import java.util.*;
-
-import static common.CommonUtils.getAgentsFromDF;
-import static common.CommonUtils.sendJobProposalToAgents;
-import static jade.lang.acl.ACLMessage.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerAgent extends Agent {
+
+    private static final Logger logger = LoggerFactory.getLogger(ServerAgent.class);
 
     private AID ownerCNA;
 
@@ -45,15 +55,16 @@ public class ServerAgent extends Agent {
             gsAgentList = getGSAgentList(this);
             messagesSentCount = gsAgentList.size();
             try {
-                serverData = new ServerData(Double.parseDouble(args[1].toString()), Integer.parseInt(args[2].toString()));
+                serverData = new ServerData(Double.parseDouble(args[1].toString()),
+                    Integer.parseInt(args[2].toString()));
             } catch (NumberFormatException e) {
-                System.out.printf("The given price is not a number!");
+                logger.info("The given price is not a number!");
                 doDelete();
             }
 
             addBehaviour(getMessages);
         } else {
-            System.out.print("I don't have the corresponding Cloud Network Agent");
+            logger.info("I don't have the corresponding Cloud Network Agent");
             doDelete();
         }
 
@@ -68,15 +79,16 @@ public class ServerAgent extends Agent {
                     case PROPOSE:
                         try {
                             final Job receivedJob = (Job) message.getContentObject();
-                            System.out.println("[Server] Proposal received");
-                            if (receivedJob.getPower() + serverData.getPowerInUse() <= serverData.getAvailableCapacity()) {
+                            logger.info("{} Proposal received", myAgent);
+                            if (receivedJob.getPower() + serverData.getPowerInUse()
+                                <= serverData.getAvailableCapacity()) {
                                 sendJobProposalToAgents(myAgent, gsAgentList, receivedJob);
-                                System.out.println("[Server] Proposal sent to GS");
+                                logger.info("{} Proposal sent to GS", myAgent);
                                 gsAcceptingJob = new HashMap<>();
                                 responsesReceivedCount = 0;
                             } else {
                                 final ACLMessage respond = new ACLMessage(REJECT_PROPOSAL);
-                                System.out.println("[Server] Proposal rejected");
+                                logger.info("{} Proposal rejected", myAgent);
                                 respond.setContent("Refuse");
                                 respond.addReceiver(ownerCNA);
                                 send(respond);
@@ -89,7 +101,7 @@ public class ServerAgent extends Agent {
                     case ACCEPT_PROPOSAL:
                         if (responsesReceivedCount < messagesSentCount) {
                             try {
-                                System.out.println("[Server] Proposal send to gs");
+                                logger.info("{} Proposal send to gs", myAgent);
                                 gsAcceptingJob.put(message.getSender(), (GreenSourceData) message.getContentObject());
                             } catch (UnreadableException e) {
                                 e.printStackTrace();
@@ -98,7 +110,7 @@ public class ServerAgent extends Agent {
                             final int messageType = gsAcceptingJob.isEmpty() ? REJECT_PROPOSAL : ACCEPT_PROPOSAL;
                             final String messageContent = gsAcceptingJob.isEmpty() ? "Refuse" : "Agree";
                             final ACLMessage respond = new ACLMessage(messageType);
-                            System.out.println("[Server] Handle gs response: proposal from CNA " + messageContent);
+                            logger.info("{} Handle gs response: proposal from CNA {}", myAgent, messageContent);
                             respond.setContent(messageContent);
                             respond.addReceiver(ownerCNA);
                             send(respond);
@@ -112,8 +124,8 @@ public class ServerAgent extends Agent {
     };
 
     private AID chooseGreenSourceForTheJob() {
-        final Comparator<Map.Entry<AID, GreenSourceData>> compareGreenSources =
-                Comparator.comparingInt(cna -> cna.getValue().getAvailablePowerInTime());
+        final Comparator<Entry<AID, GreenSourceData>> compareGreenSources =
+            Comparator.comparingInt(cna -> cna.getValue().getAvailablePowerInTime());
         return gsAcceptingJob.entrySet().stream().min(compareGreenSources).orElseThrow().getKey();
     }
 

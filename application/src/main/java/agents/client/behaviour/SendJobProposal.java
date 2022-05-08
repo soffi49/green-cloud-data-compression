@@ -1,13 +1,15 @@
 package agents.client.behaviour;
 
+import static jade.lang.acl.ACLMessage.PROPOSE;
+
 import agents.client.ClientAgent;
+import agents.client.message.SendJobMessage;
 import domain.Job;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
 import java.util.List;
-import message.client.SendJobMessage;
-
-import static jade.lang.acl.ACLMessage.PROPOSE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * One shot behaviour for client agent. Its purpose is to
@@ -15,6 +17,8 @@ import static jade.lang.acl.ACLMessage.PROPOSE;
  *
  */
 public class SendJobProposal extends OneShotBehaviour {
+
+    private static final Logger logger = LoggerFactory.getLogger(SendJobProposal.class);
 
     private final ClientAgent clientAgent;
     private final Job job;
@@ -32,7 +36,7 @@ public class SendJobProposal extends OneShotBehaviour {
     public void action() {
         final List<AID> agentsCNA = clientAgent.initializeCloudNetworkAgentList(myAgent);
         clientAgent.setMessagesSentCount(agentsCNA.size());
-        System.out.println("[Client] Sending job proposal to CNA");
+        logger.info("{} Sending job proposal to CNA", myAgent);
         myAgent.send(SendJobMessage.create(job,agentsCNA, PROPOSE).getMessage());
     }
 }

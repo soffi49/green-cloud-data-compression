@@ -3,10 +3,8 @@ package agents.cloudnetwork;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import domain.Job;
 import jade.core.Agent;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,21 +1,18 @@
 package common;
 
+import static jade.lang.acl.ACLMessage.PROPOSE;
+
 import domain.Job;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static jade.lang.acl.ACLMessage.PROPOSE;
-import static jade.lang.acl.ACLMessage.REQUEST;
 
 public class CommonUtils {
 

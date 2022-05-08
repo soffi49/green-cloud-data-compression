@@ -1,5 +1,4 @@
-package message.client;
-
+package agents.client.message;
 
 import domain.Job;
 import jade.core.AID;

@@ -1,5 +1,6 @@
 package agents.client;
 
+import static common.CommonUtils.getAgentsFromDF;
 
 import agents.client.behaviour.ClientAgentReadMessages;
 import agents.client.behaviour.SendJobProposal;
@@ -12,13 +13,13 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static common.CommonUtils.getAgentsFromDF;
 
 public class ClientAgent extends Agent {
 
