@@ -1,7 +1,6 @@
 package runner.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import java.io.File;
@@ -10,52 +9,29 @@ import java.io.InputStream;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import runner.domain.ScenarioArgs;
+import runner.factory.AgentControllerFactory;
 import runner.factory.AgentControllerFactoryImpl;
 
 public class ScenarioService {
 
     private static final String RESOURCE_SCENARIO_PATH = "./scenarios/";
+    private static final XmlMapper XML_MAPPER = new XmlMapper();
 
-    public static void createAgentsFromScenarioFile(final String fileName, final ContainerController container) {
+    private final AgentControllerFactory factory;
+
+    public ScenarioService(ContainerController containerController) {
+        this.factory = new AgentControllerFactoryImpl(containerController);
+    }
+
+    public void createAgentsFromScenarioFile(final String fileName) {
         final File scenarioFile = getFileFromResourceFileName(fileName);
-        final XmlMapper mapper = new XmlMapper();
         try {
-            final ScenarioArgs scenario = mapper.readValue(scenarioFile, ScenarioArgs.class);
+            final ScenarioArgs scenario = XML_MAPPER.readValue(scenarioFile, ScenarioArgs.class);
 
             if (Objects.nonNull(scenario.getServerAgentsArgs())) {
-                scenario.getServerAgentsArgs().forEach(serverAgent -> {
+                scenario.getAgentsArgs().forEach(agentArgs -> {
                     try {
-                        final AgentController ag = container.createNewAgent(serverAgent.getName(),
-                            "agents.server.ServerAgent",
-                            new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(),
-                                serverAgent.getPower()});
-                        ag.start();
-                    } catch (StaleProxyException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-
-            if (Objects.nonNull(scenario.getCloudNetworkAgentsArgs())) {
-                scenario.getCloudNetworkAgentsArgs().forEach(cloudNetworkAgent -> {
-                    try {
-                        final AgentController ag = container.createNewAgent(cloudNetworkAgent.getName(),
-                            "agents.cloudnetwork.CloudNetworkAgent",
-                            new Object[]{});
-                        ag.start();
-                    } catch (StaleProxyException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-
-            if (Objects.nonNull(scenario.getClientAgentsArgs())) {
-                scenario.getClientAgentsArgs().forEach(clientAgent -> {
-                    try {
-                        final AgentController ag = container.createNewAgent(clientAgent.getName(),
-                            "agents.client.ClientAgent",
-                            new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower()});
-                        ag.start();
+                        factory.createAgentController(agentArgs).start();
                     } catch (StaleProxyException e) {
                         e.printStackTrace();
                     }
@@ -66,7 +42,7 @@ public class ScenarioService {
         }
     }
 
-    private static File getFileFromResourceFileName(final String fileName) {
+    private File getFileFromResourceFileName(final String fileName) {
         try {
             final InputStream inputStream = ScenarioService.class.getClassLoader()
                 .getResourceAsStream(RESOURCE_SCENARIO_PATH + fileName + ".xml");

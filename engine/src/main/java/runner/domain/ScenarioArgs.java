@@ -52,10 +52,10 @@ public class ScenarioArgs implements Serializable {
     }
 
     public List<AgentArgs> getAgentsArgs() {
-        var clientArgs = clientAgentsArgs.stream().map(arg -> (AgentArgs) arg);
-        var serverArgs = serverAgentsArgs.stream().map(arg -> (AgentArgs) arg);
-        var cloudNetworkArgs = clientAgentsArgs.stream().map(arg -> (AgentArgs) arg);
+        var clientArgs = clientAgentsArgs.stream().map(AgentArgs.class::cast);
+        var serverArgs = serverAgentsArgs.stream().map(AgentArgs.class::cast);
+        var cloudNetworkArgs = cloudNetworkAgentsArgs.stream().map(AgentArgs.class::cast);
 
-        return concat(clientArgs, concat(serverArgs, cloudNetworkArgs)).collect(Collectors.toList());
+        return concat(clientArgs, concat(serverArgs, cloudNetworkArgs)).toList();
     }
 }

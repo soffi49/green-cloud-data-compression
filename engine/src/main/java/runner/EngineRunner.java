@@ -20,10 +20,12 @@ public class EngineRunner {
         profile.setParameter(Profile.MAIN_HOST, "localhost");
 
         final ContainerController container = runtime.createMainContainer(profile);
+        final ScenarioService scenarioService = new ScenarioService(container);
+
         try {
             final AgentController rma = container.createNewAgent("rma", "jade.tools.rma.rma", null);
             rma.start();
-            ScenarioService.createAgentsFromScenarioFile("testAgents", container);
+            scenarioService.createAgentsFromScenarioFile("testAgents");
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }
