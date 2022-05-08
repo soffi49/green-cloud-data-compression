@@ -42,21 +42,21 @@ public class ClientAgentReadMessages extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
 
-            if(Objects.isNull(clientAgent.getChosenCloudNetworkAgent())) {
-                clientAgent.setResponsesReceivedCount(clientAgent.getResponsesReceivedCount() + 1);
-            }
-
             switch (message.getPerformative()) {
-                case AGREE:
-                    if (clientAgent.getResponsesReceivedCount() < clientAgent.getMessagesSentCount()) {
+                case ACCEPT_PROPOSAL:
+                    System.out.println("[Client] CNA has accepted proposal");
+                    if (clientAgent.getResponsesReceivedCount() < clientAgent.getMessagesSentCount() && Objects.isNull(clientAgent.getChosenCloudNetworkAgent())) {
                         try {
                             clientAgent.getCloudNetworkAgentList().put(message.getSender(), (CloudNetworkData) message.getContentObject());
+                            clientAgent.setResponsesReceivedCount(clientAgent.getResponsesReceivedCount() + 1);
                         } catch (UnreadableException e) {
                             e.printStackTrace();
                         }
-                    } else {
+                    }
+                    if(clientAgent.getResponsesReceivedCount() == clientAgent.getMessagesSentCount()){
                         clientAgent.setChosenCloudNetworkAgent(chooseCNAToExecuteJob());
-                        myAgent.send(SendJobMessage.create(job, List.of(clientAgent.getChosenCloudNetworkAgent()), PROPOSE).getMessage());
+                        myAgent.send(SendJobMessage.create(job, List.of(clientAgent.getChosenCloudNetworkAgent()), REQUEST).getMessage());
+                        System.out.println("[Client] Request sent to CNA");
                     }
                     break;
             }

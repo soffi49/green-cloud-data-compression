@@ -31,23 +31,25 @@ public class CloudNetworkAgentReadMessages extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             switch (message.getPerformative()) {
-                case REQUEST:
-                    final ACLMessage respond = new ACLMessage(ACLMessage.AGREE);
+                case PROPOSE:
+                    final ACLMessage respond = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                     try {
                         respond.setContentObject(cloudNetworkAgent.getCloudNetworkData());
+                        System.out.println("[CNA] Accepting proposal");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     respond.addReceiver(message.getSender());
                     cloudNetworkAgent.send(respond);
                     break;
-                case PROPOSE:
+                case REQUEST:
                     cloudNetworkAgent.getCloudNetworkData().setJobsCount(cloudNetworkAgent.getCloudNetworkData().getJobsCount() + 1);
                     try {
                         final Job job = (Job) message.getContentObject();
                         cloudNetworkAgent.getCloudNetworkData().getCurrentJobs().add(job);
                         cloudNetworkAgent.getCloudNetworkData().setInUsePower(cloudNetworkAgent.getCloudNetworkData().getInUsePower() + job.getPower());
-                        myAgent.send(SendJobMessage.create(job, cloudNetworkAgent.getServiceAgentList(), REQUEST).getMessage());
+                        myAgent.send(SendJobMessage.create(job, cloudNetworkAgent.getServiceAgentList(), PROPOSE).getMessage());
+                        System.out.println("[CNA] Sending proposal to server");
                     } catch (UnreadableException e) {
                         e.printStackTrace();
                     }

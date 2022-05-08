@@ -18,7 +18,7 @@ import jade.lang.acl.UnreadableException;
 import java.util.*;
 
 import static common.CommonUtils.getAgentsFromDF;
-import static common.CommonUtils.sendJobRequestToAgents;
+import static common.CommonUtils.sendJobProposalToAgents;
 import static jade.lang.acl.ACLMessage.*;
 
 public class ServerAgent extends Agent {
@@ -65,15 +65,18 @@ public class ServerAgent extends Agent {
             final ACLMessage message = receive();
             if (Objects.nonNull(message)) {
                 switch (message.getPerformative()) {
-                    case REQUEST:
+                    case PROPOSE:
                         try {
                             final Job receivedJob = (Job) message.getContentObject();
+                            System.out.println("[Server] Proposal received");
                             if (receivedJob.getPower() + serverData.getPowerInUse() <= serverData.getAvailableCapacity()) {
-                                sendJobRequestToAgents(myAgent, gsAgentList, receivedJob);
+                                sendJobProposalToAgents(myAgent, gsAgentList, receivedJob);
+                                System.out.println("[Server] Proposal sent to GS");
                                 gsAcceptingJob = new HashMap<>();
                                 responsesReceivedCount = 0;
                             } else {
-                                final ACLMessage respond = new ACLMessage(REFUSE);
+                                final ACLMessage respond = new ACLMessage(REJECT_PROPOSAL);
+                                System.out.println("[Server] Proposal rejected");
                                 respond.setContent("Refuse");
                                 respond.addReceiver(ownerCNA);
                                 send(respond);
@@ -82,24 +85,25 @@ public class ServerAgent extends Agent {
                             e.printStackTrace();
                         }
                         break;
-                    case REFUSE:
-                    case AGREE:
+                    case REJECT_PROPOSAL:
+                    case ACCEPT_PROPOSAL:
                         if (responsesReceivedCount < messagesSentCount) {
                             try {
+                                System.out.println("[Server] Proposal send to gs");
                                 gsAcceptingJob.put(message.getSender(), (GreenSourceData) message.getContentObject());
                             } catch (UnreadableException e) {
                                 e.printStackTrace();
                             }
                         } else {
-                            final int messageType = gsAcceptingJob.isEmpty() ? REFUSE : AGREE;
+                            final int messageType = gsAcceptingJob.isEmpty() ? REJECT_PROPOSAL : ACCEPT_PROPOSAL;
                             final String messageContent = gsAcceptingJob.isEmpty() ? "Refuse" : "Agree";
                             final ACLMessage respond = new ACLMessage(messageType);
+                            System.out.println("[Server] Handle gs response: proposal from CNA " + messageContent);
                             respond.setContent(messageContent);
                             respond.addReceiver(ownerCNA);
                             send(respond);
                         }
                         break;
-                    case PROPOSE:
                 }
             } else {
                 block();

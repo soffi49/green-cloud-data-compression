@@ -2,12 +2,11 @@ package agents.client;
 
 
 import agents.client.behaviour.ClientAgentReadMessages;
-import agents.client.behaviour.SendJobRequest;
+import agents.client.behaviour.SendJobProposal;
 import common.GroupConstants;
 import common.TimeUtils;
 import domain.CloudNetworkData;
 import domain.Job;
-import agents.cloudnetwork.AbstractCloudNetworkAgent;
 import exception.IncorrectTaskDateException;
 import jade.core.AID;
 import jade.core.Agent;
@@ -44,7 +43,7 @@ public class ClientAgent extends Agent {
             messagesSentCount = 0;
             final Job jobToBeExecuted = initializeAgentJob(args);
 
-            addBehaviour(SendJobRequest.createFor(this, jobToBeExecuted));
+            addBehaviour(SendJobProposal.createFor(this, jobToBeExecuted));
             addBehaviour(ClientAgentReadMessages.createFor(this, jobToBeExecuted));
 
         } else {
@@ -75,7 +74,7 @@ public class ClientAgent extends Agent {
         return null;
     }
 
-    public List<AID> getCNAAgentList(final Agent agent) {
+    public List<AID> initializeCloudNetworkAgentList(final Agent agent) {
 
         final DFAgentDescription template = new DFAgentDescription();
         final ServiceDescription serviceDescription = new ServiceDescription();
@@ -83,6 +82,10 @@ public class ClientAgent extends Agent {
         template.addServices(serviceDescription);
 
         return getAgentsFromDF(agent, template);
+    }
+
+    public void setMessagesSentCount(int messagesSentCount) {
+        this.messagesSentCount = messagesSentCount;
     }
 
     public void setChosenCloudNetworkAgent(AID chosenCloudNetworkAgent) {

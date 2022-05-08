@@ -2,6 +2,7 @@ package utils;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import domain.ScenarioArgs;
+import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import org.apache.commons.io.FileUtils;
@@ -21,36 +22,39 @@ public class ScenarioService {
         try {
             final ScenarioArgs scenario = mapper.readValue(scenarioFile, ScenarioArgs.class);
 
-            if(Objects.nonNull(scenario.getClientAgentsArgs())) {
+            if (Objects.nonNull(scenario.getServerAgentsArgs())) {
                 scenario.getServerAgentsArgs().forEach(serverAgent -> {
                     try {
-                        container.createNewAgent(serverAgent.getName(),
-                                                 "agents.server.ServerAgent",
-                                                 new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(), serverAgent.getPower()});
+                        final AgentController ag = container.createNewAgent(serverAgent.getName(),
+                                                                            "agents.server.ServerAgent",
+                                                                            new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(), serverAgent.getPower()});
+                        ag.start();
                     } catch (StaleProxyException e) {
                         e.printStackTrace();
                     }
                 });
             }
 
-            if(Objects.nonNull(scenario.getCloudNetworkAgentsArgs())) {
+            if (Objects.nonNull(scenario.getCloudNetworkAgentsArgs())) {
                 scenario.getCloudNetworkAgentsArgs().forEach(cloudNetworkAgent -> {
                     try {
-                        container.createNewAgent(cloudNetworkAgent.getName(),
-                                                 "agents.cloudnetwork.CloudNetworkAgent",
-                                                 new Object[]{});
+                        final AgentController ag = container.createNewAgent(cloudNetworkAgent.getName(),
+                                                                            "agents.cloudnetwork.CloudNetworkAgent",
+                                                                            new Object[]{});
+                        ag.start();
                     } catch (StaleProxyException e) {
                         e.printStackTrace();
                     }
                 });
             }
 
-            if(Objects.nonNull(scenario.getClientAgentsArgs())) {
+            if (Objects.nonNull(scenario.getClientAgentsArgs())) {
                 scenario.getClientAgentsArgs().forEach(clientAgent -> {
                     try {
-                        container.createNewAgent(clientAgent.getName(),
-                                                 "agents.client.ClientAgent",
-                                                 new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower()});
+                        final AgentController ag = container.createNewAgent(clientAgent.getName(),
+                                                                            "agents.client.ClientAgent",
+                                                                            new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower()});
+                        ag.start();
                     } catch (StaleProxyException e) {
                         e.printStackTrace();
                     }
