@@ -1,29 +1,29 @@
 package message.client;
 
-import static jade.lang.acl.ACLMessage.REQUEST;
 
 import domain.Job;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import java.io.IOException;
+import java.util.List;
 
-public class ProposeJobMessage {
+public class SendJobMessage {
 
     private final ACLMessage message;
 
-    private ProposeJobMessage(ACLMessage message) {
+    private SendJobMessage(ACLMessage message) {
         this.message = message;
     }
 
-    public static ProposeJobMessage create(Job job, AID receiver) {
-        final ACLMessage proposal = new ACLMessage(REQUEST);
+    public static SendJobMessage create(Job job, List<AID> receiverList, int performative) {
+        final ACLMessage proposal = new ACLMessage(performative);
         try {
             proposal.setContentObject(job);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        proposal.addReceiver(receiver);
-        return new ProposeJobMessage(proposal);
+        receiverList.forEach(proposal::addReceiver);
+        return new SendJobMessage(proposal);
     }
 
     public ACLMessage getMessage() {

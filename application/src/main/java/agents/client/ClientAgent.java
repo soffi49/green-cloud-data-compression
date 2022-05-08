@@ -1,56 +1,51 @@
 package agents.client;
 
 
+import agents.client.behaviour.ClientAgentReadMessages;
 import agents.client.behaviour.SendJobRequest;
 import common.GroupConstants;
 import common.TimeUtils;
+import domain.CloudNetworkData;
 import domain.Job;
 import agents.cloudnetwork.AbstractCloudNetworkAgent;
 import exception.IncorrectTaskDateException;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.UnreadableException;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static common.CommonUtils.getAgentsFromDF;
-import static jade.lang.acl.ACLMessage.AGREE;
 
 public class ClientAgent extends Agent {
 
-    private static Logger logger = LoggerFactory.getLogger(ClientAgent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientAgent.class);
 
-    private Map<AID, AbstractCloudNetworkAgent> agentCNAList;
-    private AID chosenCNA;
+    private Map<AID, CloudNetworkData> cloudNetworkAgentList;
+    private AID chosenCloudNetworkAgent;
 
     private int messagesSentCount;
     private int responsesReceivedCount;
-
-    private Job jobToBeExecuted;
 
     @Override
     protected void setup() {
         super.setup();
         final Object[] args = getArguments();
 
-        agentCNAList = new HashMap<>();
-        chosenCNA = null;
-        responsesReceivedCount = 0;
-        messagesSentCount = 0;
-
         if (Objects.nonNull(args) && args.length == 3) {
-            jobToBeExecuted = createAgentJob(args);
+
+            cloudNetworkAgentList = new HashMap<>();
+            chosenCloudNetworkAgent = null;
+            responsesReceivedCount = 0;
+            messagesSentCount = 0;
+            final Job jobToBeExecuted = initializeAgentJob(args);
+
             addBehaviour(SendJobRequest.createFor(this, jobToBeExecuted));
-            addBehaviour(waitForMessages);
+            addBehaviour(ClientAgentReadMessages.createFor(this, jobToBeExecuted));
 
         } else {
             logger.info("I have no task to be executed");
@@ -64,59 +59,17 @@ public class ClientAgent extends Agent {
         super.takeDown();
     }
 
-
-    private final Behaviour waitForMessages = new CyclicBehaviour() {
-        @Override
-        public void action() {
-            final ACLMessage message = receive();
-            if (Objects.nonNull(message)) {
-                if(Objects.isNull(chosenCNA)) {
-                    responsesReceivedCount++;
-                }
-                switch (message.getPerformative()) {
-                    case AGREE:
-                        if (responsesReceivedCount <  messagesSentCount) {
-                            try {
-                                agentCNAList.put(message.getSender(), (AbstractCloudNetworkAgent) message.getContentObject());
-                            } catch (UnreadableException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            final AID aidCNA = chooseCNAToExecuteJob();
-                            final ACLMessage respond = new ACLMessage(ACLMessage.PROPOSE);
-                            try {
-                                respond.setContentObject(jobToBeExecuted);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            respond.addReceiver(aidCNA);
-                            send(respond);
-                        }
-                        break;
-                }
-            } else {
-                block();
-            }
-        }
-    };
-
-    private AID chooseCNAToExecuteJob() {
-        final Comparator<Map.Entry<AID, AbstractCloudNetworkAgent>> compareCNA =
-                Comparator.comparingInt(cna -> cna.getValue().getJobsCount());
-        return agentCNAList.entrySet().stream().min(compareCNA).orElseThrow().getKey();
-    }
-
-    private Job createAgentJob(final Object[] arguments) {
+    private Job initializeAgentJob(final Object[] arguments) {
         try {
             final OffsetDateTime startTime = TimeUtils.convertToOffsetDateTime(arguments[0].toString());
             final OffsetDateTime endTime = TimeUtils.convertToOffsetDateTime(arguments[1].toString());
             final int power = Integer.parseInt(arguments[2].toString());
             return new Job(getAID(), startTime, endTime, power);
         } catch (IncorrectTaskDateException e) {
-            System.out.printf(e.getMessage());
+            logger.error(e.getMessage());
             doDelete();
         } catch (NumberFormatException e) {
-            System.out.printf("The given power is not a number!");
+            logger.error("The given power is not a number!");
             doDelete();
         }
         return null;
@@ -130,5 +83,29 @@ public class ClientAgent extends Agent {
         template.addServices(serviceDescription);
 
         return getAgentsFromDF(agent, template);
+    }
+
+    public void setChosenCloudNetworkAgent(AID chosenCloudNetworkAgent) {
+        this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
+    }
+
+    public void setResponsesReceivedCount(int responsesReceivedCount) {
+        this.responsesReceivedCount = responsesReceivedCount;
+    }
+
+    public AID getChosenCloudNetworkAgent() {
+        return chosenCloudNetworkAgent;
+    }
+
+    public int getMessagesSentCount() {
+        return messagesSentCount;
+    }
+
+    public int getResponsesReceivedCount() {
+        return responsesReceivedCount;
+    }
+
+    public Map<AID, CloudNetworkData> getCloudNetworkAgentList() {
+        return cloudNetworkAgentList;
     }
 }

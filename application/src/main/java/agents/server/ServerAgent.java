@@ -39,13 +39,13 @@ public class ServerAgent extends Agent {
         super.setup();
         final Object[] args = getArguments();
 
-        if (Objects.nonNull(args) && args.length == 4) {
+        if (Objects.nonNull(args) && args.length == 3) {
             ownerCNA = new AID(args[0].toString(), AID.ISLOCALNAME);
             registerSAInDF();
             gsAgentList = getGSAgentList(this);
             messagesSentCount = gsAgentList.size();
             try {
-                serverData = new ServerData(Double.parseDouble(args[2].toString()), Integer.parseInt(args[3].toString()));
+                serverData = new ServerData(Double.parseDouble(args[1].toString()), Integer.parseInt(args[2].toString()));
             } catch (NumberFormatException e) {
                 System.out.printf("The given price is not a number!");
                 doDelete();

@@ -2,8 +2,9 @@ package agents.cloudnetwork;
 
 import static common.CommonUtils.getAgentsFromDF;
 
-import agents.cloudnetwork.behaviour.CloudNetworkAgentCyclicBehaviour;
+import agents.cloudnetwork.behaviour.CloudNetworkAgentReadMessages;
 import common.GroupConstants;
+import domain.CloudNetworkData;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -13,20 +14,28 @@ import jade.domain.FIPAException;
 
 import java.util.List;
 
-
 public class CloudNetworkAgent extends Agent {
 
-    private List<AID> saAgentList;
+    private CloudNetworkData cloudNetworkData;
+    private List<AID> serviceAgentList;
 
     @Override
     protected void setup() {
         super.setup();
+        cloudNetworkData = new CloudNetworkData();
 
-        //TODO registration should be renewed
         registerCNAInDF();
-        saAgentList = getSAAgentList(this);
+        serviceAgentList = getSAAgentList(this);
 
-        addBehaviour(CloudNetworkAgentCyclicBehaviour.createFor(this));
+        addBehaviour(CloudNetworkAgentReadMessages.createFor(this));
+    }
+
+    public List<AID> getServiceAgentList() {
+        return serviceAgentList;
+    }
+
+    public CloudNetworkData getCloudNetworkData() {
+        return cloudNetworkData;
     }
 
     private List<AID> getSAAgentList(final Agent agent) {

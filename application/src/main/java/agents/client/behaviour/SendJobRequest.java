@@ -5,7 +5,9 @@ import domain.Job;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
 import java.util.List;
-import message.client.ProposeJobMessage;
+import message.client.SendJobMessage;
+
+import static jade.lang.acl.ACLMessage.REQUEST;
 
 /**
  * One shot behaviour for client agent. Its purpose is to
@@ -29,8 +31,6 @@ public class SendJobRequest extends OneShotBehaviour {
     @Override
     public void action() {
         final List<AID> agentsCNA = clientAgent.getCNAAgentList(myAgent);
-        agentsCNA.forEach(agent -> {
-            myAgent.send(ProposeJobMessage.create(job, agent).getMessage());
-        });
+        myAgent.send(SendJobMessage.create(job,agentsCNA, REQUEST).getMessage());
     }
 }
