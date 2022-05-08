@@ -7,13 +7,13 @@ import agents.client.behaviour.SendJobProposal;
 import common.GroupConstants;
 import common.TimeUtils;
 import domain.CloudNetworkData;
-import domain.Job;
+import domain.job.ImmutableJob;
+import domain.job.Job;
 import exception.IncorrectTaskDateException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,10 +61,12 @@ public class ClientAgent extends Agent {
 
     private Job initializeAgentJob(final Object[] arguments) {
         try {
-            final OffsetDateTime startTime = TimeUtils.convertToOffsetDateTime(arguments[0].toString());
-            final OffsetDateTime endTime = TimeUtils.convertToOffsetDateTime(arguments[1].toString());
-            final int power = Integer.parseInt(arguments[2].toString());
-            return new Job(getAID(), startTime, endTime, power);
+            return ImmutableJob.builder()
+                .clientIdentifier(getAID().getName())
+                .startTime(TimeUtils.convertToOffsetDateTime(arguments[0].toString()))
+                .endTime(TimeUtils.convertToOffsetDateTime(arguments[1].toString()))
+                .power(Integer.parseInt(arguments[2].toString()))
+                .build();
         } catch (IncorrectTaskDateException e) {
             logger.error(e.getMessage());
             doDelete();

@@ -1,27 +1,20 @@
 package agents.cloudnetwork;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import domain.Job;
+import domain.job.Job;
 import jade.core.Agent;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class AbstractCloudNetworkAgent extends Agent implements Serializable {
+public abstract class AbstractCloudNetworkAgent extends Agent{
 
-    @JsonIgnore
     private List<Job> currentJobs;
-    @JsonIgnore
     private List<Job> futureJobs;
-    @JsonProperty("inUsePower")
     private int inUsePower;
-    @JsonProperty("jobsCount")
     private int jobsCount;
 
     protected AbstractCloudNetworkAgent() {
+        super.setup();
+
         inUsePower = 0;
         currentJobs = new ArrayList<>();
         futureJobs = new ArrayList<>();

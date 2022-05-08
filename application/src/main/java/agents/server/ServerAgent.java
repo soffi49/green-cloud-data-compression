@@ -5,11 +5,13 @@ import static common.CommonUtils.sendJobProposalToAgents;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static mapper.JsonMapper.getMapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import common.GroupConstants;
 import domain.GreenSourceData;
-import domain.Job;
 import domain.ServerData;
+import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -78,7 +80,7 @@ public class ServerAgent extends Agent {
                 switch (message.getPerformative()) {
                     case PROPOSE:
                         try {
-                            final Job receivedJob = (Job) message.getContentObject();
+                            final Job receivedJob = getMapper().readValue(message.getContent(), Job.class);
                             logger.info("{} Proposal received", myAgent);
                             if (receivedJob.getPower() + serverData.getPowerInUse()
                                 <= serverData.getAvailableCapacity()) {
@@ -93,12 +95,11 @@ public class ServerAgent extends Agent {
                                 respond.addReceiver(ownerCNA);
                                 send(respond);
                             }
-                        } catch (UnreadableException e) {
+                        } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }
                         break;
-                    case REJECT_PROPOSAL:
-                    case ACCEPT_PROPOSAL:
+                    case REJECT_PROPOSAL, ACCEPT_PROPOSAL:
                         if (responsesReceivedCount < messagesSentCount) {
                             try {
                                 logger.info("{} Proposal send to gs", myAgent);

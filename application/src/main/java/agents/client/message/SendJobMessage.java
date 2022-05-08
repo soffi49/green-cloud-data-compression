@@ -1,6 +1,8 @@
 package agents.client.message;
 
-import domain.Job;
+import static mapper.JsonMapper.getMapper;
+
+import domain.job.Job;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import java.io.IOException;
@@ -17,7 +19,7 @@ public class SendJobMessage {
     public static SendJobMessage create(Job job, List<AID> receiverList, int performative) {
         final ACLMessage proposal = new ACLMessage(performative);
         try {
-            proposal.setContentObject(job);
+            proposal.setContent(getMapper().writeValueAsString(job));
         } catch (IOException e) {
             e.printStackTrace();
         }

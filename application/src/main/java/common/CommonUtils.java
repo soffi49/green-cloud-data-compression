@@ -1,8 +1,9 @@
 package common;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
+import static mapper.JsonMapper.getMapper;
 
-import domain.Job;
+import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -32,7 +33,7 @@ public class CommonUtils {
         agents.forEach(agent -> {
             try {
                 final ACLMessage proposal = new ACLMessage(PROPOSE);
-                proposal.setContentObject(job);
+                proposal.setContent(getMapper().writeValueAsString(job));
                 proposal.addReceiver(agent);
                 currentAgent.send(proposal);
             } catch (IOException e) {

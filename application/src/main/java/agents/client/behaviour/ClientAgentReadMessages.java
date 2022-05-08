@@ -2,15 +2,16 @@ package agents.client.behaviour;
 
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REQUEST;
+import static mapper.JsonMapper.getMapper;
 
 import agents.client.ClientAgent;
 import agents.client.message.SendJobMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.CloudNetworkData;
-import domain.Job;
+import domain.job.Job;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.UnreadableException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +50,12 @@ public class ClientAgentReadMessages extends CyclicBehaviour {
                     if (clientAgent.getResponsesReceivedCount() < clientAgent.getMessagesSentCount() && Objects.isNull(
                         clientAgent.getChosenCloudNetworkAgent())) {
                         try {
-                            clientAgent.getCloudNetworkAgentList()
-                                .put(message.getSender(), (CloudNetworkData) message.getContentObject());
-                            clientAgent.setResponsesReceivedCount(clientAgent.getResponsesReceivedCount() + 1);
-                        } catch (UnreadableException e) {
+                            clientAgent.getCloudNetworkAgentList().put(message.getSender(),
+                                getMapper().readValue(message.getContent(), CloudNetworkData.class));
+                        } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }
+                        clientAgent.setResponsesReceivedCount(clientAgent.getResponsesReceivedCount() + 1);
                     }
                     if (clientAgent.getResponsesReceivedCount() == clientAgent.getMessagesSentCount()) {
                         clientAgent.setChosenCloudNetworkAgent(chooseCNAToExecuteJob());

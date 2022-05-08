@@ -4,7 +4,6 @@ import static common.CommonUtils.getAgentsFromDF;
 
 import agents.cloudnetwork.behaviour.CloudNetworkAgentReadMessages;
 import common.GroupConstants;
-import domain.CloudNetworkData;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -13,16 +12,13 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import java.util.List;
 
-public class CloudNetworkAgent extends Agent {
+public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
-    private CloudNetworkData cloudNetworkData;
     private List<AID> serviceAgentList;
 
     @Override
     protected void setup() {
         super.setup();
-        cloudNetworkData = new CloudNetworkData();
-
         registerCNAInDF();
         serviceAgentList = getSAAgentList(this);
 
@@ -31,10 +27,6 @@ public class CloudNetworkAgent extends Agent {
 
     public List<AID> getServiceAgentList() {
         return serviceAgentList;
-    }
-
-    public CloudNetworkData getCloudNetworkData() {
-        return cloudNetworkData;
     }
 
     private List<AID> getSAAgentList(final Agent agent) {

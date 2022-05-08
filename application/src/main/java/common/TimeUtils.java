@@ -1,6 +1,5 @@
 package common;
 
-import agents.client.ClientAgent;
 import exception.IncorrectTaskDateException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
