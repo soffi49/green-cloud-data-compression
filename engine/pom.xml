@@ -16,11 +16,6 @@
   <packaging>jar</packaging>
   <name>engine</name>
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-  </properties>
-
   <dependencies>
     <!-- JADE Dependencies-->
     <dependency>
@@ -75,6 +70,11 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+    </dependency>
+    <!-- Immutables -->
+    <dependency>
+      <groupId>org.immutables</groupId>
+      <artifactId>value</artifactId>
     </dependency>
   </dependencies>
 </project>

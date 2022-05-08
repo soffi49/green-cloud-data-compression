@@ -1,59 +1,18 @@
 package runner.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value.Immutable;
 
-import java.io.Serializable;
+@JsonSerialize(as = ImmutableServerAgentArgs.class)
+@JsonDeserialize(as = ImmutableServerAgentArgs.class)
+@Immutable
+public interface ServerAgentArgs extends AgentArgs {
 
-public class ServerAgentArgs implements Serializable {
+    String getOwnerCloudNetwork();
 
-    @JsonProperty("name")
-    private String name;
-    @JsonProperty("ownerCloudNetwork")
-    private String ownerCloudNetwork;
-    @JsonProperty("power")
-    private String power;
-    @JsonProperty("price")
-    private String price;
+    String getPower();
 
-    public ServerAgentArgs() {
-    }
+    String getPrice();
 
-    public ServerAgentArgs(String ownerCloudNetwork, String power, String price, String name) {
-        this.ownerCloudNetwork = ownerCloudNetwork;
-        this.power = power;
-        this.price = price;
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getOwnerCloudNetwork() {
-        return ownerCloudNetwork;
-    }
-
-    public void setOwnerCloudNetwork(String ownerCloudNetwork) {
-        this.ownerCloudNetwork = ownerCloudNetwork;
-    }
-
-    public String getPower() {
-        return power;
-    }
-
-    public void setPower(String power) {
-        this.power = power;
-    }
-
-    public String getPrice() {
-        return price;
-    }
-
-    public void setPrice(String price) {
-        this.price = price;
-    }
 }

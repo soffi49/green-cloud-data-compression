@@ -1,18 +1,24 @@
 package runner;
 
+import static jade.core.Runtime.instance;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
+import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import runner.utils.ScenarioService;
+import runner.service.ScenarioService;
 
 public class EngineRunner {
     public static void main(String[] args) {
-        final jade.core.Runtime runtime = jade.core.Runtime.instance();
+
+        final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
+
         profile.setParameter(Profile.CONTAINER_NAME, "Main-Container");
         profile.setParameter(Profile.MAIN_HOST, "localhost");
+
         final ContainerController container = runtime.createMainContainer(profile);
         try {
             final AgentController rma = container.createNewAgent("rma", "jade.tools.rma.rma", null);

@@ -1,26 +1,12 @@
 package runner.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value.Immutable;
 
-import java.io.Serializable;
+@JsonSerialize(as = ImmutableCloudNetworkArgs.class)
+@JsonDeserialize(as = ImmutableCloudNetworkArgs.class)
+@Immutable
+public interface CloudNetworkArgs extends AgentArgs {
 
-public class CloudNetworkArgs implements Serializable {
-
-    @JsonProperty("name")
-    private String name;
-
-    public CloudNetworkArgs() {
-    }
-
-    public CloudNetworkArgs(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

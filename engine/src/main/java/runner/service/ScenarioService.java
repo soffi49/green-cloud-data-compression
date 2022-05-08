@@ -1,4 +1,4 @@
-package runner.utils;
+package runner.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jade.wrapper.AgentController;
@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import runner.domain.ScenarioArgs;
+import runner.factory.AgentControllerFactoryImpl;
 
 public class ScenarioService {
 
