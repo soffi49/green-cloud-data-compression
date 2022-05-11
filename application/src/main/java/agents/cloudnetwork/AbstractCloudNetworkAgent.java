@@ -12,7 +12,8 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
     private int inUsePower;
     private int jobsCount;
 
-    protected AbstractCloudNetworkAgent() {
+    @Override
+    protected void setup() {
         super.setup();
 
         inUsePower = 0;
