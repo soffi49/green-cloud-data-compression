@@ -44,5 +44,8 @@ public class MonitoringAgentReadMessages  extends CyclicBehaviour {
                     monitoringAgent.send(response);
             }
         }
+        else{
+            block();
+        }
     }
 }
