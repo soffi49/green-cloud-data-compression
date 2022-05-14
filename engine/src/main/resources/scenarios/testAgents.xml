@@ -1,0 +1,23 @@
+<ScenarioArgs>
+    <serverAgentsArgs>
+        <serverAgentsArgs>
+            <name>Server</name>
+            <ownerCloudNetwork>CNA</ownerCloudNetwork>
+            <power>10</power>
+            <price>10.5</price>
+        </serverAgentsArgs>
+    </serverAgentsArgs>
+    <cloudNetworkAgentsArgs>
+        <cloudNetworkAgent>
+            <name>CNA</name>
+        </cloudNetworkAgent>
+    </cloudNetworkAgentsArgs>
+    <clientAgentsArgs>
+        <clientAgent>
+            <name>Client</name>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 10:40</endDate>
+            <power>5</power>
+        </clientAgent>
+    </clientAgentsArgs>
+</ScenarioArgs>

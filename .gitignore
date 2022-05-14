@@ -3,3 +3,6 @@
 /.idea/.gitignore
 /MTPs-Main-Container.txt
 /APDescription.txt
+/application/target/
+/engine/target/
+/logs/
