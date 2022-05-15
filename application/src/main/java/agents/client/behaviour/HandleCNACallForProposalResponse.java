@@ -21,24 +21,24 @@ import static mapper.JsonMapper.getMapper;
 /**
  * Cyclic behaviour for client agent. It purpose is to handle the call for proposal responses received from Cloud Network Agents
  */
-public class HandleCallForProposalResponse extends CyclicBehaviour {
+public class HandleCNACallForProposalResponse extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(HandleCallForProposalResponse.class);
+    private static final Logger logger = LoggerFactory.getLogger(HandleCNACallForProposalResponse.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.or(MessageTemplate.MatchPerformative(ACLMessage.PROPOSE),
                                                                               MessageTemplate.MatchPerformative(ACLMessage.REFUSE));
     private final Map<AID, CloudNetworkData> cloudNetworkAgentsAccepting;
     private int responsesReceivedCount;
     private final Job job;
 
-    private HandleCallForProposalResponse(final ClientAgent clientAgent, final Job job) {
+    private HandleCNACallForProposalResponse(final ClientAgent clientAgent, final Job job) {
         super(clientAgent);
         this.responsesReceivedCount = 0;
         this.cloudNetworkAgentsAccepting = new HashMap<>();
         this.job = job;
     }
 
-    public static HandleCallForProposalResponse createFor(final ClientAgent clientAgent, final Job job) {
-        return new HandleCallForProposalResponse(clientAgent, job);
+    public static HandleCNACallForProposalResponse createFor(final ClientAgent clientAgent, final Job job) {
+        return new HandleCNACallForProposalResponse(clientAgent, job);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class HandleCallForProposalResponse extends CyclicBehaviour {
                         .filter(cloudNetworkData -> !cloudNetworkData.equals(chosenCNA))
                         .collect(Collectors.toList());
         final ACLMessage rejectProposal = new ACLMessage(REJECT_PROPOSAL);
-        rejectProposal.setContent("Proposal rejected");
+        rejectProposal.setContent("Reject");
         cloudNetworkAgentsRejected.forEach(rejectProposal::addReceiver);
         myAgent.send(rejectProposal);
     }

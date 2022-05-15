@@ -15,17 +15,20 @@ import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static mapper.JsonMapper.getMapper;
 
-public class HandleAcceptJobProposal extends CyclicBehaviour {
+/**
+ * Cyclic behaviour for Cloud Network Agent. It purpose is to handle the accept job proposal response from Client
+ */
+public class HandleClientAcceptJobProposal extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(HandleAcceptJobProposal.class);
+    private static final Logger logger = LoggerFactory.getLogger(HandleClientAcceptJobProposal.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACCEPT_PROPOSAL);
 
-    private HandleAcceptJobProposal(final CloudNetworkAgent cloudNetworkAgent) {
+    private HandleClientAcceptJobProposal(final CloudNetworkAgent cloudNetworkAgent) {
         super(cloudNetworkAgent);
     }
 
-    public static HandleAcceptJobProposal createFor(final CloudNetworkAgent cloudNetworkAgent) {
-        return new HandleAcceptJobProposal(cloudNetworkAgent);
+    public static HandleClientAcceptJobProposal createFor(final CloudNetworkAgent cloudNetworkAgent) {
+        return new HandleClientAcceptJobProposal(cloudNetworkAgent);
     }
 
     @Override
@@ -41,7 +44,7 @@ public class HandleAcceptJobProposal extends CyclicBehaviour {
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
                 ((CloudNetworkAgent) myAgent).getCurrentJobs().add(job);
                 ((CloudNetworkAgent) myAgent).setInUsePower(((CloudNetworkAgent) myAgent).getInUsePower() + job.getPower());
-                myAgent.send(SendJobMessage.create(job, ((CloudNetworkAgent) myAgent).getServiceAgentList(), CFP).getMessage());
+                myAgent.send(SendJobMessage.create(job, ((CloudNetworkAgent) myAgent).getServerAgentList(), CFP).getMessage());
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -1,24 +1,19 @@
 package agents.client;
 
+import agents.client.behaviour.HandleCNACallForProposalResponse;
 import agents.client.behaviour.SendJobCallForProposal;
-import agents.client.behaviour.HandleCallForProposalResponse;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
-import jade.core.AID;
-import jade.core.Agent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-public class ClientAgent extends Agent {
+public class ClientAgent extends AbstractClientAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientAgent.class);
-
-    private AID chosenCloudNetworkAgent;
-    private int messagesSentCount;
 
     @Override
     protected void setup() {
@@ -31,7 +26,7 @@ public class ClientAgent extends Agent {
             final Job jobToBeExecuted = initializeAgentJob(args);
 
             addBehaviour(SendJobCallForProposal.createFor(this, jobToBeExecuted));
-            addBehaviour(HandleCallForProposalResponse.createFor(this, jobToBeExecuted));
+            addBehaviour(HandleCNACallForProposalResponse.createFor(this, jobToBeExecuted));
 
         } else {
             logger.info("Incorrect arguments: the given task to specified according to the documentation");
@@ -67,18 +62,4 @@ public class ClientAgent extends Agent {
         }
         return null;
     }
-
-    public void setMessagesSentCount(int messagesSentCount) {
-        this.messagesSentCount = messagesSentCount;
-    }
-
-    public void setChosenCloudNetworkAgent(AID chosenCloudNetworkAgent) {
-        this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
-    }
-
-    public int getMessagesSentCount() {
-        return messagesSentCount;
-    }
-
-
 }

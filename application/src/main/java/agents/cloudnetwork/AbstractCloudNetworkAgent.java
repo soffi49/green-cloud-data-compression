@@ -1,16 +1,20 @@
 package agents.cloudnetwork;
 
 import domain.job.Job;
+import jade.core.AID;
 import jade.core.Agent;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractCloudNetworkAgent extends Agent{
 
-    private List<Job> currentJobs;
-    private List<Job> futureJobs;
-    private int inUsePower;
-    private int jobsCount;
+    protected List<AID> serverAgentList;
+    protected List<Job> currentJobs;
+    protected List<Job> futureJobs;
+    protected AID chosenServer;
+    protected int inUsePower;
+    protected int jobsCount;
+    protected int messagesSentCount;
 
     @Override
     protected void setup() {
@@ -52,5 +56,29 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
 
     public void setJobsCount(int jobsCount) {
         this.jobsCount = jobsCount;
+    }
+
+    public List<AID> getServerAgentList() {
+        return serverAgentList;
+    }
+
+    public int getMessagesSentCount() {
+        return messagesSentCount;
+    }
+
+    public void setMessagesSentCount(int messagesSentCount) {
+        this.messagesSentCount = messagesSentCount;
+    }
+
+    public AID getChosenServer() {
+        return chosenServer;
+    }
+
+    public void setChosenServer(AID chosenServer) {
+        this.chosenServer = chosenServer;
+    }
+
+    public void setServerAgentList(List<AID> serverAgentList) {
+        this.serverAgentList = serverAgentList;
     }
 }

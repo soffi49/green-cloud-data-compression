@@ -11,11 +11,11 @@ import java.util.Map;
 public abstract class AbstractServerAgent extends Agent {
 
     protected List<Job> currentJobs;
-    protected Map<AID, GreenSourceData> acceptingGreenSources;
     protected List<AID> greenSourceAgentsList;
+    //TODO figure out how to NOT store chosen GS (may be different depending on client)
+    protected AID chosenGreenSource;
     protected AID ownerCloudNetworkAgent;
     protected int messagesSentCount;
-    protected int responsesReceivedCount;
     protected double pricePerHour;
     protected int powerInUse;
     protected int availableCapacity;
@@ -39,23 +39,43 @@ public abstract class AbstractServerAgent extends Agent {
         return greenSourceAgentsList;
     }
 
-    public Map<AID, GreenSourceData> getAcceptingGreenSources() {
-        return acceptingGreenSources;
-    }
-
     public int getMessagesSentCount() {
         return messagesSentCount;
     }
 
-    public int getResponsesReceivedCount() {
-        return responsesReceivedCount;
-    }
-
-    public void setResponsesReceivedCount(int responsesReceivedCount) {
-        this.responsesReceivedCount = responsesReceivedCount;
-    }
-
     public AID getOwnerCloudNetworkAgent() {
         return ownerCloudNetworkAgent;
+    }
+
+    public void setGreenSourceAgentsList(List<AID> greenSourceAgentsList) {
+        this.greenSourceAgentsList = greenSourceAgentsList;
+    }
+
+    public void setMessagesSentCount(int messagesSentCount) {
+        this.messagesSentCount = messagesSentCount;
+    }
+
+    public double getPricePerHour() {
+        return pricePerHour;
+    }
+
+    public void setPricePerHour(double pricePerHour) {
+        this.pricePerHour = pricePerHour;
+    }
+
+    public void setPowerInUse(int powerInUse) {
+        this.powerInUse = powerInUse;
+    }
+
+    public void setAvailableCapacity(int availableCapacity) {
+        this.availableCapacity = availableCapacity;
+    }
+
+    public AID getChosenGreenSource() {
+        return chosenGreenSource;
+    }
+
+    public void setChosenGreenSource(AID chosenGreenSource) {
+        this.chosenGreenSource = chosenGreenSource;
     }
 }

@@ -2,18 +2,17 @@ package agents.server;
 
 import static common.CommonUtils.getAgentsFromDF;
 
-import agents.server.behaviour.ServerAgentReadMessages;
+import agents.server.behaviour.HandleCNAJobCallForProposal;
+import agents.server.behaviour.HandleGreenSourceCallForProposalResponse;
 import common.GroupConstants;
-import domain.GreenSourceData;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
-import java.util.Comparator;
+
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,18 +39,13 @@ public class ServerAgent extends AbstractServerAgent {
                 doDelete();
             }
 
-            addBehaviour(new ServerAgentReadMessages(this));
+            addBehaviour(HandleGreenSourceCallForProposalResponse.createFor(this));
+            addBehaviour(HandleCNAJobCallForProposal.createFor(this));
         } else {
             logger.info("I don't have the corresponding Cloud Network Agent");
             doDelete();
         }
 
-    }
-
-    private AID chooseGreenSourceForTheJob() {
-        final Comparator<Entry<AID, GreenSourceData>> compareGreenSources =
-            Comparator.comparingInt(cna -> cna.getValue().getAvailablePowerInTime());
-        return acceptingGreenSources.entrySet().stream().min(compareGreenSources).orElseThrow().getKey();
     }
 
     private void registerSAInDF() {

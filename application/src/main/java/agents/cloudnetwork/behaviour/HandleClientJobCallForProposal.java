@@ -1,6 +1,5 @@
 package agents.cloudnetwork.behaviour;
 
-import agents.client.behaviour.HandleCallForProposalResponse;
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.ImmutableCloudNetworkData;
 import jade.core.behaviours.CyclicBehaviour;
@@ -16,17 +15,20 @@ import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static mapper.JsonMapper.getMapper;
 
-public class HandleJobCallForProposal extends CyclicBehaviour {
+/**
+ * Cyclic behaviour for Cloud Network Agent. It purpose is to handle the call for proposal from Client
+ */
+public class HandleClientJobCallForProposal extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(HandleJobCallForProposal.class);
+    private static final Logger logger = LoggerFactory.getLogger(HandleClientJobCallForProposal.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(CFP);
 
-    private HandleJobCallForProposal(final CloudNetworkAgent cloudNetworkAgent) {
+    private HandleClientJobCallForProposal(final CloudNetworkAgent cloudNetworkAgent) {
         super(cloudNetworkAgent);
     }
 
-    public static HandleJobCallForProposal createFor(final CloudNetworkAgent cloudNetworkAgent) {
-        return new HandleJobCallForProposal(cloudNetworkAgent);
+    public static HandleClientJobCallForProposal createFor(final CloudNetworkAgent cloudNetworkAgent) {
+        return new HandleClientJobCallForProposal(cloudNetworkAgent);
     }
 
     @Override

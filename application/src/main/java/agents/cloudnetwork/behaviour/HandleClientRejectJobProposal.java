@@ -11,17 +11,20 @@ import java.util.Objects;
 
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
-public class HandleRejectJobProposal extends CyclicBehaviour {
+/**
+ * Cyclic behaviour for Cloud Network Agent. It purpose is to handle the reject proposal response from Client
+ */
+public class HandleClientRejectJobProposal extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(HandleRejectJobProposal.class);
+    private static final Logger logger = LoggerFactory.getLogger(HandleClientRejectJobProposal.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(REJECT_PROPOSAL);
 
-    private HandleRejectJobProposal(final CloudNetworkAgent cloudNetworkAgent) {
+    private HandleClientRejectJobProposal(final CloudNetworkAgent cloudNetworkAgent) {
         super(cloudNetworkAgent);
     }
 
-    public static HandleRejectJobProposal createFor(final CloudNetworkAgent cloudNetworkAgent) {
-        return new HandleRejectJobProposal(cloudNetworkAgent);
+    public static HandleClientRejectJobProposal createFor(final CloudNetworkAgent cloudNetworkAgent) {
+        return new HandleClientRejectJobProposal(cloudNetworkAgent);
     }
 
     @Override

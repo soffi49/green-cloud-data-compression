@@ -2,9 +2,10 @@ package agents.cloudnetwork;
 
 import static common.CommonUtils.getAgentsFromDF;
 
-import agents.cloudnetwork.behaviour.HandleAcceptJobProposal;
-import agents.cloudnetwork.behaviour.HandleJobCallForProposal;
-import agents.cloudnetwork.behaviour.HandleRejectJobProposal;
+import agents.cloudnetwork.behaviour.HandleClientAcceptJobProposal;
+import agents.cloudnetwork.behaviour.HandleClientJobCallForProposal;
+import agents.cloudnetwork.behaviour.HandleClientRejectJobProposal;
+import agents.cloudnetwork.behaviour.HandleServerCallForProposalResponse;
 import common.GroupConstants;
 import jade.core.AID;
 import jade.core.Agent;
@@ -16,21 +17,20 @@ import java.util.List;
 
 public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
-    private List<AID> serviceAgentList;
-
     @Override
     protected void setup() {
         super.setup();
         registerCNAInDF();
         initializeAgent();
 
-        addBehaviour(HandleJobCallForProposal.createFor(this));
-        addBehaviour(HandleAcceptJobProposal.createFor(this));
-        addBehaviour(HandleRejectJobProposal.createFor(this));
+        addBehaviour(HandleClientJobCallForProposal.createFor(this));
+        addBehaviour(HandleClientAcceptJobProposal.createFor(this));
+        addBehaviour(HandleClientRejectJobProposal.createFor(this));
+        addBehaviour(HandleServerCallForProposalResponse.createFor(this));
     }
 
     private void initializeAgent() {
-        this.serviceAgentList = findServerAgents(this);
+        this.serverAgentList = findServerAgents(this);
     }
 
     private void registerCNAInDF() {
@@ -61,9 +61,5 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
         template.addServices(serviceDescription);
 
         return getAgentsFromDF(agent, template);
-    }
-
-    public List<AID> getServiceAgentList() {
-        return serviceAgentList;
     }
 }
