@@ -2,7 +2,9 @@ package agents.cloudnetwork;
 
 import static common.CommonUtils.getAgentsFromDF;
 
-import agents.cloudnetwork.behaviour.CloudNetworkAgentReadMessages;
+import agents.cloudnetwork.behaviour.HandleAcceptJobProposal;
+import agents.cloudnetwork.behaviour.HandleJobCallForProposal;
+import agents.cloudnetwork.behaviour.HandleRejectJobProposal;
 import common.GroupConstants;
 import jade.core.AID;
 import jade.core.Agent;
@@ -20,24 +22,15 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
     protected void setup() {
         super.setup();
         registerCNAInDF();
-        serviceAgentList = getSAAgentList(this);
+        initializeAgent();
 
-        addBehaviour(CloudNetworkAgentReadMessages.createFor(this));
+        addBehaviour(HandleJobCallForProposal.createFor(this));
+        addBehaviour(HandleAcceptJobProposal.createFor(this));
+        addBehaviour(HandleRejectJobProposal.createFor(this));
     }
 
-    public List<AID> getServiceAgentList() {
-        return serviceAgentList;
-    }
-
-    private List<AID> getSAAgentList(final Agent agent) {
-
-        final DFAgentDescription template = new DFAgentDescription();
-        final ServiceDescription serviceDescription = new ServiceDescription();
-        serviceDescription.setType(GroupConstants.SA_SERVICE_TYPE);
-        serviceDescription.setOwnership(agent.getAID().getLocalName());
-        template.addServices(serviceDescription);
-
-        return getAgentsFromDF(agent, template);
+    private void initializeAgent() {
+        this.serviceAgentList = findServerAgents(this);
     }
 
     private void registerCNAInDF() {
@@ -57,5 +50,20 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
+    }
+
+    private List<AID> findServerAgents(final Agent agent) {
+
+        final DFAgentDescription template = new DFAgentDescription();
+        final ServiceDescription serviceDescription = new ServiceDescription();
+        serviceDescription.setType(GroupConstants.SA_SERVICE_TYPE);
+        serviceDescription.setOwnership(agent.getAID().getLocalName());
+        template.addServices(serviceDescription);
+
+        return getAgentsFromDF(agent, template);
+    }
+
+    public List<AID> getServiceAgentList() {
+        return serviceAgentList;
     }
 }
