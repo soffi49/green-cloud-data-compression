@@ -14,16 +14,24 @@ public class ScenarioArgs implements Serializable {
     private List<ImmutableCloudNetworkArgs> cloudNetworkAgentsArgs;
     @JacksonXmlElementWrapper(localName = "serverAgentsArgs")
     private List<ImmutableServerAgentArgs> serverAgentsArgs;
+    @JacksonXmlElementWrapper(localName = "monitoringAgentsArgs")
+    private List<ImmutableMonitoringAgentArgs> monitoringAgentsArgs;
+    @JacksonXmlElementWrapper(localName = "greenEnergyAgentsArgs")
+    private List<ImmutableGreenEnergyAgentArgs> greenEnergyAgentsArgs;
 
     public ScenarioArgs() {
     }
 
     public ScenarioArgs(List<ImmutableClientAgentArgs> clientAgentsArgs,
         List<ImmutableCloudNetworkArgs> cloudNetworkAgentsArgs,
-        List<ImmutableServerAgentArgs> serverAgentsArgs) {
+        List<ImmutableServerAgentArgs> serverAgentsArgs,
+        List<ImmutableMonitoringAgentArgs> monitoringAgentsArgs,
+        List<ImmutableGreenEnergyAgentArgs> greenEnergyAgentsArgs) {
         this.clientAgentsArgs = clientAgentsArgs;
         this.cloudNetworkAgentsArgs = cloudNetworkAgentsArgs;
         this.serverAgentsArgs = serverAgentsArgs;
+        this.monitoringAgentsArgs = monitoringAgentsArgs;
+        this.greenEnergyAgentsArgs = greenEnergyAgentsArgs;
     }
 
     public List<ImmutableClientAgentArgs> getClientAgentsArgs() {
@@ -50,11 +58,27 @@ public class ScenarioArgs implements Serializable {
         this.serverAgentsArgs = serverAgentsArgs;
     }
 
+    public List<ImmutableMonitoringAgentArgs> getMonitoringAgentsArgs(){return monitoringAgentsArgs; }
+
+    public void setMonitoringAgentsArgs(List<ImmutableMonitoringAgentArgs> args){
+        this.monitoringAgentsArgs = args;
+    }
+    public List<ImmutableGreenEnergyAgentArgs> getGreenEnergyAgentsArgs(){return greenEnergyAgentsArgs; }
+
+    public void setGreenEnergyAgentsArgs(List<ImmutableGreenEnergyAgentArgs> args){
+        this.greenEnergyAgentsArgs = args;
+    }
+
     public List<AgentArgs> getAgentsArgs() {
         var clientArgs = clientAgentsArgs.stream().map(AgentArgs.class::cast);
         var serverArgs = serverAgentsArgs.stream().map(AgentArgs.class::cast);
         var cloudNetworkArgs = cloudNetworkAgentsArgs.stream().map(AgentArgs.class::cast);
+        var monitoringArgs = monitoringAgentsArgs.stream().map(AgentArgs.class::cast);
+        var greenEnergyArgs = greenEnergyAgentsArgs.stream().map(AgentArgs.class::cast);
 
-        return concat(clientArgs, concat(serverArgs, cloudNetworkArgs)).toList();
+        return concat(clientArgs,
+                concat(serverArgs,
+                concat(cloudNetworkArgs,
+                concat(monitoringArgs, greenEnergyArgs)))).toList();
     }
 }

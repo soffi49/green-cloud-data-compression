@@ -1,6 +1,8 @@
 package agents.greenenergy.behaviour;
 
 import agents.greenenergy.GreenEnergyAgent;
+import domain.GreenSourceData;
+import domain.ImmutableGreenSourceData;
 import domain.ImmutableMonitoringData;
 import domain.MonitoringData;
 import jade.core.AID;
@@ -57,8 +59,17 @@ public class HandleMonitoringRequestResponse extends CyclicBehaviour {
     private void handleInform(ACLMessage message){
         try{
             MonitoringData data = getMapper().readValue(message.getContent(), MonitoringData.class);
-            if(computePower(data)){
-
+            int power = computePower(data);
+            if(power > 0){
+                GreenEnergyAgent agent = (GreenEnergyAgent) myAgent;
+                GreenSourceData responseData = ImmutableGreenSourceData.builder()
+                        .pricePerPowerUnit(agent.getPricePerPowerUnit())
+                        .availablePowerInTime(power)
+                        .build();
+                ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
+                response.addReceiver(new AID(message.getConversationId(), AID.ISGUID));
+                response.setContent(getMapper().writeValueAsString(responseData));
+                myAgent.send(response);
             }
             else{
                 ACLMessage response = new ACLMessage(ACLMessage.REFUSE);
@@ -72,8 +83,8 @@ public class HandleMonitoringRequestResponse extends CyclicBehaviour {
         }
 
     }
-    private boolean computePower(MonitoringData data){
+    private int computePower(MonitoringData data){
         //TODO: implement power computation logic
-        return true;
+        return 10;
     }
 }

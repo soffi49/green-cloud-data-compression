@@ -12,6 +12,12 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
 
     protected AID monitoringAgent;
 
+    protected double pricePerPowerUnit;
+
+    public double getPricePerPowerUnit(){ return pricePerPowerUnit; }
+
+    public void setPricePerPowerUnit(double pricePerPowerUnit) { this.pricePerPowerUnit = pricePerPowerUnit; }
+
     public int getAvailableCapacity() {
         return availableCapacity;
     }

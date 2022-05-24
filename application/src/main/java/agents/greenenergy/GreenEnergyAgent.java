@@ -12,6 +12,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
     protected void setup() {
         super.setup();
         final Object[] args = getArguments();
+        this.setPricePerPowerUnit(Math.random() * 100);
         if(Objects.nonNull(args) && args.length == 1){
             monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
         }

@@ -3,10 +3,7 @@ package runner.factory;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import runner.domain.AgentArgs;
-import runner.domain.ClientAgentArgs;
-import runner.domain.CloudNetworkArgs;
-import runner.domain.ServerAgentArgs;
+import runner.domain.*;
 
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
@@ -30,7 +27,16 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
             return containerController.createNewAgent(cloudNetworkAgent.getName(),
                 "agents.cloudnetwork.CloudNetworkAgent", new Object[]{});
         }
-
+        else if(agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent){
+            return containerController.createNewAgent(greenEnergyAgent.getName(),
+                    "agents.greenenergy.GreenEnergyAgent",
+                    new Object[]{greenEnergyAgent.getMonitoringAgent()});
+        }
+        else if(agentArgs instanceof MonitoringAgentArgs monitoringAgent){
+            return containerController.createNewAgent(monitoringAgent.getName(),
+                    "agents.monitoring.MonitoringAgent",
+                    new Object[]{});
+        }
         return null;
     }
 }

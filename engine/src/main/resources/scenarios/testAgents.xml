@@ -20,4 +20,15 @@
             <power>5</power>
         </clientAgent>
     </clientAgentsArgs>
+    <monitoringAgentsArgs>
+        <monitoringAgent>
+            <name>Weather</name>
+        </monitoringAgent>
+    </monitoringAgentsArgs>
+    <greenEnergyAgentsArgs>
+        <greenenergyAgent>
+            <name>Green</name>
+            <monitoringAgent>Weather</monitoringAgent>
+        </greenenergyAgent>
+    </greenEnergyAgentsArgs>
 </ScenarioArgs>
