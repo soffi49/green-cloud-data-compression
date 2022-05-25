@@ -1,13 +1,12 @@
 package agents.server.message;
 
-import agents.cloudnetwork.CloudNetworkAgent;
+import static mapper.JsonMapper.getMapper;
+
 import agents.server.ServerAgent;
 import domain.ImmutableServerData;
+import domain.job.Job;
 import jade.lang.acl.ACLMessage;
-
 import java.io.IOException;
-
-import static mapper.JsonMapper.getMapper;
 
 public class ProposalResponseMessage {
 
@@ -17,14 +16,16 @@ public class ProposalResponseMessage {
         this.message = message;
     }
 
-    public static ProposalResponseMessage create(final ServerAgent serverAgent) {
+    public static ProposalResponseMessage create(final ServerAgent serverAgent, final double servicePrice, Job job) {
         final ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
         try {
             final ImmutableServerData data = ImmutableServerData.builder()
-                    .powerInUse((serverAgent).getPowerInUse())
-                    .pricePerHour((serverAgent).getPricePerHour())
-                    .availableCapacity((serverAgent).getAvailableCapacity())
-                    .build();
+                .servicePrice(servicePrice)
+                .powerInUse((serverAgent).getPowerInUse())
+                .pricePerHour((serverAgent).getPricePerHour())
+                .availableCapacity((serverAgent).getAvailableCapacity())
+                .job(job)
+                .build();
             response.setContent(getMapper().writeValueAsString(data));
         } catch (final IOException e) {
             e.printStackTrace();

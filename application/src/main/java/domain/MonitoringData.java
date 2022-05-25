@@ -9,6 +9,8 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface MonitoringData {
 
+    String getJobId();
+
     int getTemperature();
 
     int getWindSpeed();

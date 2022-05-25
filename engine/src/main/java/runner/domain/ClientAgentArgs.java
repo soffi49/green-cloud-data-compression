@@ -10,6 +10,8 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface ClientAgentArgs extends AgentArgs {
 
+    String getJobId();
+
     String getStartDate();
 
     String getEndDate();

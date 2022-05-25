@@ -18,6 +18,7 @@ public class EngineRunner {
 
         profile.setParameter(Profile.CONTAINER_NAME, "Main-Container");
         profile.setParameter(Profile.MAIN_HOST, "localhost");
+        profile.setParameter(Profile.MAIN_PORT,"6996");
 
         final ContainerController container = runtime.createMainContainer(profile);
         final ScenarioService scenarioService = new ScenarioService(container);

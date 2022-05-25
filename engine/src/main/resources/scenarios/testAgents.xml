@@ -8,6 +8,8 @@
         <greenenergyAgent>
             <name>Green</name>
             <monitoringAgent>Weather</monitoringAgent>
+            <latitude>10.0</latitude>
+            <longitude>11.1</longitude>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>
@@ -26,6 +28,7 @@
     <clientAgentsArgs>
         <clientAgent>
             <name>Client</name>
+            <jobId>1</jobId>
             <startDate>10/12/2021 10:30</startDate>
             <endDate>10/12/2021 10:40</endDate>
             <power>5</power>

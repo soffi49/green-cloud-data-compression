@@ -5,13 +5,13 @@ import jade.core.AID;
 import jade.core.Agent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractCloudNetworkAgent extends Agent{
 
-    protected List<AID> serverAgentList;
     protected List<Job> currentJobs;
     protected List<Job> futureJobs;
-    protected AID chosenServer;
+    protected Map<Job, AID> serverForJobMap;
     protected int inUsePower;
     protected int jobsCount;
     protected int messagesSentCount;
@@ -24,6 +24,14 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
         currentJobs = new ArrayList<>();
         futureJobs = new ArrayList<>();
         jobsCount = 0;
+    }
+
+    public Map<Job, AID> getServerForJobMap() {
+        return serverForJobMap;
+    }
+
+    public void setServerForJobMap(Map<Job, AID> serverForJobMap) {
+        this.serverForJobMap = serverForJobMap;
     }
 
     public List<Job> getCurrentJobs() {
@@ -58,27 +66,11 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
         this.jobsCount = jobsCount;
     }
 
-    public List<AID> getServerAgentList() {
-        return serverAgentList;
-    }
-
     public int getMessagesSentCount() {
         return messagesSentCount;
     }
 
     public void setMessagesSentCount(int messagesSentCount) {
         this.messagesSentCount = messagesSentCount;
-    }
-
-    public AID getChosenServer() {
-        return chosenServer;
-    }
-
-    public void setChosenServer(AID chosenServer) {
-        this.chosenServer = chosenServer;
-    }
-
-    public void setServerAgentList(List<AID> serverAgentList) {
-        this.serverAgentList = serverAgentList;
     }
 }

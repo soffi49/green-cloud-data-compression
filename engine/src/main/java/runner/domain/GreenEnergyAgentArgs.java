@@ -10,4 +10,8 @@ import org.immutables.value.Value;
 public interface GreenEnergyAgentArgs extends AgentArgs{
 
     String getMonitoringAgent();
+
+    String getLatitude();
+
+    String getLongitude();
 }

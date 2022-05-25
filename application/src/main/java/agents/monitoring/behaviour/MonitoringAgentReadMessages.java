@@ -1,7 +1,9 @@
 package agents.monitoring.behaviour;
 
 import agents.monitoring.MonitoringAgent;
+import agents.server.ServerAgent;
 import domain.ImmutableMonitoringData;
+import domain.ServerRequestData;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
@@ -35,7 +37,8 @@ public class MonitoringAgentReadMessages  extends CyclicBehaviour {
                 case REQUEST:
                     final ACLMessage response = new ACLMessage(ACLMessage.INFORM);
                     try{
-                        var data = monitoringAgent.getWeather();
+                        var requestData = getMapper().readValue(message.getContent(), ServerRequestData.class);
+                        var data = monitoringAgent.getWeather(requestData);
                         response.setContent(getMapper().writeValueAsString(data));
                     } catch (IOException e){
                         e.printStackTrace();

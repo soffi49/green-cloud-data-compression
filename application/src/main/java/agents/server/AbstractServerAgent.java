@@ -1,19 +1,16 @@
 package agents.server;
 
-import domain.GreenSourceData;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractServerAgent extends Agent {
 
-    protected List<Job> currentJobs;
-    protected List<AID> greenSourceAgentsList;
-    //TODO figure out how to NOT store chosen GS (may be different depending on client)
-    protected AID chosenGreenSource;
+    protected Set<Job> currentJobs;
+    protected Map<Job, AID> greenSourceForJobMap;
     protected AID ownerCloudNetworkAgent;
     protected int messagesSentCount;
     protected double pricePerHour;
@@ -23,8 +20,16 @@ public abstract class AbstractServerAgent extends Agent {
     AbstractServerAgent() {
         super.setup();
 
-        currentJobs = new ArrayList<>();
+        currentJobs = new HashSet<>();
         powerInUse = 0;
+    }
+
+    public Map<Job, AID> getGreenSourceForJobMap() {
+        return greenSourceForJobMap;
+    }
+
+    public void setGreenSourceForJobMap(Map<Job, AID> greenSourceForJobMap) {
+        this.greenSourceForJobMap = greenSourceForJobMap;
     }
 
     public int getAvailableCapacity() {
@@ -35,9 +40,6 @@ public abstract class AbstractServerAgent extends Agent {
         return powerInUse;
     }
 
-    public List<AID> getGreenSourceAgentsList() {
-        return greenSourceAgentsList;
-    }
 
     public int getMessagesSentCount() {
         return messagesSentCount;
@@ -45,10 +47,6 @@ public abstract class AbstractServerAgent extends Agent {
 
     public AID getOwnerCloudNetworkAgent() {
         return ownerCloudNetworkAgent;
-    }
-
-    public void setGreenSourceAgentsList(List<AID> greenSourceAgentsList) {
-        this.greenSourceAgentsList = greenSourceAgentsList;
     }
 
     public void setMessagesSentCount(int messagesSentCount) {
@@ -71,11 +69,4 @@ public abstract class AbstractServerAgent extends Agent {
         this.availableCapacity = availableCapacity;
     }
 
-    public AID getChosenGreenSource() {
-        return chosenGreenSource;
-    }
-
-    public void setChosenGreenSource(AID chosenGreenSource) {
-        this.chosenGreenSource = chosenGreenSource;
-    }
 }

@@ -5,6 +5,7 @@ import agents.client.message.SendJobMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.CloudNetworkData;
 import domain.job.Job;
+import domain.job.PricedJob;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -26,7 +27,7 @@ public class HandleCNACallForProposalResponse extends CyclicBehaviour {
     private static final Logger logger = LoggerFactory.getLogger(HandleCNACallForProposalResponse.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.or(MessageTemplate.MatchPerformative(ACLMessage.PROPOSE),
                                                                               MessageTemplate.MatchPerformative(ACLMessage.REFUSE));
-    private final Map<AID, CloudNetworkData> cloudNetworkAgentsAccepting;
+    private final Map<AID, PricedJob> cloudNetworkAgentsAccepting;
     private int responsesReceivedCount;
     private final Job job;
 
@@ -53,7 +54,7 @@ public class HandleCNACallForProposalResponse extends CyclicBehaviour {
                 case PROPOSE:
                     logger.info("[{}] {} sent the proposal", myAgent, message.getSender().getLocalName());
                     try {
-                        cloudNetworkAgentsAccepting.put(message.getSender(), getMapper().readValue(message.getContent(), CloudNetworkData.class));
+                        cloudNetworkAgentsAccepting.put(message.getSender(), getMapper().readValue(message.getContent(), PricedJob.class));
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
@@ -79,8 +80,8 @@ public class HandleCNACallForProposalResponse extends CyclicBehaviour {
     }
 
     private AID chooseCNAToExecuteJob() {
-        final Comparator<Map.Entry<AID, CloudNetworkData>> compareCNA =
-                Comparator.comparingInt(cna -> cna.getValue().getJobsCount());
+        final Comparator<Map.Entry<AID, PricedJob>> compareCNA =
+                Comparator.comparingDouble(cna -> cna.getValue().getPriceForJob());
         return cloudNetworkAgentsAccepting.entrySet().stream().min(compareCNA).orElseThrow().getKey();
     }
 

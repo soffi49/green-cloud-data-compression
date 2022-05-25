@@ -18,4 +18,5 @@ public interface Job {
 
     int getPower();
 
+    String getJobId();
 }

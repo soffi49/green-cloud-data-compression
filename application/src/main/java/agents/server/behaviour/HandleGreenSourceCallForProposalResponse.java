@@ -1,40 +1,47 @@
 package agents.server.behaviour;
 
+import static jade.lang.acl.ACLMessage.PROPOSE;
+import static jade.lang.acl.ACLMessage.REFUSE;
+import static java.time.temporal.ChronoUnit.HOURS;
+import static mapper.JsonMapper.getMapper;
+
 import agents.server.ServerAgent;
 import agents.server.message.ProposalResponseMessage;
 import agents.server.message.RefuseProposalMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.GreenSourceData;
-import domain.ImmutableGreenSourceData;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static jade.lang.acl.ACLMessage.PROPOSE;
-import static jade.lang.acl.ACLMessage.REFUSE;
-import static mapper.JsonMapper.getMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(HandleGreenSourceCallForProposalResponse.class);
-    private static final MessageTemplate messageTemplate = MessageTemplate.or(MessageTemplate.MatchPerformative(PROPOSE),
-                                                                              MessageTemplate.MatchPerformative(REFUSE));
+    private static final MessageTemplate messageTemplate = MessageTemplate.or(
+        MessageTemplate.MatchPerformative(PROPOSE),
+        MessageTemplate.MatchPerformative(REFUSE));
 
     private Map<AID, GreenSourceData> greenSourceAgentsAccepting;
     private int responsesReceivedCount;
+    private ServerAgent serverAgent;
 
     private HandleGreenSourceCallForProposalResponse(final ServerAgent serverAgent) {
         super(serverAgent);
         this.responsesReceivedCount = 0;
         this.greenSourceAgentsAccepting = new HashMap<>();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        serverAgent = (ServerAgent) myAgent;
     }
 
     public static HandleGreenSourceCallForProposalResponse createFor(final ServerAgent serverAgent) {
@@ -51,27 +58,37 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
                 responsesReceivedCount++;
             }
 
+            GreenSourceData data = null;
+
+            try {
+                data = getMapper().readValue(message.getContent(), GreenSourceData.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
+            if (data == null) {
+                throw new RuntimeException("what are you doing?!");
+            }
+
             switch (message.getPerformative()) {
                 case PROPOSE:
-                    logger.info("[{}] {} sent the proposal", myAgent, message.getSender().getLocalName());
-                    try{
-                        final GreenSourceData data = getMapper().readValue(message.getContent(), GreenSourceData.class);
-                        greenSourceAgentsAccepting.put(message.getSender(), data);
-                    }
-                    catch(Exception e){
-                        e.printStackTrace();
-                    }
-                    if (responsesReceivedCount == ((ServerAgent) myAgent).getMessagesSentCount()) {
-                        final AID chosenGS = chooseGreenSourceToExecuteJob();
-                        ((ServerAgent) myAgent).setChosenGreenSource(chosenGS);
-                        logger.info("[{}] Sending proposal to {}", myAgent, ((ServerAgent) myAgent).getOwnerCloudNetworkAgent().getLocalName());
-                        myAgent.send(ProposalResponseMessage.create((ServerAgent) myAgent).getMessage());
+                    logger.info("received proposal from {} [{}]", myAgent, message.getSender().getLocalName());
+                    greenSourceAgentsAccepting.put(message.getSender(), data);
+                    if (responsesReceivedCount == serverAgent.getMessagesSentCount()) {
+                        final var chosenGS = chooseGreenSourceToExecuteJob();
+                        serverAgent.getGreenSourceForJobMap().put(chosenGS.getValue().getJob(), chosenGS.getKey());
+                        logger.info("[{}] Sending proposal to {}", myAgent,
+                            serverAgent.getOwnerCloudNetworkAgent().getLocalName());
+                        final double servicePrice = calculateServicePrice(chosenGS.getValue());
+                        myAgent.send(ProposalResponseMessage.create(serverAgent,
+                            servicePrice, data.getJob()).getMessage());
                     }
                     break;
                 case REFUSE:
                     if (greenSourceAgentsAccepting.isEmpty()) {
                         logger.info("[{}] No green sources available - sending refuse message ", myAgent);
-                        myAgent.send(RefuseProposalMessage.create((ServerAgent) myAgent).getMessage());
+                        myAgent.send(RefuseProposalMessage.create(serverAgent, data.getJob().getClientIdentifier())
+                            .getMessage());
                     }
             }
         } else {
@@ -79,9 +96,17 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
         }
     }
 
-    private AID chooseGreenSourceToExecuteJob() {
+    private double calculateServicePrice(final GreenSourceData greenSourceData) {
+        var powerCost = greenSourceData.getJob().getPower() * greenSourceData.getPricePerPowerUnit();
+        var computingCost =
+            HOURS.between(greenSourceData.getJob().getEndTime(), greenSourceData.getJob().getStartTime())
+                * serverAgent.getPricePerHour();
+        return powerCost + computingCost;
+    }
+
+    private Map.Entry<AID, GreenSourceData> chooseGreenSourceToExecuteJob() {
         final Comparator<Map.Entry<AID, GreenSourceData>> compareGreenSources =
-                Comparator.comparingInt(cna -> cna.getValue().getAvailablePowerInTime());
-        return greenSourceAgentsAccepting.entrySet().stream().min(compareGreenSources).orElseThrow().getKey();
+            Comparator.comparingInt(cna -> cna.getValue().getAvailablePowerInTime());
+        return greenSourceAgentsAccepting.entrySet().stream().min(compareGreenSources).orElseThrow();
     }
 }

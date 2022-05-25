@@ -19,7 +19,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
         if (agentArgs instanceof ClientAgentArgs clientAgent) {
             return containerController.createNewAgent(clientAgent.getName(), "agents.client.ClientAgent",
-                new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower()});
+                new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower(), clientAgent.getJobId()});
         } else if (agentArgs instanceof ServerAgentArgs serverAgent) {
             return containerController.createNewAgent(serverAgent.getName(), "agents.server.ServerAgent",
                 new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(), serverAgent.getPower()});
@@ -30,7 +30,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
         else if(agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent){
             return containerController.createNewAgent(greenEnergyAgent.getName(),
                     "agents.greenenergy.GreenEnergyAgent",
-                    new Object[]{greenEnergyAgent.getMonitoringAgent()});
+                    new Object[]{greenEnergyAgent.getMonitoringAgent(), greenEnergyAgent.getLatitude(), greenEnergyAgent.getLongitude()});
         }
         else if(agentArgs instanceof MonitoringAgentArgs monitoringAgent){
             return containerController.createNewAgent(monitoringAgent.getName(),

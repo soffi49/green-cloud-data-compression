@@ -1,18 +1,22 @@
 package agents.greenenergy;
 
-import domain.LocationData;
+import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
+import domain.location.Location;
+import java.util.Set;
 
 public abstract class AbstractGreenEnergyAgent extends Agent {
 
     protected int availableCapacity;
 
-    protected LocationData location;
+    protected Location location;
 
     protected AID monitoringAgent;
 
     protected double pricePerPowerUnit;
+
+    protected Set<Job> currentJobs;
 
     public double getPricePerPowerUnit(){ return pricePerPowerUnit; }
 
@@ -26,11 +30,15 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
         this.availableCapacity = availableCapacity;
     }
 
-    public LocationData getLocation(){ return location; }
+    public Location getLocation(){ return location; }
 
-    public void setLocation(LocationData location){ this.location = location; }
+    public void setLocation(Location location){ this.location = location; }
 
     public AID getMonitoringAgent(){ return monitoringAgent; }
 
     public void setMonitoringAgent(AID monitoringAgent){ this.monitoringAgent = monitoringAgent; }
+
+    public Set<Job> getCurrentJobs() {
+        return currentJobs;
+    }
 }
