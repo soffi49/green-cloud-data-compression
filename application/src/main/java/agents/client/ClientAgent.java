@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class ClientAgent extends AbstractClientAgent {
 
@@ -31,6 +32,12 @@ public class ClientAgent extends AbstractClientAgent {
         } else {
             logger.info("Incorrect arguments: the given task to specified according to the documentation");
             doDelete();
+        }
+        try{
+            TimeUnit.SECONDS.sleep(1L);
+        }
+        catch(InterruptedException e){
+            e.printStackTrace();
         }
     }
 

@@ -24,6 +24,7 @@ import java.util.Objects;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REFUSE;
+import static mapper.JsonMapper.getMapper;
 
 public class HandleServerCallForProposalResponse extends CyclicBehaviour {
 
@@ -51,19 +52,20 @@ public class HandleServerCallForProposalResponse extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
 
-            if (responsesReceivedCount < ((ServerAgent) myAgent).getMessagesSentCount()) {
+            if (responsesReceivedCount < ((CloudNetworkAgent) myAgent).getMessagesSentCount()) {
                 responsesReceivedCount++;
             }
 
             switch (message.getPerformative()) {
                 case PROPOSE:
-                    try {
-                        logger.info("[{}] {} sent the proposal", myAgent, message.getSender().getLocalName());
-                        serverAgentsAccepting.put(message.getSender(), (ServerData) message.getContentObject());
-                    } catch (UnreadableException e) {
+                    logger.info("[{}] {} sent the proposal", myAgent, message.getSender().getLocalName());
+                    try{
+                        var data = getMapper().readValue(message.getContent(), ServerData.class);
+                        serverAgentsAccepting.put(message.getSender(), data);
+                    }
+                    catch (Exception e){
                         e.printStackTrace();
                     }
-
                     if (responsesReceivedCount == ((CloudNetworkAgent) myAgent).getMessagesSentCount()) {
                         final AID chosenServer = chooseServerToExecuteJob();
                         ((CloudNetworkAgent) myAgent).setChosenServer(chosenServer);

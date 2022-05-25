@@ -66,6 +66,7 @@ public class HandleServerCallForProposal extends CyclicBehaviour {
         catch(JsonProcessingException e){
             e.printStackTrace();
         }
+        logger.info("Sending request to monitoring agent");
         myAgent.send(request);
     }
 }

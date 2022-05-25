@@ -73,7 +73,7 @@ public class ServerAgent extends AbstractServerAgent {
         final DFAgentDescription template = new DFAgentDescription();
         final ServiceDescription serviceDescription = new ServiceDescription();
         serviceDescription.setType(GroupConstants.GS_SERVICE_TYPE);
-        serviceDescription.setOwnership(agent.getAID().getLocalName());
+        //serviceDescription.setOwnership(agent.getAID().getLocalName());
         template.addServices(serviceDescription);
 
         return getAgentsFromDF(agent, template);

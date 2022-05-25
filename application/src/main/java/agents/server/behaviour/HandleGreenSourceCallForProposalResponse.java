@@ -4,6 +4,7 @@ import agents.server.ServerAgent;
 import agents.server.message.ProposalResponseMessage;
 import agents.server.message.RefuseProposalMessage;
 import domain.GreenSourceData;
+import domain.ImmutableGreenSourceData;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -19,6 +20,7 @@ import java.util.Objects;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REFUSE;
+import static mapper.JsonMapper.getMapper;
 
 public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
 
@@ -51,13 +53,14 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
 
             switch (message.getPerformative()) {
                 case PROPOSE:
-                    try {
-                        logger.info("[{}] {} sent the proposal", myAgent, message.getSender().getLocalName());
-                        greenSourceAgentsAccepting.put(message.getSender(), (GreenSourceData) message.getContentObject());
-                    } catch (UnreadableException e) {
+                    logger.info("[{}] {} sent the proposal", myAgent, message.getSender().getLocalName());
+                    try{
+                        final GreenSourceData data = getMapper().readValue(message.getContent(), GreenSourceData.class);
+                        greenSourceAgentsAccepting.put(message.getSender(), data);
+                    }
+                    catch(Exception e){
                         e.printStackTrace();
                     }
-
                     if (responsesReceivedCount == ((ServerAgent) myAgent).getMessagesSentCount()) {
                         final AID chosenGS = chooseGreenSourceToExecuteJob();
                         ((ServerAgent) myAgent).setChosenGreenSource(chosenGS);

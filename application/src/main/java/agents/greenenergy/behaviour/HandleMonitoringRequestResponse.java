@@ -67,14 +67,17 @@ public class HandleMonitoringRequestResponse extends CyclicBehaviour {
                         .availablePowerInTime(power)
                         .build();
                 ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
-                response.addReceiver(new AID(message.getConversationId(), AID.ISGUID));
+                var conversationID = message.getConversationId();
+                response.addReceiver(new AID(conversationID, AID.ISGUID));
                 response.setContent(getMapper().writeValueAsString(responseData));
+                logger.info("Sending propose message to server");
                 myAgent.send(response);
             }
             else{
                 ACLMessage response = new ACLMessage(ACLMessage.REFUSE);
                 response.addReceiver(new AID(message.getConversationId(), AID.ISGUID));
                 response.setContent("Refuse: too bad weather conditions");
+                logger.info("Sending refuse message to server");
                 myAgent.send(response);
             }
         }
