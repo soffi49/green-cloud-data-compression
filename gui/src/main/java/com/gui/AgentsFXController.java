@@ -1,15 +1,15 @@
 package com.gui;
 
+import jade.core.Agent;
+import java.util.Set;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 
 public class AgentsFXController {
 
-    @FXML
-    private Label welcomeText;
+    Set<Agent> agents;
 
     @FXML
-    protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
+    protected void initialize() {
+        agents = null;
     }
 }
