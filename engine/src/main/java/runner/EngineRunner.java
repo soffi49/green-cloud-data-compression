@@ -2,6 +2,7 @@ package runner;
 
 import static jade.core.Runtime.instance;
 
+import com.gui.AgentsGui;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -12,6 +13,9 @@ import runner.service.ScenarioService;
 
 public class EngineRunner {
     public static void main(String[] args) {
+        new Thread (() -> {
+            AgentsGui.main(null);
+        }).start();
 
         final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
@@ -30,6 +34,5 @@ public class EngineRunner {
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }
-
     }
 }
