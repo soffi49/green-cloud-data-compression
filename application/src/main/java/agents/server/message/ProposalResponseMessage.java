@@ -1,9 +1,12 @@
 package agents.server.message;
 
-import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import domain.ImmutableServerData;
+import domain.job.Job;
 import jade.lang.acl.ACLMessage;
+import java.io.IOException;
 
 public class ProposalResponseMessage {
 
@@ -13,15 +16,22 @@ public class ProposalResponseMessage {
         this.message = message;
     }
 
-    public static ProposalResponseMessage create(ServerAgent serverAgent, int messageType) {
-        ACLMessage message = new ACLMessage(messageType);
-        if (messageType == REJECT_PROPOSAL) {
-            message.setContent("Reject");
-        } else {
-            message.setContent("Accept");
+    public static ProposalResponseMessage create(final ServerAgent serverAgent, final double servicePrice, Job job) {
+        final ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
+        try {
+            final ImmutableServerData data = ImmutableServerData.builder()
+                .servicePrice(servicePrice)
+                .powerInUse((serverAgent).getPowerInUse())
+                .pricePerHour((serverAgent).getPricePerHour())
+                .availableCapacity((serverAgent).getAvailableCapacity())
+                .job(job)
+                .build();
+            response.setContent(getMapper().writeValueAsString(data));
+        } catch (final IOException e) {
+            e.printStackTrace();
         }
-        message.addReceiver(serverAgent.getOwnerCloudNetworkAgent());
-        return new ProposalResponseMessage(message);
+        response.addReceiver(serverAgent.getOwnerCloudNetworkAgent());
+        return new ProposalResponseMessage(response);
     }
 
     public ACLMessage getMessage() {

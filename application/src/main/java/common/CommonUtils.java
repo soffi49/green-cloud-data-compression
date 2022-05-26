@@ -1,6 +1,7 @@
 package common;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 
 import domain.job.Job;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommonUtils {
 
@@ -27,18 +29,5 @@ public class CommonUtils {
             agent.doDelete();
         }
         return agentsDF;
-    }
-
-    public static void sendJobProposalToAgents(final Agent currentAgent, final List<AID> agents, final Job job) {
-        agents.forEach(agent -> {
-            try {
-                final ACLMessage proposal = new ACLMessage(PROPOSE);
-                proposal.setContent(getMapper().writeValueAsString(job));
-                proposal.addReceiver(agent);
-                currentAgent.send(proposal);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
     }
 }

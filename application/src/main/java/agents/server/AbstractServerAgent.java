@@ -1,21 +1,18 @@
 package agents.server;
 
-import domain.GreenSourceData;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractServerAgent extends Agent {
 
-    protected List<Job> currentJobs;
-    protected Map<AID, GreenSourceData> acceptingGreenSources;
-    protected List<AID> greenSourceAgentsList;
+    protected Set<Job> currentJobs;
+    protected Map<Job, AID> greenSourceForJobMap;
     protected AID ownerCloudNetworkAgent;
     protected int messagesSentCount;
-    protected int responsesReceivedCount;
     protected double pricePerHour;
     protected int powerInUse;
     protected int availableCapacity;
@@ -23,8 +20,16 @@ public abstract class AbstractServerAgent extends Agent {
     AbstractServerAgent() {
         super.setup();
 
-        currentJobs = new ArrayList<>();
+        currentJobs = new HashSet<>();
         powerInUse = 0;
+    }
+
+    public Map<Job, AID> getGreenSourceForJobMap() {
+        return greenSourceForJobMap;
+    }
+
+    public void setGreenSourceForJobMap(Map<Job, AID> greenSourceForJobMap) {
+        this.greenSourceForJobMap = greenSourceForJobMap;
     }
 
     public int getAvailableCapacity() {
@@ -35,27 +40,40 @@ public abstract class AbstractServerAgent extends Agent {
         return powerInUse;
     }
 
-    public List<AID> getGreenSourceAgentsList() {
-        return greenSourceAgentsList;
-    }
-
-    public Map<AID, GreenSourceData> getAcceptingGreenSources() {
-        return acceptingGreenSources;
-    }
 
     public int getMessagesSentCount() {
         return messagesSentCount;
     }
 
-    public int getResponsesReceivedCount() {
-        return responsesReceivedCount;
-    }
-
-    public void setResponsesReceivedCount(int responsesReceivedCount) {
-        this.responsesReceivedCount = responsesReceivedCount;
-    }
-
     public AID getOwnerCloudNetworkAgent() {
         return ownerCloudNetworkAgent;
+    }
+
+    public void setMessagesSentCount(int messagesSentCount) {
+        this.messagesSentCount = messagesSentCount;
+    }
+
+    public double getPricePerHour() {
+        return pricePerHour;
+    }
+
+    public void setPricePerHour(double pricePerHour) {
+        this.pricePerHour = pricePerHour;
+    }
+
+    public void setPowerInUse(int powerInUse) {
+        this.powerInUse = powerInUse;
+    }
+
+    public void setAvailableCapacity(int availableCapacity) {
+        this.availableCapacity = availableCapacity;
+    }
+
+    public Set<Job> getCurrentJobs() {
+        return currentJobs;
+    }
+
+    public void setCurrentJobs(Set<Job> currentJobs) {
+        this.currentJobs = currentJobs;
     }
 }

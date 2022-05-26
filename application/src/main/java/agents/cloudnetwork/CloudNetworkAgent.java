@@ -1,61 +1,28 @@
 package agents.cloudnetwork;
 
-import static common.CommonUtils.getAgentsFromDF;
+import static common.GroupConstants.CNA_SERVICE_TYPE;
+import static yellowpages.YellowPagesService.register;
 
-import agents.cloudnetwork.behaviour.CloudNetworkAgentReadMessages;
-import common.GroupConstants;
-import jade.core.AID;
-import jade.core.Agent;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
-import java.util.List;
+import agents.cloudnetwork.behaviour.*;
+import agents.greenenergy.behaviour.HandleServerInformJobDone;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
-
-    private List<AID> serviceAgentList;
 
     @Override
     protected void setup() {
         super.setup();
-        registerCNAInDF();
-        serviceAgentList = getSAAgentList(this);
+        this.serverForJobMap = new HashMap<>();
+        this.currentJobs = new ArrayList<>();
+        this.futureJobs = new ArrayList<>();
+        register(this, CNA_SERVICE_TYPE, getName());
 
-        addBehaviour(CloudNetworkAgentReadMessages.createFor(this));
-    }
-
-    public List<AID> getServiceAgentList() {
-        return serviceAgentList;
-    }
-
-    private List<AID> getSAAgentList(final Agent agent) {
-
-        final DFAgentDescription template = new DFAgentDescription();
-        final ServiceDescription serviceDescription = new ServiceDescription();
-        serviceDescription.setType(GroupConstants.SA_SERVICE_TYPE);
-        serviceDescription.setOwnership(agent.getAID().getLocalName());
-        template.addServices(serviceDescription);
-
-        return getAgentsFromDF(agent, template);
-    }
-
-    private void registerCNAInDF() {
-
-        final DFAgentDescription dfAgentDescription = new DFAgentDescription();
-        dfAgentDescription.setName(getAID());
-
-        final ServiceDescription serviceDescription = new ServiceDescription();
-        serviceDescription.setType(GroupConstants.CNA_SERVICE_TYPE);
-        serviceDescription.setName(getName());
-
-        dfAgentDescription.addServices(serviceDescription);
-
-        try {
-            DFService.register(this, dfAgentDescription);
-
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
+        addBehaviour(HandleClientJobCallForProposal.createFor(this));
+        addBehaviour(HandleClientAcceptJobProposal.createFor(this));
+        addBehaviour(HandleClientRejectJobProposal.createFor(this));
+        addBehaviour(HandleServerCallForProposalResponse.createFor(this));
+        addBehaviour(HandleServerCNAInformJobDone.createFor(this));
     }
 }

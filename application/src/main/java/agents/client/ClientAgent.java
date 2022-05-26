@@ -1,55 +1,43 @@
 package agents.client;
 
-import static common.CommonUtils.getAgentsFromDF;
-
-import agents.client.behaviour.ClientAgentReadMessages;
-import agents.client.behaviour.SendJobProposal;
-import common.GroupConstants;
+import agents.client.behaviour.HandleCNACallForProposalResponse;
+import agents.client.behaviour.HandleCNAJobInform;
+import agents.client.behaviour.SendJobCallForProposal;
 import common.TimeUtils;
-import domain.CloudNetworkData;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
-import jade.core.AID;
-import jade.core.Agent;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClientAgent extends Agent {
+public class ClientAgent extends AbstractClientAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientAgent.class);
-
-    private Map<AID, CloudNetworkData> cloudNetworkAgentList;
-    private AID chosenCloudNetworkAgent;
-
-    private int messagesSentCount;
-    private int responsesReceivedCount;
 
     @Override
     protected void setup() {
         super.setup();
         final Object[] args = getArguments();
 
-        if (Objects.nonNull(args) && args.length == 3) {
+        if (Objects.nonNull(args) && args.length == 4) {
 
-            cloudNetworkAgentList = new HashMap<>();
-            chosenCloudNetworkAgent = null;
-            responsesReceivedCount = 0;
-            messagesSentCount = 0;
+            initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
 
-            addBehaviour(SendJobProposal.createFor(this, jobToBeExecuted));
-            addBehaviour(ClientAgentReadMessages.createFor(this, jobToBeExecuted));
+            addBehaviour(SendJobCallForProposal.createFor(this, jobToBeExecuted));
+            addBehaviour(HandleCNACallForProposalResponse.createFor(this, jobToBeExecuted));
+            addBehaviour(HandleCNAJobInform.createFor(this));
 
         } else {
-            logger.info("I have no task to be executed");
+            logger.info("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
+        }
+        try {
+            TimeUnit.SECONDS.sleep(1L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -59,6 +47,11 @@ public class ClientAgent extends Agent {
         super.takeDown();
     }
 
+    private void initializeAgent() {
+        this.chosenCloudNetworkAgent = null;
+        this.messagesSentCount = 0;
+    }
+
     private Job initializeAgentJob(final Object[] arguments) {
         try {
             return ImmutableJob.builder()
@@ -66,6 +59,7 @@ public class ClientAgent extends Agent {
                 .startTime(TimeUtils.convertToOffsetDateTime(arguments[0].toString()))
                 .endTime(TimeUtils.convertToOffsetDateTime(arguments[1].toString()))
                 .power(Integer.parseInt(arguments[2].toString()))
+                .jobId(arguments[3].toString())
                 .build();
         } catch (IncorrectTaskDateException e) {
             logger.error(e.getMessage());
@@ -75,43 +69,5 @@ public class ClientAgent extends Agent {
             doDelete();
         }
         return null;
-    }
-
-    public List<AID> initializeCloudNetworkAgentList(final Agent agent) {
-
-        final DFAgentDescription template = new DFAgentDescription();
-        final ServiceDescription serviceDescription = new ServiceDescription();
-        serviceDescription.setType(GroupConstants.CNA_SERVICE_TYPE);
-        template.addServices(serviceDescription);
-
-        return getAgentsFromDF(agent, template);
-    }
-
-    public void setMessagesSentCount(int messagesSentCount) {
-        this.messagesSentCount = messagesSentCount;
-    }
-
-    public void setChosenCloudNetworkAgent(AID chosenCloudNetworkAgent) {
-        this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
-    }
-
-    public void setResponsesReceivedCount(int responsesReceivedCount) {
-        this.responsesReceivedCount = responsesReceivedCount;
-    }
-
-    public AID getChosenCloudNetworkAgent() {
-        return chosenCloudNetworkAgent;
-    }
-
-    public int getMessagesSentCount() {
-        return messagesSentCount;
-    }
-
-    public int getResponsesReceivedCount() {
-        return responsesReceivedCount;
-    }
-
-    public Map<AID, CloudNetworkData> getCloudNetworkAgentList() {
-        return cloudNetworkAgentList;
     }
 }
