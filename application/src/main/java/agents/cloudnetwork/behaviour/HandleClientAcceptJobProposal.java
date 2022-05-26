@@ -2,6 +2,7 @@ package agents.cloudnetwork.behaviour;
 
 import agents.client.message.SendJobMessage;
 import agents.cloudnetwork.CloudNetworkAgent;
+import agents.cloudnetwork.message.SendJobConfirmationMessage;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -55,6 +56,7 @@ public class HandleClientAcceptJobProposal extends CyclicBehaviour {
                 final AID serverForJob = myCloudAgent.getServerForJobMap().get(job);
                 myCloudAgent.getCurrentJobs().add(job);
                 myCloudAgent.setInUsePower(myCloudAgent.getInUsePower() + job.getPower());
+                myAgent.send(SendJobConfirmationMessage.create(job).getMessage());
                 myAgent.send(SendJobMessage.create(job, List.of(serverForJob), ACCEPT_PROPOSAL).getMessage());
             } catch (Exception e) {
                 e.printStackTrace();

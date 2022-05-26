@@ -3,8 +3,7 @@ package agents.greenenergy;
 import static common.GroupConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.greenenergy.behaviour.HandleMonitoringRequestResponse;
-import agents.greenenergy.behaviour.HandleServerCallForProposal;
+import agents.greenenergy.behaviour.*;
 import common.GroupConstants;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
@@ -45,5 +44,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         register(this, GS_SERVICE_TYPE, getName());
         addBehaviour(HandleServerCallForProposal.createFor(this));
         addBehaviour(HandleMonitoringRequestResponse.createFor(this));
+        addBehaviour(HandleServerAcceptProposal.createFor(this));
+        addBehaviour(HandleServerRejectProposal.createFor(this));
     }
 }

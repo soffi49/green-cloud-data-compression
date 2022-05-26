@@ -1,5 +1,6 @@
 package agents.greenenergy.behaviour;
 
+import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
@@ -19,8 +20,8 @@ public class HandleMonitoringRequestResponse extends CyclicBehaviour {
     private static final Logger logger =
         LoggerFactory.getLogger(HandleMonitoringRequestResponse.class);
     private final MessageTemplate template = MessageTemplate.or(
-        MessageTemplate.MatchPerformative(ACLMessage.INFORM),
-        MessageTemplate.MatchPerformative(ACLMessage.REFUSE));
+        MessageTemplate.and(MatchPerformative(ACLMessage.INFORM), MessageTemplate.not(MatchConversationId("FINISHED"))),
+        MatchPerformative(ACLMessage.REFUSE));
     private GreenEnergyAgent myGreenAgent;
 
     private HandleMonitoringRequestResponse(final GreenEnergyAgent greenEnergyAgent) {
@@ -67,14 +68,10 @@ public class HandleMonitoringRequestResponse extends CyclicBehaviour {
             MonitoringData data = getMapper().readValue(message.getContent(), MonitoringData.class);
             int power = computePower(data);
             if (power > 0) {
-                var correspondingJob = myGreenAgent.getCurrentJobs().stream()
-                    .filter(job -> job.getJobId().equals(data.getJobId()))
-                    .findFirst()
-                    .orElseThrow();
                 GreenSourceData responseData = ImmutableGreenSourceData.builder()
                     .pricePerPowerUnit(myGreenAgent.getPricePerPowerUnit())
                     .availablePowerInTime(power)
-                    .job(correspondingJob)
+                    .job(data.getJob())
                     .build();
                 ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
                 var conversationID = message.getConversationId();

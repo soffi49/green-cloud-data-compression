@@ -1,11 +1,5 @@
 package agents.cloudnetwork.behaviour;
 
-import static jade.core.AID.ISGUID;
-import static jade.lang.acl.ACLMessage.PROPOSE;
-import static jade.lang.acl.ACLMessage.REFUSE;
-import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
-import static mapper.JsonMapper.getMapper;
-
 import agents.cloudnetwork.CloudNetworkAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.ServerData;
@@ -15,23 +9,23 @@ import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.time.temporal.ValueRange;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.temporal.ValueRange;
+import java.util.*;
+
+import static jade.core.AID.ISGUID;
+import static jade.lang.acl.ACLMessage.*;
+import static mapper.JsonMapper.getMapper;
 
 public class HandleServerCallForProposalResponse extends CyclicBehaviour {
 
     private static final ValueRange MAX_POWER_DIFFERENCE = ValueRange.of(-10, 10);
     private static final Logger logger = LoggerFactory.getLogger(HandleServerCallForProposalResponse.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.or(
-        MessageTemplate.MatchPerformative(PROPOSE),
-        MessageTemplate.MatchPerformative(REFUSE));
+            MessageTemplate.MatchPerformative(PROPOSE),
+            MessageTemplate.MatchPerformative(REFUSE));
 
     private Map<AID, ServerData> serverAgentsAccepting;
     private int responsesReceivedCount;
@@ -77,9 +71,9 @@ public class HandleServerCallForProposalResponse extends CyclicBehaviour {
                         myCloudAgent.getServerForJobMap().put(chosenServer.getValue().getJob(), chosenServer.getKey());
                         rejectRemainingServerAgents(chosenServer.getKey());
                         final PricedJob pricedJob = ImmutablePricedJob.builder()
-                            .job(chosenServer.getValue().getJob())
-                            .priceForJob(chosenServer.getValue().getServicePrice())
-                            .build();
+                                .job(chosenServer.getValue().getJob())
+                                .priceForJob(chosenServer.getValue().getServicePrice())
+                                .build();
                         final ACLMessage propose = new ACLMessage(PROPOSE);
                         propose.addReceiver(new AID(chosenServer.getValue().getJob().getClientIdentifier(), ISGUID));
                         try {
@@ -107,13 +101,13 @@ public class HandleServerCallForProposalResponse extends CyclicBehaviour {
 
     private Map.Entry<AID, ServerData> chooseServerToExecuteJob() {
         final Comparator<Map.Entry<AID, ServerData>> compareServers =
-            ((server1, server2) -> {
-                if (MAX_POWER_DIFFERENCE.isValidIntValue(
-                    server1.getValue().getPowerInUse() - server2.getValue().getPowerInUse())) {
-                    return (int) (server1.getValue().getPricePerHour() - server2.getValue().getPricePerHour());
-                }
-                return server1.getValue().getPowerInUse() - server2.getValue().getPowerInUse();
-            });
+                ((server1, server2) -> {
+                    if (MAX_POWER_DIFFERENCE.isValidIntValue(
+                            server1.getValue().getPowerInUse() - server2.getValue().getPowerInUse())) {
+                        return (int) (server1.getValue().getPricePerHour() - server2.getValue().getPricePerHour());
+                    }
+                    return server1.getValue().getPowerInUse() - server2.getValue().getPowerInUse();
+                });
         return serverAgentsAccepting.entrySet().stream().min(compareServers).orElseThrow();
     }
 

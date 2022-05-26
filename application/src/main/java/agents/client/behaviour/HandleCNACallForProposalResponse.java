@@ -89,10 +89,7 @@ public class HandleCNACallForProposalResponse extends CyclicBehaviour {
         final List<AID> cloudNetworkAgentsRejected =
                 cloudNetworkAgentsAccepting.keySet().stream()
                         .filter(cloudNetworkData -> !cloudNetworkData.equals(chosenCNA))
-                        .collect(Collectors.toList());
-        final ACLMessage rejectProposal = new ACLMessage(REJECT_PROPOSAL);
-        rejectProposal.setContent("Reject");
-        cloudNetworkAgentsRejected.forEach(rejectProposal::addReceiver);
-        myAgent.send(rejectProposal);
+                        .toList();
+        myAgent.send(SendJobMessage.create(job, cloudNetworkAgentsRejected, REJECT_PROPOSAL).getMessage());
     }
 }

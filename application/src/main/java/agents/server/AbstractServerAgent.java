@@ -69,4 +69,11 @@ public abstract class AbstractServerAgent extends Agent {
         this.availableCapacity = availableCapacity;
     }
 
+    public Set<Job> getCurrentJobs() {
+        return currentJobs;
+    }
+
+    public void setCurrentJobs(Set<Job> currentJobs) {
+        this.currentJobs = currentJobs;
+    }
 }

@@ -3,8 +3,7 @@ package agents.server;
 import static common.GroupConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.server.behaviour.HandleCNAJobCallForProposal;
-import agents.server.behaviour.HandleGreenSourceCallForProposalResponse;
+import agents.server.behaviour.*;
 import jade.core.AID;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +36,9 @@ public class ServerAgent extends AbstractServerAgent {
 
             addBehaviour(HandleGreenSourceCallForProposalResponse.createFor(this));
             addBehaviour(HandleCNAJobCallForProposal.createFor(this));
+            addBehaviour(HandleCNAAcceptProposal.createFor(this));
+            addBehaviour(HandleGreenSourceJobInform.createFor(this));
+            addBehaviour(HandleCNARejectProposal.createFor(this));
         } else {
             logger.info("I don't have the corresponding Cloud Network Agent");
             doDelete();

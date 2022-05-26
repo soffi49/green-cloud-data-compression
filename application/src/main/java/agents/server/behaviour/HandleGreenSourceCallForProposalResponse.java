@@ -1,7 +1,6 @@
 package agents.server.behaviour;
 
-import static jade.lang.acl.ACLMessage.PROPOSE;
-import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.ACLMessage.*;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
 
@@ -14,10 +13,9 @@ import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +75,7 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
                     if (responsesReceivedCount == serverAgent.getMessagesSentCount()) {
                         final var chosenGS = chooseGreenSourceToExecuteJob();
                         serverAgent.getGreenSourceForJobMap().put(chosenGS.getValue().getJob(), chosenGS.getKey());
+                        rejectRemainingGreenSourceAgents(chosenGS.getKey());
                         logger.info("[{}] Sending proposal to {}", myAgent,
                             serverAgent.getOwnerCloudNetworkAgent().getLocalName());
                         final double servicePrice = calculateServicePrice(chosenGS.getValue());
@@ -108,5 +107,15 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
         final Comparator<Map.Entry<AID, GreenSourceData>> compareGreenSources =
             Comparator.comparingInt(cna -> cna.getValue().getAvailablePowerInTime());
         return greenSourceAgentsAccepting.entrySet().stream().min(compareGreenSources).orElseThrow();
+    }
+
+    private void rejectRemainingGreenSourceAgents(final AID chosenGreenSource) {
+        final List<AID> greenSourceAgentsRejected = greenSourceAgentsAccepting.keySet().stream()
+                .filter(cloudNetworkData -> !cloudNetworkData.equals(chosenGreenSource))
+                .toList();
+        final ACLMessage rejectProposal = new ACLMessage(REJECT_PROPOSAL);
+        rejectProposal.setContent("Reject");
+        greenSourceAgentsRejected.forEach(rejectProposal::addReceiver);
+        myAgent.send(rejectProposal);
     }
 }

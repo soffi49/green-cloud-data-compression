@@ -1,6 +1,7 @@
 package agents.client;
 
 import agents.client.behaviour.HandleCNACallForProposalResponse;
+import agents.client.behaviour.HandleCNAJobInform;
 import agents.client.behaviour.SendJobCallForProposal;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
@@ -27,6 +28,7 @@ public class ClientAgent extends AbstractClientAgent {
 
             addBehaviour(SendJobCallForProposal.createFor(this, jobToBeExecuted));
             addBehaviour(HandleCNACallForProposalResponse.createFor(this, jobToBeExecuted));
+            addBehaviour(HandleCNAJobInform.createFor(this));
 
         } else {
             logger.info("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");

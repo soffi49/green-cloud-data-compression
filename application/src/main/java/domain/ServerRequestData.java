@@ -2,6 +2,7 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import domain.job.Job;
 import domain.location.Location;
 import org.immutables.value.Value;
 
@@ -10,7 +11,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface ServerRequestData {
 
-    String getJobId();
+    Job getJob();
 
     Location getLocation();
 }

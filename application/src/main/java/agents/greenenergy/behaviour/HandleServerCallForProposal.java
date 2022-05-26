@@ -1,7 +1,5 @@
 package agents.greenenergy.behaviour;
 
-import static mapper.JsonMapper.getMapper;
-
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.ImmutableServerRequestData;
@@ -9,9 +7,12 @@ import domain.job.Job;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
+
+import static mapper.JsonMapper.getMapper;
 
 public class HandleServerCallForProposal extends CyclicBehaviour {
 
@@ -42,8 +43,7 @@ public class HandleServerCallForProposal extends CyclicBehaviour {
                 if (job.getPower() > ((GreenEnergyAgent) myAgent).getAvailableCapacity()) {
                     refuseCNA(message, "Refuse: Not enough available power");
                 } else {
-                    myGreenAgent.getCurrentJobs().add(job);
-                    sendRequestToMonitoringAgent(message, job.getJobId());
+                    sendRequestToMonitoringAgent(message, job);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -60,14 +60,14 @@ public class HandleServerCallForProposal extends CyclicBehaviour {
         myAgent.send(response);
     }
 
-    private void sendRequestToMonitoringAgent(ACLMessage message, String jobId) {
+    private void sendRequestToMonitoringAgent(ACLMessage message, Job job) {
         ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
         request.addReceiver(((GreenEnergyAgent) myAgent).getMonitoringAgent());
         request.setConversationId(message.getSender().getName());
         var requestData = ImmutableServerRequestData.builder()
-            .location(myGreenAgent.getLocation())
-            .jobId(jobId)
-            .build();
+                .location(myGreenAgent.getLocation())
+                .job(job)
+                .build();
         try {
             request.setContent(getMapper().writeValueAsString(requestData));
         } catch (JsonProcessingException e) {

@@ -27,7 +27,7 @@ public class MonitoringAgent extends Agent {
     public ImmutableMonitoringData getWeather(ServerRequestData requestData) {
         logger.info("Retrieving weather info for {}...", requestData.getLocation());
         return ImmutableMonitoringData.builder()
-            .jobId(requestData.getJobId())
+            .job(requestData.getJob())
             .temperature(25)
             .cloudCover(0.15)
             .windSpeed(50)

@@ -3,10 +3,9 @@ package agents.cloudnetwork;
 import static common.GroupConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.cloudnetwork.behaviour.HandleClientAcceptJobProposal;
-import agents.cloudnetwork.behaviour.HandleClientJobCallForProposal;
-import agents.cloudnetwork.behaviour.HandleClientRejectJobProposal;
-import agents.cloudnetwork.behaviour.HandleServerCallForProposalResponse;
+import agents.cloudnetwork.behaviour.*;
+import agents.greenenergy.behaviour.HandleServerInformJobDone;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -24,5 +23,6 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
         addBehaviour(HandleClientAcceptJobProposal.createFor(this));
         addBehaviour(HandleClientRejectJobProposal.createFor(this));
         addBehaviour(HandleServerCallForProposalResponse.createFor(this));
+        addBehaviour(HandleServerCNAInformJobDone.createFor(this));
     }
 }
