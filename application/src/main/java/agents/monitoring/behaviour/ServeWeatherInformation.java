@@ -1,46 +1,44 @@
 package agents.monitoring.behaviour;
 
-import agents.monitoring.MonitoringAgent;
-import agents.server.ServerAgent;
-import domain.ImmutableMonitoringData;
-import domain.ServerRequestData;
-import jade.core.behaviours.CyclicBehaviour;
-import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Objects;
-
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
 
-public class MonitoringAgentReadMessages  extends CyclicBehaviour {
+import agents.monitoring.MonitoringAgent;
+import domain.ServerRequestData;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
+import java.io.IOException;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ServeWeatherInformation extends CyclicBehaviour {
+
     private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
 
-    private MonitoringAgent monitoringAgent;
+    private final MonitoringAgent monitoringAgent;
 
-    public MonitoringAgentReadMessages(MonitoringAgent monitoringAgent){
+    public ServeWeatherInformation(MonitoringAgent monitoringAgent) {
         this.monitoringAgent = monitoringAgent;
     }
 
-    public static MonitoringAgentReadMessages createFor(MonitoringAgent monitoringAgent){
-        return new MonitoringAgentReadMessages(monitoringAgent);
+    public static ServeWeatherInformation createFor(MonitoringAgent monitoringAgent) {
+        return new ServeWeatherInformation(monitoringAgent);
     }
 
     @Override
-    public void action(){
+    public void action() {
         final ACLMessage message = monitoringAgent.receive();
 
-        if(Objects.nonNull(message)){
-            switch (message.getPerformative()){
+        if (Objects.nonNull(message)) {
+            switch (message.getPerformative()) {
                 case REQUEST:
                     final ACLMessage response = new ACLMessage(ACLMessage.INFORM);
-                    try{
+                    try {
                         var requestData = getMapper().readValue(message.getContent(), ServerRequestData.class);
                         var data = monitoringAgent.getWeather(requestData);
                         response.setContent(getMapper().writeValueAsString(data));
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                     response.addReceiver(message.getSender());
@@ -48,8 +46,7 @@ public class MonitoringAgentReadMessages  extends CyclicBehaviour {
                     logger.info("Sending message with the weather data");
                     monitoringAgent.send(response);
             }
-        }
-        else{
+        } else {
             block();
         }
     }

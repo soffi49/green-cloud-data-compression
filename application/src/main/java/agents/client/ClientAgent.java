@@ -1,12 +1,12 @@
 package agents.client;
 
-import agents.client.behaviour.HandleCNACallForProposalResponse;
-import agents.client.behaviour.HandleCNAJobInform;
-import agents.client.behaviour.SendJobCallForProposal;
+import agents.client.behaviour.FindCloudNetworkAgents;
+import agents.client.behaviour.RequestJobExecution;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
+import jade.core.behaviours.SequentialBehaviour;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -25,11 +25,7 @@ public class ClientAgent extends AbstractClientAgent {
 
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
-
-            addBehaviour(SendJobCallForProposal.createFor(this, jobToBeExecuted));
-            addBehaviour(HandleCNACallForProposalResponse.createFor(this, jobToBeExecuted));
-            addBehaviour(HandleCNAJobInform.createFor(this));
-
+            addBehaviour(prepareStartingBehaviour());
         } else {
             logger.info("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
@@ -39,6 +35,13 @@ public class ClientAgent extends AbstractClientAgent {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+    
+    private SequentialBehaviour prepareStartingBehaviour() {
+        var startingBehaviour = new SequentialBehaviour(this);
+        startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
+        startingBehaviour.addSubBehaviour(new RequestJobExecution(this, null));
+        return startingBehaviour;
     }
 
     @Override

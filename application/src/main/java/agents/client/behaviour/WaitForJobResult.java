@@ -11,7 +11,10 @@ import java.util.Objects;
 
 import static jade.lang.acl.ACLMessage.INFORM;
 
-public class HandleCNAJobInform extends CyclicBehaviour {
+/**
+ * Behaviour which handles the information that the job execution is done 
+ */
+public class WaitForJobResult extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(HandleCNAJobInform.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(INFORM);
