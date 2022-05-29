@@ -1,6 +1,6 @@
 package agents.monitoring;
 
-import agents.monitoring.behaviour.MonitoringAgentReadMessages;
+import agents.monitoring.behaviour.ServeWeatherInformation;
 import domain.ImmutableMonitoringData;
 import domain.ServerRequestData;
 import jade.core.Agent;
@@ -14,7 +14,7 @@ public class MonitoringAgent extends Agent {
     @Override
     protected void setup() {
         super.setup();
-        addBehaviour(MonitoringAgentReadMessages.createFor(this));
+        addBehaviour(ServeWeatherInformation.createFor(this));
     }
 
     @Override

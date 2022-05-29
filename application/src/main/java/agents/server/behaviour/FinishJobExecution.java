@@ -13,6 +13,10 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+/**
+ * Behaviour responsible for returning to the CNA and GreenSource the information that the job execution has finished
+ * (instead of HandleServerCNAInformJobDone)
+ */
 public class FinishJobExecution extends WakerBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(FinishJobExecution.class);
