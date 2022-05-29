@@ -1,16 +1,13 @@
 package agents.greenenergy;
 
-import static common.GroupConstants.GS_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
+import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
 import agents.greenenergy.behaviour.*;
-import common.GroupConstants;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
+
 import java.util.HashSet;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -41,7 +38,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
                 doDelete();
             }
         }
-        register(this, GS_SERVICE_TYPE, getName());
+        register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, getName());
         addBehaviour(HandleServerCallForProposal.createFor(this));
         addBehaviour(HandleMonitoringRequestResponse.createFor(this));
         addBehaviour(HandleServerAcceptProposal.createFor(this));

@@ -1,10 +1,11 @@
 package agents.cloudnetwork;
 
-import static common.GroupConstants.CNA_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.CNA_SERVICE_NAME;
+import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
 import agents.cloudnetwork.behaviour.*;
-import agents.greenenergy.behaviour.HandleServerInformJobDone;
+import jade.core.behaviours.SequentialBehaviour;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,15 +15,22 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
     @Override
     protected void setup() {
         super.setup();
+        initializeAgent();
+        addBehaviour(prepareStartingBehaviour());
+        addBehaviour(new ReturnCompletedJob());
+    }
+
+    private void initializeAgent() {
         this.serverForJobMap = new HashMap<>();
         this.currentJobs = new ArrayList<>();
         this.futureJobs = new ArrayList<>();
-        register(this, CNA_SERVICE_TYPE, getName());
+        register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
+    }
 
-        addBehaviour(HandleClientJobCallForProposal.createFor(this));
-        addBehaviour(HandleClientAcceptJobProposal.createFor(this));
-        addBehaviour(HandleClientRejectJobProposal.createFor(this));
-        addBehaviour(HandleServerCallForProposalResponse.createFor(this));
-        addBehaviour(HandleServerCNAInformJobDone.createFor(this));
+    private SequentialBehaviour prepareStartingBehaviour() {
+        var startingBehaviour = new SequentialBehaviour(this);
+        startingBehaviour.addSubBehaviour(new FindServerAgents());
+        startingBehaviour.addSubBehaviour(new ReceiveJobRequests());
+        return startingBehaviour;
     }
 }

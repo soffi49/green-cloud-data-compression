@@ -1,19 +1,15 @@
 package agents.server.behaviour;
 
-import agents.client.message.SendJobMessage;
 import agents.server.ServerAgent;
 import domain.job.Job;
-import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Objects;
 
-import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static mapper.JsonMapper.getMapper;
 

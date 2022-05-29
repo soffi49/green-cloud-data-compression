@@ -6,14 +6,12 @@ import jade.core.Agent;
 public class AbstractClientAgent extends Agent {
 
     protected AID chosenCloudNetworkAgent;
-    protected int messagesSentCount;
 
     public AbstractClientAgent() {
     }
 
-    public AbstractClientAgent(AID chosenCloudNetworkAgent, int messagesSentCount) {
+    public AbstractClientAgent(AID chosenCloudNetworkAgent) {
         this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
-        this.messagesSentCount = messagesSentCount;
     }
 
     public AID getChosenCloudNetworkAgent() {
@@ -22,13 +20,5 @@ public class AbstractClientAgent extends Agent {
 
     public void setChosenCloudNetworkAgent(AID chosenCloudNetworkAgent) {
         this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
-    }
-
-    public int getMessagesSentCount() {
-        return messagesSentCount;
-    }
-
-    public void setMessagesSentCount(int messagesSentCount) {
-        this.messagesSentCount = messagesSentCount;
     }
 }

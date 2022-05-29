@@ -1,11 +1,8 @@
 package agents.greenenergy.behaviour;
 
-import agents.client.message.SendJobMessage;
+import common.message.SendJobMessage;
 import agents.greenenergy.GreenEnergyAgent;
-import agents.server.ServerAgent;
-import agents.server.behaviour.HandleCNAAcceptProposal;
 import domain.job.Job;
-import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;

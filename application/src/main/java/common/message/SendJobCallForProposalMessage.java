@@ -1,4 +1,4 @@
-package agents.client.message;
+package common.message;
 
 import domain.job.Job;
 import jade.core.AID;
@@ -9,23 +9,22 @@ import java.util.List;
 
 import static mapper.JsonMapper.getMapper;
 
-public class SendJobMessage {
-
+public class SendJobCallForProposalMessage {
     private final ACLMessage message;
-
-    private SendJobMessage(final ACLMessage message) {
+    private SendJobCallForProposalMessage(final ACLMessage message) {
         this.message = message;
     }
 
-    public static SendJobMessage create(final Job job, final List<AID> receiverList, final int performative) {
-        final ACLMessage proposal = new ACLMessage(performative);
+    public static SendJobCallForProposalMessage create(final Job job, final List<AID> receiverList, final String protocol) {
+        final ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
+        proposal.setProtocol(protocol);
         try {
             proposal.setContent(getMapper().writeValueAsString(job));
         } catch (IOException e) {
             e.printStackTrace();
         }
         receiverList.forEach(proposal::addReceiver);
-        return new SendJobMessage(proposal);
+        return new SendJobCallForProposalMessage(proposal);
     }
 
     public ACLMessage getMessage() {

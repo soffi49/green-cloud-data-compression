@@ -1,6 +1,7 @@
 package agents.server;
 
-import static common.GroupConstants.SA_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.SA_SERVICE_NAME;
+import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
 import agents.server.behaviour.*;
@@ -25,7 +26,7 @@ public class ServerAgent extends AbstractServerAgent {
 
         if (Objects.nonNull(args) && args.length == 3) {
             ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-            register(this, SA_SERVICE_TYPE, getName());
+            register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
             try {
                 pricePerHour = Double.parseDouble(args[1].toString());
                 availableCapacity = Integer.parseInt(args[2].toString());

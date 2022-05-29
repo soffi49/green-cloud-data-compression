@@ -1,6 +1,6 @@
 package agents.server.behaviour;
 
-import agents.client.message.SendJobMessage;
+import common.message.SendJobMessage;
 import agents.server.ServerAgent;
 import domain.job.Job;
 import jade.core.AID;

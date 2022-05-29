@@ -1,6 +1,6 @@
 package agents.server.behaviour;
 
-import agents.client.message.SendJobMessage;
+import common.message.SendJobMessage;
 import agents.server.ServerAgent;
 import domain.job.Job;
 import jade.core.Agent;
@@ -9,13 +9,11 @@ import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
  * Behaviour responsible for returning to the CNA and GreenSource the information that the job execution has finished
- * (instead of HandleServerCNAInformJobDone)
  */
 public class FinishJobExecution extends WakerBehaviour {
 

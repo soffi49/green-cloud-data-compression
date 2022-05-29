@@ -5,6 +5,8 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import runner.domain.*;
 
+import java.util.concurrent.TimeUnit;
+
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
     private final ContainerController containerController;
@@ -18,6 +20,11 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
         throws StaleProxyException {
 
         if (agentArgs instanceof ClientAgentArgs clientAgent) {
+            try {
+                TimeUnit.SECONDS.sleep(1L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return containerController.createNewAgent(clientAgent.getName(), "agents.client.ClientAgent",
                 new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower(), clientAgent.getJobId()});
         } else if (agentArgs instanceof ServerAgentArgs serverAgent) {

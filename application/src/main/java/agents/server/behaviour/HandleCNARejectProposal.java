@@ -1,8 +1,6 @@
 package agents.server.behaviour;
 
-import agents.client.message.SendJobMessage;
-import agents.cloudnetwork.CloudNetworkAgent;
-import agents.cloudnetwork.behaviour.HandleClientRejectJobProposal;
+import common.message.SendJobMessage;
 import agents.server.ServerAgent;
 import domain.job.Job;
 import jade.core.AID;

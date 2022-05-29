@@ -1,11 +1,11 @@
 package agents.server.behaviour;
 
-import static common.GroupConstants.GS_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static jade.lang.acl.ACLMessage.CFP;
 import static mapper.JsonMapper.getMapper;
 import static yellowpages.YellowPagesService.search;
 
-import agents.client.message.SendJobMessage;
+import common.message.SendJobMessage;
 import agents.server.ServerAgent;
 import agents.server.message.RefuseProposalMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
