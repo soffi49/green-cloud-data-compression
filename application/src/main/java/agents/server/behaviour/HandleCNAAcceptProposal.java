@@ -1,20 +1,18 @@
 package agents.server.behaviour;
 
-import agents.client.message.SendJobMessage;
+import static agents.server.message.ReplyMessageFactory.prepareReply;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
+import static mapper.JsonMapper.getMapper;
+
 import agents.server.ServerAgent;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Objects;
-
-import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
-import static mapper.JsonMapper.getMapper;
 
 public class HandleCNAAcceptProposal extends CyclicBehaviour {
 
@@ -48,7 +46,8 @@ public class HandleCNAAcceptProposal extends CyclicBehaviour {
                 final AID greenSourceForJob = serverAgent.getGreenSourceForJobMap().get(job);
                 serverAgent.getCurrentJobs().add(job);
                 serverAgent.setPowerInUse(serverAgent.getPowerInUse() + job.getPower());
-                myAgent.send(SendJobMessage.create(job, List.of(greenSourceForJob), ACCEPT_PROPOSAL).getMessage());
+                var temp = (ACLMessage) getParent().getDataStore().get(job.getJobId() + greenSourceForJob.toString());
+                myAgent.send(prepareReply(temp, job, ACCEPT_PROPOSAL));
             } catch (Exception e) {
                 e.printStackTrace();
             }

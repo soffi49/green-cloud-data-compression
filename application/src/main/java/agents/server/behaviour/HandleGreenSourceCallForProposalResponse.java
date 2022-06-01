@@ -1,6 +1,8 @@
 package agents.server.behaviour;
 
-import static jade.lang.acl.ACLMessage.*;
+import static jade.lang.acl.ACLMessage.PROPOSE;
+import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
 
@@ -9,13 +11,16 @@ import agents.server.message.ProposalResponseMessage;
 import agents.server.message.RefuseProposalMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.GreenSourceData;
+import domain.job.Job;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
-import java.util.*;
-
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,21 +61,16 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
                 responsesReceivedCount++;
             }
 
-            GreenSourceData data = null;
-
-            try {
-                data = getMapper().readValue(message.getContent(), GreenSourceData.class);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
-            if (data == null) {
-                throw new RuntimeException("what are you doing?!");
-            }
-
             switch (message.getPerformative()) {
                 case PROPOSE:
+                    GreenSourceData data = null;
+                    try {
+                        data = getMapper().readValue(message.getContent(), GreenSourceData.class);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                     logger.info("received proposal from {} [{}]", myAgent, message.getSender().getLocalName());
+                    getParent().getDataStore().put(data.getJob().getJobId() + message.getSender().toString(), message);
                     greenSourceAgentsAccepting.put(message.getSender(), data);
                     if (responsesReceivedCount == serverAgent.getMessagesSentCount()) {
                         final var chosenGS = chooseGreenSourceToExecuteJob();
@@ -84,9 +84,16 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
                     }
                     break;
                 case REFUSE:
+                    logger.info("received refuse - sad server is sad");
+                    Job job = null;
+                    try {
+                        job = getMapper().readValue(message.getContent(), Job.class);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                     if (greenSourceAgentsAccepting.isEmpty()) {
                         logger.info("[{}] No green sources available - sending refuse message ", myAgent);
-                        myAgent.send(RefuseProposalMessage.create(serverAgent, data.getJob().getClientIdentifier())
+                        myAgent.send(RefuseProposalMessage.create(serverAgent, job.getClientIdentifier())
                             .getMessage());
                     }
             }
@@ -111,8 +118,8 @@ public class HandleGreenSourceCallForProposalResponse extends CyclicBehaviour {
 
     private void rejectRemainingGreenSourceAgents(final AID chosenGreenSource) {
         final List<AID> greenSourceAgentsRejected = greenSourceAgentsAccepting.keySet().stream()
-                .filter(cloudNetworkData -> !cloudNetworkData.equals(chosenGreenSource))
-                .toList();
+            .filter(cloudNetworkData -> !cloudNetworkData.equals(chosenGreenSource))
+            .toList();
         final ACLMessage rejectProposal = new ACLMessage(REJECT_PROPOSAL);
         rejectProposal.setContent("Reject");
         greenSourceAgentsRejected.forEach(rejectProposal::addReceiver);

@@ -3,8 +3,13 @@ package agents.server;
 import static common.GroupConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.server.behaviour.*;
+import agents.server.behaviour.HandleCNAAcceptProposal;
+import agents.server.behaviour.HandleCNAJobCallForProposal;
+import agents.server.behaviour.HandleCNARejectProposal;
+import agents.server.behaviour.HandleGreenSourceCallForProposalResponse;
+import agents.server.behaviour.HandleGreenSourceJobInform;
 import jade.core.AID;
+import jade.core.behaviours.ParallelBehaviour;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
@@ -33,12 +38,13 @@ public class ServerAgent extends AbstractServerAgent {
                 logger.info("The given price is not a number!");
                 doDelete();
             }
-
-            addBehaviour(HandleGreenSourceCallForProposalResponse.createFor(this));
-            addBehaviour(HandleCNAJobCallForProposal.createFor(this));
-            addBehaviour(HandleCNAAcceptProposal.createFor(this));
-            addBehaviour(HandleGreenSourceJobInform.createFor(this));
-            addBehaviour(HandleCNARejectProposal.createFor(this));
+            ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
+            parallelBehaviour.addSubBehaviour(HandleGreenSourceCallForProposalResponse.createFor(this));
+            parallelBehaviour.addSubBehaviour(HandleCNAJobCallForProposal.createFor(this));
+            parallelBehaviour.addSubBehaviour(HandleCNAAcceptProposal.createFor(this));
+            parallelBehaviour.addSubBehaviour(HandleGreenSourceJobInform.createFor(this));
+            parallelBehaviour.addSubBehaviour(HandleCNARejectProposal.createFor(this));
+            addBehaviour(parallelBehaviour);
         } else {
             logger.info("I don't have the corresponding Cloud Network Agent");
             doDelete();

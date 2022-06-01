@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public class ServeWeatherInformation extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServeWeatherInformation.class);
 
     private final MonitoringAgent monitoringAgent;
 
@@ -42,7 +42,6 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                         e.printStackTrace();
                     }
                     response.addReceiver(message.getSender());
-                    response.setConversationId(message.getConversationId());
                     logger.info("Sending message with the weather data");
                     monitoringAgent.send(response);
             }

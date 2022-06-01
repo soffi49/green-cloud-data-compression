@@ -3,14 +3,10 @@ package agents.greenenergy;
 import static common.GroupConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.greenenergy.behaviour.*;
-import common.GroupConstants;
+import agents.greenenergy.behaviour.ListenForFinishedJobs;
+import agents.greenenergy.behaviour.ReceivePowerRequest;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
 import java.util.HashSet;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -30,7 +26,6 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
         if (Objects.nonNull(args) && args.length == 3) {
             monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-
             try {
                 location = ImmutableLocation.builder()
                     .latitude(Double.parseDouble(args[1].toString()))
@@ -41,10 +36,9 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
                 doDelete();
             }
         }
+
         register(this, GS_SERVICE_TYPE, getName());
-        addBehaviour(HandleServerCallForProposal.createFor(this));
-        addBehaviour(HandleMonitoringRequestResponse.createFor(this));
-        addBehaviour(HandleServerAcceptProposal.createFor(this));
-        addBehaviour(HandleServerRejectProposal.createFor(this));
+        addBehaviour(ReceivePowerRequest.createFor(this));
+        addBehaviour(ListenForFinishedJobs.createFor(this));
     }
 }
