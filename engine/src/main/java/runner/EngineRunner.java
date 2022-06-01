@@ -13,9 +13,6 @@ import runner.service.ScenarioService;
 
 public class EngineRunner {
     public static void main(String[] args) {
-        new Thread (() -> {
-            AgentsGui.main(null);
-        }).start();
 
         final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
