@@ -54,36 +54,39 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             replyMessage.setContent("REFUSE");
             myAgent.send(replyMessage);
         } else {
+            logger.info("[{}] Sending job execution offer to client", myAgent);
+            final ACLMessage chosenServerOffer = chooseServerToExecuteJob((Vector<ACLMessage>) acceptances);
+            getDataStore().put(chosenServerOffer.getSender(), chosenServerOffer);
+            final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
+
+            ServerData chosenServerData;
             try {
-                logger.info("[{}] Sending job execution offer to client", myAgent);
-                final ACLMessage chosenServerOffer = chooseServerToExecuteJob((Vector<ACLMessage>) acceptances);
-                getDataStore().put(chosenServerOffer.getSender(), chosenServerOffer);
-
-                final ServerData chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
-                final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
-
-                myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJob(), chosenServerOffer.getSender());
-                myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), getDataStore()));
-                rejectJobOffers(myAgent, chosenServerData.getJob(), chosenServerOffer, acceptances);
+                chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                throw new IncorrectServerOfferException();
             }
+
+            myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJob(), chosenServerOffer.getSender());
+            myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), getDataStore()));
+            rejectJobOffers(myAgent, chosenServerData.getJob(), chosenServerOffer, acceptances);
         }
     }
 
     private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {
-        final Comparator<ACLMessage> compareServerOffers =
-                ((message1, message2) -> {
-                    try {
-                        final ServerData server1 = getMapper().readValue(message1.getContent(), ServerData.class);
-                        final ServerData server2 = getMapper().readValue(message2.getContent(), ServerData.class);
-                        final int powerDifference = server1.getPowerInUse() - server2.getPowerInUse();
-                        final int priceDifference = (int) (server1.getPricePerHour() - server2.getPricePerHour());
-                        return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? priceDifference : powerDifference;
-                    } catch (JsonProcessingException e) {
-                        throw new IncorrectServerOfferException();
-                    }
-                });
-        return serverOffers.stream().min(compareServerOffers).orElseThrow();
+        return serverOffers.stream().min(this::compareServerOffers).orElseThrow();
+    }
+
+    private int compareServerOffers(final ACLMessage serverOffer1, final ACLMessage serverOffer2) {
+        ServerData server1;
+        ServerData server2;
+        try {
+            server1 = getMapper().readValue(serverOffer1.getContent(), ServerData.class);
+            server2 = getMapper().readValue(serverOffer2.getContent(), ServerData.class);
+        } catch (JsonProcessingException e) {
+            throw new IncorrectServerOfferException();
+        }
+        int powerDifference = server1.getPowerInUse() - server2.getPowerInUse();
+        int priceDifference = (int) (server1.getPricePerHour() - server2.getPricePerHour());
+        return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? priceDifference : powerDifference;
     }
 }

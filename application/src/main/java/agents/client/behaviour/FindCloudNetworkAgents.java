@@ -1,5 +1,9 @@
 package agents.client.behaviour;
 
+import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
+import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
+import static yellowpages.YellowPagesService.search;
+
 import agents.client.ClientAgent;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
@@ -7,10 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-
-import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
-import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
-import static yellowpages.YellowPagesService.search;
 
 /**
  * Behaviour responsible for finding cloud network agents for communication

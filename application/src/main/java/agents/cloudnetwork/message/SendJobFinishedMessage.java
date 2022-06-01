@@ -7,6 +7,7 @@ import jade.lang.acl.ACLMessage;
 import static jade.lang.acl.ACLMessage.INFORM;
 
 public class SendJobFinishedMessage {
+
     private final ACLMessage message;
     private SendJobFinishedMessage(ACLMessage message) {
         this.message = message;

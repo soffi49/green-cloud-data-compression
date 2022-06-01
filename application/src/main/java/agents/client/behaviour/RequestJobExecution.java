@@ -1,9 +1,15 @@
 package agents.client.behaviour;
 
+import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
+import static common.MessagingUtils.rejectJobOffers;
+import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
+import static mapper.JsonMapper.getMapper;
+
 import agents.client.ClientAgent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import common.message.SendJobCallForProposalMessage;
 import common.message.SendJobOfferResponseMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.job.Job;
 import domain.job.PricedJob;
 import exception.IncorrectCloudNetworkOfferException;
@@ -18,17 +24,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 
-import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
-import static common.MessagingUtils.rejectJobOffers;
-import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
-import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
-import static mapper.JsonMapper.getMapper;
-
 /**
  * Behaviour responsible for sending and handling job's call for proposal
  */
 public class RequestJobExecution extends ContractNetInitiator {
+
     private static final Logger logger = LoggerFactory.getLogger(RequestJobExecution.class);
+
     private final Job job;
     private ClientAgent myClientAgent;
 
@@ -77,14 +79,13 @@ public class RequestJobExecution extends ContractNetInitiator {
     }
 
     private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {
-        final Comparator<ACLMessage> compareCNA =
-                Comparator.comparingDouble(offer -> {
-                    try {
-                        return getMapper().readValue(offer.getContent(), PricedJob.class).getPriceForJob();
-                    } catch (JsonProcessingException e) {
-                        throw new IncorrectCloudNetworkOfferException();
-                    }
-                });
+        final Comparator<ACLMessage> compareCNA = Comparator.comparingDouble(offer -> {
+            try {
+                return getMapper().readValue(offer.getContent(), PricedJob.class).getPriceForJob();
+            } catch (JsonProcessingException e) {
+                throw new IncorrectCloudNetworkOfferException();
+            }
+        });
         return receivedOffers.stream().min(compareCNA).orElseThrow();
     }
 }
