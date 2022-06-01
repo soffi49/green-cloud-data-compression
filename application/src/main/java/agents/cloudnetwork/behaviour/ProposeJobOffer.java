@@ -21,7 +21,9 @@ import static mapper.JsonMapper.getMapper;
  * Behaviour responsible for sending proposal with job execution offer to the client
  */
 public class ProposeJobOffer extends ProposeInitiator {
+
     private static final Logger logger = LoggerFactory.getLogger(ProposeJobOffer.class);
+
     private CloudNetworkAgent myCloudNetworkAgent;
 
     public ProposeJobOffer(final Agent a, final ACLMessage msg, final DataStore dataStore) {

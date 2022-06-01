@@ -3,6 +3,7 @@ package agents.cloudnetwork.behaviour;
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.message.SendJobOfferMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.message.SendRefuseProposalMessage;
 import domain.ServerData;
 import exception.IncorrectServerOfferException;
 import jade.core.AID;
@@ -50,9 +51,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
         } else if (acceptances.isEmpty()) {
             logger.info("[{}] No servers available - sending refuse message to client", myAgent);
             final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
-            replyMessage.setPerformative(REFUSE);
-            replyMessage.setContent("REFUSE");
-            myAgent.send(replyMessage);
+            myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
         } else {
             logger.info("[{}] Sending job execution offer to client", myAgent);
             final ACLMessage chosenServerOffer = chooseServerToExecuteJob((Vector<ACLMessage>) acceptances);

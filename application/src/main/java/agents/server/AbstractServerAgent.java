@@ -3,16 +3,15 @@ package agents.server;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 
 public abstract class AbstractServerAgent extends Agent {
 
     protected Set<Job> currentJobs;
     protected Map<Job, AID> greenSourceForJobMap;
+    protected List<AID> ownedGreenSources;
     protected AID ownerCloudNetworkAgent;
-    protected int messagesSentCount;
     protected double pricePerHour;
     protected int powerInUse;
     protected int availableCapacity;
@@ -21,6 +20,7 @@ public abstract class AbstractServerAgent extends Agent {
         super.setup();
 
         currentJobs = new HashSet<>();
+        ownedGreenSources = new ArrayList<>();
         powerInUse = 0;
     }
 
@@ -40,17 +40,8 @@ public abstract class AbstractServerAgent extends Agent {
         return powerInUse;
     }
 
-
-    public int getMessagesSentCount() {
-        return messagesSentCount;
-    }
-
     public AID getOwnerCloudNetworkAgent() {
         return ownerCloudNetworkAgent;
-    }
-
-    public void setMessagesSentCount(int messagesSentCount) {
-        this.messagesSentCount = messagesSentCount;
     }
 
     public double getPricePerHour() {
@@ -75,5 +66,17 @@ public abstract class AbstractServerAgent extends Agent {
 
     public void setCurrentJobs(Set<Job> currentJobs) {
         this.currentJobs = currentJobs;
+    }
+
+    public List<AID> getOwnedGreenSources() {
+        return ownedGreenSources;
+    }
+
+    public void setOwnedGreenSources(List<AID> ownedGreenSources) {
+        this.ownedGreenSources = ownedGreenSources;
+    }
+
+    public void setOwnerCloudNetworkAgent(AID ownerCloudNetworkAgent) {
+        this.ownerCloudNetworkAgent = ownerCloudNetworkAgent;
     }
 }

@@ -18,6 +18,7 @@ import static yellowpages.YellowPagesService.search;
 public class FindServerAgents extends OneShotBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(FindServerAgents.class);
+
     private CloudNetworkAgent myCloudNetworkAgent;
 
     @Override

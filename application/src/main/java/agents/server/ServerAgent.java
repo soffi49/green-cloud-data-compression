@@ -1,16 +1,17 @@
 package agents.server;
 
-import static common.constant.DFServiceConstants.SA_SERVICE_NAME;
-import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.*;
 import static yellowpages.YellowPagesService.register;
+import static yellowpages.YellowPagesService.search;
 
-import agents.server.behaviour.*;
+import agents.server.behaviour.ReceiveJobRequest;
 import jade.core.AID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ServerAgent extends AbstractServerAgent {
 
@@ -25,23 +26,24 @@ public class ServerAgent extends AbstractServerAgent {
         currentJobs = new HashSet<>();
 
         if (Objects.nonNull(args) && args.length == 3) {
-            ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+            initializeAgent(args);
             register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
-            try {
-                pricePerHour = Double.parseDouble(args[1].toString());
-                availableCapacity = Integer.parseInt(args[2].toString());
-            } catch (NumberFormatException e) {
-                logger.info("The given price is not a number!");
-                doDelete();
-            }
 
-            addBehaviour(HandleGreenSourceCallForProposalResponse.createFor(this));
-            addBehaviour(HandleCNAJobCallForProposal.createFor(this));
-            addBehaviour(HandleCNAAcceptProposal.createFor(this));
-            addBehaviour(HandleGreenSourceJobInform.createFor(this));
-            addBehaviour(HandleCNARejectProposal.createFor(this));
+            addBehaviour(new ReceiveJobRequest());
         } else {
             logger.info("I don't have the corresponding Cloud Network Agent");
+            doDelete();
+        }
+    }
+
+    private void initializeAgent(final Object[] args) {
+        this.ownedGreenSources = search(this, GS_SERVICE_TYPE, this.getName());
+        this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+        try {
+            this.pricePerHour = Double.parseDouble(args[1].toString());
+            this.availableCapacity = Integer.parseInt(args[2].toString());
+        } catch (final NumberFormatException e) {
+            logger.info("The given price is not a number!");
             doDelete();
         }
 
