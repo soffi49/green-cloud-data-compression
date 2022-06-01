@@ -16,17 +16,17 @@ import static jade.lang.acl.ACLMessage.INFORM;
  */
 public class WaitForJobResult extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(HandleCNAJobInform.class);
+    private static final Logger logger = LoggerFactory.getLogger(WaitForJobResult.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(INFORM);
 
     private ClientAgent clientAgent;
 
-    private HandleCNAJobInform(final ClientAgent clientAgent) {
+    private WaitForJobResult(final ClientAgent clientAgent) {
         super(clientAgent);
     }
 
-    public static HandleCNAJobInform createFor(final ClientAgent clientAgent) {
-        return new HandleCNAJobInform(clientAgent);
+    public static WaitForJobResult createFor(final ClientAgent clientAgent) {
+        return new WaitForJobResult(clientAgent);
     }
 
     @Override

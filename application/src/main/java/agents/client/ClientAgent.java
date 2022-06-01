@@ -1,7 +1,10 @@
 package agents.client;
 
 import agents.client.behaviour.FindCloudNetworkAgents;
+import agents.client.behaviour.HandleCNACallForProposalResponse;
 import agents.client.behaviour.RequestJobExecution;
+import agents.client.behaviour.SendJobCallForProposal;
+import agents.client.behaviour.WaitForJobResult;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
@@ -25,7 +28,9 @@ public class ClientAgent extends AbstractClientAgent {
 
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
-            addBehaviour(prepareStartingBehaviour());
+            addBehaviour(SendJobCallForProposal.createFor(this, jobToBeExecuted));
+            addBehaviour(HandleCNACallForProposalResponse.createFor(this, jobToBeExecuted));
+            addBehaviour(WaitForJobResult.createFor(this));
         } else {
             logger.info("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
