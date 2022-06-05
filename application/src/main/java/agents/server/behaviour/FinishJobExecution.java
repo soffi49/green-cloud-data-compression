@@ -43,7 +43,8 @@ public class FinishJobExecution extends WakerBehaviour {
     protected void onWake() {
         logger.info("[{}] Finished executing the job for {}", myAgent, jobToExecute.getClientIdentifier());
         final ACLMessage informMessage = SendJobMessage.create(jobToExecute,
-                                                               List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute), myServerAgent.getOwnerCloudNetworkAgent()),
+                                                               List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute),
+                                                                       myServerAgent.getOwnerCloudNetworkAgent()),
                                                                ACLMessage.INFORM).getMessage();
         informMessage.setProtocol(FINISH_JOB_PROTOCOL);
         updateNetworkInformation();

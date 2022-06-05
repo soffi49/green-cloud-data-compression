@@ -39,14 +39,14 @@ public class ProposeJobOffer extends ProposeInitiator {
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         try {
-            logger.info("[{}] Sending accept proposal to Server Agent", myAgent);
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", myAgent);
 
             final Job job = getMapper().readValue(accept_proposal.getContent(), Job.class);
             final AID serverForJob = myCloudNetworkAgent.getServerForJobMap().get(job);
             final ACLMessage acceptanceMessage = (ACLMessage) getDataStore().get(serverForJob);
 
             updateNetworkInformation(job);
-            myAgent.send(SendJobConfirmationMessage.create(job, accept_proposal).getMessage());
+            myAgent.send(SendJobConfirmationMessage.create(job, accept_proposal.createReply()).getMessage());
             myAgent.send(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, acceptanceMessage).getMessage());
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,7 +67,6 @@ public class ProposeJobOffer extends ProposeInitiator {
             e.printStackTrace();
         }
     }
-
     private void updateNetworkInformation(final Job job) {
         myCloudNetworkAgent.getCurrentJobs().add(job);
         myCloudNetworkAgent.setInUsePower(myCloudNetworkAgent.getInUsePower() + job.getPower());

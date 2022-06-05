@@ -40,6 +40,10 @@ public class ReceiveJobRequest extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             try {
+                if(myServerAgent.getOwnedGreenSources().isEmpty()) {
+                    logger.info("I don't have the Green Source Agents");
+                    myAgent.doDelete();
+                }
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
 
                 if (job.getPower() + myServerAgent.getPowerInUse() <= myServerAgent.getAvailableCapacity()) {

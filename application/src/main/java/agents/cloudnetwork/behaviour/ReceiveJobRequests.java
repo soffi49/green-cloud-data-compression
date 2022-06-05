@@ -4,6 +4,7 @@ import common.message.SendJobCallForProposalMessage;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class ReceiveJobRequests extends CyclicBehaviour {
                 final List<AID> serverAgents = (List<AID>) getParent().getDataStore().get(SERVER_AGENTS);
                 final ACLMessage cfp = SendJobCallForProposalMessage.create(job, serverAgents, CNA_JOB_CFP_PROTOCOL).getMessage();
 
-                myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, getParent().getDataStore(), message.getSender()));
+                myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, root().getDataStore(), message.getSender()));
             } catch (Exception e) {
                 e.printStackTrace();
             }

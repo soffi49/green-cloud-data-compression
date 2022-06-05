@@ -57,19 +57,22 @@ public class RequestJobExecution extends ContractNetInitiator {
 
     @Override
     protected void handleAllResponses(final Vector responses, final Vector acceptances) {
+        final List<ACLMessage> proposals = ((Vector<ACLMessage>) responses).stream()
+                .filter(response -> response.getPerformative() == ACLMessage.PROPOSE)
+                .toList();
+
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", myAgent);
             myAgent.doDelete();
-        } else if (acceptances.isEmpty()) {
+        } else if (proposals.isEmpty()) {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", myAgent);
             myAgent.doDelete();
         } else {
-            final Vector<ACLMessage> receivedOffers = (Vector<ACLMessage>) acceptances;
-            final ACLMessage chosenOffer = chooseCNAToExecuteJob(receivedOffers);
+            final ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
             logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", myAgent, chosenOffer.getSender().getName());
             myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
-            myAgent.send(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, chosenOffer).getMessage());
-            rejectJobOffers(myClientAgent, job, chosenOffer, receivedOffers);
+            acceptances.add(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, chosenOffer.createReply()).getMessage());
+            rejectJobOffers(myClientAgent, job, chosenOffer, proposals);
         }
     }
 

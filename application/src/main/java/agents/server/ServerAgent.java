@@ -36,8 +36,14 @@ public class ServerAgent extends AbstractServerAgent {
         }
     }
 
+    @Override
+    protected void takeDown() {
+        logger.info("I'm finished. Bye!");
+        super.takeDown();
+    }
+
     private void initializeAgent(final Object[] args) {
-        this.ownedGreenSources = search(this, GS_SERVICE_TYPE, this.getName());
+        this.ownedGreenSources = search(this, GS_SERVICE_TYPE);
         this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
         try {
             this.pricePerHour = Double.parseDouble(args[1].toString());

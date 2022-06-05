@@ -37,13 +37,14 @@ public class VolunteerForJob extends ProposeInitiator {
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         try {
-            logger.info("[{}] Sending volunteering offer to Green Source Agent", myAgent);
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent);
 
             final Job job = getMapper().readValue(accept_proposal.getContent(), Job.class);
             final AID greenSourceForJob = myServerAgent.getGreenSourceForJobMap().get(job);
             final ACLMessage acceptanceMessage = (ACLMessage) getDataStore().get(greenSourceForJob);
 
-            myAgent.send(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, acceptanceMessage).getMessage());
+            myAgent.addBehaviour(new StartJobExecution());
+            myAgent.send(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, acceptanceMessage.createReply()).getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,7 +59,7 @@ public class VolunteerForJob extends ProposeInitiator {
             final ACLMessage rejectionMessage = (ACLMessage) getDataStore().get(serverToReject);
 
             myServerAgent.getGreenSourceForJobMap().remove(job);
-            myServerAgent.send(SendJobOfferResponseMessage.create(job, REJECT_PROPOSAL, rejectionMessage).getMessage());
+            myServerAgent.send(SendJobOfferResponseMessage.create(job, REJECT_PROPOSAL, rejectionMessage.createReply()).getMessage());
         } catch (final Exception e) {
             e.printStackTrace();
         }

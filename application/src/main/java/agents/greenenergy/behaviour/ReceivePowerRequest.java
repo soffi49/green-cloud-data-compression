@@ -2,8 +2,9 @@ package agents.greenenergy.behaviour;
 
 import static agents.greenenergy.DataStoreConstants.JOB_MESSAGE;
 import static agents.server.message.ReplyMessageFactory.prepareReply;
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.ACLMessage.PROPOSE;
+import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static jade.lang.acl.ACLMessage.*;
+import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
@@ -21,8 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Behaviour responsible for handling server call for proposal for given job (instead of HandleServerCallForProposal,
- * HandleServerAcceptProposal, HandleServerRejectProposal)
+ * Behaviour responsible for handling server call for proposal for given job
  */
 public class ReceivePowerRequest extends ContractNetResponder {
 

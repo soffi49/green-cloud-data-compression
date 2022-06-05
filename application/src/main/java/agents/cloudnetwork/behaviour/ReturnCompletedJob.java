@@ -1,5 +1,10 @@
 package agents.cloudnetwork.behaviour;
 
+import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static jade.lang.acl.ACLMessage.INFORM;
+import static jade.lang.acl.MessageTemplate.*;
+import static mapper.JsonMapper.getMapper;
+
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.message.SendJobFinishedMessage;
 import domain.job.Job;
@@ -10,11 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-
-import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.*;
-import static mapper.JsonMapper.getMapper;
 
 /**
  * Behaviour responsible for returning to the client the information that the job execution has finished

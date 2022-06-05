@@ -76,9 +76,9 @@ public class ScenarioArgs implements Serializable {
         var monitoringArgs = monitoringAgentsArgs.stream().map(AgentArgs.class::cast);
         var greenEnergyArgs = greenEnergyAgentsArgs.stream().map(AgentArgs.class::cast);
 
-        return concat(clientArgs,
+        return concat(monitoringArgs,
+                concat(greenEnergyArgs,
                 concat(serverArgs,
-                concat(cloudNetworkArgs,
-                concat(monitoringArgs, greenEnergyArgs)))).toList();
+                concat(cloudNetworkArgs, clientArgs)))).toList();
     }
 }

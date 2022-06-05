@@ -9,7 +9,6 @@ import agents.server.message.SendJobVolunteerProposalMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.message.SendRefuseProposalMessage;
 import domain.GreenSourceData;
-import domain.job.Job;
 import exception.IncorrectGreenSourceOfferException;
 import jade.core.Agent;
 import jade.core.behaviours.DataStore;
@@ -43,15 +42,19 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 
     @Override
     protected void handleAllResponses(Vector responses, Vector acceptances) {
+        final List<ACLMessage> proposals = ((Vector<ACLMessage>) responses).stream()
+                .filter(response -> response.getPerformative() == ACLMessage.PROPOSE)
+                .toList();
+
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", myAgent);
-        } else if (acceptances.isEmpty()) {
+        } else if (proposals.isEmpty()) {
             logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
             final ACLMessage replyMessage = (ACLMessage) getDataStore().get(myServerAgent.getOwnerCloudNetworkAgent());
             myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
         } else {
             logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent);
-            final ACLMessage chosenGreenSourceOffer = chooseGreenSourceToExecuteJob((Vector<ACLMessage>) acceptances);
+            final ACLMessage chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(proposals);
             getDataStore().put(chosenGreenSourceOffer.getSender(), chosenGreenSourceOffer);
             final ACLMessage replyMessage = (ACLMessage) getDataStore().get(myServerAgent.getOwnerCloudNetworkAgent());
 
@@ -69,26 +72,8 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
             myServerAgent.getGreenSourceForJobMap().put(chosenGreenSourceData.getJob(), chosenGreenSourceOffer.getSender());
 
             myAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, getDataStore()));
-            rejectJobOffers(myAgent, chosenGreenSourceData.getJob(), chosenGreenSourceOffer, acceptances);
+            rejectJobOffers(myAgent, chosenGreenSourceData.getJob(), chosenGreenSourceOffer, proposals);
         }
-    }
-
-    @Override
-    protected void handleInform(final ACLMessage inform) {
-        try {
-            final Job job = getMapper().readValue(inform.getContent(), Job.class);
-            logger.info("[{}] Starting the execution of the job", myAgent);
-
-            updateNetworkInformation(job);
-            myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, job));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateNetworkInformation(final Job job) {
-        myServerAgent.getCurrentJobs().add(job);
-        myServerAgent.setPowerInUse(myServerAgent.getPowerInUse() + job.getPower());
     }
 
     private double calculateServicePrice(final GreenSourceData greenSourceData) {

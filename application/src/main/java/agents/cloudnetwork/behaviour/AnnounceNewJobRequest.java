@@ -1,5 +1,8 @@
 package agents.cloudnetwork.behaviour;
 
+import static common.MessagingUtils.rejectJobOffers;
+import static mapper.JsonMapper.getMapper;
+
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.message.SendJobOfferMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,13 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ValueRange;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
-
-import static common.MessagingUtils.rejectJobOffers;
-import static jade.lang.acl.ACLMessage.REFUSE;
-import static mapper.JsonMapper.getMapper;
 
 /**
  * Behaviour which is responsible for broadcasting client's job to servers and choosing server to execute the job
@@ -29,12 +27,11 @@ import static mapper.JsonMapper.getMapper;
 public class AnnounceNewJobRequest extends ContractNetInitiator {
     private static final Logger logger = LoggerFactory.getLogger(AnnounceNewJobRequest.class);
     private static final ValueRange MAX_POWER_DIFFERENCE = ValueRange.of(-10, 10);
-
-    private CloudNetworkAgent myCloudNetworkAgent;
     private final AID client;
+    private CloudNetworkAgent myCloudNetworkAgent;
 
-    public AnnounceNewJobRequest(final Agent a, final ACLMessage clientsJob, final DataStore dataStore, final AID client) {
-        super(a, clientsJob, dataStore);
+    public AnnounceNewJobRequest(final Agent a, final ACLMessage cfp, final DataStore dataStore, final AID client) {
+        super(a, cfp, dataStore);
         this.client = client;
     }
 
@@ -46,17 +43,21 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
     @Override
     protected void handleAllResponses(final Vector responses, final Vector acceptances) {
+        final List<ACLMessage> proposals = ((Vector<ACLMessage>) responses).stream()
+                .filter(response -> response.getPerformative() == ACLMessage.PROPOSE)
+                .toList();
+
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", myAgent);
-        } else if (acceptances.isEmpty()) {
+        } else if (proposals.isEmpty()) {
             logger.info("[{}] No servers available - sending refuse message to client", myAgent);
             final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
             myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
         } else {
             logger.info("[{}] Sending job execution offer to client", myAgent);
-            final ACLMessage chosenServerOffer = chooseServerToExecuteJob((Vector<ACLMessage>) acceptances);
-            getDataStore().put(chosenServerOffer.getSender(), chosenServerOffer);
+            final ACLMessage chosenServerOffer = chooseServerToExecuteJob(proposals);
             final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
+            getDataStore().put(chosenServerOffer.getSender(), chosenServerOffer.createReply());
 
             ServerData chosenServerData;
             try {
@@ -67,7 +68,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJob(), chosenServerOffer.getSender());
             myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), getDataStore()));
-            rejectJobOffers(myAgent, chosenServerData.getJob(), chosenServerOffer, acceptances);
+            rejectJobOffers(myAgent, chosenServerData.getJob(), chosenServerOffer, proposals);
         }
     }
 

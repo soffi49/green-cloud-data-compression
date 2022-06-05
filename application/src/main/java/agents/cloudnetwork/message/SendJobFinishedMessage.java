@@ -4,6 +4,7 @@ import domain.job.Job;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
+import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 
 public class SendJobFinishedMessage {
@@ -15,6 +16,7 @@ public class SendJobFinishedMessage {
 
     public static SendJobFinishedMessage create(final Job job) {
         final ACLMessage informationMessage = new ACLMessage(INFORM);
+        informationMessage.setProtocol(FINISH_JOB_PROTOCOL);
         informationMessage.setContent(String.format("The job %s is finished!", job.getJobId()));
         informationMessage.addReceiver(new AID(job.getClientIdentifier(), AID.ISGUID));
         return new SendJobFinishedMessage(informationMessage);

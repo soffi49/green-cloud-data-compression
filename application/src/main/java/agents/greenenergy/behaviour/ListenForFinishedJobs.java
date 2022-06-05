@@ -1,8 +1,8 @@
 package agents.greenenergy.behaviour;
 
+import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.MatchConversationId;
-import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.*;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
 
@@ -25,7 +25,7 @@ public class ListenForFinishedJobs extends CyclicBehaviour {
 
     private ListenForFinishedJobs(final GreenEnergyAgent myGreenEnergyAgent) {
         this.myGreenEnergyAgent = myGreenEnergyAgent;
-        this.messageTemplate = MessageTemplate.and(MatchPerformative(INFORM), MatchConversationId("FINISHED"));
+        this.messageTemplate = MessageTemplate.and(MatchPerformative(INFORM), MatchProtocol(FINISH_JOB_PROTOCOL));
         this.guid = myGreenEnergyAgent.getName();
     }
 
