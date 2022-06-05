@@ -8,6 +8,7 @@
         <greenenergyAgent>
             <name>Green</name>
             <monitoringAgent>Weather</monitoringAgent>
+            <ownerSever>Server</ownerSever>
             <latitude>10.0</latitude>
             <longitude>11.1</longitude>
         </greenenergyAgent>

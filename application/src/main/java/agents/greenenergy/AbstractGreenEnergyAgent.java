@@ -14,9 +14,19 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
 
     protected AID monitoringAgent;
 
+    protected AID ownerGreenSource;
+
     protected double pricePerPowerUnit;
 
     protected Set<Job> currentJobs;
+
+    public AID getOwnerGreenSource() {
+        return ownerGreenSource;
+    }
+
+    public void setOwnerGreenSource(AID ownerGreenSource) {
+        this.ownerGreenSource = ownerGreenSource;
+    }
 
     public double getPricePerPowerUnit() {
         return pricePerPowerUnit;

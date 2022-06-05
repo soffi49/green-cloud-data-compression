@@ -11,6 +11,8 @@ public interface GreenEnergyAgentArgs extends AgentArgs{
 
     String getMonitoringAgent();
 
+    String getOwnerSever();
+
     String getLatitude();
 
     String getLongitude();

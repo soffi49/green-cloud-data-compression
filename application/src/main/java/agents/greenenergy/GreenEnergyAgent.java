@@ -26,19 +26,23 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         this.setAvailableCapacity(100);
         this.currentJobs = new HashSet<>();
 
-        if (Objects.nonNull(args) && args.length == 3) {
+        if (Objects.nonNull(args) && args.length == 4) {
             monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+            ownerGreenSource = new AID(args[1].toString(), AID.ISLOCALNAME);
             try {
                 location = ImmutableLocation.builder()
-                        .latitude(Double.parseDouble(args[1].toString()))
-                        .longitude(Double.parseDouble(args[2].toString()))
+                        .latitude(Double.parseDouble(args[2].toString()))
+                        .longitude(Double.parseDouble(args[3].toString()))
                         .build();
             } catch (NumberFormatException e) {
                 logger.info("Incorrect argument: latitude and longitude must be doubles");
                 doDelete();
             }
+        } else {
+            logger.info("Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
+            doDelete();
         }
-        register(this, GS_SERVICE_TYPE, getName());
+        register(this, GS_SERVICE_TYPE, getName(), ownerGreenSource.getName());
         addBehaviour(createInitialBehaviour());
     }
 

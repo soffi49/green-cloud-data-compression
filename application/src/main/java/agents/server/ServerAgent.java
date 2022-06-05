@@ -31,7 +31,7 @@ public class ServerAgent extends AbstractServerAgent {
 
             addBehaviour(new ReceiveJobRequest());
         } else {
-            logger.info("I don't have the corresponding Cloud Network Agent");
+            logger.info("Incorrect arguments: some parameters for server agent are missing - check the parameters in the documentation");
             doDelete();
         }
     }
@@ -43,7 +43,7 @@ public class ServerAgent extends AbstractServerAgent {
     }
 
     private void initializeAgent(final Object[] args) {
-        this.ownedGreenSources = search(this, GS_SERVICE_TYPE);
+        this.ownedGreenSources = search(this, GS_SERVICE_TYPE, getName());
         this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
         try {
             this.pricePerHour = Double.parseDouble(args[1].toString());

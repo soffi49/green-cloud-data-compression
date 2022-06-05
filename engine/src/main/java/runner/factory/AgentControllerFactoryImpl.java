@@ -37,7 +37,10 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
         else if(agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent){
             return containerController.createNewAgent(greenEnergyAgent.getName(),
                     "agents.greenenergy.GreenEnergyAgent",
-                    new Object[]{greenEnergyAgent.getMonitoringAgent(), greenEnergyAgent.getLatitude(), greenEnergyAgent.getLongitude()});
+                    new Object[]{greenEnergyAgent.getMonitoringAgent(),
+                            greenEnergyAgent.getOwnerSever(),
+                            greenEnergyAgent.getLatitude(),
+                            greenEnergyAgent.getLongitude()});
         }
         else if(agentArgs instanceof MonitoringAgentArgs monitoringAgent){
             return containerController.createNewAgent(monitoringAgent.getName(),
