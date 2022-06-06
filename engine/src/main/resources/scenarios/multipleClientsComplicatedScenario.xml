@@ -1,0 +1,72 @@
+<ScenarioArgs>
+    <monitoringAgentsArgs>
+        <monitoringAgent>
+            <name>Weather</name>
+        </monitoringAgent>
+    </monitoringAgentsArgs>
+    <greenEnergyAgentsArgs>
+        <greenenergyAgent>
+            <name>Solar</name>
+            <monitoringAgent>Weather</monitoringAgent>
+            <ownerSever>Server1</ownerSever>
+            <latitude>10.0</latitude>
+            <longitude>11.1</longitude>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Water</name>
+            <monitoringAgent>Weather</monitoringAgent>
+            <ownerSever>Server2</ownerSever>
+            <latitude>10.0</latitude>
+            <longitude>11.1</longitude>
+        </greenenergyAgent>
+    </greenEnergyAgentsArgs>
+    <serverAgentsArgs>
+        <serverAgentsArgs>
+            <name>Server1</name>
+            <ownerCloudNetwork>CNA</ownerCloudNetwork>
+            <power>10</power>
+            <price>10.5</price>
+        </serverAgentsArgs>
+        <serverAgentsArgs>
+            <name>Server2</name>
+            <ownerCloudNetwork>CNA</ownerCloudNetwork>
+            <power>15</power>
+            <price>10.5</price>
+        </serverAgentsArgs>
+    </serverAgentsArgs>
+    <cloudNetworkAgentsArgs>
+        <cloudNetworkAgent>
+            <name>CNA</name>
+        </cloudNetworkAgent>
+    </cloudNetworkAgentsArgs>
+    <clientAgentsArgs>
+        <clientAgent>
+            <name>First_Client</name>
+            <jobId>1</jobId>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 12:40</endDate>
+            <power>5</power>
+        </clientAgent>
+        <clientAgent>
+            <name>Second_Client</name>
+            <jobId>2</jobId>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 13:40</endDate>
+            <power>10</power>
+        </clientAgent>
+        <clientAgent>
+            <name>Third_Client</name>
+            <jobId>2</jobId>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 11:40</endDate>
+            <power>10</power>
+        </clientAgent>
+        <clientAgent>
+            <name>Fourth_Client</name>
+            <jobId>2</jobId>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 12:40</endDate>
+            <power>10</power>
+        </clientAgent>
+    </clientAgentsArgs>
+</ScenarioArgs>

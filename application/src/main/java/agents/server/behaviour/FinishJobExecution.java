@@ -1,7 +1,9 @@
 package agents.server.behaviour;
 
-import agents.client.message.SendJobMessage;
+import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+
 import agents.server.ServerAgent;
+import common.message.SendJobMessage;
 import domain.job.Job;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -9,21 +11,17 @@ import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
  * Behaviour responsible for returning to the CNA and GreenSource the information that the job execution has finished
- * (instead of HandleServerCNAInformJobDone)
  */
 public class FinishJobExecution extends WakerBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(FinishJobExecution.class);
-
-    private ServerAgent serverAgent;
-    private Job jobToExecute;
-
+    private final Job jobToExecute;
+    private ServerAgent myServerAgent;
 
     private FinishJobExecution(Agent a, long timeOut, final Job job) {
         super(a, timeOut);
@@ -38,19 +36,24 @@ public class FinishJobExecution extends WakerBehaviour {
     @Override
     public void onStart() {
         super.onStart();
-        serverAgent = (ServerAgent) myAgent;
+        myServerAgent = (ServerAgent) myAgent;
     }
 
     @Override
     protected void onWake() {
-        logger.info("[{}] Finished executing the job for {}", myAgent, jobToExecute.getClientIdentifier());
-        serverAgent.getCurrentJobs().remove(jobToExecute);
-        serverAgent.setPowerInUse(serverAgent.getPowerInUse() - jobToExecute.getPower());
+        logger.info("[{}] Finished executing the job for {}", myAgent.getName(), jobToExecute.getClientIdentifier());
         final ACLMessage informMessage = SendJobMessage.create(jobToExecute,
-                                           List.of(serverAgent.getGreenSourceForJobMap().get(jobToExecute), serverAgent.getOwnerCloudNetworkAgent()),
-                                           ACLMessage.INFORM).getMessage();
-        informMessage.setConversationId("FINISHED");
+                                                               List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute),
+                                                                       myServerAgent.getOwnerCloudNetworkAgent()),
+                                                               ACLMessage.INFORM).getMessage();
+        informMessage.setProtocol(FINISH_JOB_PROTOCOL);
+        updateNetworkInformation();
         myAgent.send(informMessage);
-        serverAgent.getGreenSourceForJobMap().remove(jobToExecute);
+    }
+
+    private void updateNetworkInformation() {
+        myServerAgent.getCurrentJobs().remove(jobToExecute);
+        myServerAgent.setPowerInUse(myServerAgent.getPowerInUse() - jobToExecute.getPower());
+        myServerAgent.getGreenSourceForJobMap().remove(jobToExecute);
     }
 }

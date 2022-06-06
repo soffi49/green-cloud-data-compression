@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public class ServeWeatherInformation extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServeWeatherInformation.class);
 
     private final MonitoringAgent monitoringAgent;
 

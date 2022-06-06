@@ -6,17 +6,31 @@
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
-            <name>Green</name>
+            <name>Solar</name>
             <monitoringAgent>Weather</monitoringAgent>
+            <ownerSever>Server1</ownerSever>
+            <latitude>10.0</latitude>
+            <longitude>11.1</longitude>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Water</name>
+            <monitoringAgent>Weather</monitoringAgent>
+            <ownerSever>Server2</ownerSever>
             <latitude>10.0</latitude>
             <longitude>11.1</longitude>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>
         <serverAgentsArgs>
-            <name>Server</name>
+            <name>Server1</name>
             <ownerCloudNetwork>CNA</ownerCloudNetwork>
             <power>10</power>
+            <price>10.5</price>
+        </serverAgentsArgs>
+        <serverAgentsArgs>
+            <name>Server2</name>
+            <ownerCloudNetwork>CNA</ownerCloudNetwork>
+            <power>15</power>
             <price>10.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>
@@ -27,11 +41,18 @@
     </cloudNetworkAgentsArgs>
     <clientAgentsArgs>
         <clientAgent>
-            <name>Client</name>
+            <name>First_Client</name>
             <jobId>1</jobId>
             <startDate>10/12/2021 10:30</startDate>
             <endDate>10/12/2021 10:40</endDate>
             <power>5</power>
+        </clientAgent>
+        <clientAgent>
+            <name>Second_Client</name>
+            <jobId>2</jobId>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 10:40</endDate>
+            <power>10</power>
         </clientAgent>
     </clientAgentsArgs>
 </ScenarioArgs>
