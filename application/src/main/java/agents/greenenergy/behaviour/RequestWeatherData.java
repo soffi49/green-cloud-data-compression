@@ -21,18 +21,22 @@ public class RequestWeatherData extends OneShotBehaviour {
 
     private GreenEnergyAgent myGreenEnergyAgent;
 
-    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent) {
+    private final String conversationId;
+
+    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, String conversationId) {
         myGreenEnergyAgent = greenEnergyAgent;
+        this.conversationId = conversationId;
     }
 
     @Override
     public void action() {
         ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
         request.addReceiver(myGreenEnergyAgent.getMonitoringAgent());
+        request.setConversationId(conversationId);
         var requestData = ImmutableServerRequestData.builder()
-            .location(myGreenEnergyAgent.getLocation())
-            .job((Job) getParent().getDataStore().get(JOB_MESSAGE))
-            .build();
+                .location(myGreenEnergyAgent.getLocation())
+                .job((Job) getParent().getDataStore().get(JOB_MESSAGE))
+                .build();
         try {
             request.setContent(getMapper().writeValueAsString(requestData));
         } catch (JsonProcessingException e) {

@@ -32,7 +32,7 @@ public class FindServerAgents extends OneShotBehaviour {
         final List<AID> serverAgents = search(myAgent, SA_SERVICE_TYPE, myAgent.getName());
 
         if (serverAgents.isEmpty()) {
-            logger.info("[{}] No Server Agents were found", myCloudNetworkAgent);
+            logger.info("[{}] No Server Agents were found", myCloudNetworkAgent.getName());
             myCloudNetworkAgent.doDelete();
         }
         getParent().getDataStore().put(SERVER_AGENTS, serverAgents);

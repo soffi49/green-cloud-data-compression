@@ -38,7 +38,7 @@ public class ReturnCompletedJob extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending information that the job execution is finished", myAgent);
+                logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
                 updateNetworkInformation(job);
                 myAgent.send(SendJobFinishedMessage.create(job).getMessage());

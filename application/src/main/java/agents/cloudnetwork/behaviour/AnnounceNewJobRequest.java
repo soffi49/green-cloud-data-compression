@@ -9,9 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import common.message.SendRefuseProposalMessage;
 import domain.ServerData;
 import exception.IncorrectServerOfferException;
-import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.DataStore;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import org.slf4j.Logger;
@@ -27,12 +25,12 @@ import java.util.Vector;
 public class AnnounceNewJobRequest extends ContractNetInitiator {
     private static final Logger logger = LoggerFactory.getLogger(AnnounceNewJobRequest.class);
     private static final ValueRange MAX_POWER_DIFFERENCE = ValueRange.of(-10, 10);
-    private final AID client;
+    private final ACLMessage replyMessage;
     private CloudNetworkAgent myCloudNetworkAgent;
 
-    public AnnounceNewJobRequest(final Agent a, final ACLMessage cfp, final DataStore dataStore, final AID client) {
-        super(a, cfp, dataStore);
-        this.client = client;
+    public AnnounceNewJobRequest(final Agent a, final ACLMessage cfp, final ACLMessage replyMessage) {
+        super(a, cfp);
+        this.replyMessage = replyMessage;
     }
 
     @Override
@@ -48,16 +46,14 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
                 .toList();
 
         if (responses.isEmpty()) {
-            logger.info("[{}] No responses were retrieved", myAgent);
+            logger.info("[{}] No responses were retrieved", myAgent.getName());
         } else if (proposals.isEmpty()) {
-            logger.info("[{}] No servers available - sending refuse message to client", myAgent);
-            final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
+            logger.info("[{}] No servers available - sending refuse message to client", myAgent.getName());
             myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
         } else {
-            logger.info("[{}] Sending job execution offer to client", myAgent);
             final ACLMessage chosenServerOffer = chooseServerToExecuteJob(proposals);
-            final ACLMessage replyMessage = (ACLMessage) getDataStore().get(client);
             getDataStore().put(chosenServerOffer.getSender(), chosenServerOffer.createReply());
+            logger.info("[{}] Chosen Server for the job: {}", myAgent.getName(), chosenServerOffer.getSender().getLocalName());
 
             ServerData chosenServerData;
             try {
@@ -66,9 +62,10 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
                 throw new IncorrectServerOfferException();
             }
 
+            logger.info("[{}] Sending job execution offer to Client", myAgent.getName());
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJob(), chosenServerOffer.getSender());
             myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), getDataStore()));
-            rejectJobOffers(myAgent, chosenServerData.getJob(), chosenServerOffer, proposals);
+            rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJob(), chosenServerOffer, proposals);
         }
     }
 

@@ -31,7 +31,7 @@ public class FindCloudNetworkAgents extends OneShotBehaviour {
         final List<AID> cloudNetworkAgents = search(myAgent, CNA_SERVICE_TYPE);
 
         if(cloudNetworkAgents.isEmpty()) {
-            logger.info("[{}] No Cloud Network Agents were found", myClientAgent);
+            logger.info("[{}] No Cloud Network Agents were found", myClientAgent.getName());
             myClientAgent.doDelete();
         }
         getParent().getDataStore().put(CLOUD_NETWORK_AGENTS, cloudNetworkAgents);

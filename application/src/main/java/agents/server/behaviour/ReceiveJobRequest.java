@@ -41,18 +41,17 @@ public class ReceiveJobRequest extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             try {
                 if(myServerAgent.getOwnedGreenSources().isEmpty()) {
-                    logger.info("I don't have the Green Source Agents");
+                    logger.info("[{}] I don't have the Green Source Agents", myAgent.getName());
                     myAgent.doDelete();
                 }
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
 
                 if (job.getPower() + myServerAgent.getPowerInUse() <= myServerAgent.getAvailableCapacity()) {
-                    logger.info("[{}] Sending call for proposal to Green Source Agents", myAgent);
-                    getDataStore().put(message.getSender(), message.createReply());
+                    logger.info("[{}] Sending call for proposal to Green Source Agents", myAgent.getName());
                     final ACLMessage cfp = SendJobCallForProposalMessage.create(job, myServerAgent.getOwnedGreenSources(), SERVER_JOB_CFP_PROTOCOL).getMessage();
-                    myAgent.addBehaviour(new AnnouncePowerRequest(myAgent, cfp, getDataStore()));
+                    myAgent.addBehaviour(new AnnouncePowerRequest(myAgent, cfp, message.createReply()));
                 } else {
-                    logger.info("[{}] Not enough available power! Sending refuse message to Cloud Network Agent", myAgent);
+                    logger.info("[{}] Not enough available power! Sending refuse message to Cloud Network Agent", myAgent.getName());
                     myAgent.send(SendRefuseProposalMessage.create(message.createReply()).getMessage());
                 }
             } catch (Exception e) {

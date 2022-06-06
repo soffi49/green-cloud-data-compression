@@ -1,0 +1,48 @@
+<ScenarioArgs>
+    <monitoringAgentsArgs>
+        <monitoringAgent>
+            <name>Weather1</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather2</name>
+        </monitoringAgent>
+    </monitoringAgentsArgs>
+    <greenEnergyAgentsArgs>
+        <greenenergyAgent>
+            <name>Water</name>
+            <monitoringAgent>Weather1</monitoringAgent>
+            <ownerSever>Server</ownerSever>
+            <latitude>100.0</latitude>
+            <longitude>110.1</longitude>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Solar</name>
+            <monitoringAgent>Weather2</monitoringAgent>
+            <ownerSever>Server</ownerSever>
+            <latitude>50.0</latitude>
+            <longitude>88.1</longitude>
+        </greenenergyAgent>
+    </greenEnergyAgentsArgs>
+    <serverAgentsArgs>
+        <serverAgentsArgs>
+            <name>Server</name>
+            <ownerCloudNetwork>CNA</ownerCloudNetwork>
+            <power>10</power>
+            <price>10.5</price>
+        </serverAgentsArgs>
+    </serverAgentsArgs>
+    <cloudNetworkAgentsArgs>
+        <cloudNetworkAgent>
+            <name>CNA</name>
+        </cloudNetworkAgent>
+    </cloudNetworkAgentsArgs>
+    <clientAgentsArgs>
+        <clientAgent>
+            <name>Client</name>
+            <jobId>1</jobId>
+            <startDate>10/12/2021 10:30</startDate>
+            <endDate>10/12/2021 10:40</endDate>
+            <power>5</power>
+        </clientAgent>
+    </clientAgentsArgs>
+</ScenarioArgs>

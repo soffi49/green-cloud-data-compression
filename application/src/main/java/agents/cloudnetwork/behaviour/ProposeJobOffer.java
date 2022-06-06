@@ -39,7 +39,7 @@ public class ProposeJobOffer extends ProposeInitiator {
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         try {
-            logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", myAgent);
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", myAgent.getName());
 
             final Job job = getMapper().readValue(accept_proposal.getContent(), Job.class);
             final AID serverForJob = myCloudNetworkAgent.getServerForJobMap().get(job);
@@ -56,7 +56,7 @@ public class ProposeJobOffer extends ProposeInitiator {
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         try {
-            logger.info("[{}] Client {} rejected the job proposal", myAgent, reject_proposal.getSender().getLocalName());
+            logger.info("[{}] Client {} rejected the job proposal", myAgent.getName(), reject_proposal.getSender().getLocalName());
             final Job job = getMapper().readValue(reject_proposal.getContent(), Job.class);
             final AID serverToReject = myCloudNetworkAgent.getServerForJobMap().get(job);
             final ACLMessage rejectionMessage = (ACLMessage) getDataStore().get(serverToReject);

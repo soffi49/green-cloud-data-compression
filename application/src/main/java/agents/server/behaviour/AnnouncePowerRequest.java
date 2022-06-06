@@ -11,7 +11,6 @@ import common.message.SendRefuseProposalMessage;
 import domain.GreenSourceData;
 import exception.IncorrectGreenSourceOfferException;
 import jade.core.Agent;
-import jade.core.behaviours.DataStore;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import org.slf4j.Logger;
@@ -27,11 +26,12 @@ import java.util.Vector;
 public class AnnouncePowerRequest extends ContractNetInitiator {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnouncePowerRequest.class);
-
+    private final ACLMessage replyMessage;
     private ServerAgent myServerAgent;
 
-    public AnnouncePowerRequest(final Agent a, final ACLMessage powerRequest, final DataStore dataStore) {
-        super(a, powerRequest, dataStore);
+    public AnnouncePowerRequest(final Agent a, final ACLMessage powerRequest, final ACLMessage replyMessage) {
+        super(a, powerRequest);
+        this.replyMessage = replyMessage;
     }
 
     @Override
@@ -47,16 +47,14 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
                 .toList();
 
         if (responses.isEmpty()) {
-            logger.info("[{}] No responses were retrieved", myAgent);
+            logger.info("[{}] No responses were retrieved", myAgent.getName());
         } else if (proposals.isEmpty()) {
             logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
-            final ACLMessage replyMessage = (ACLMessage) getDataStore().get(myServerAgent.getOwnerCloudNetworkAgent());
             myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
         } else {
-            logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent);
             final ACLMessage chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(proposals);
             getDataStore().put(chosenGreenSourceOffer.getSender(), chosenGreenSourceOffer);
-            final ACLMessage replyMessage = (ACLMessage) getDataStore().get(myServerAgent.getOwnerCloudNetworkAgent());
+            logger.info("[{}] Chosen Green Source for the job: {}", myAgent.getName(), chosenGreenSourceOffer.getSender().getLocalName());
 
             GreenSourceData chosenGreenSourceData;
             try {
@@ -71,6 +69,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
                                                                                       replyMessage).getMessage();
             myServerAgent.getGreenSourceForJobMap().put(chosenGreenSourceData.getJob(), chosenGreenSourceOffer.getSender());
 
+            logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent.getName());
             myAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, getDataStore()));
             rejectJobOffers(myAgent, chosenGreenSourceData.getJob(), chosenGreenSourceOffer, proposals);
         }

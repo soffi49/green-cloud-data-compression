@@ -1,10 +1,15 @@
 package agents.greenenergy.behaviour;
 
+import static agents.server.message.ReplyMessageFactory.prepareReply;
+import static jade.lang.acl.ACLMessage.PROPOSE;
+import static jade.lang.acl.MessageTemplate.MatchConversationId;
+import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.message.SendRefuseProposalMessage;
 import domain.GreenSourceData;
 import domain.ImmutableGreenSourceData;
 import domain.MonitoringData;
@@ -18,14 +23,16 @@ public class ReceiveWeatherData extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceiveWeatherData.class);
 
-    private GreenEnergyAgent myGreenEnergyAgent;
-    private MessageTemplate template;
-    private String guid;
+    private final GreenEnergyAgent myGreenEnergyAgent;
+    private final MessageTemplate template;
+    private final String guid;
+    private final ACLMessage cfp;
 
-    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent) {
+    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final String conversationId) {
         this.myGreenEnergyAgent = myGreenAgent;
-        this.template = MessageTemplate.MatchSender(myGreenAgent.getMonitoringAgent());
+        this.template = and(MessageTemplate.MatchSender(myGreenAgent.getMonitoringAgent()), MatchConversationId(conversationId));
         this.guid = myGreenEnergyAgent.getName();
+        this.cfp = cfp.shallowClone();
     }
 
     @Override
@@ -45,7 +52,7 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             switch (message.getPerformative()) {
                 case ACLMessage.REFUSE -> {
                     logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
-                    handleRefuse(data, "Refuse: weather data not available");
+                    handleRefuse(cfp);
                 }
                 case ACLMessage.INFORM -> handleInform(data);
             }
@@ -56,21 +63,22 @@ public class ReceiveWeatherData extends CyclicBehaviour {
 
     private void handleInform(MonitoringData data) {
         int power = computePower(data);
+        logger.info("[{}] Replying with propose message to server.", guid);
         if (power > 0) {
             GreenSourceData responseData = ImmutableGreenSourceData.builder()
-                .pricePerPowerUnit(myGreenEnergyAgent.getPricePerPowerUnit())
-                .availablePowerInTime(power)
-                .job(data.getJob())
-                .build();
-            getParent().getDataStore().put(data.getJob().getJobId(), responseData);
+                    .pricePerPowerUnit(myGreenEnergyAgent.getPricePerPowerUnit())
+                    .availablePowerInTime(power)
+                    .job(data.getJob())
+                    .build();
+            myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp, responseData, PROPOSE), getDataStore()));
         } else {
             logger.info("[{}] Too bad weather conditions, sending refuse message to server.", guid);
-            handleRefuse(data, "Refuse: too bad weather conditions ");
+            handleRefuse(cfp);
         }
     }
 
-    private void handleRefuse(MonitoringData data, String message) {
-        getParent().getDataStore().put(data.getJob().getJobId(), message);
+    private void handleRefuse(final ACLMessage cfp) {
+        myAgent.send(SendRefuseProposalMessage.create(cfp).getMessage());
     }
 
     private int computePower(MonitoringData data) {

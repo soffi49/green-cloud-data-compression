@@ -44,6 +44,12 @@ public class ServerAgent extends AbstractServerAgent {
 
     private void initializeAgent(final Object[] args) {
         this.ownedGreenSources = search(this, GS_SERVICE_TYPE, getName());
+
+        if(ownedGreenSources.isEmpty()) {
+            logger.info("I have no corresponding green sources!");
+            doDelete();
+        }
+
         this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
         try {
             this.pricePerHour = Double.parseDouble(args[1].toString());

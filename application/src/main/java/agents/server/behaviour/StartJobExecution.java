@@ -38,7 +38,7 @@ public class StartJobExecution extends CyclicBehaviour {
         if (Objects.nonNull(inform)) {
             try {
                 final Job job = getMapper().readValue(inform.getContent(), Job.class);
-                logger.info("[{}] Starting the execution of the job", myAgent);
+                logger.info("[{}] Starting the execution of the job", myAgent.getName());
 
                 updateNetworkInformation(job);
                 myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, job));

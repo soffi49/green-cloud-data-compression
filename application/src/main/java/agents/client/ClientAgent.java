@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class ClientAgent extends AbstractClientAgent {
 
@@ -26,6 +27,11 @@ public class ClientAgent extends AbstractClientAgent {
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
 
+            try {
+                TimeUnit.SECONDS.sleep(7);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             addBehaviour(prepareStartingBehaviour(jobToBeExecuted));
             addBehaviour(new WaitForJobResult(this));
         } else {

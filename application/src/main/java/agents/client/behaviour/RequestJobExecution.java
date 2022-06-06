@@ -47,7 +47,7 @@ public class RequestJobExecution extends ContractNetInitiator {
 
     @Override
     protected Vector prepareCfps(final ACLMessage callForProposal) {
-        logger.info("[{}] Sending call for proposal to Cloud Network Agents", myAgent);
+        logger.info("[{}] Sending call for proposal to Cloud Network Agents", myAgent.getName());
         final Vector<ACLMessage> vector = new Vector<>();
         final List<AID> cloudNetworks = (List<AID>) getParent().getDataStore().get(CLOUD_NETWORK_AGENTS);
 
@@ -62,14 +62,14 @@ public class RequestJobExecution extends ContractNetInitiator {
                 .toList();
 
         if (responses.isEmpty()) {
-            logger.info("[{}] No responses were retrieved", myAgent);
+            logger.info("[{}] No responses were retrieved", myAgent.getName());
             myAgent.doDelete();
         } else if (proposals.isEmpty()) {
-            logger.info("[{}] All Cloud Network Agents refused to the call for proposal", myAgent);
+            logger.info("[{}] All Cloud Network Agents refused to the call for proposal", myAgent.getName());
             myAgent.doDelete();
         } else {
             final ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
-            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", myAgent, chosenOffer.getSender().getName());
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", myAgent.getName(), chosenOffer.getSender().getName());
             myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
             acceptances.add(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, chosenOffer.createReply()).getMessage());
             rejectJobOffers(myClientAgent, job, chosenOffer, proposals);

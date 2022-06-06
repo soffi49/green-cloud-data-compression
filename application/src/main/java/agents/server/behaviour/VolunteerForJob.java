@@ -37,7 +37,7 @@ public class VolunteerForJob extends ProposeInitiator {
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         try {
-            logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent);
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
 
             final Job job = getMapper().readValue(accept_proposal.getContent(), Job.class);
             final AID greenSourceForJob = myServerAgent.getGreenSourceForJobMap().get(job);
@@ -53,7 +53,7 @@ public class VolunteerForJob extends ProposeInitiator {
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         try {
-            logger.info("[{}] Cloud Network {} rejected the job volunteering offer", myAgent, reject_proposal.getSender().getLocalName());
+            logger.info("[{}] Cloud Network {} rejected the job volunteering offer", myAgent.getName(), reject_proposal.getSender().getLocalName());
             final Job job = getMapper().readValue(reject_proposal.getContent(), Job.class);
             final AID serverToReject = myServerAgent.getGreenSourceForJobMap().get(job);
             final ACLMessage rejectionMessage = (ACLMessage) getDataStore().get(serverToReject);
