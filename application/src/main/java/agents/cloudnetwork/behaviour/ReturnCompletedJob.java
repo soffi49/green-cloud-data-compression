@@ -6,7 +6,7 @@ import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import agents.cloudnetwork.message.SendJobFinishedMessage;
+import messages.domain.SendJobFinishedMessage;
 import domain.job.Job;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -26,19 +26,26 @@ public class ReturnCompletedJob extends CyclicBehaviour {
 
     private CloudNetworkAgent myCloudNetworkAgent;
 
+    /**
+     * Method runs at the behaviour start. It casts the abstract agent to the agent of type CloudNetworkAgent
+     */
     @Override
     public void onStart() {
         super.onStart();
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
     }
 
+    /**
+     * Method which listens for the information that some job execution has finished. It finds the corresponding job
+     * in network data, updates the network state and passes the finish job message to the appropriate client.
+     */
     @Override
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
+                logger.debug("[{}] Sending information that the job execution is finished", myAgent.getName());
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
                 updateNetworkInformation(job);
                 myAgent.send(SendJobFinishedMessage.create(job).getMessage());
@@ -52,8 +59,7 @@ public class ReturnCompletedJob extends CyclicBehaviour {
 
     private void updateNetworkInformation(final Job job) {
         myCloudNetworkAgent.getCurrentJobs().remove(job);
-        myCloudNetworkAgent.getServerForJobMap().remove(job);
+        myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
         myCloudNetworkAgent.setInUsePower(myCloudNetworkAgent.getInUsePower() - job.getPower());
-        myCloudNetworkAgent.setJobsCount(myCloudNetworkAgent.getJobsCount() - 1);
     }
 }

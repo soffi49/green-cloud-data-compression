@@ -1,4 +1,4 @@
-package agents.server.message;
+package messages.domain;
 
 import static mapper.JsonMapper.getMapper;
 

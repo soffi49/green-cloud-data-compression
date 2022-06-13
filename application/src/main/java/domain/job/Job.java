@@ -10,6 +10,8 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface Job {
 
+    String getJobId();
+
     String getClientIdentifier();
 
     OffsetDateTime getStartTime();
@@ -17,6 +19,4 @@ public interface Job {
     OffsetDateTime getEndTime();
 
     int getPower();
-
-    String getJobId();
 }

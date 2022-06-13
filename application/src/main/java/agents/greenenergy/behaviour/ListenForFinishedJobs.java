@@ -2,7 +2,8 @@ package agents.greenenergy.behaviour;
 
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
 
@@ -43,7 +44,7 @@ public class ListenForFinishedJobs extends CyclicBehaviour {
                 myGreenEnergyAgent.getCurrentJobs().remove(job);
                 myGreenEnergyAgent.setAvailableCapacity(myGreenEnergyAgent.getAvailableCapacity() + job.getPower());
                 logger.info("[{}] Finish the execution of the job with id {} for client with id {}", guid,
-                    job.getJobId(), job.getClientIdentifier());
+                            job.getJobId(), job.getClientIdentifier());
             }
         } else {
             block();

@@ -1,4 +1,4 @@
-package common.message;
+package messages.domain;
 
 import jade.lang.acl.ACLMessage;
 

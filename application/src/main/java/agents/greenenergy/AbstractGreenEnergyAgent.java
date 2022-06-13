@@ -6,6 +6,9 @@ import jade.core.AID;
 import jade.core.Agent;
 import java.util.Set;
 
+/**
+ * Abstract agent storing data of the Green Source Energy Agent
+ */
 public abstract class AbstractGreenEnergyAgent extends Agent {
 
     protected int availableCapacity;
@@ -14,18 +17,18 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
 
     protected AID monitoringAgent;
 
-    protected AID ownerGreenSource;
+    protected AID ownerServer;
 
     protected double pricePerPowerUnit;
 
     protected Set<Job> currentJobs;
 
-    public AID getOwnerGreenSource() {
-        return ownerGreenSource;
+    public AID getOwnerServer() {
+        return ownerServer;
     }
 
-    public void setOwnerGreenSource(AID ownerGreenSource) {
-        this.ownerGreenSource = ownerGreenSource;
+    public void setOwnerServer(AID ownerServer) {
+        this.ownerServer = ownerServer;
     }
 
     public double getPricePerPowerUnit() {

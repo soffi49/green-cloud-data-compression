@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour;
 
-import static agents.server.message.ReplyMessageFactory.prepareReply;
+import static messages.domain.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.MessageTemplate.MatchConversationId;
 import static jade.lang.acl.MessageTemplate.and;
@@ -9,7 +9,7 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import common.message.SendRefuseProposalMessage;
+import messages.domain.SendRefuseProposalMessage;
 import domain.GreenSourceData;
 import domain.ImmutableGreenSourceData;
 import domain.MonitoringData;

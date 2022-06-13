@@ -22,13 +22,14 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
     protected void setup() {
         super.setup();
         final Object[] args = getArguments();
+        //TODO move that to the args
         this.setPricePerPowerUnit(Math.random() * 100);
         this.setAvailableCapacity(100);
         this.currentJobs = new HashSet<>();
 
         if (Objects.nonNull(args) && args.length == 4) {
             monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-            ownerGreenSource = new AID(args[1].toString(), AID.ISLOCALNAME);
+            ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
             try {
                 location = ImmutableLocation.builder()
                         .latitude(Double.parseDouble(args[2].toString()))
@@ -42,7 +43,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
             logger.info("Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
             doDelete();
         }
-        register(this, GS_SERVICE_TYPE, getName(), ownerGreenSource.getName());
+        register(this, GS_SERVICE_TYPE, getName(), ownerServer.getName());
         addBehaviour(createInitialBehaviour());
     }
 

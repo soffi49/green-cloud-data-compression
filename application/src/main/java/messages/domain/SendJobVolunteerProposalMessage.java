@@ -1,4 +1,4 @@
-package agents.server.message;
+package messages.domain;
 
 import static mapper.JsonMapper.getMapper;
 
@@ -20,16 +20,16 @@ public class SendJobVolunteerProposalMessage {
                                                          final double servicePrice,
                                                          final Job job,
                                                          final ACLMessage replyMessage) {
-        replyMessage.setPerformative(ACLMessage.PROPOSE);
-        try {
-            final ImmutableServerData data = ImmutableServerData.builder()
+        final ImmutableServerData jobOffer = ImmutableServerData.builder()
                 .servicePrice(servicePrice)
                 .powerInUse((serverAgent).getPowerInUse())
                 .pricePerHour((serverAgent).getPricePerHour())
                 .availableCapacity((serverAgent).getAvailableCapacity())
                 .job(job)
                 .build();
-            replyMessage.setContent(getMapper().writeValueAsString(data));
+        replyMessage.setPerformative(ACLMessage.PROPOSE);
+        try {
+            replyMessage.setContent(getMapper().writeValueAsString(jobOffer));
         } catch (final IOException e) {
             e.printStackTrace();
         }

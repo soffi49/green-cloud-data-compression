@@ -1,30 +1,30 @@
-package common.message;
+package messages.domain;
+
+import static mapper.JsonMapper.getMapper;
 
 import domain.job.Job;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-
 import java.io.IOException;
 import java.util.List;
 
-import static mapper.JsonMapper.getMapper;
+public class SendJobMessage {
 
-public class SendJobCallForProposalMessage {
     private final ACLMessage message;
-    private SendJobCallForProposalMessage(final ACLMessage message) {
+
+    private SendJobMessage(final ACLMessage message) {
         this.message = message;
     }
 
-    public static SendJobCallForProposalMessage create(final Job job, final List<AID> receiverList, final String protocol) {
-        final ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
-        proposal.setProtocol(protocol);
+    public static SendJobMessage create(final Job job, final List<AID> receiverList, final int performative) {
+        final ACLMessage proposal = new ACLMessage(performative);
         try {
             proposal.setContent(getMapper().writeValueAsString(job));
         } catch (IOException e) {
             e.printStackTrace();
         }
         receiverList.forEach(proposal::addReceiver);
-        return new SendJobCallForProposalMessage(proposal);
+        return new SendJobMessage(proposal);
     }
 
     public ACLMessage getMessage() {

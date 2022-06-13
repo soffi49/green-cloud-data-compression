@@ -21,16 +21,23 @@ public class WaitForJobResult extends CyclicBehaviour {
     private static final Logger logger = LoggerFactory.getLogger(WaitForJobResult.class);
     private static final MessageTemplate messageTemplate = and(MatchProtocol(FINISH_JOB_PROTOCOL), MatchPerformative(INFORM));
 
+    /**
+     * Behaviours constructor.
+     *
+     * @param clientAgent agent executing the behaviour
+     */
     public WaitForJobResult(final ClientAgent clientAgent) {
         super(clientAgent);
     }
 
+    /**
+     * Method which waits for confirmation message that the job execution has finished
+     */
     @Override
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
-            logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
-            myAgent.doDelete();
+            logger.debug("[{}] The execution of my job finished! :)", myAgent.getName());
         } else {
             block();
         }

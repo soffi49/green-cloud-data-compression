@@ -20,20 +20,26 @@ public class FindCloudNetworkAgents extends OneShotBehaviour {
     private static final Logger logger = LoggerFactory.getLogger(FindCloudNetworkAgents.class);
     private ClientAgent myClientAgent;
 
+    /**
+     * Method run on the behaviour start which casts the abstract agent to agent of type ClientAgent.
+     */
     @Override
     public void onStart() {
         super.onStart();
         this.myClientAgent = (ClientAgent) myAgent;
     }
 
+    /**
+     * Method looks for Cloud Network Agents and puts the retrieved result in data store.
+     */
     @Override
     public void action() {
         final List<AID> cloudNetworkAgents = search(myAgent, CNA_SERVICE_TYPE);
 
-        if(cloudNetworkAgents.isEmpty()) {
-            logger.info("[{}] No Cloud Network Agents were found", myClientAgent.getName());
+        if (cloudNetworkAgents.isEmpty()) {
+            logger.debug("[{}] No Cloud Network Agents were found", myClientAgent.getName());
             myClientAgent.doDelete();
         }
         getParent().getDataStore().put(CLOUD_NETWORK_AGENTS, cloudNetworkAgents);
-    }   
+    }
 }

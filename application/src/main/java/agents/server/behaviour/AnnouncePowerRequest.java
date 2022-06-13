@@ -1,13 +1,13 @@
 package agents.server.behaviour;
 
-import static common.MessagingUtils.rejectJobOffers;
+import static messages.MessagingUtils.rejectJobOffers;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import agents.server.message.SendJobVolunteerProposalMessage;
+import messages.domain.SendJobVolunteerProposalMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import common.message.SendRefuseProposalMessage;
+import messages.domain.SendRefuseProposalMessage;
 import domain.GreenSourceData;
 import exception.IncorrectGreenSourceOfferException;
 import jade.core.Agent;

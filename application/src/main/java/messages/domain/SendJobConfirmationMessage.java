@@ -1,7 +1,6 @@
-package agents.cloudnetwork.message;
+package messages.domain;
 
 import domain.job.Job;
-import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
 public class SendJobConfirmationMessage {

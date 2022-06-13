@@ -9,7 +9,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface PricedJob {
 
-    Job getJob();
+    String getJobId();
 
     double getPriceForJob();
 }

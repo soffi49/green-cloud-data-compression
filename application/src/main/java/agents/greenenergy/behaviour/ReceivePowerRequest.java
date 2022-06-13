@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 /**
- * Behaviour responsible for handling server call for proposal for given job
+ * Behaviour responsible for handling server call for proposal for power necessary to execute the given job
  */
 public class ReceivePowerRequest extends CyclicBehaviour {
 
@@ -32,15 +32,30 @@ public class ReceivePowerRequest extends CyclicBehaviour {
     private final GreenEnergyAgent myGreenEnergyAgent;
     private final String guid;
 
-    public ReceivePowerRequest(Agent myAgent) {
+    /**
+     * Behaviours constructor.
+     *
+     * @param myAgent agent which is executing the behaviour
+     */
+    private ReceivePowerRequest(Agent myAgent) {
         this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
         this.guid = myGreenEnergyAgent.getName();
     }
 
+    /**
+     * Method used to create the power receiving behaviour
+     *
+     * @param greenEnergyAgent agent which is executing the behaviour
+     * @return created behaviour
+     */
     public static ReceivePowerRequest createFor(GreenEnergyAgent greenEnergyAgent) {
         return new ReceivePowerRequest(greenEnergyAgent);
     }
 
+    /**
+     * Method which listens for the power call for proposals coming from the servers. It analyzes the request and either
+     * rejects it or sends request to Monitoring Agent for the weather data.
+     */
     @Override
     public void action() {
         final ACLMessage cfp = myAgent.receive(messageTemplate);

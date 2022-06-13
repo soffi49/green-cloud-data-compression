@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour;
 
-import static agents.server.message.ReplyMessageFactory.prepareReply;
+import static messages.domain.ReplyMessageFactory.prepareReply;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static mapper.JsonMapper.getMapper;

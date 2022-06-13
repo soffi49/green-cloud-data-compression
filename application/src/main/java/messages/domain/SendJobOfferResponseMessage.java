@@ -1,4 +1,4 @@
-package common.message;
+package messages.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.job.Job;

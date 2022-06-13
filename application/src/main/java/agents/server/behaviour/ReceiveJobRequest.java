@@ -7,8 +7,8 @@ import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import common.message.SendJobCallForProposalMessage;
-import common.message.SendRefuseProposalMessage;
+import messages.domain.SendJobCallForProposalMessage;
+import messages.domain.SendRefuseProposalMessage;
 import domain.job.Job;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;

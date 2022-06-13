@@ -3,7 +3,7 @@ package agents.server.behaviour;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 
 import agents.server.ServerAgent;
-import common.message.SendJobMessage;
+import messages.domain.SendJobMessage;
 import domain.job.Job;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;

@@ -5,7 +5,7 @@ import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import common.message.SendJobOfferResponseMessage;
+import messages.domain.SendJobOfferResponseMessage;
 import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;

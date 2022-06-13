@@ -1,4 +1,4 @@
-package agents.cloudnetwork.message;
+package messages.domain;
 
 import domain.job.Job;
 import jade.core.AID;
