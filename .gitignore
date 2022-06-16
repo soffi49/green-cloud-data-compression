@@ -6,3 +6,4 @@
 /application/target/
 /engine/target/
 /logs/
+/application/src/main/resources/config.properties

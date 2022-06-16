@@ -10,6 +10,7 @@ public class JsonMapper {
     static {
         MAPPER.registerModule(new JavaTimeModule());
     }
+
     public static ObjectMapper getMapper() {
         return MAPPER;
     }
