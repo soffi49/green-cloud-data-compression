@@ -36,7 +36,7 @@ public class MonitoringAgent extends Agent {
         super.takeDown();
     }
 
-    public ImmutableMonitoringData getWeather(ServerRequestData requestData) {
+    public ImmutableMonitoringData getWeather(GreenSourceRequestData requestData) {
         logger.info("Retrieving weather info for {}...", requestData.getLocation());
         var weather = api.getWeather(requestData.getLocation());
         return ImmutableMonitoringData.builder()
