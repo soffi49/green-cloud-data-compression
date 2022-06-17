@@ -5,8 +5,10 @@ import static jade.lang.acl.ACLMessage.INFORM;
 import static messages.domain.ReplyMessageFactory.prepareStringReply;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.server.behaviour.FinishJobExecution;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import org.slf4j.Logger;
@@ -47,6 +49,7 @@ public class ProposePowerRequest extends ProposeInitiator {
         myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
         var response = prepareStringReply(accept_proposal.createReply(), jobId, INFORM);
         response.setProtocol(SERVER_JOB_CFP_PROTOCOL);
+        myAgent.addBehaviour(createJobStatusBehaviours());
         myAgent.send(response);
     }
 
@@ -58,5 +61,12 @@ public class ProposePowerRequest extends ProposeInitiator {
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         logger.info("[{}] Server rejected the job proposal", guid);
+    }
+
+    private ParallelBehaviour createJobStatusBehaviours() {
+        final ParallelBehaviour behaviour = new ParallelBehaviour();
+        behaviour.addSubBehaviour(new ListenForStartedJobs(myGreenEnergyAgent));
+        behaviour.addSubBehaviour(new ListenForFinishedJobs(myGreenEnergyAgent));
+        return behaviour;
     }
 }

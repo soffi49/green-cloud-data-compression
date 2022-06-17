@@ -1,0 +1,40 @@
+<ScenarioArgs>
+    <monitoringAgentsArgs>
+        <monitoringAgent>
+            <name>Weather</name>
+        </monitoringAgent>
+    </monitoringAgentsArgs>
+    <greenEnergyAgentsArgs>
+        <greenenergyAgent>
+            <name>Green</name>
+            <monitoringAgent>Weather</monitoringAgent>
+            <ownerSever>Server</ownerSever>
+            <latitude>10.0</latitude>
+            <longitude>11.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+        </greenenergyAgent>
+    </greenEnergyAgentsArgs>
+    <serverAgentsArgs>
+        <serverAgentsArgs>
+            <name>Server</name>
+            <ownerCloudNetwork>CNA</ownerCloudNetwork>
+            <maximumCapacity>10</maximumCapacity>
+            <price>10.5</price>
+        </serverAgentsArgs>
+    </serverAgentsArgs>
+    <cloudNetworkAgentsArgs>
+        <cloudNetworkAgent>
+            <name>CNA</name>
+        </cloudNetworkAgent>
+    </cloudNetworkAgentsArgs>
+    <clientAgentsArgs>
+        <clientAgent>
+            <name>Client</name>
+            <jobId>1</jobId>
+            <startDate>18/06/2022 10:30</startDate>
+            <endDate>18/06/2022 13:30</endDate>
+            <power>5</power>
+        </clientAgent>
+    </clientAgentsArgs>
+</ScenarioArgs>

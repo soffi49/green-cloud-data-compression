@@ -1,6 +1,6 @@
 package agents.server.behaviour;
 
-import static messages.domain.FinishJobMessageFactory.prepareFinishMessage;
+import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
 import agents.server.ServerAgent;
 import domain.job.Job;

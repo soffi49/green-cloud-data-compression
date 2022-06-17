@@ -49,7 +49,7 @@ public class ProposeJobOffer extends ProposeInitiator {
         logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
         final String jobId = accept_proposal.getContent();
         myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
-        myAgent.send(prepareConfirmationReply(jobId, accept_proposal.createReply()));
+        myAgent.addBehaviour(new ReceiveStartedJobs(myCloudNetworkAgent, accept_proposal.createReply()));
         myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
     }
 
