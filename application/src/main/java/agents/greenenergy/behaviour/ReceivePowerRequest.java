@@ -1,6 +1,5 @@
 package agents.greenenergy.behaviour;
 
-import static agents.greenenergy.DataStoreConstants.JOB_MESSAGE;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.MessageTemplate.*;
@@ -8,7 +7,7 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.Job;
+import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
@@ -22,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 /**
- * Behaviour responsible for handling server call for proposal for given job
+ * Behaviour responsible for handling servers' call for proposals for power that is necessary to execute the given job
  */
 public class ReceivePowerRequest extends CyclicBehaviour {
 
@@ -32,29 +31,33 @@ public class ReceivePowerRequest extends CyclicBehaviour {
     private final GreenEnergyAgent myGreenEnergyAgent;
     private final String guid;
 
+    /**
+     * Behaviours constructor.
+     *
+     * @param myAgent agent which is executing the behaviour
+     */
     public ReceivePowerRequest(Agent myAgent) {
         this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
         this.guid = myGreenEnergyAgent.getName();
     }
 
-    public static ReceivePowerRequest createFor(GreenEnergyAgent greenEnergyAgent) {
-        return new ReceivePowerRequest(greenEnergyAgent);
-    }
-
+    /**
+     * Method which listens for the power call for proposals coming from the servers. It analyzes the request and either
+     * rejects it or proceeds with request processing by sending another request to Monitoring Agent for the weather data.
+     */
     @Override
     public void action() {
         final ACLMessage cfp = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(cfp)) {
             try {
-                Job job = readJob(cfp);
-                if (job.getPower() > myGreenEnergyAgent.getAvailableCapacity()) {
-                    logger.info("[{}] Refusing job with id {} for client {} - not enough available power.", guid,
-                                job.getJobId(), job.getClientIdentifier());
+                final PowerJob job = readJob(cfp);
+                if (job.getPower() > myGreenEnergyAgent.getAvailablePower(job.getStartTime(), job.getEndTime())) {
+                    logger.info("[{}] Refusing job with id {} - not enough available power.", guid, job.getJobId());
                     throw new RefuseException(cfp.getContent());
                 }
                 logger.info("[{}] Sending weather request to monitoring agent.", guid);
-                requestMonitoringData(job, cfp);
+                requestMonitoringData(cfp, job.getJobId());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -63,22 +66,18 @@ public class ReceivePowerRequest extends CyclicBehaviour {
         }
     }
 
-    private Job readJob(ACLMessage callForProposal) throws NotUnderstoodException {
+    private PowerJob readJob(ACLMessage callForProposal) throws NotUnderstoodException {
         try {
-            return getMapper().readValue(callForProposal.getContent(), Job.class);
+            return getMapper().readValue(callForProposal.getContent(), PowerJob.class);
         } catch (JsonProcessingException e) {
             throw new NotUnderstoodException(e.getMessage());
         }
     }
 
-    private void requestMonitoringData(Job job, ACLMessage cfp) {
-        getDataStore().put(JOB_MESSAGE, job);
-
+    private void requestMonitoringData(final ACLMessage cfp, final String jobId) {
         var sequentialBehaviour = new SequentialBehaviour();
-        sequentialBehaviour.setDataStore(getDataStore());
         sequentialBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent, cfp.getConversationId()));
-        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, cfp.getConversationId()));
-
+        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, jobId));
         myAgent.addBehaviour(sequentialBehaviour);
     }
 }

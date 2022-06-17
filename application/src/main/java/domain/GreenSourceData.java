@@ -2,18 +2,28 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import domain.job.Job;
 import org.immutables.value.Value.Immutable;
 
-
+/**
+ * Object storing the data passed by the Green Source
+ */
 @JsonSerialize(as = ImmutableGreenSourceData.class)
 @JsonDeserialize(as = ImmutableGreenSourceData.class)
 @Immutable
 public interface GreenSourceData {
 
+    /**
+     * @return available power at the given time
+     */
     int getAvailablePowerInTime();
 
+    /**
+     * @return price for the 1kWh
+     */
     double getPricePerPowerUnit();
 
-    Job getJob();
+    /**
+     * @return unique identifier of the given job of interest
+     */
+    String getJobId();
 }

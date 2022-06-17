@@ -1,51 +1,60 @@
 package agents.monitoring.behaviour;
 
+import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
 
 import agents.monitoring.MonitoringAgent;
-import domain.ServerRequestData;
+import domain.GreenSourceRequestData;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import java.io.IOException;
-import java.util.Objects;
+import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Objects;
+
+/**
+ * Behaviour responsible for listening for the upcoming weather requests
+ */
 public class ServeWeatherInformation extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ServeWeatherInformation.class);
+    private static final MessageTemplate template = MessageTemplate.MatchPerformative(REQUEST);
 
     private final MonitoringAgent monitoringAgent;
 
+    /**
+     * Behaviour constructor.
+     *
+     * @param monitoringAgent agent which is executing the behaviour
+     */
     public ServeWeatherInformation(MonitoringAgent monitoringAgent) {
         this.monitoringAgent = monitoringAgent;
     }
 
-    public static ServeWeatherInformation createFor(MonitoringAgent monitoringAgent) {
-        return new ServeWeatherInformation(monitoringAgent);
-    }
-
+    /**
+     * Method which listens for the request for weather data coming from the Green Source Agents.
+     * It retrieves the weather information for the given location and forwards it as a reply to the sender.
+     */
     @Override
     public void action() {
-        final ACLMessage message = monitoringAgent.receive();
+        final ACLMessage message = monitoringAgent.receive(template);
 
         if (Objects.nonNull(message)) {
-            switch (message.getPerformative()) {
-                case REQUEST:
-                    final ACLMessage response = new ACLMessage(ACLMessage.INFORM);
-                    try {
-                        var requestData = getMapper().readValue(message.getContent(), ServerRequestData.class);
-                        var data = monitoringAgent.getWeather(requestData);
-                        response.setContent(getMapper().writeValueAsString(data));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    response.addReceiver(message.getSender());
-                    response.setConversationId(message.getConversationId());
-                    logger.info("Sending message with the weather data");
-                    monitoringAgent.send(response);
+            final ACLMessage response = message.createReply();
+            response.setPerformative(INFORM);
+            try {
+                var requestData = getMapper().readValue(message.getContent(), GreenSourceRequestData.class);
+                var data = monitoringAgent.getWeather(requestData);
+                response.setContent(getMapper().writeValueAsString(data));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            response.setConversationId(message.getConversationId());
+            logger.info("Sending message with the weather data");
+            monitoringAgent.send(response);
         } else {
             block();
         }

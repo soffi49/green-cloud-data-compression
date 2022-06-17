@@ -26,8 +26,8 @@ public class OpenWeatherMapApi {
         "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric";
     private static final ObjectMapper MAPPER = getMapper();
 
-    private String apiKey;
-    private OkHttpClient client;
+    private final String apiKey;
+    private final OkHttpClient client;
 
     public OpenWeatherMapApi() {
         Properties properties = new Properties();
@@ -51,7 +51,7 @@ public class OpenWeatherMapApi {
 
         try (Response response = client.newCall(request).execute()) {
             return MAPPER.readValue(response.body().string(), OpenWeatherMap.class);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             logger.error("Network error fetching weather", e);
         }
 

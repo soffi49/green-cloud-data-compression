@@ -13,7 +13,7 @@ import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.search;
 
 /**
- * Behaviours which is responsible for finding corresponding server agents for given CNA in DF
+ * Behaviours which is responsible for finding corresponding server agents for given Cloud Network Agent in DF
  */
 public class FindServerAgents extends OneShotBehaviour {
 
@@ -21,12 +21,18 @@ public class FindServerAgents extends OneShotBehaviour {
 
     private CloudNetworkAgent myCloudNetworkAgent;
 
+    /**
+     * Method runs at the behaviours start. It casts the agent to the agent of type CloudNetworkAgent
+     */
     @Override
     public void onStart() {
         super.onStart();
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
     }
 
+    /**
+     * Method searches the Directory Facilitator for the corresponding to the given Cloud Network Agent servers
+     */
     @Override
     public void action() {
         final List<AID> serverAgents = search(myAgent, SA_SERVICE_TYPE, myAgent.getName());

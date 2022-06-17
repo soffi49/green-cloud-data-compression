@@ -1,21 +1,22 @@
 package agents.cloudnetwork.behaviour;
 
-import static common.MessagingUtils.rejectJobOffers;
+import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
 import static mapper.JsonMapper.getMapper;
+import static messages.MessagingUtils.rejectJobOffers;
+import static messages.MessagingUtils.retrieveProposals;
+import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import agents.cloudnetwork.message.SendJobOfferMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import common.message.SendRefuseProposalMessage;
 import domain.ServerData;
 import exception.IncorrectServerOfferException;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.temporal.ValueRange;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,36 +25,45 @@ import java.util.Vector;
  */
 public class AnnounceNewJobRequest extends ContractNetInitiator {
     private static final Logger logger = LoggerFactory.getLogger(AnnounceNewJobRequest.class);
-    private static final ValueRange MAX_POWER_DIFFERENCE = ValueRange.of(-10, 10);
-    private final ACLMessage replyMessage;
-    private CloudNetworkAgent myCloudNetworkAgent;
 
-    public AnnounceNewJobRequest(final Agent a, final ACLMessage cfp, final ACLMessage replyMessage) {
-        super(a, cfp);
+    private final ACLMessage replyMessage;
+    private final CloudNetworkAgent myCloudNetworkAgent;
+    private final String guid;
+
+    /**
+     * Behaviour constructor.
+     *
+     * @param agent        agent which is executing the behaviour
+     * @param cfp          call for proposal message containing job requriements sent to the servers
+     * @param replyMessage reply message sent to client after retreiving the servers' responses
+     */
+    public AnnounceNewJobRequest(final Agent agent, final ACLMessage cfp, final ACLMessage replyMessage) {
+        super(agent, cfp);
+        this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
+        this.guid = agent.getName();
         this.replyMessage = replyMessage;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
-    }
-
+    /**
+     * Method which waits for all Server Agent responses. It is responsible for analyzing the received proposals,
+     * choosing the Server Agent for job execution and rejecting the remaining Server Agents.
+     *
+     * @param responses   retrieved responses from Server Agents
+     * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
+     */
     @Override
     protected void handleAllResponses(final Vector responses, final Vector acceptances) {
-        final List<ACLMessage> proposals = ((Vector<ACLMessage>) responses).stream()
-                .filter(response -> response.getPerformative() == ACLMessage.PROPOSE)
-                .toList();
+        final List<ACLMessage> proposals = retrieveProposals(responses);
 
         if (responses.isEmpty()) {
-            logger.info("[{}] No responses were retrieved", myAgent.getName());
+            logger.info("[{}] No responses were retrieved", guid);
         } else if (proposals.isEmpty()) {
-            logger.info("[{}] No servers available - sending refuse message to client", myAgent.getName());
-            myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
+            logger.info("[{}] No Servers available - sending refuse message to client", guid);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
             final ACLMessage chosenServerOffer = chooseServerToExecuteJob(proposals);
-            getDataStore().put(chosenServerOffer.getSender(), chosenServerOffer.createReply());
-            logger.info("[{}] Chosen Server for the job: {}", myAgent.getName(), chosenServerOffer.getSender().getLocalName());
+            logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
+            final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
 
             ServerData chosenServerData;
             try {
@@ -62,10 +72,10 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
                 throw new IncorrectServerOfferException();
             }
 
-            logger.info("[{}] Sending job execution offer to Client", myAgent.getName());
-            myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJob(), chosenServerOffer.getSender());
-            myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), getDataStore()));
-            rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJob(), chosenServerOffer, proposals);
+            logger.info("[{}] Sending job execution offer to Client", guid);
+            myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
+            myAgent.addBehaviour(new ProposeJobOffer(myAgent, makeJobOfferForClient(chosenServerData, replyMessage), serverReplyMessage));
+            rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
     }
 
@@ -82,8 +92,8 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
         } catch (JsonProcessingException e) {
             throw new IncorrectServerOfferException();
         }
-        int powerDifference = server1.getPowerInUse() - server2.getPowerInUse();
-        int priceDifference = (int) (server1.getPricePerHour() - server2.getPricePerHour());
+        int powerDifference = server1.getAvailablePower() - server2.getAvailablePower();
+        int priceDifference = (int) (server1.getServicePrice() - server2.getServicePrice());
         return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? priceDifference : powerDifference;
     }
 }

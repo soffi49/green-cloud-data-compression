@@ -1,76 +1,72 @@
 package agents.cloudnetwork;
 
 import domain.job.Job;
+import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.core.Agent;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractCloudNetworkAgent extends Agent{
+/**
+ * Abstract agent class storing the data regarding Cloud Network Agent
+ */
+public abstract class AbstractCloudNetworkAgent extends Agent {
 
-    protected List<Job> currentJobs;
-    protected List<Job> futureJobs;
-    protected Map<Job, AID> serverForJobMap;
-    protected int inUsePower;
-    protected int jobsCount;
-    protected int messagesSentCount;
+    protected Map<Job, JobStatusEnum> networkJobs;
+    protected Map<String, AID> serverForJobMap;
 
+    AbstractCloudNetworkAgent() {
+    }
+
+    /**
+     * Abstract Cloud Network Agent constructor.
+     *
+     * @param networkJobs     list of the jobs together with their statuses
+     *                        that are being processed in the network
+     * @param serverForJobMap map storing jobs and corresponding job's executor addresses
+     */
+    AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap) {
+        this.serverForJobMap = serverForJobMap;
+        this.networkJobs = networkJobs;
+    }
+
+    /**
+     * Method run on agent start. It initializes the Cloud Network Agent data with default values
+     */
     @Override
     protected void setup() {
         super.setup();
 
-        inUsePower = 0;
-        currentJobs = new ArrayList<>();
-        futureJobs = new ArrayList<>();
-        jobsCount = 0;
+        serverForJobMap = new HashMap<>();
+        networkJobs = new HashMap<>();
+    }
+    public int getPowerInUse(final OffsetDateTime startDate, final OffsetDateTime endDate) {
+        return networkJobs.entrySet().stream()
+                .filter(job -> !job.getValue().equals(JobStatusEnum.PROCESSING) &&
+                        job.getKey().getStartTime().isBefore(endDate) &&
+                        job.getKey().getEndTime().isAfter(startDate))
+                .mapToInt(job -> job.getKey().getPower()).sum();
     }
 
-    public Map<Job, AID> getServerForJobMap() {
+    public Job getJobById(final String jobId) {
+        return networkJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
+    }
+
+    public Map<String, AID> getServerForJobMap() {
         return serverForJobMap;
     }
 
-    public void setServerForJobMap(Map<Job, AID> serverForJobMap) {
+    public void setServerForJobMap(Map<String, AID> serverForJobMap) {
         this.serverForJobMap = serverForJobMap;
     }
 
-    public List<Job> getCurrentJobs() {
-        return currentJobs;
+    public Map<Job, JobStatusEnum> getNetworkJobs() {
+        return networkJobs;
     }
 
-    public void setCurrentJobs(List<Job> currentJobs) {
-        this.currentJobs = currentJobs;
-    }
-
-    public List<Job> getFutureJobs() {
-        return futureJobs;
-    }
-
-    public void setFutureJobs(List<Job> futureJobs) {
-        this.futureJobs = futureJobs;
-    }
-
-    public int getInUsePower() {
-        return inUsePower;
-    }
-
-    public void setInUsePower(int inUsePower) {
-        this.inUsePower = inUsePower;
-    }
-
-    public int getJobsCount() {
-        return jobsCount;
-    }
-
-    public void setJobsCount(int jobsCount) {
-        this.jobsCount = jobsCount;
-    }
-
-    public int getMessagesSentCount() {
-        return messagesSentCount;
-    }
-
-    public void setMessagesSentCount(int messagesSentCount) {
-        this.messagesSentCount = messagesSentCount;
+    public void setNetworkJobs(Map<Job, JobStatusEnum> networkJobs) {
+        this.networkJobs = networkJobs;
     }
 }

@@ -14,10 +14,17 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Agent representing the Client that wants to have the job executed by the Cloud Network
+ */
 public class ClientAgent extends AbstractClientAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientAgent.class);
 
+    /**
+     * Method run at the agent's start. In initialize the Client Agent based on the given by the user arguments and
+     * runs the starting behaviours - requesting the job execution and listening for job result information
+     */
     @Override
     protected void setup() {
         super.setup();
@@ -27,6 +34,7 @@ public class ClientAgent extends AbstractClientAgent {
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
 
+            //TODO to be removed (added for testing purposes)
             try {
                 TimeUnit.SECONDS.sleep(7);
             } catch (InterruptedException e) {
@@ -35,11 +43,14 @@ public class ClientAgent extends AbstractClientAgent {
             addBehaviour(prepareStartingBehaviour(jobToBeExecuted));
             addBehaviour(new WaitForJobResult(this));
         } else {
-            logger.info("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
+            logger.error("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
         }
     }
 
+    /**
+     * Method run before the Client is being deleted. It logs the Client's finish information.
+     */
     @Override
     protected void takeDown() {
         logger.info("I'm finished. Bye!");

@@ -17,6 +17,8 @@
             <ownerSever>Server1</ownerSever>
             <latitude>20.0</latitude>
             <longitude>101.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Water</name>
@@ -24,6 +26,8 @@
             <ownerSever>Server2</ownerSever>
             <latitude>10.0</latitude>
             <longitude>11.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>WindFarm</name>
@@ -31,6 +35,8 @@
             <ownerSever>Server1</ownerSever>
             <latitude>20.0</latitude>
             <longitude>131.1</longitude>
+            <pricePerPowerUnit>5</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>SolarFarm</name>
@@ -38,6 +44,8 @@
             <ownerSever>Server2</ownerSever>
             <latitude>30.0</latitude>
             <longitude>37.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Geothermal</name>
@@ -45,6 +53,8 @@
             <ownerSever>Server3</ownerSever>
             <latitude>30.0</latitude>
             <longitude>54.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Biomas</name>
@@ -52,6 +62,8 @@
             <ownerSever>Server4</ownerSever>
             <latitude>10.0</latitude>
             <longitude>11.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Biogas</name>
@@ -59,6 +71,8 @@
             <ownerSever>Server3</ownerSever>
             <latitude>50.0</latitude>
             <longitude>116.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Hydropower</name>
@@ -66,6 +80,8 @@
             <ownerSever>Server4</ownerSever>
             <latitude>56.0</latitude>
             <longitude>101.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>BioGasCompany</name>
@@ -73,6 +89,8 @@
             <ownerSever>Server3</ownerSever>
             <latitude>40.0</latitude>
             <longitude>131.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Soil</name>
@@ -80,31 +98,33 @@
             <ownerSever>Server1</ownerSever>
             <latitude>40.0</latitude>
             <longitude>131.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server1</name>
             <ownerCloudNetwork>CNA1</ownerCloudNetwork>
-            <power>10</power>
+            <maximumCapacity>10</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server2</name>
             <ownerCloudNetwork>CNA1</ownerCloudNetwork>
-            <power>15</power>
+            <maximumCapacity>15</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server3</name>
             <ownerCloudNetwork>CNA2</ownerCloudNetwork>
-            <power>200</power>
+            <maximumCapacity>200</maximumCapacity>
             <price>50.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server4</name>
             <ownerCloudNetwork>CNA2</ownerCloudNetwork>
-            <power>15</power>
+            <maximumCapacity>15</maximumCapacity>
             <price>100.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>
@@ -133,14 +153,14 @@
         </clientAgent>
         <clientAgent>
             <name>Third_Client</name>
-            <jobId>2</jobId>
+            <jobId>3</jobId>
             <startDate>10/12/2021 10:30</startDate>
             <endDate>10/12/2021 11:40</endDate>
             <power>10</power>
         </clientAgent>
         <clientAgent>
             <name>Fourth_Client</name>
-            <jobId>2</jobId>
+            <jobId>4</jobId>
             <startDate>10/12/2021 10:30</startDate>
             <endDate>10/12/2021 12:40</endDate>
             <power>10</power>

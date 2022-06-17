@@ -10,6 +10,9 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import runner.service.ScenarioService;
 
+/**
+ * Main method which runs the engine and the given scenario
+ */
 public class EngineRunner {
     public static void main(String[] args) {
 
