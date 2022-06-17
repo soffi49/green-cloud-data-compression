@@ -2,8 +2,10 @@
 /.idea/**/*
 /.idea/.gitignore
 /MTPs-Main-Container.txt
+/MTPs-container.txt
 /APDescription.txt
 /application/target/
 /engine/target/
 /logs/
 /application/src/main/resources/config.properties
+/gui/target/
