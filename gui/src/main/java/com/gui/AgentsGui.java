@@ -1,24 +1,19 @@
 package com.gui;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.SingleGraph;
 
-import java.io.IOException;
-
-public class AgentsGui extends Application {
-
-    @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(AgentsGui.class.getResource("agents-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
-        stage.setTitle("Green source!");
-        stage.setScene(scene);
-        stage.show();
-    }
+public class AgentsGui {
 
     public static void main(String[] args) {
-        launch();
+        System.setProperty("org.graphstream.ui", "swing");
+        Graph graph = new SingleGraph("Tutorial 1");
+        graph.addNode("A" );
+        graph.addNode("B" );
+        graph.addNode("C" );
+        graph.addEdge("AB", "A", "B");
+        graph.addEdge("BC", "B", "C");
+        graph.addEdge("CA", "C", "A");
+        graph.display();
     }
 }
