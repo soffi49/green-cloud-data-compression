@@ -1,19 +1,19 @@
 package agents.cloudnetwork.behaviour;
 
 import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
+import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
-import static mapper.JsonMapper.getMapper;
+import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import messages.domain.ReplyMessageFactory;
-import messages.domain.SendJobOfferMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.ServerData;
 import exception.IncorrectServerOfferException;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
      * Method which waits for all Server Agent responses. It is responsible for analyzing the received proposals,
      * choosing the Server Agent for job execution and rejecting the remaining Server Agents.
      *
-     * @param responses retrieved responses from Server Agents
+     * @param responses   retrieved responses from Server Agents
      * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
      */
     @Override
@@ -74,7 +74,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
             logger.info("[{}] Sending job execution offer to Client", guid);
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-            myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), serverReplyMessage));
+            myAgent.addBehaviour(new ProposeJobOffer(myAgent, makeJobOfferForClient(chosenServerData, replyMessage), serverReplyMessage));
             rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
     }

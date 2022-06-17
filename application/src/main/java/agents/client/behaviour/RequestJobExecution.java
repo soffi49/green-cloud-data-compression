@@ -62,7 +62,7 @@ public class RequestJobExecution extends ContractNetInitiator {
         logger.info("[{}] Sending call for proposal to Cloud Network Agents", guid);
         final Vector<ACLMessage> vector = new Vector<>();
         final List<AID> cloudNetworks = (List<AID>) getParent().getDataStore().get(CLOUD_NETWORK_AGENTS);
-        vector.add(CallForProposalMessageFactory.create(job, cloudNetworks, CLIENT_JOB_CFP_PROTOCOL).getMessage());
+        vector.add(CallForProposalMessageFactory.createCallForProposal(job, cloudNetworks, CLIENT_JOB_CFP_PROTOCOL));
         return vector;
     }
 

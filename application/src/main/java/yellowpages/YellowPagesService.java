@@ -1,5 +1,7 @@
 package yellowpages;
 
+import static java.util.Collections.emptyList;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -12,8 +14,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-
+/**
+ * Service which provides the methods used in communication with the DF
+ */
 public class YellowPagesService {
 
     private static final Logger logger = LoggerFactory.getLogger(YellowPagesService.class);
@@ -21,6 +24,14 @@ public class YellowPagesService {
     private YellowPagesService() {
     }
 
+    /**
+     * Method registers the given agent in the DF
+     *
+     * @param agent       agent that is to be registered
+     * @param serviceType type of the service to be registered
+     * @param serviceName name of the service to be registered
+     * @param ownership   name of the owner to be registered
+     */
     public static void register(Agent agent, String serviceType, String serviceName, String ownership) {
         try {
             DFService.register(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
@@ -29,6 +40,13 @@ public class YellowPagesService {
         }
     }
 
+    /**
+     * Method registers the given agent in the DF
+     *
+     * @param agent       agent that is to be registered
+     * @param serviceType type of the service to be registered
+     * @param serviceName name of the service to be registered
+     */
     public static void register(Agent agent, String serviceType, String serviceName) {
         try {
             DFService.register(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName));
@@ -37,6 +55,14 @@ public class YellowPagesService {
         }
     }
 
+    /**
+     * Method searches the DF for the agents with given service type and ownership
+     *
+     * @param agent       agent which is searching through the DF
+     * @param serviceType type of the service to be searched
+     * @param ownership   name of the owner to be searched
+     * @return list of agent addresses found in DF
+     */
     public static List<AID> search(Agent agent, String serviceType, String ownership) {
         try {
             return Arrays.stream(DFService.search(agent, prepareAgentDescriptionTemplate(serviceType, ownership)))
@@ -48,6 +74,13 @@ public class YellowPagesService {
         return emptyList();
     }
 
+    /**
+     * Method searches the DF for the agents with given service type
+     *
+     * @param agent       agent which is searching through the DF
+     * @param serviceType type of the service to be searched
+     * @return list of agent addresses found in DF
+     */
     public static List<AID> search(Agent agent, String serviceType) {
         try {
             return Arrays.stream(DFService.search(agent, prepareAgentDescriptionTemplate(serviceType)))

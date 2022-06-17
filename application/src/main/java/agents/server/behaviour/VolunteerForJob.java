@@ -2,17 +2,13 @@ package agents.server.behaviour;
 
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
-import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import domain.job.Job;
 import domain.job.JobStatusEnum;
-import jade.core.AID;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import messages.domain.ReplyMessageFactory;
-import messages.domain.SendJobOfferResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +49,7 @@ public class VolunteerForJob extends ProposeInitiator {
             final String jobId = accept_proposal.getContent();
             myServerAgent.getServerJobs().replace(myServerAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
             myAgent.addBehaviour(new StartJobExecution());
-            myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId ,ACCEPT_PROPOSAL));
+            myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
         } catch (Exception e) {
             e.printStackTrace();
         }

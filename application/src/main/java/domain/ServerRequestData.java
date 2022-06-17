@@ -7,10 +7,16 @@ import domain.job.PowerJob;
 import domain.location.Location;
 import org.immutables.value.Value;
 
-@JsonSerialize(as = ImmutableServerRequestData.class)
-@JsonDeserialize(as = ImmutableServerRequestData.class)
+/**
+ * Object storing the data passed by the Green Source in the weather request message
+ */
+@JsonSerialize(as = ImmutableGreenSourceData.class)
+@JsonDeserialize(as = ImmutableGreenSourceData.class)
 @Value.Immutable
 public interface ServerRequestData {
 
+    /**
+     * @return location for which the weather is to be retrieved
+     */
     Location getLocation();
 }

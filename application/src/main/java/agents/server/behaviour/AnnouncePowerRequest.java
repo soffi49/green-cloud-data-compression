@@ -4,6 +4,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
+import static messages.domain.JobOfferMessageFactory.makeServerJobOffer;
 
 import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,7 +14,6 @@ import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import messages.domain.ReplyMessageFactory;
-import messages.domain.SendJobVolunteerProposalMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
             }
             final String jobId = chosenGreenSourceData.getJobId();
             final double servicePrice = calculateServicePrice(chosenGreenSourceData);
-            final ACLMessage proposalMessage = SendJobVolunteerProposalMessage.create(myServerAgent, servicePrice, jobId, replyMessage).getMessage();
+            final ACLMessage proposalMessage = makeServerJobOffer(myServerAgent, servicePrice, jobId, replyMessage);
 
             myServerAgent.getGreenSourceForJobMap().put(jobId, chosenGreenSourceOffer.getSender());
             logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent.getName());

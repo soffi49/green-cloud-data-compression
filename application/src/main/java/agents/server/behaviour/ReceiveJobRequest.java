@@ -77,6 +77,6 @@ public class ReceiveJobRequest extends CyclicBehaviour {
                 .endTime(job.getEndTime())
                 .jobId(job.getJobId())
                 .build();
-        return CallForProposalMessageFactory.create(powerJob, myServerAgent.getOwnedGreenSources(), SERVER_JOB_CFP_PROTOCOL).getMessage();
+        return CallForProposalMessageFactory.createCallForProposal(powerJob, myServerAgent.getOwnedGreenSources(), SERVER_JOB_CFP_PROTOCOL);
     }
 }

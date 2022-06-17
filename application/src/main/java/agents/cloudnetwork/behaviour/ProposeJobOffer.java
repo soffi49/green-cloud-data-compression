@@ -2,6 +2,7 @@ package agents.cloudnetwork.behaviour;
 
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static messages.domain.ReplyMessageFactory.prepareConfirmationReply;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.JobStatusEnum;
@@ -9,7 +10,6 @@ import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import messages.domain.ReplyMessageFactory;
-import messages.domain.SendJobConfirmationMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class ProposeJobOffer extends ProposeInitiator {
         logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
         final String jobId = accept_proposal.getContent();
         myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
-        myAgent.send(SendJobConfirmationMessage.create(jobId, accept_proposal.createReply()).getMessage());
+        myAgent.send(prepareConfirmationReply(jobId, accept_proposal.createReply()));
         myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
     }
 
