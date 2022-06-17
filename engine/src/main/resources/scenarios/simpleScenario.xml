@@ -19,7 +19,7 @@
         <serverAgentsArgs>
             <name>Server</name>
             <ownerCloudNetwork>CNA</ownerCloudNetwork>
-            <power>10</power>
+            <maximumCapacity>10</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>

@@ -106,25 +106,25 @@
         <serverAgentsArgs>
             <name>Server1</name>
             <ownerCloudNetwork>CNA1</ownerCloudNetwork>
-            <power>10</power>
+            <maximumCapacity>10</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server2</name>
             <ownerCloudNetwork>CNA1</ownerCloudNetwork>
-            <power>15</power>
+            <maximumCapacity>15</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server3</name>
             <ownerCloudNetwork>CNA2</ownerCloudNetwork>
-            <power>200</power>
+            <maximumCapacity>200</maximumCapacity>
             <price>50.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server4</name>
             <ownerCloudNetwork>CNA2</ownerCloudNetwork>
-            <power>15</power>
+            <maximumCapacity>15</maximumCapacity>
             <price>100.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>

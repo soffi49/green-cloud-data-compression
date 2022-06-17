@@ -4,15 +4,27 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
 
+/**
+ * Arguments of the Server Agent
+ */
 @JsonSerialize(as = ImmutableServerAgentArgs.class)
 @JsonDeserialize(as = ImmutableServerAgentArgs.class)
 @Immutable
 public interface ServerAgentArgs extends AgentArgs {
 
+    /**
+     * @return owner cloud network agent name
+     */
     String getOwnerCloudNetwork();
 
-    String getPower();
+    /**
+     * @return maximum server capacity
+     */
+    String getMaximumCapacity();
 
+    /**
+     * @return price per 1-hour
+     */
     String getPrice();
 
 }

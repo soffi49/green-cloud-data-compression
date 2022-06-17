@@ -29,7 +29,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                 new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower(), clientAgent.getJobId()});
         } else if (agentArgs instanceof ServerAgentArgs serverAgent) {
             return containerController.createNewAgent(serverAgent.getName(), "agents.server.ServerAgent",
-                new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(), serverAgent.getPower()});
+                new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(), serverAgent.getMaximumCapacity()});
         } else if (agentArgs instanceof CloudNetworkArgs cloudNetworkAgent) {
             return containerController.createNewAgent(cloudNetworkAgent.getName(),
                 "agents.cloudnetwork.CloudNetworkAgent", new Object[]{});
