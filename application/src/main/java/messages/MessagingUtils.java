@@ -2,6 +2,7 @@ package messages;
 
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
+import messages.domain.ReplyMessageFactory;
 import messages.domain.SendJobOfferResponseMessage;
 import domain.job.Job;
 import jade.core.Agent;
@@ -16,9 +17,9 @@ public class MessagingUtils {
                 .filter(response -> response.getPerformative() == ACLMessage.PROPOSE)
                 .toList();
     }
-    public static void rejectJobOffers(final Agent agent, final Job job, final ACLMessage chosenOffer, final List<ACLMessage> receivedOffers) {
+    public static void rejectJobOffers(final Agent agent, final String jobId, final ACLMessage chosenOffer, final List<ACLMessage> receivedOffers) {
         receivedOffers.stream()
                 .filter(offer -> !offer.equals(chosenOffer))
-                .forEach(offer -> agent.send(SendJobOfferResponseMessage.create(job, REJECT_PROPOSAL, offer.createReply()).getMessage()));
+                .forEach(offer -> agent.send(ReplyMessageFactory.prepareReply(offer.createReply(), jobId ,REJECT_PROPOSAL)));
     }
 }

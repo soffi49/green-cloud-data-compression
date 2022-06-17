@@ -15,5 +15,5 @@ public interface GreenSourceData {
 
     double getPricePerPowerUnit();
 
-    Job getJob();
+    String getJobId();
 }

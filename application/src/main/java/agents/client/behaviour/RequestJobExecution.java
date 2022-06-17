@@ -1,23 +1,24 @@
 package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
-import static messages.MessagingUtils.rejectJobOffers;
-import static messages.MessagingUtils.retrieveProposals;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
+import static messages.MessagingUtils.rejectJobOffers;
+import static messages.MessagingUtils.retrieveProposals;
 
 import agents.client.ClientAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import messages.domain.SendJobCallForProposalMessage;
-import messages.domain.SendJobOfferResponseMessage;
 import domain.job.Job;
 import domain.job.PricedJob;
 import exception.IncorrectCloudNetworkOfferException;
+import exception.IncorrectServerOfferException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import messages.domain.CallForProposalMessageFactory;
+import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,11 +59,10 @@ public class RequestJobExecution extends ContractNetInitiator {
      */
     @Override
     protected Vector prepareCfps(final ACLMessage callForProposal) {
-        logger.debug("[{}] Sending call for proposal to Cloud Network Agents", guid);
+        logger.info("[{}] Sending call for proposal to Cloud Network Agents", guid);
         final Vector<ACLMessage> vector = new Vector<>();
         final List<AID> cloudNetworks = (List<AID>) getParent().getDataStore().get(CLOUD_NETWORK_AGENTS);
-
-        vector.add(SendJobCallForProposalMessage.create(job, cloudNetworks, CLIENT_JOB_CFP_PROTOCOL).getMessage());
+        vector.add(CallForProposalMessageFactory.create(job, cloudNetworks, CLIENT_JOB_CFP_PROTOCOL).getMessage());
         return vector;
     }
 
@@ -70,7 +70,7 @@ public class RequestJobExecution extends ContractNetInitiator {
      * Method handles the responses retrieved from the Cloud Network Agents. It is responsible for analyzing the
      * retrieved responses, choosing one Cloud Network Agent that will execute the job and rejecting the remaining ones.
      *
-     * @param responses all retrieved Cloud Network Agents' responses
+     * @param responses   all retrieved Cloud Network Agents' responses
      * @param acceptances vector containing accept proposal message that will be sent back to the chosen
      *                    Cloud Network Agent
      */
@@ -79,17 +79,23 @@ public class RequestJobExecution extends ContractNetInitiator {
         final List<ACLMessage> proposals = retrieveProposals(responses);
 
         if (responses.isEmpty()) {
-            logger.debug("[{}] No responses were retrieved", guid);
+            logger.info("[{}] No responses were retrieved", guid);
             myAgent.doDelete();
         } else if (proposals.isEmpty()) {
-            logger.debug("[{}] All Cloud Network Agents refused to the call for proposal", guid);
+            logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myAgent.doDelete();
         } else {
             final ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
-            logger.debug("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
             myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
-            acceptances.add(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, chosenOffer.createReply()).getMessage());
-            rejectJobOffers(myClientAgent, job, chosenOffer, proposals);
+            PricedJob pricedJob;
+            try {
+                pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
+            } catch (JsonProcessingException e) {
+                throw new IncorrectServerOfferException();
+            }
+            acceptances.add(ReplyMessageFactory.prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
+            rejectJobOffers(myClientAgent, pricedJob.getJobId(), chosenOffer, proposals);
         }
     }
 
@@ -100,8 +106,7 @@ public class RequestJobExecution extends ContractNetInitiator {
      */
     @Override
     protected void handleInform(final ACLMessage inform) {
-        //TODO pass job data
-        logger.debug("[{}] The execution of my job started!", myAgent);
+        logger.info("[{}] The execution of my job started!", myAgent);
     }
 
     private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {

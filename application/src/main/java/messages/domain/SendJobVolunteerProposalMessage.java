@@ -6,6 +6,7 @@ import agents.server.ServerAgent;
 import domain.ImmutableServerData;
 import domain.job.Job;
 import jade.lang.acl.ACLMessage;
+
 import java.io.IOException;
 
 public class SendJobVolunteerProposalMessage {
@@ -18,14 +19,14 @@ public class SendJobVolunteerProposalMessage {
 
     public static SendJobVolunteerProposalMessage create(final ServerAgent serverAgent,
                                                          final double servicePrice,
-                                                         final Job job,
+                                                         final String jobId,
                                                          final ACLMessage replyMessage) {
+        final Job job = serverAgent.getJobById(jobId);
+        final int inUsePower = serverAgent.getAvailableCapacity(job.getStartTime(), job.getEndTime());
         final ImmutableServerData jobOffer = ImmutableServerData.builder()
                 .servicePrice(servicePrice)
-                .powerInUse((serverAgent).getPowerInUse())
-                .pricePerHour((serverAgent).getPricePerHour())
-                .availableCapacity((serverAgent).getAvailableCapacity())
-                .job(job)
+                .availablePower(serverAgent.getMaximumCapacity() - inUsePower)
+                .jobId(jobId)
                 .build();
         replyMessage.setPerformative(ACLMessage.PROPOSE);
         try {

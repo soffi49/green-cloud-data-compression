@@ -1,60 +1,62 @@
 package agents.greenenergy.behaviour;
 
-import static messages.domain.ReplyMessageFactory.prepareReply;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static mapper.JsonMapper.getMapper;
+import static messages.domain.ReplyMessageFactory.prepareStringReply;
 
 import agents.greenenergy.GreenEnergyAgent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.Job;
-import exception.IncorrectJobStructureException;
+import domain.job.JobStatusEnum;
 import jade.core.Agent;
-import jade.core.behaviours.DataStore;
-import jade.domain.FIPAAgentManagement.FailureException;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Behaviour which is responsible for sending the proposal with power request to Server Agent and
+ * handling the retrieved responses.
+ */
 public class ProposePowerRequest extends ProposeInitiator {
 
     private static final Logger logger = LoggerFactory.getLogger(ProposePowerRequest.class);
     private final String guid;
     private final GreenEnergyAgent myGreenEnergyAgent;
 
-    public ProposePowerRequest(final Agent a, final ACLMessage msg, final DataStore dataStore) {
-        super(a, msg, dataStore);
-        this.myGreenEnergyAgent = (GreenEnergyAgent) a;
+    /**
+     * Behaviour constructor.
+     *
+     * @param agent agent which is executing the behaviour
+     * @param msg proposal message that is sent to the Server Agent
+     */
+    public ProposePowerRequest(final Agent agent, final ACLMessage msg) {
+        super(agent, msg);
+        this.myGreenEnergyAgent = (GreenEnergyAgent) agent;
         this.guid = myGreenEnergyAgent.getName();
     }
 
+    /**
+     * Method handles the accept proposal response from server. It updates the state of the job in
+     * green source data and sends the information that the execution of the given job can be started.
+     *
+     * @param accept_proposal accept proposal response retrieved from the Server Agent
+     */
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
-        Job job;
-        try {
-            job = readAcceptedJob(accept_proposal);
-        } catch (FailureException e) {
-            throw new IncorrectJobStructureException();
-        }
+        final String jobId = accept_proposal.getContent();
         logger.info("[{}] Sending information back to server agent.", guid);
-        myGreenEnergyAgent.getCurrentJobs().add(job);
-        myGreenEnergyAgent.setAvailableCapacity(myGreenEnergyAgent.getAvailableCapacity() - job.getPower());
-        var response = prepareReply(accept_proposal, job, INFORM);
+        myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
+        var response = prepareStringReply(accept_proposal.createReply(), jobId, INFORM);
         response.setProtocol(SERVER_JOB_CFP_PROTOCOL);
         myAgent.send(response);
     }
 
+    /**
+     * Method handles the reject proposal response from server. It logs the information to the console.
+     *
+     * @param reject_proposal reject proposal response retrieved from the Server Agent
+     */
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         logger.info("[{}] Server rejected the job proposal", guid);
-    }
-
-    private Job readAcceptedJob(ACLMessage callForProposal) throws FailureException {
-        try {
-            return getMapper().readValue(callForProposal.getContent(), Job.class);
-        } catch (JsonProcessingException e) {
-            throw new FailureException(e.getMessage());
-        }
     }
 }

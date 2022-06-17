@@ -1,5 +1,12 @@
 package common.constant;
 
+/**
+ * Constants describing the services registered in DF.
+ * <p>
+ * ..._TYPE - type of service
+ * <p>
+ * ..._NAME - name of service
+ */
 public class DFServiceConstants {
     public static final String CNA_SERVICE_TYPE = "CNA";
     public static final String SA_SERVICE_TYPE = "SA";

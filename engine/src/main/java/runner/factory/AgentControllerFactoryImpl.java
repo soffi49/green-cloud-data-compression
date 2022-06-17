@@ -39,6 +39,8 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                     "agents.greenenergy.GreenEnergyAgent",
                     new Object[]{greenEnergyAgent.getMonitoringAgent(),
                             greenEnergyAgent.getOwnerSever(),
+                            greenEnergyAgent.getPricePerPowerUnit(),
+                            greenEnergyAgent.getMaximumCapacity(),
                             greenEnergyAgent.getLatitude(),
                             greenEnergyAgent.getLongitude()});
         }

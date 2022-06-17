@@ -16,4 +16,8 @@ public interface GreenEnergyAgentArgs extends AgentArgs{
     String getLatitude();
 
     String getLongitude();
+
+    String getPricePerPowerUnit();
+
+    String getMaximumCapacity();
 }

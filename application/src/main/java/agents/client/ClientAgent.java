@@ -34,6 +34,7 @@ public class ClientAgent extends AbstractClientAgent {
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
 
+            //TODO to be removed (added for testing purposes)
             try {
                 TimeUnit.SECONDS.sleep(7);
             } catch (InterruptedException e) {
@@ -52,7 +53,7 @@ public class ClientAgent extends AbstractClientAgent {
      */
     @Override
     protected void takeDown() {
-        logger.debug("I'm finished. Bye!");
+        logger.info("I'm finished. Bye!");
         super.takeDown();
     }
 

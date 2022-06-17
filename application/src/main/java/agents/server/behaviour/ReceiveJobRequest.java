@@ -7,19 +7,22 @@ import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import messages.domain.SendJobCallForProposalMessage;
-import messages.domain.SendRefuseProposalMessage;
+import domain.job.ImmutablePowerJob;
 import domain.job.Job;
+import domain.job.JobStatusEnum;
+import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import messages.domain.CallForProposalMessageFactory;
+import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
 /**
- * Behaviours responsible for handling retrieval of CNA's job requests
+ * Behaviour which is responsible for handling upcoming job's call for proposals from cloud network agents
  */
 public class ReceiveJobRequest extends CyclicBehaviour {
 
@@ -28,31 +31,36 @@ public class ReceiveJobRequest extends CyclicBehaviour {
 
     private ServerAgent myServerAgent;
 
+    /**
+     * Method executed at the behaviour's start. It casts the agent to the ServerAgent.
+     */
     @Override
     public void onStart() {
         super.onStart();
         myServerAgent = (ServerAgent) myAgent;
     }
 
+    /**
+     * Method listens for the upcoming job call for proposals from the Cloud Network Agents.
+     * It validates whether the server has enough power to handle the job.
+     * If yes, then it sends the call for proposal to owned green sources and starts listening for the responses.
+     * If no, then it sends the refuse message to the Cloud Network Agent.
+     */
     @Override
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
             try {
-                if(myServerAgent.getOwnedGreenSources().isEmpty()) {
-                    logger.info("[{}] I don't have the Green Source Agents", myAgent.getName());
-                    myAgent.doDelete();
-                }
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
-
-                if (job.getPower() + myServerAgent.getPowerInUse() <= myServerAgent.getAvailableCapacity()) {
+                if (job.getPower() <= myServerAgent.getAvailableCapacity(job.getStartTime(), job.getEndTime())) {
                     logger.info("[{}] Sending call for proposal to Green Source Agents", myAgent.getName());
-                    final ACLMessage cfp = SendJobCallForProposalMessage.create(job, myServerAgent.getOwnedGreenSources(), SERVER_JOB_CFP_PROTOCOL).getMessage();
+                    final ACLMessage cfp = preparePowerJobCFP(job);
+                    myServerAgent.getServerJobs().put(job, JobStatusEnum.PROCESSING);
                     myAgent.addBehaviour(new AnnouncePowerRequest(myAgent, cfp, message.createReply()));
                 } else {
                     logger.info("[{}] Not enough available power! Sending refuse message to Cloud Network Agent", myAgent.getName());
-                    myAgent.send(SendRefuseProposalMessage.create(message.createReply()).getMessage());
+                    myAgent.send(ReplyMessageFactory.prepareRefuseReply(message.createReply()));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -60,5 +68,15 @@ public class ReceiveJobRequest extends CyclicBehaviour {
         } else {
             block();
         }
+    }
+
+    private ACLMessage preparePowerJobCFP(final Job job) {
+        final PowerJob powerJob = ImmutablePowerJob.builder()
+                .power(job.getPower())
+                .startTime(job.getStartTime())
+                .endTime(job.getEndTime())
+                .jobId(job.getJobId())
+                .build();
+        return CallForProposalMessageFactory.create(powerJob, myServerAgent.getOwnedGreenSources(), SERVER_JOB_CFP_PROTOCOL).getMessage();
     }
 }

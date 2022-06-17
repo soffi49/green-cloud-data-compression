@@ -11,6 +11,8 @@
             <ownerSever>Server1</ownerSever>
             <latitude>10.0</latitude>
             <longitude>11.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Water</name>
@@ -18,6 +20,8 @@
             <ownerSever>Server2</ownerSever>
             <latitude>10.0</latitude>
             <longitude>11.1</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>

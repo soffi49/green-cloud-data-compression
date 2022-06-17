@@ -18,7 +18,7 @@ public class SendJobOfferMessage {
 
     public static SendJobOfferMessage create(final ServerData server, final ACLMessage replyMessage) {
         final PricedJob pricedJob = ImmutablePricedJob.builder()
-                .jobId(server.getJob().getJobId())
+                .jobId(server.getJobId())
                 .priceForJob(server.getServicePrice())
                 .build();
         replyMessage.setPerformative(PROPOSE);

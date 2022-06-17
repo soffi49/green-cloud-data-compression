@@ -1,22 +1,21 @@
 package agents.cloudnetwork;
 
 import domain.job.Job;
+import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.core.Agent;
-import java.util.ArrayList;
+
+import java.time.OffsetDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Abstract agent class storing the data regarding Cloud Network Agent
  */
-public abstract class AbstractCloudNetworkAgent extends Agent{
+public abstract class AbstractCloudNetworkAgent extends Agent {
 
-    protected List<Job> currentJobs;
-    protected List<Job> futureJobs;
+    protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
-    protected int inUsePower;
 
     AbstractCloudNetworkAgent() {
     }
@@ -24,16 +23,13 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
     /**
      * Abstract Cloud Network Agent constructor.
      *
-     * @param currentJobs list of the jobs that are being executed currently in the network
-     * @param futureJobs list of the jobs that are planned to be executed in the network
+     * @param networkJobs     list of the jobs together with their statuses
+     *                        that are being processed in the network
      * @param serverForJobMap map storing jobs and corresponding job's executor addresses
-     * @param inUsePower current network in use power
      */
-    AbstractCloudNetworkAgent(List<Job> currentJobs, List<Job> futureJobs, Map<String, AID> serverForJobMap, int inUsePower) {
-        this.currentJobs = currentJobs;
-        this.futureJobs = futureJobs;
+    AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap) {
         this.serverForJobMap = serverForJobMap;
-        this.inUsePower = inUsePower;
+        this.networkJobs = networkJobs;
     }
 
     /**
@@ -43,10 +39,19 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
     protected void setup() {
         super.setup();
 
-        inUsePower = 0;
-        currentJobs = new ArrayList<>();
-        futureJobs = new ArrayList<>();
         serverForJobMap = new HashMap<>();
+        networkJobs = new HashMap<>();
+    }
+    public int getPowerInUse(final OffsetDateTime startDate, final OffsetDateTime endDate) {
+        return networkJobs.entrySet().stream()
+                .filter(job -> !job.getValue().equals(JobStatusEnum.PROCESSING) &&
+                        job.getKey().getStartTime().isBefore(endDate) &&
+                        job.getKey().getEndTime().isAfter(startDate))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    public Job getJobById(final String jobId) {
+        return networkJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
     }
 
     public Map<String, AID> getServerForJobMap() {
@@ -57,27 +62,11 @@ public abstract class AbstractCloudNetworkAgent extends Agent{
         this.serverForJobMap = serverForJobMap;
     }
 
-    public List<Job> getCurrentJobs() {
-        return currentJobs;
+    public Map<Job, JobStatusEnum> getNetworkJobs() {
+        return networkJobs;
     }
 
-    public void setCurrentJobs(List<Job> currentJobs) {
-        this.currentJobs = currentJobs;
-    }
-
-    public List<Job> getFutureJobs() {
-        return futureJobs;
-    }
-
-    public void setFutureJobs(List<Job> futureJobs) {
-        this.futureJobs = futureJobs;
-    }
-
-    public int getInUsePower() {
-        return inUsePower;
-    }
-
-    public void setInUsePower(int inUsePower) {
-        this.inUsePower = inUsePower;
+    public void setNetworkJobs(Map<Job, JobStatusEnum> networkJobs) {
+        this.networkJobs = networkJobs;
     }
 }

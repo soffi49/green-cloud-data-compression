@@ -6,9 +6,9 @@ import static messages.MessagingUtils.retrieveProposals;
 import static mapper.JsonMapper.getMapper;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import messages.domain.ReplyMessageFactory;
 import messages.domain.SendJobOfferMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import messages.domain.SendRefuseProposalMessage;
 import domain.ServerData;
 import exception.IncorrectServerOfferException;
 import jade.core.Agent;
@@ -56,13 +56,13 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
         final List<ACLMessage> proposals = retrieveProposals(responses);
 
         if (responses.isEmpty()) {
-            logger.debug("[{}] No responses were retrieved", guid);
+            logger.info("[{}] No responses were retrieved", guid);
         } else if (proposals.isEmpty()) {
-            logger.debug("[{}] No Servers available - sending refuse message to client", guid);
-            myAgent.send(SendRefuseProposalMessage.create(replyMessage).getMessage());
+            logger.info("[{}] No Servers available - sending refuse message to client", guid);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
             final ACLMessage chosenServerOffer = chooseServerToExecuteJob(proposals);
-            logger.debug("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
+            logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
             final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
 
             ServerData chosenServerData;
@@ -72,10 +72,10 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
                 throw new IncorrectServerOfferException();
             }
 
-            logger.debug("[{}] Sending job execution offer to Client", guid);
-            myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJob().getJobId(), chosenServerOffer.getSender());
+            logger.info("[{}] Sending job execution offer to Client", guid);
+            myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
             myAgent.addBehaviour(new ProposeJobOffer(myAgent, SendJobOfferMessage.create(chosenServerData, replyMessage).getMessage(), serverReplyMessage));
-            rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJob(), chosenServerOffer, proposals);
+            rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
     }
 
@@ -92,8 +92,8 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
         } catch (JsonProcessingException e) {
             throw new IncorrectServerOfferException();
         }
-        int powerDifference = server1.getPowerInUse() - server2.getPowerInUse();
-        int priceDifference = (int) (server1.getPricePerHour() - server2.getPricePerHour());
+        int powerDifference = server1.getAvailablePower() - server2.getAvailablePower();
+        int priceDifference = (int) (server1.getServicePrice() - server2.getServicePrice());
         return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? priceDifference : powerDifference;
     }
 }

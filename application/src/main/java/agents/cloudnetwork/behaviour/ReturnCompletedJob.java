@@ -3,11 +3,9 @@ package agents.cloudnetwork.behaviour;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
-import static mapper.JsonMapper.getMapper;
+import static messages.domain.FinishJobMessageFactory.prepareFinishMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import messages.domain.SendJobFinishedMessage;
-import domain.job.Job;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -44,22 +42,18 @@ public class ReturnCompletedJob extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
-            try {
-                logger.debug("[{}] Sending information that the job execution is finished", myAgent.getName());
-                final Job job = getMapper().readValue(message.getContent(), Job.class);
-                updateNetworkInformation(job);
-                myAgent.send(SendJobFinishedMessage.create(job).getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
+                final String jobId = message.getContent();
+                final String clientId = myCloudNetworkAgent.getJobById(jobId).getClientIdentifier();
+                updateNetworkInformation(jobId);
+                myAgent.send(prepareFinishMessageForClient(jobId, clientId));
         } else {
             block();
         }
     }
 
-    private void updateNetworkInformation(final Job job) {
-        myCloudNetworkAgent.getCurrentJobs().remove(job);
-        myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
-        myCloudNetworkAgent.setInUsePower(myCloudNetworkAgent.getInUsePower() - job.getPower());
+    private void updateNetworkInformation(final String jobId) {
+        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
+        myCloudNetworkAgent.getServerForJobMap().remove(jobId);
     }
 }

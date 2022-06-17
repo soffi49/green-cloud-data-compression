@@ -37,7 +37,7 @@ public class WaitForJobResult extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
-            logger.debug("[{}] The execution of my job finished! :)", myAgent.getName());
+            logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
         } else {
             block();
         }

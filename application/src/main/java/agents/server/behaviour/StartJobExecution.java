@@ -7,6 +7,7 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
+import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -25,22 +26,29 @@ public class StartJobExecution extends CyclicBehaviour {
 
     private ServerAgent myServerAgent;
 
+    /**
+     *
+     */
     @Override
     public void onStart() {
         super.onStart();
         myServerAgent = (ServerAgent) myAgent;
     }
 
+    /**
+     * Method run
+     */
     @Override
     public void action() {
         final ACLMessage inform = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(inform)) {
             try {
-                final Job job = getMapper().readValue(inform.getContent(), Job.class);
+                final String jobId = getMapper().readValue(inform.getContent(), String.class);
+                final Job job = myServerAgent.getJobById(jobId);
                 logger.info("[{}] Starting the execution of the job", myAgent.getName());
 
-                updateNetworkInformation(job);
+                myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS);
                 myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, job));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -48,10 +56,5 @@ public class StartJobExecution extends CyclicBehaviour {
         } else {
             block();
         }
-    }
-
-    private void updateNetworkInformation(final Job job) {
-        myServerAgent.getCurrentJobs().add(job);
-        myServerAgent.setPowerInUse(myServerAgent.getPowerInUse() + job.getPower());
     }
 }

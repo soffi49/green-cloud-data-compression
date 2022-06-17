@@ -2,16 +2,14 @@ package agents.cloudnetwork.behaviour;
 
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
-import static mapper.JsonMapper.getMapper;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import messages.domain.SendJobConfirmationMessage;
-import messages.domain.SendJobOfferResponseMessage;
-import domain.job.Job;
+import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
+import messages.domain.ReplyMessageFactory;
+import messages.domain.SendJobConfirmationMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,16 +46,11 @@ public class ProposeJobOffer extends ProposeInitiator {
      */
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
-        try {
-            logger.debug("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
-            final Job job = getMapper().readValue(accept_proposal.getContent(), Job.class);
-
-            updateNetworkInformation(job);
-            myAgent.send(SendJobConfirmationMessage.create(job, accept_proposal.createReply()).getMessage());
-            myAgent.send(SendJobOfferResponseMessage.create(job, ACCEPT_PROPOSAL, replyMessage).getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
+        final String jobId = accept_proposal.getContent();
+        myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
+        myAgent.send(SendJobConfirmationMessage.create(jobId, accept_proposal.createReply()).getMessage());
+        myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
     }
 
     /**
@@ -68,19 +61,10 @@ public class ProposeJobOffer extends ProposeInitiator {
      */
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
-        try {
-            logger.debug("[{}] Client {} rejected the job proposal", guid, reject_proposal.getSender().getName());
-            final Job job = getMapper().readValue(reject_proposal.getContent(), Job.class);
-
-            myCloudNetworkAgent.getServerForJobMap().remove(job);
-            myCloudNetworkAgent.send(SendJobOfferResponseMessage.create(job, REJECT_PROPOSAL, replyMessage).getMessage());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateNetworkInformation(final Job job) {
-        myCloudNetworkAgent.getCurrentJobs().add(job);
-        myCloudNetworkAgent.setInUsePower(myCloudNetworkAgent.getInUsePower() + job.getPower());
+        logger.info("[{}] Client {} rejected the job proposal", guid, reject_proposal.getSender().getName());
+        final String jobId = reject_proposal.getContent();
+        myCloudNetworkAgent.getServerForJobMap().remove(jobId);
+        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
+        myCloudNetworkAgent.send(ReplyMessageFactory.prepareReply(replyMessage, jobId, REJECT_PROPOSAL));
     }
 }
