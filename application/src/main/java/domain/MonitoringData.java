@@ -15,15 +15,15 @@ public interface MonitoringData {
     /**
      * @return temperature at given location for given time period
      */
-    int getTemperature();
+    Double getTemperature();
 
     /**
      * @return wind speed at given location for given time period
      */
-    int getWindSpeed();
+    Double getWindSpeed();
 
     /**
      * @return cloudiness at given location for given time period
      */
-    double getCloudCover();
+    Double getCloudCover();
 }

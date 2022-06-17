@@ -15,7 +15,7 @@
             <name>Solar</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>100.0</latitude>
+            <latitude>20.0</latitude>
             <longitude>101.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
@@ -33,7 +33,7 @@
             <name>WindFarm</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>210.0</latitude>
+            <latitude>20.0</latitude>
             <longitude>131.1</longitude>
             <pricePerPowerUnit>5</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
@@ -42,8 +42,8 @@
             <name>SolarFarm</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server2</ownerSever>
-            <latitude>610.0</latitude>
-            <longitude>117.1</longitude>
+            <latitude>30.0</latitude>
+            <longitude>37.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
@@ -51,8 +51,8 @@
             <name>Geothermal</name>
             <monitoringAgent>Weather3</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>310.0</latitude>
-            <longitude>114.1</longitude>
+            <latitude>30.0</latitude>
+            <longitude>54.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
@@ -69,7 +69,7 @@
             <name>Biogas</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>140.0</latitude>
+            <latitude>50.0</latitude>
             <longitude>116.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
@@ -78,7 +78,7 @@
             <name>Hydropower</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server4</ownerSever>
-            <latitude>106.0</latitude>
+            <latitude>56.0</latitude>
             <longitude>101.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
@@ -87,7 +87,7 @@
             <name>BioGasCompany</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>810.0</latitude>
+            <latitude>40.0</latitude>
             <longitude>131.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
@@ -96,7 +96,7 @@
             <name>Soil</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>410.0</latitude>
+            <latitude>40.0</latitude>
             <longitude>131.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>

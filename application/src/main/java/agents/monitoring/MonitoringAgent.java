@@ -6,12 +6,16 @@ import domain.GreenSourceRequestData;
 import jade.core.Agent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import weather.api.OpenWeatherMapApi;
 
 /**
  * Agent which is responsible for monitoring the weather and sending the data to the Green Source Agent
  */
 public class MonitoringAgent extends Agent {
+
     private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
+
+    private OpenWeatherMapApi api;
 
     /**
      * Method run at the agent start. It starts the behaviour which is listening for the weather requests.
@@ -20,6 +24,7 @@ public class MonitoringAgent extends Agent {
     protected void setup() {
         super.setup();
         addBehaviour(new ServeWeatherInformation(this));
+        api = new OpenWeatherMapApi();
     }
 
     /**
@@ -31,13 +36,13 @@ public class MonitoringAgent extends Agent {
         super.takeDown();
     }
 
-    // Stub metoda. Znalazlem API z pogodą, można później zaimplementować.
-    public ImmutableMonitoringData getWeather(GreenSourceRequestData requestData) {
+    public ImmutableMonitoringData getWeather(ServerRequestData requestData) {
         logger.info("Retrieving weather info for {}...", requestData.getLocation());
+        var weather = api.getWeather(requestData.getLocation());
         return ImmutableMonitoringData.builder()
-            .temperature(25)
-            .cloudCover(0.15)
-            .windSpeed(50)
+            .temperature(weather.getMain().getTemp())
+            .cloudCover(weather.getClouds().getAll())
+            .windSpeed(weather.getWind().getSpeed())
             .build();
     }
 }
