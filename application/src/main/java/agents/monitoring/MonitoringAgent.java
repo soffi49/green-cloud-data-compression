@@ -6,15 +6,19 @@ import domain.ServerRequestData;
 import jade.core.Agent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import weather.api.OpenWeatherMapApi;
 
 public class MonitoringAgent extends Agent {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
 
+    private OpenWeatherMapApi api;
+
     @Override
     protected void setup() {
         super.setup();
         addBehaviour(ServeWeatherInformation.createFor(this));
+        api = new OpenWeatherMapApi();
     }
 
     @Override
@@ -23,14 +27,14 @@ public class MonitoringAgent extends Agent {
         super.takeDown();
     }
 
-    // Stub metoda. Znalazlem API z pogodą, można później zaimplementować.
     public ImmutableMonitoringData getWeather(ServerRequestData requestData) {
         logger.info("Retrieving weather info for {}...", requestData.getLocation());
+        var weather = api.getWeather(requestData.getLocation());
         return ImmutableMonitoringData.builder()
             .job(requestData.getJob())
-            .temperature(25)
-            .cloudCover(0.15)
-            .windSpeed(50)
+            .temperature(weather.getMain().getTemp())
+            .cloudCover(weather.getClouds().getAll())
+            .windSpeed(weather.getWind().getSpeed())
             .build();
     }
 }

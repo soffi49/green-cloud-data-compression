@@ -12,9 +12,9 @@ public interface MonitoringData {
 
     Job getJob();
 
-    int getTemperature();
+    Double getTemperature();
 
-    int getWindSpeed();
+    Double getWindSpeed();
 
-    double getCloudCover();
+    Double getCloudCover();
 }
