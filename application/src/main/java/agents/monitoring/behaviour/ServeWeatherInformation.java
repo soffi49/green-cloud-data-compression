@@ -5,7 +5,7 @@ import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
 
 import agents.monitoring.MonitoringAgent;
-import domain.ServerRequestData;
+import domain.GreenSourceRequestData;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -46,7 +46,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
             final ACLMessage response = message.createReply();
             response.setPerformative(INFORM);
             try {
-                var requestData = getMapper().readValue(message.getContent(), ServerRequestData.class);
+                var requestData = getMapper().readValue(message.getContent(), GreenSourceRequestData.class);
                 var data = monitoringAgent.getWeather(requestData);
                 response.setContent(getMapper().writeValueAsString(data));
             } catch (IOException e) {

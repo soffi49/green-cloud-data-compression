@@ -2,7 +2,7 @@ package agents.monitoring;
 
 import agents.monitoring.behaviour.ServeWeatherInformation;
 import domain.ImmutableMonitoringData;
-import domain.ServerRequestData;
+import domain.GreenSourceRequestData;
 import jade.core.Agent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class MonitoringAgent extends Agent {
     }
 
     // Stub metoda. Znalazlem API z pogodą, można później zaimplementować.
-    public ImmutableMonitoringData getWeather(ServerRequestData requestData) {
+    public ImmutableMonitoringData getWeather(GreenSourceRequestData requestData) {
         logger.info("Retrieving weather info for {}...", requestData.getLocation());
         return ImmutableMonitoringData.builder()
             .temperature(25)

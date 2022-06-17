@@ -4,7 +4,7 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.ImmutableServerRequestData;
+import domain.ImmutableGreenSourceRequestData;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class RequestWeatherData extends OneShotBehaviour {
         ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
         request.addReceiver(myGreenEnergyAgent.getMonitoringAgent());
         request.setConversationId(conversationId);
-        var requestData = ImmutableServerRequestData.builder()
+        var requestData = ImmutableGreenSourceRequestData.builder()
                 .location(myGreenEnergyAgent.getLocation())
                 .build();
         try {
