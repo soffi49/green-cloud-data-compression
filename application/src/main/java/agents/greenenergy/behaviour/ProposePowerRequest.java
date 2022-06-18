@@ -1,18 +1,25 @@
 package agents.greenenergy.behaviour;
 
+import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static messages.domain.ReplyMessageFactory.prepareStringReply;
 
 import agents.greenenergy.GreenEnergyAgent;
-import agents.server.behaviour.FinishJobExecution;
+import domain.job.Job;
 import domain.job.JobStatusEnum;
+import domain.job.PowerJob;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -28,7 +35,7 @@ public class ProposePowerRequest extends ProposeInitiator {
      * Behaviour constructor.
      *
      * @param agent agent which is executing the behaviour
-     * @param msg proposal message that is sent to the Server Agent
+     * @param msg   proposal message that is sent to the Server Agent
      */
     public ProposePowerRequest(final Agent agent, final ACLMessage msg) {
         super(agent, msg);
@@ -45,11 +52,12 @@ public class ProposePowerRequest extends ProposeInitiator {
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         final String jobId = accept_proposal.getContent();
+        final PowerJob job = myGreenEnergyAgent.getJobById(jobId);
         logger.info("[{}] Sending information back to server agent.", guid);
-        myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
+        myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
         var response = prepareStringReply(accept_proposal.createReply(), jobId, INFORM);
         response.setProtocol(SERVER_JOB_CFP_PROTOCOL);
-        myAgent.addBehaviour(createJobStatusBehaviours());
+        myAgent.addBehaviour(createJobListeningBehaviours(job));
         myAgent.send(response);
     }
 
@@ -63,10 +71,17 @@ public class ProposePowerRequest extends ProposeInitiator {
         logger.info("[{}] Server rejected the job proposal", guid);
     }
 
-    private ParallelBehaviour createJobStatusBehaviours() {
+    private ParallelBehaviour createJobListeningBehaviours(final PowerJob job) {
         final ParallelBehaviour behaviour = new ParallelBehaviour();
+        behaviour.addSubBehaviour(new ListenForUnfinishedJobs(myGreenEnergyAgent, calculateJobStartTimeout(job), job.getJobId()));
         behaviour.addSubBehaviour(new ListenForStartedJobs(myGreenEnergyAgent));
         behaviour.addSubBehaviour(new ListenForFinishedJobs(myGreenEnergyAgent));
         return behaviour;
+    }
+
+    private Long calculateJobStartTimeout(final PowerJob job) {
+        final long hourDifferenceStart = ChronoUnit.HOURS.between(OffsetDateTime.now(), job.getStartTime());
+        final long hourDifferenceExecution = ChronoUnit.HOURS.between(job.getStartTime(), job.getEndTime());
+        return ((hourDifferenceStart < 0 ? 0 : hourDifferenceStart) + hourDifferenceExecution) * 2 * 1000 + MAX_ERROR_IN_JOB_START;
     }
 }

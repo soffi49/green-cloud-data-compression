@@ -8,6 +8,7 @@ import static messages.domain.ReplyMessageFactory.prepareRefuseReply;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -58,6 +59,7 @@ public class ReceivePowerRequest extends CyclicBehaviour {
                     myAgent.send(prepareRefuseReply(cfp.createReply()));
                 }
                 logger.info("[{}] Sending weather request to monitoring agent.", guid);
+                myGreenEnergyAgent.getPowerJobs().put(job, JobStatusEnum.PROCESSING);
                 requestMonitoringData(cfp, job.getJobId());
             } catch (Exception e) {
                 e.printStackTrace();

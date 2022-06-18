@@ -42,7 +42,7 @@ public class ListenForJobDelay extends WakerBehaviour {
     @Override
     protected void onWake() {
         final Job job = myCloudNetworkAgent.getJobById(jobId);
-        if (Objects.nonNull(myCloudNetworkAgent.getNetworkJobs().get(job)) && !myCloudNetworkAgent.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+        if (Objects.nonNull(job) && !myCloudNetworkAgent.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
             logger.error("[{}] There is no message regarding the job start. Sending delay information", myAgent.getName());
             myAgent.send(prepareDelayMessageForClient(jobId, myCloudNetworkAgent.getJobById(jobId).getClientIdentifier()));
             //TODO here we can pass another behaviour handling what will happen if the message won't come at all! :)

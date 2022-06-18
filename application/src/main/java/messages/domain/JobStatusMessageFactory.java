@@ -75,4 +75,19 @@ public class JobStatusMessageFactory {
         informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
         return informationMessage;
     }
+
+    /**
+     * Method prepares the information message about finishing the power delivery by hand by the Green Source.
+     *
+     * @param jobId         unique identifier of the kob of interest
+     * @param serverAddress server address
+     * @return inform ACLMessage
+     */
+    public static ACLMessage prepareManualFinishMessageForServer(final String jobId, final AID serverAddress) {
+        final ACLMessage informationMessage = new ACLMessage(INFORM);
+        informationMessage.setProtocol(MANUAL_JOB_FINISH_PROTOCOL);
+        informationMessage.setContent(String.format("The job power delivery %s was finished manually.", jobId));
+        informationMessage.addReceiver(serverAddress);
+        return informationMessage;
+    }
 }

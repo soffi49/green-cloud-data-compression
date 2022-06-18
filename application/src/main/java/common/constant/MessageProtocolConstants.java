@@ -10,4 +10,5 @@ public class MessageProtocolConstants {
     public static final String FINISH_JOB_PROTOCOL = "FINISH";
     public static final String STARTED_JOB_PROTOCOL = "STARTED";
     public static final String DELAYED_JOB_PROTOCOL = "DELAYED";
+    public static final String MANUAL_JOB_FINISH_PROTOCOL = "MANUAL_FINISH";
 }

@@ -43,7 +43,7 @@ public class ListenForFinishedJobs extends CyclicBehaviour {
         final ACLMessage message = myGreenEnergyAgent.receive(messageTemplate);
         if (nonNull(message)) {
             final String jobId = message.getContent();
-            if (nonNull(jobId)) {
+            if (nonNull(myGreenEnergyAgent.getJobById(jobId))) {
                 myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.getJobById(jobId));
                 logger.info("[{}] Finish the execution of the job with id {}", guid, jobId);
             }
