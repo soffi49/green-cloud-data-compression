@@ -1,7 +1,6 @@
 package messages.domain;
 
-import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
-import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.*;
 import static jade.lang.acl.ACLMessage.INFORM;
 
 import jade.core.AID;
@@ -58,6 +57,22 @@ public class JobStatusMessageFactory {
         informationMessage.setProtocol(STARTED_JOB_PROTOCOL);
         informationMessage.setContent(jobId);
         receivers.forEach(informationMessage::addReceiver);
+        return informationMessage;
+    }
+
+    /**
+     * Method prepares the information message about the job execution delay which is to be sent
+     * to the client
+     *
+     * @param jobId    unique identifier of the kob of interest
+     * @param clientId client global name
+     * @return inform ACLMessage
+     */
+    public static ACLMessage prepareDelayMessageForClient(final String jobId, final String clientId) {
+        final ACLMessage informationMessage = new ACLMessage(INFORM);
+        informationMessage.setProtocol(DELAYED_JOB_PROTOCOL);
+        informationMessage.setContent(String.format("The job %s execution has some delay.", jobId));
+        informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
         return informationMessage;
     }
 }

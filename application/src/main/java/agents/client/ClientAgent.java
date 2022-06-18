@@ -2,7 +2,7 @@ package agents.client;
 
 import agents.client.behaviour.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
-import agents.client.behaviour.WaitForJobResult;
+import agents.client.behaviour.WaitForJobStatusUpdate;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
@@ -42,7 +42,7 @@ public class ClientAgent extends AbstractClientAgent {
                 throw new RuntimeException(e);
             }
             addBehaviour(prepareStartingBehaviour(jobToBeExecuted));
-            addBehaviour(new WaitForJobResult(this));
+            addBehaviour(new WaitForJobStatusUpdate(this));
         } else {
             logger.error("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();

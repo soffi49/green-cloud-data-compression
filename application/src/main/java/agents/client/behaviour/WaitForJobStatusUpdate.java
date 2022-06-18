@@ -1,5 +1,6 @@
 package agents.client.behaviour;
 
+import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
@@ -16,17 +17,18 @@ import java.util.Objects;
 /**
  * Behaviour which handles the information that the job execution is done
  */
-public class WaitForJobResult extends CyclicBehaviour {
+public class WaitForJobStatusUpdate extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(WaitForJobResult.class);
-    private static final MessageTemplate messageTemplate = and(MatchProtocol(FINISH_JOB_PROTOCOL), MatchPerformative(INFORM));
+    private static final Logger logger = LoggerFactory.getLogger(WaitForJobStatusUpdate.class);
+    private static final MessageTemplate messageTemplate = and(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
+                                                                  MatchPerformative(INFORM));
 
     /**
      * Behaviours constructor.
      *
      * @param clientAgent agent executing the behaviour
      */
-    public WaitForJobResult(final ClientAgent clientAgent) {
+    public WaitForJobStatusUpdate(final ClientAgent clientAgent) {
         super(clientAgent);
     }
 
@@ -37,7 +39,10 @@ public class WaitForJobResult extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
-            logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
+            switch (message.getProtocol()){
+                case FINISH_JOB_PROTOCOL -> logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
+                case DELAYED_JOB_PROTOCOL ->  logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
+            }
         } else {
             block();
         }
