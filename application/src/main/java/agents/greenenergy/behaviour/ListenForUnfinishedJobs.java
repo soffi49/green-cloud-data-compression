@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+/**
+ * Behaviour responsible for verifying if the job was finished at the correct time.
+ */
 public class ListenForUnfinishedJobs extends WakerBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenForUnfinishedJobs.class);

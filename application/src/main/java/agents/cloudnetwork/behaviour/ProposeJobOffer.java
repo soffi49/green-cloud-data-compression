@@ -3,13 +3,11 @@ package agents.cloudnetwork.behaviour;
 import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
-import static messages.domain.ReplyMessageFactory.prepareConfirmationReply;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
-import jade.core.behaviours.DataStore;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
