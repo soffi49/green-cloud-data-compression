@@ -1,16 +1,14 @@
 package agents.greenenergy.behaviour;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
+import static agents.greenenergy.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static messages.domain.ReplyMessageFactory.prepareStringReply;
 
 import agents.greenenergy.GreenEnergyAgent;
-import domain.job.Job;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -82,6 +79,6 @@ public class ProposePowerRequest extends ProposeInitiator {
     private Long calculateJobStartTimeout(final PowerJob job) {
         final long hourDifferenceStart = ChronoUnit.HOURS.between(OffsetDateTime.now(), job.getStartTime());
         final long hourDifferenceExecution = ChronoUnit.HOURS.between(job.getStartTime(), job.getEndTime());
-        return ((hourDifferenceStart < 0 ? 0 : hourDifferenceStart) + hourDifferenceExecution) * 2 * 1000 + MAX_ERROR_IN_JOB_START;
+        return ((hourDifferenceStart < 0 ? 0 : hourDifferenceStart) + hourDifferenceExecution) * 2 * 1000 + MAX_ERROR_IN_JOB_FINISH;
     }
 }
