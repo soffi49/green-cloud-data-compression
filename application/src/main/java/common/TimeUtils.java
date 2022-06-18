@@ -39,6 +39,9 @@ public class TimeUtils {
         }
     }
 
+    /**
+     * @return current time with possible error delay
+     */
     public static OffsetDateTime getCurrentTime() {
         return OffsetDateTime.now().minusMinutes(TIME_ERROR);
     }
