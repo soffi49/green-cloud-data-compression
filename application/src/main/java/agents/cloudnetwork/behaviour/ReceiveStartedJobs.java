@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+/**
+ * Behaviour responsible for receiving information that the execution of the job has started
+ */
 public class ReceiveStartedJobs extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceiveStartedJobs.class);

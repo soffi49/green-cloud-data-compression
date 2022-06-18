@@ -33,7 +33,7 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
     }
 
     /**
-     * Method which waits for confirmation message that the job execution has finished
+     * Method which waits for messages informing about changes in the job's status
      */
     @Override
     public void action() {
