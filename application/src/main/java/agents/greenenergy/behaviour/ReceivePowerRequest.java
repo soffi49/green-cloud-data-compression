@@ -4,6 +4,7 @@ import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
+import static messages.domain.ReplyMessageFactory.prepareRefuseReply;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -54,7 +55,7 @@ public class ReceivePowerRequest extends CyclicBehaviour {
                 final PowerJob job = readJob(cfp);
                 if (job.getPower() > myGreenEnergyAgent.getAvailablePower(job.getStartTime(), job.getEndTime())) {
                     logger.info("[{}] Refusing job with id {} - not enough available power.", guid, job.getJobId());
-                    throw new RefuseException(cfp.getContent());
+                    myAgent.send(prepareRefuseReply(cfp.createReply()));
                 }
                 logger.info("[{}] Sending weather request to monitoring agent.", guid);
                 requestMonitoringData(cfp, job.getJobId());

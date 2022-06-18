@@ -12,8 +12,8 @@
             <name>Water</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>100.0</latitude>
-            <longitude>110.1</longitude>
+            <latitude>20.0</latitude>
+            <longitude>30.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
@@ -31,7 +31,7 @@
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server2</ownerSever>
             <latitude>50.0</latitude>
-            <longitude>300.1</longitude>
+            <longitude>20.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
@@ -39,7 +39,7 @@
             <name>SolarFarm</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>200.0</latitude>
+            <latitude>10.0</latitude>
             <longitude>88.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
@@ -74,8 +74,8 @@
         <clientAgent>
             <name>Client</name>
             <jobId>1</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 10:40</endDate>
+            <start>5</start>
+            <end>6</end>
             <power>5</power>
         </clientAgent>
     </clientAgentsArgs>

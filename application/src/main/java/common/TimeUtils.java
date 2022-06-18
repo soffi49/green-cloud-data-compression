@@ -19,6 +19,7 @@ public class TimeUtils {
 
     private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final Long TIME_ERROR = 10L;
 
     /**
      * Mapper used to convert the date written as string to the offset date
@@ -36,5 +37,9 @@ public class TimeUtils {
             e.printStackTrace();
             throw new IncorrectTaskDateException();
         }
+    }
+
+    public static OffsetDateTime getCurrentTime() {
+        return OffsetDateTime.now().minusMinutes(TIME_ERROR);
     }
 }

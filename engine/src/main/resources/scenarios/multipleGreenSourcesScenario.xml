@@ -12,8 +12,8 @@
             <name>Water</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server</ownerSever>
-            <latitude>100.0</latitude>
-            <longitude>110.1</longitude>
+            <latitude>10.0</latitude>
+            <longitude>20.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
@@ -44,8 +44,8 @@
         <clientAgent>
             <name>Client</name>
             <jobId>1</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 10:40</endDate>
+            <start>3</start>
+            <end>5</end>
             <power>5</power>
         </clientAgent>
     </clientAgentsArgs>

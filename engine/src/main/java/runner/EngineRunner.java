@@ -29,7 +29,7 @@ public class EngineRunner {
         try {
             final AgentController rma = container.createNewAgent("rma", "jade.tools.rma.rma", null);
             rma.start();
-            scenarioService.createAgentsFromScenarioFile("futureJobSimpleScenario");
+            scenarioService.createAgentsFromScenarioFile("complicatedScenarioNoWeatherChanging");
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }

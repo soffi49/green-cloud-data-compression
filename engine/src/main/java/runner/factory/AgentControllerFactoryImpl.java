@@ -5,7 +5,8 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import runner.domain.*;
 
-import java.util.concurrent.TimeUnit;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
@@ -20,13 +21,11 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
         throws StaleProxyException {
 
         if (agentArgs instanceof ClientAgentArgs clientAgent) {
-            try {
-                TimeUnit.SECONDS.sleep(1L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            final String startDate = formatDate(OffsetDateTime.now().plusHours(Long.parseLong(clientAgent.getStart())));
+            final String endDate = formatDate(OffsetDateTime.now().plusHours(Long.parseLong(clientAgent.getEnd())));
+
             return containerController.createNewAgent(clientAgent.getName(), "agents.client.ClientAgent",
-                new Object[]{clientAgent.getStartDate(), clientAgent.getEndDate(), clientAgent.getPower(), clientAgent.getJobId()});
+                new Object[]{startDate, endDate, clientAgent.getPower(), clientAgent.getJobId()});
         } else if (agentArgs instanceof ServerAgentArgs serverAgent) {
             return containerController.createNewAgent(serverAgent.getName(), "agents.server.ServerAgent",
                 new Object[]{serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(), serverAgent.getMaximumCapacity()});
@@ -50,5 +49,10 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                     new Object[]{});
         }
         return null;
+    }
+
+    private String formatDate(final OffsetDateTime date) {
+        final String dateFormat = "dd/MM/yyyy HH:mm";
+        return date.format(DateTimeFormatter.ofPattern(dateFormat));
     }
 }
