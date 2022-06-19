@@ -3,7 +3,7 @@ package agents.cloudnetwork.behaviour;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
-import static messages.domain.FinishJobMessageFactory.prepareFinishMessageForClient;
+import static messages.domain.JobStatusMessageFactory.prepareFinishMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import jade.core.behaviours.CyclicBehaviour;

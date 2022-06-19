@@ -2,7 +2,7 @@ package agents.client;
 
 import agents.client.behaviour.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
-import agents.client.behaviour.WaitForJobResult;
+import agents.client.behaviour.WaitForJobStatusUpdate;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
@@ -11,6 +11,7 @@ import jade.core.behaviours.SequentialBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +42,7 @@ public class ClientAgent extends AbstractClientAgent {
                 throw new RuntimeException(e);
             }
             addBehaviour(prepareStartingBehaviour(jobToBeExecuted));
-            addBehaviour(new WaitForJobResult(this));
+            addBehaviour(new WaitForJobStatusUpdate(this));
         } else {
             logger.error("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
@@ -63,10 +64,21 @@ public class ClientAgent extends AbstractClientAgent {
 
     private Job initializeAgentJob(final Object[] arguments) {
         try {
+            final OffsetDateTime startTime = TimeUtils.convertToOffsetDateTime(arguments[0].toString());
+            final OffsetDateTime endTime = TimeUtils.convertToOffsetDateTime(arguments[1].toString());
+            final OffsetDateTime currentTime = TimeUtils.getCurrentTime();
+            if(startTime.isBefore(currentTime) || endTime.isBefore(currentTime)) {
+                logger.error("The job execution dates cannot be before current time!");
+                doDelete();
+            }
+            if(endTime.isBefore(startTime)) {
+                logger.error("The job execution end date cannot be before job execution start date!");
+                doDelete();
+            }
             return ImmutableJob.builder()
                     .clientIdentifier(getAID().getName())
-                    .startTime(TimeUtils.convertToOffsetDateTime(arguments[0].toString()))
-                    .endTime(TimeUtils.convertToOffsetDateTime(arguments[1].toString()))
+                    .startTime(startTime)
+                    .endTime(endTime)
                     .power(Integer.parseInt(arguments[2].toString()))
                     .jobId(arguments[3].toString())
                     .build();

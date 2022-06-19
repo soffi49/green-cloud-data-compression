@@ -33,7 +33,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(createInitialBehaviour());
+        addBehaviour(new ReceivePowerRequest(this));
     }
 
     private void initializeAgent(final Object[] args) {
@@ -57,12 +57,5 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
             logger.info("Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
             doDelete();
         }
-    }
-
-    private ParallelBehaviour createInitialBehaviour() {
-        final ParallelBehaviour behaviour = new ParallelBehaviour();
-        behaviour.addSubBehaviour(new ReceivePowerRequest(this));
-        behaviour.addSubBehaviour(new ListenForFinishedJobs(this));
-        return behaviour;
     }
 }

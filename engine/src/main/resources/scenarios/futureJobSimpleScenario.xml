@@ -1,28 +1,16 @@
 <ScenarioArgs>
     <monitoringAgentsArgs>
         <monitoringAgent>
-            <name>Weather1</name>
-        </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather2</name>
+            <name>Weather</name>
         </monitoringAgent>
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
-            <name>Water</name>
-            <monitoringAgent>Weather1</monitoringAgent>
+            <name>Green</name>
+            <monitoringAgent>Weather</monitoringAgent>
             <ownerSever>Server</ownerSever>
             <latitude>10.0</latitude>
-            <longitude>20.1</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Solar</name>
-            <monitoringAgent>Weather2</monitoringAgent>
-            <ownerSever>Server</ownerSever>
-            <latitude>50.0</latitude>
-            <longitude>88.1</longitude>
+            <longitude>11.1</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
@@ -44,8 +32,8 @@
         <clientAgent>
             <name>Client</name>
             <jobId>1</jobId>
-            <start>3</start>
-            <end>5</end>
+            <start>4</start>
+            <end>6</end>
             <power>5</power>
         </clientAgent>
     </clientAgentsArgs>

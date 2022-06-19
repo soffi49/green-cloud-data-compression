@@ -48,7 +48,7 @@ public class VolunteerForJob extends ProposeInitiator {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
             final String jobId = accept_proposal.getContent();
             myServerAgent.getServerJobs().replace(myServerAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
-            myAgent.addBehaviour(new StartJobExecution());
+            myAgent.addBehaviour(new ListenForPowerConfirmation());
             myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
         } catch (Exception e) {
             e.printStackTrace();

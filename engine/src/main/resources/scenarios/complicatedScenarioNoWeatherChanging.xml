@@ -140,29 +140,29 @@
         <clientAgent>
             <name>First_Client</name>
             <jobId>1</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 12:40</endDate>
+            <start>5</start>
+            <end>10</end>
             <power>5</power>
         </clientAgent>
         <clientAgent>
             <name>Second_Client</name>
             <jobId>2</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 13:40</endDate>
+            <start>3</start>
+            <end>4</end>
             <power>10</power>
         </clientAgent>
         <clientAgent>
             <name>Third_Client</name>
             <jobId>3</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 11:40</endDate>
+            <start>6</start>
+            <end>8</end>
             <power>10</power>
         </clientAgent>
         <clientAgent>
             <name>Fourth_Client</name>
             <jobId>4</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 12:40</endDate>
+            <start>0</start>
+            <end>2</end>
             <power>10</power>
         </clientAgent>
     </clientAgentsArgs>
