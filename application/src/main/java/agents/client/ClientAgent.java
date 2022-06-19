@@ -3,6 +3,7 @@ package agents.client;
 import agents.client.behaviour.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
 import agents.client.behaviour.WaitForJobStatusUpdate;
+import com.gui.domain.AgentNode;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;

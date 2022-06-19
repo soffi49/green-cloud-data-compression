@@ -11,9 +11,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <groupId>com.example</groupId>
+  <groupId>org.greencloud.gui</groupId>
   <artifactId>gui</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <name>gui</name>
 
   <properties>
@@ -34,12 +35,6 @@
     <dependency>
       <groupId>com.tilab.jade</groupId>
       <artifactId>jade-misc</artifactId>
-    </dependency>
-    <!-- Main Application Module-->
-    <dependency>
-      <groupId>org.greencloud.application</groupId>
-      <artifactId>application</artifactId>
-      <version>1.0-SNAPSHOT</version>
     </dependency>
     <!-- GraphStream -->
     <dependency>

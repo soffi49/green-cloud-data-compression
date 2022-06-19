@@ -2,6 +2,7 @@ package runner;
 
 import static jade.core.Runtime.instance;
 
+import com.gui.controller.GraphController;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -18,13 +19,14 @@ public class EngineRunner {
 
         final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
+        final GraphController graphController = new GraphController();
 
         profile.setParameter(Profile.CONTAINER_NAME, "Main-Container");
         profile.setParameter(Profile.MAIN_HOST, "localhost");
         profile.setParameter(Profile.MAIN_PORT, "6996");
 
         final ContainerController container = runtime.createMainContainer(profile);
-        final ScenarioService scenarioService = new ScenarioService(container);
+        final ScenarioService scenarioService = new ScenarioService(container, graphController);
 
         try {
             final AgentController rma = container.createNewAgent("rma", "jade.tools.rma.rma", null);

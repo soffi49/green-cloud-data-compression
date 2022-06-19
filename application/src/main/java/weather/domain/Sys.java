@@ -13,6 +13,12 @@ public interface Sys {
     @Nullable
     String getCountry();
 
+    @Nullable
+    String getType();
+
+    @Nullable
+    String getId();
+
     String getSunrise();
 
     String getSunset();
