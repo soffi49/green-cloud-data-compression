@@ -1,38 +1,31 @@
 package weather.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
+import java.util.List;
 import org.immutables.value.Value.Immutable;
 
-@JsonSerialize(as = ImmutableMain.class)
-@JsonDeserialize(as = ImmutableMain.class)
+@JsonSerialize(as = ImmutableFutureWeather.class)
+@JsonDeserialize(as = ImmutableFutureWeather.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
 @Immutable
-public interface Main {
+public interface FutureWeather extends AbstractWeather {
 
-    Double getTemp();
+    List<Weather> getWeather();
 
-    @JsonProperty("feels_like")
-    Double getFeelsLike();
+    Double getVisibility();
 
-    @JsonProperty("temp_min")
-    Double getMinimumTemperature();
-
-    @JsonProperty("temp_max")
-    Double getMaximumTemperature();
-
-    Double getPressure();
-
-    Double getHumidity();
-
-    @JsonProperty("sea_level")
-    Double getSeaLeve();
-
-    @JsonProperty("grnd_level")
-    Double getGroundLever();
+    /**
+     * @return {@link Instant} timestamp for when the weather is valid
+     */
+    @JsonProperty("dt")
+    @JsonFormat(shape=JsonFormat.Shape.NUMBER, pattern="s")
+    Instant getTimestamp();
 }
