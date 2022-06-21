@@ -9,7 +9,6 @@ import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
 import agents.cloudnetwork.CloudNetworkAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.ServerData;
-import exception.IncorrectServerOfferException;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
@@ -18,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -62,15 +62,23 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
             final ACLMessage chosenServerOffer = chooseServerToExecuteJob(proposals);
+            ServerData chosenServerData = null;
+            while(!responses.isEmpty() && Objects.isNull(chosenServerData)) {
+                try {
+                    chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
+                } catch (JsonProcessingException e) {
+                    ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(chosenServerOffer.createReply());
+                    myAgent.send(reply);
+                    proposals.remove(chosenServerOffer);
+                    if(proposals.isEmpty()){
+                        logger.error("[{}] I didn't understand any proposal from the Servers", myAgent.getName());
+                        return;
+                    }
+                }
+            }
+
             logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
             final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
-
-            ServerData chosenServerData;
-            try {
-                chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
-            } catch (JsonProcessingException e) {
-                throw new IncorrectServerOfferException();
-            }
 
             logger.info("[{}] Sending job execution offer to Client", guid);
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
@@ -90,7 +98,11 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             server1 = getMapper().readValue(serverOffer1.getContent(), ServerData.class);
             server2 = getMapper().readValue(serverOffer2.getContent(), ServerData.class);
         } catch (JsonProcessingException e) {
-            throw new IncorrectServerOfferException();
+            ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(serverOffer1.createReply());
+            myAgent.send(reply);
+            reply = ReplyMessageFactory.prepareNotUnderstoodReply(serverOffer1.createReply());
+            myAgent.send(reply);
+            return Integer.MAX_VALUE;
         }
         int powerDifference = server1.getAvailablePower() - server2.getAvailablePower();
         int priceDifference = (int) (server1.getServicePrice() - server2.getServicePrice());

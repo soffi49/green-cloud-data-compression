@@ -9,7 +9,6 @@ import static messages.domain.JobOfferMessageFactory.makeServerJobOffer;
 import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.GreenSourceData;
-import exception.IncorrectGreenSourceOfferException;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
