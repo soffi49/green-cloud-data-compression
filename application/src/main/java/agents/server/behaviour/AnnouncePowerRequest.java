@@ -106,8 +106,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
                     } catch (final JsonProcessingException e) {
                         ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(greenSource.createReply());
                         myAgent.send(reply);
-                        //TODO: check how comparison works
-                        return -1;
+                        return Integer.MAX_VALUE;
                     }
                 });
         return greenSourceOffers.stream().min(compareGreenSources).orElseThrow();

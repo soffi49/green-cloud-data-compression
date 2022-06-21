@@ -127,8 +127,7 @@ public class RequestJobExecution extends ContractNetInitiator {
             } catch (JsonProcessingException e) {
                 ACLMessage msg = ReplyMessageFactory.prepareNotUnderstoodReply(offer.createReply());
                 myAgent.send(msg);
-                //TODO: check how comparison works
-                return -1;
+                return Double.MAX_VALUE;
             }
         });
         return receivedOffers.stream().min(compareCNA).orElseThrow();
