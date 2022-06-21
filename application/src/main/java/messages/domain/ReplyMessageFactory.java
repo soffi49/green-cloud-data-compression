@@ -67,4 +67,16 @@ public class ReplyMessageFactory {
         replyMessage.setContent(String.format("The execution of job %s started!", jobId));
         return replyMessage;
     }
+
+    /**
+     * Method prepares the reply message which tells the sender that he wasn't understood
+     *
+     * @param replyMessage reply ACLMessage that is to be sent
+     * @return reply ACLMessage
+     */
+    public static ACLMessage prepareNotUnderstoodReply(final ACLMessage replyMessage) {
+        replyMessage.setPerformative(ACLMessage.NOT_UNDERSTOOD);
+        replyMessage.setContent("NOT UNDERSTOOD");
+        return replyMessage;
+    }
 }

@@ -15,6 +15,7 @@ import exception.IncorrectCloudNetworkOfferException;
 import exception.IncorrectServerOfferException;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import messages.domain.CallForProposalMessageFactory;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -75,7 +77,7 @@ public class RequestJobExecution extends ContractNetInitiator {
      *                    Cloud Network Agent
      */
     @Override
-    protected void handleAllResponses(final Vector responses, final Vector acceptances) {
+    protected void handleAllResponses(final Vector responses, final Vector acceptances){
         final List<ACLMessage> proposals = retrieveProposals(responses);
 
         if (responses.isEmpty()) {
@@ -85,15 +87,24 @@ public class RequestJobExecution extends ContractNetInitiator {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myAgent.doDelete();
         } else {
-            final ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
-            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
-            myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
-            PricedJob pricedJob;
-            try {
-                pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
-            } catch (JsonProcessingException e) {
-                throw new IncorrectServerOfferException();
+            ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
+            PricedJob pricedJob = null;
+            while(!responses.isEmpty() && Objects.isNull(pricedJob)){
+                chosenOffer = chooseCNAToExecuteJob(proposals);
+                myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
+                try {
+                    pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
+                } catch (JsonProcessingException e) {
+                    ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(chosenOffer.createReply());
+                    myAgent.send(reply);
+                    proposals.remove(chosenOffer);
+                    if(proposals.isEmpty()){
+                        logger.error("[{}] I didn't understand any proposal from Cloud Network Agents.", guid);
+                        return;
+                    }
+                }
             }
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
             acceptances.add(ReplyMessageFactory.prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
             rejectJobOffers(myClientAgent, pricedJob.getJobId(), chosenOffer, proposals);
         }
@@ -114,7 +125,10 @@ public class RequestJobExecution extends ContractNetInitiator {
             try {
                 return getMapper().readValue(offer.getContent(), PricedJob.class).getPriceForJob();
             } catch (JsonProcessingException e) {
-                throw new IncorrectCloudNetworkOfferException();
+                ACLMessage msg = ReplyMessageFactory.prepareNotUnderstoodReply(offer.createReply());
+                myAgent.send(msg);
+                //TODO: check how comparison works
+                return -1;
             }
         });
         return receivedOffers.stream().min(compareCNA).orElseThrow();
