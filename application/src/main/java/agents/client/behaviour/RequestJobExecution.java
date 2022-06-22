@@ -3,12 +3,14 @@ package agents.client.behaviour;
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 
 import agents.client.ClientAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.constant.InvalidJobIdConstant;
 import domain.job.Job;
 import domain.job.PricedJob;
 import jade.core.AID;
@@ -84,20 +86,20 @@ public class RequestJobExecution extends ContractNetInitiator {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myAgent.doDelete();
         } else {
-            ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
+            List<ACLMessage> validProposals = proposals;
+            ACLMessage chosenOffer = null;
             PricedJob pricedJob = null;
-            while(!responses.isEmpty() && Objects.isNull(pricedJob)){
-                chosenOffer = chooseCNAToExecuteJob(proposals);
+            while(!validProposals.isEmpty() && Objects.isNull(pricedJob)){
+                chosenOffer = chooseCNAToExecuteJob(validProposals);
                 myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
                 try {
                     pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
                 } catch (JsonProcessingException e) {
-                    ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(chosenOffer.createReply());
-                    myAgent.send(reply);
-                    proposals.remove(chosenOffer);
-                    if(proposals.isEmpty()){
+                    ReplyMessageFactory.prepareReply(chosenOffer.createReply(), InvalidJobIdConstant.INVALID_JOB_ID, REJECT_PROPOSAL);
+                    validProposals.remove(chosenOffer);
+                    if(validProposals.isEmpty()){
                         logger.error("[{}] I didn't understand any proposal from Cloud Network Agents.", guid);
-                        return;
+                        myAgent.doDelete();
                     }
                 }
             }
@@ -122,8 +124,6 @@ public class RequestJobExecution extends ContractNetInitiator {
             try {
                 return getMapper().readValue(offer.getContent(), PricedJob.class).getPriceForJob();
             } catch (JsonProcessingException e) {
-                ACLMessage msg = ReplyMessageFactory.prepareNotUnderstoodReply(offer.createReply());
-                myAgent.send(msg);
                 return Double.MAX_VALUE;
             }
         });

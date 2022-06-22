@@ -1,6 +1,7 @@
 package agents.cloudnetwork.behaviour;
 
 import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
@@ -8,6 +9,7 @@ import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.constant.InvalidJobIdConstant;
 import domain.ServerData;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -61,17 +63,19 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             logger.info("[{}] No Servers available - sending refuse message to client", guid);
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
-            final ACLMessage chosenServerOffer = chooseServerToExecuteJob(proposals);
+            List<ACLMessage> validProposals = proposals;
+            ACLMessage chosenServerOffer = null;
             ServerData chosenServerData = null;
-            while(!responses.isEmpty() && Objects.isNull(chosenServerData)) {
+            while(!validProposals.isEmpty() && Objects.isNull(chosenServerData)) {
+                chosenServerOffer = chooseServerToExecuteJob(validProposals);
                 try {
                     chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
                 } catch (JsonProcessingException e) {
-                    ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(chosenServerOffer.createReply());
-                    myAgent.send(reply);
-                    proposals.remove(chosenServerOffer);
-                    if(proposals.isEmpty()){
+                    validProposals.remove(chosenServerOffer);
+                    ReplyMessageFactory.prepareReply(chosenServerOffer.createReply(), InvalidJobIdConstant.INVALID_JOB_ID, REJECT_PROPOSAL);
+                    if(validProposals.isEmpty()){
                         logger.error("[{}] I didn't understand any proposal from the Servers", myAgent.getName());
+                        myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
                         return;
                     }
                 }
@@ -98,10 +102,6 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             server1 = getMapper().readValue(serverOffer1.getContent(), ServerData.class);
             server2 = getMapper().readValue(serverOffer2.getContent(), ServerData.class);
         } catch (JsonProcessingException e) {
-            ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(serverOffer1.createReply());
-            myAgent.send(reply);
-            reply = ReplyMessageFactory.prepareNotUnderstoodReply(serverOffer1.createReply());
-            myAgent.send(reply);
             return Integer.MAX_VALUE;
         }
         int powerDifference = server1.getAvailablePower() - server2.getAvailablePower();

@@ -1,5 +1,6 @@
 package agents.server.behaviour;
 
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
@@ -8,6 +9,7 @@ import static messages.domain.JobOfferMessageFactory.makeServerJobOffer;
 
 import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.constant.InvalidJobIdConstant;
 import domain.GreenSourceData;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -60,18 +62,19 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
             logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
-            ACLMessage chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(proposals);
+            List<ACLMessage> validProposals = proposals;
+            ACLMessage chosenGreenSourceOffer = null;
             GreenSourceData chosenGreenSourceData = null;
-            while(!responses.isEmpty() && Objects.isNull(chosenGreenSourceData)){
-                chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(proposals);
+            while(!validProposals.isEmpty() && Objects.isNull(chosenGreenSourceData)){
+                chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(validProposals);
                 try {
                     chosenGreenSourceData = getMapper().readValue(chosenGreenSourceOffer.getContent(), GreenSourceData.class);
                 } catch (JsonProcessingException e) {
-                    ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(chosenGreenSourceOffer.createReply());
-                    myAgent.send(reply);
-                    proposals.remove(chosenGreenSourceOffer);
-                    if(proposals.isEmpty()){
+                    ReplyMessageFactory.prepareReply(chosenGreenSourceOffer.createReply(), InvalidJobIdConstant.INVALID_JOB_ID, REJECT_PROPOSAL);
+                    validProposals.remove(chosenGreenSourceOffer);
+                    if(validProposals.isEmpty()){
                         logger.error("[{}] I didn't understand any proposal from the Green Sources", myAgent.getName());
+                        myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
                         return;
                     }
                 }
@@ -103,8 +106,6 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
                     try {
                         return getMapper().readValue(greenSource.getContent(), GreenSourceData.class).getAvailablePowerInTime();
                     } catch (final JsonProcessingException e) {
-                        ACLMessage reply = ReplyMessageFactory.prepareNotUnderstoodReply(greenSource.createReply());
-                        myAgent.send(reply);
                         return Integer.MAX_VALUE;
                     }
                 });
