@@ -1,16 +1,19 @@
 package agents.monitoring;
 
+import static java.util.Comparator.comparingLong;
+
 import agents.monitoring.behaviour.ServeWeatherInformation;
 import domain.GreenSourceRequestData;
 import domain.ImmutableMonitoringData;
 import domain.MonitoringData;
 import jade.core.Agent;
-import java.util.Comparator;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import weather.api.OpenWeatherMapApi;
+import weather.cache.WeatherCache;
 import weather.domain.AbstractWeather;
 import weather.domain.FutureWeather;
 
@@ -22,6 +25,7 @@ public class MonitoringAgent extends Agent {
     private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
 
     private OpenWeatherMapApi api;
+    private WeatherCache cache;
 
     /**
      * Method run at the agent start. It starts the behaviour which is listening for the weather requests.
@@ -31,6 +35,7 @@ public class MonitoringAgent extends Agent {
         super.setup();
         addBehaviour(new ServeWeatherInformation(this));
         api = new OpenWeatherMapApi();
+        cache = WeatherCache.getInstance();
     }
 
     /**
@@ -49,10 +54,14 @@ public class MonitoringAgent extends Agent {
     }
 
     public MonitoringData getForecast(GreenSourceRequestData requestData) {
-        logger.info("Retrieving forecast info for {} at {}...", requestData.getLocation(), requestData.getStartDate());
-        var forecast = api.getForecast(requestData.getLocation());
-        var timestamp = requestData.getStartDate().toEpochSecond();
-        return buildMonitoringData(getNearestForecast(forecast.getList(), timestamp));
+        var location = requestData.getLocation();
+        var timestamp = requestData.getStartDate().toInstant();
+        logger.info("Retrieving forecast info for {} at {}...", location, timestamp);
+        return cache.getForecast(location, timestamp).map(this::buildMonitoringData).orElseGet(() -> {
+            var forecast = api.getForecast(location);
+            cache.updateCache(location, forecast);
+            return buildMonitoringData(getNearestForecast(forecast.getList(), timestamp));
+        });
     }
 
     private MonitoringData buildMonitoringData(AbstractWeather weather) {
@@ -63,15 +72,13 @@ public class MonitoringAgent extends Agent {
             .build();
     }
 
-    private FutureWeather getNearestForecast(List<FutureWeather> forecasts, long timestamp) {
-        var timestamps = forecasts.stream()
-            .map(weather -> weather.getTimestamp().getEpochSecond())
-            .toList();
-        var timestampNearestToStart = timestamps.stream()
-            .min(Comparator.comparingLong(i -> Math.abs(i - timestamp)))
+    private FutureWeather getNearestForecast(List<FutureWeather> forecasts, Instant timestamp) {
+        var timestamps = forecasts.stream().map(FutureWeather::getTimestamp).toList();
+        var nearestTimestamp = timestamps.stream()
+            .min(comparingLong(i -> Math.abs(i.getEpochSecond() - timestamp.getEpochSecond())))
             .orElseThrow(() -> new NoSuchElementException("No value present"));
         return forecasts.stream()
-            .filter(forecast -> forecast.getTimestamp().getEpochSecond() == timestampNearestToStart)
+            .filter(forecast -> forecast.getTimestamp().equals(nearestTimestamp))
             .findFirst()
             .orElseThrow(() -> new NoSuchElementException("No value present"));
     }
