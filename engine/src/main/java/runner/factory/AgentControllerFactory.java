@@ -1,6 +1,6 @@
 package runner.factory;
 
-import com.gui.domain.AgentNode;
+import com.gui.domain.nodes.AgentNode;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 import runner.domain.AgentArgs;

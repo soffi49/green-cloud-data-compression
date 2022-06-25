@@ -1,7 +1,13 @@
-package com.gui.domain;
+package com.gui.domain.nodes;
 
-import static com.gui.domain.StyleUtils.GREEN_ENERGY_STYLE;
+import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
+import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_STYLE;
 
+import org.graphstream.graph.Graph;
+
+/**
+ * Agent node class representing the green energy source
+ */
 public class GreenEnergyAgentNode extends AgentNode {
 
     private String monitoringAgent;
@@ -10,6 +16,11 @@ public class GreenEnergyAgentNode extends AgentNode {
     public GreenEnergyAgentNode(String name) {
         super(name);
         this.style = GREEN_ENERGY_STYLE;
+    }
+
+    @Override
+    public void createEdges(Graph graph) {
+        addAgentEdgeToGraph(graph, name, monitoringAgent);
     }
 
     public String getMonitoringAgent() {

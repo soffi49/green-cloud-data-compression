@@ -1,8 +1,10 @@
-package com.gui.domain;
+package com.gui.domain.nodes;
 
-import static com.gui.domain.StyleUtils.GREEN_ENERGY_STYLE;
-import static com.gui.domain.StyleUtils.MONITORING_STYLE;
+import static com.gui.utils.domain.StyleConstants.MONITORING_STYLE;
 
+/**
+ * Agent node class representing the monitoring agent
+ */
 public class MonitoringAgentNode extends AgentNode {
 
     private String greenEnergyAgent;

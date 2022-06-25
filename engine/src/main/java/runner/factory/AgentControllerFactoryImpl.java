@@ -1,6 +1,6 @@
 package runner.factory;
 
-import com.gui.domain.*;
+import com.gui.domain.nodes.*;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
@@ -9,11 +9,10 @@ import runner.domain.*;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Objects;
 
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
-    private static AtomicInteger ID_GENERATOR = new AtomicInteger(0);
     private final ContainerController containerController;
 
     public AgentControllerFactoryImpl(ContainerController containerController) {
@@ -56,7 +55,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
     @Override
     public AgentNode createAgentNode(AgentArgs agentArgs, ScenarioArgs scenarioArgs) {
         if (agentArgs instanceof ClientAgentArgs clientArgs) {
-            return new ClientAgentNode(clientArgs.getName(), ID_GENERATOR.getAndIncrement());
+            return new ClientAgentNode(clientArgs.getName());
         }
         if (agentArgs instanceof CloudNetworkArgs cloudNetworkArgs) {
             final CloudNetworkAgentNode cloudNetworkAgentNode = new CloudNetworkAgentNode(cloudNetworkArgs.getName());
@@ -70,9 +69,6 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
             final GreenEnergyAgentNode greenEnergyAgentNode = new GreenEnergyAgentNode(greenEnergyAgentArgs.getName());
             greenEnergyAgentNode.setMonitoringAgent(greenEnergyAgentArgs.getMonitoringAgent());
             greenEnergyAgentNode.setServerAgent(greenEnergyAgentArgs.getOwnerSever());
-            final Coordinates coordinates = new Coordinates(Double.parseDouble(greenEnergyAgentArgs.getLatitude()),
-                                                            Double.parseDouble(greenEnergyAgentArgs.getLongitude()));
-            greenEnergyAgentNode.setCoordinates(coordinates);
             return greenEnergyAgentNode;
         }
         if (agentArgs instanceof MonitoringAgentArgs monitoringAgentArgs) {
@@ -81,9 +77,9 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                     .filter(greenSourceArgs -> greenSourceArgs.getMonitoringAgent().equals(monitoringAgentArgs.getName()))
                     .findFirst()
                     .orElse(null);
-            monitoringAgentNode.setGreenEnergyAgent(ownerGreenSource.getName());
-            monitoringAgentNode.setCoordinates(new Coordinates(Double.parseDouble(ownerGreenSource.getLongitude()) + 10,
-                                                               Double.parseDouble(ownerGreenSource.getLatitude())));
+            if (Objects.nonNull(ownerGreenSource)) {
+                monitoringAgentNode.setGreenEnergyAgent(ownerGreenSource.getName());
+            }
             return monitoringAgentNode;
         }
         if (agentArgs instanceof ServerAgentArgs serverAgentArgs) {

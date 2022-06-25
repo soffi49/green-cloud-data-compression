@@ -1,20 +1,28 @@
-package com.gui.domain;
+package com.gui.domain.nodes;
 
 
-import static com.gui.domain.StyleUtils.GREEN_ENERGY_STYLE;
-import static com.gui.domain.StyleUtils.SERVER_STYLE;
+import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
+import static com.gui.utils.domain.StyleConstants.SERVER_STYLE;
+
+import org.graphstream.graph.Graph;
 
 import java.util.List;
 
+/**
+ * Agent node class representing the server
+ */
 public class ServerAgentNode extends AgentNode {
     private String cloudNetworkAgent;
     private List<String> greenEnergyAgents;
-    private Coordinates location;
 
     public ServerAgentNode(String name) {
         super(name);
         this.style = SERVER_STYLE;
-        this.coordinates = new Coordinates(0,0);
+    }
+
+    @Override
+    public void createEdges(Graph graph) {
+        greenEnergyAgents.forEach(greenEnergyName -> addAgentEdgeToGraph(graph, name, greenEnergyName));
     }
 
     public String getCloudNetworkAgent() {
@@ -31,13 +39,5 @@ public class ServerAgentNode extends AgentNode {
 
     public void setGreenEnergyAgents(List<String> greenEnergyAgents) {
         this.greenEnergyAgents = greenEnergyAgents;
-    }
-
-    public Coordinates getLocation() {
-        return location;
-    }
-
-    public void setLocation(Coordinates location) {
-        this.location = location;
     }
 }
