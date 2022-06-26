@@ -69,6 +69,7 @@ public class ScenarioService {
                 GUIControllerImpl.addAgentNodeToGraph(factory.createAgentNode(args, scenario));
                 agentController.putO2AObject(GUIControllerImpl, AgentController.ASYNC);
                 agentController.start();
+                agentController.activate();
             } catch (StaleProxyException e) {
                 e.printStackTrace();
             }
