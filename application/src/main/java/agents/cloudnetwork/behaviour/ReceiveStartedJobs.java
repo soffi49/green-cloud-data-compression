@@ -1,5 +1,6 @@
 package agents.cloudnetwork.behaviour;
 
+import static common.GUIUtils.announceStartedJob;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
@@ -50,6 +51,7 @@ public class ReceiveStartedJobs extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             logger.info("[{}] Sending information that the job execution is started", myAgent.getName());
             final String jobId = message.getContent();
+            announceStartedJob(myCloudNetworkAgent, jobId);
             myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobId), JobStatusEnum.IN_PROGRESS);
             myAgent.send(prepareConfirmationReply(jobId, replyMessage));
         } else {

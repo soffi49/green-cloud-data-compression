@@ -1,5 +1,6 @@
 package agents.cloudnetwork.behaviour;
 
+import static common.GUIUtils.announceFinishedJob;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
@@ -53,6 +54,7 @@ public class ReturnCompletedJob extends CyclicBehaviour {
     }
 
     private void updateNetworkInformation(final String jobId) {
+        announceFinishedJob(myCloudNetworkAgent, jobId);
         myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
         myCloudNetworkAgent.getServerForJobMap().remove(jobId);
     }

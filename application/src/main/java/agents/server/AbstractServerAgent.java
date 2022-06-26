@@ -1,5 +1,6 @@
 package agents.server;
 
+import agents.AbstractAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
@@ -14,7 +15,7 @@ import java.util.Map;
 /**
  * Abstract agent class storing data of the Server Agent
  */
-public abstract class AbstractServerAgent extends Agent {
+public abstract class AbstractServerAgent extends AbstractAgent {
 
     protected double pricePerHour;
     protected int maximumCapacity;

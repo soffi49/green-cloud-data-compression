@@ -1,5 +1,6 @@
 package agents.cloudnetwork;
 
+import agents.AbstractAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
@@ -12,12 +13,13 @@ import java.util.Map;
 /**
  * Abstract agent class storing the data regarding Cloud Network Agent
  */
-public abstract class AbstractCloudNetworkAgent extends Agent {
+public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
     protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
 
     AbstractCloudNetworkAgent() {
+        super.setup();
     }
 
     /**

@@ -4,7 +4,6 @@ import static com.gui.utils.StyleUtils.*;
 import static com.gui.utils.domain.CommonConstants.INFORMATION_PANEL;
 import static com.gui.utils.domain.StyleConstants.*;
 
-import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
@@ -25,11 +24,9 @@ import java.util.stream.IntStream;
 public class InformationPanel {
 
     private static final String TITLE_LABEL = "LATEST NEWS";
-    private static final Font NEWS_FONT = DESCRIPTION_FONT;
-    private static final double NEWS_GRID_GAP = 5;
-    private static final int MAX_NEWS_ROW_HEIGHT = (int) (getFontPixels(NEWS_FONT) + 2 * NEWS_GRID_GAP);
 
     private final JPanel informationBoxPanel;
+    private JScrollPane informationBoxScroll;
     private final JPanel mainPanel;
     private final List<Pair<String, String>> informationList;
 
@@ -39,6 +36,7 @@ public class InformationPanel {
     public InformationPanel() {
         this.informationList = new ArrayList<>();
         this.informationBoxPanel = new JPanel();
+        this.informationBoxScroll = new JScrollPane(informationBoxPanel);
         this.mainPanel = createInformationPanel();
     }
 
@@ -50,6 +48,7 @@ public class InformationPanel {
     public InformationPanel(List<Pair<String, String>> informationList) {
         this.informationList = informationList;
         this.informationBoxPanel = new JPanel();
+        this.informationBoxScroll = new JScrollPane(informationBoxPanel);
         this.mainPanel = createInformationPanel();
     }
 
@@ -69,7 +68,11 @@ public class InformationPanel {
         createTitleSection(informationMainPanel);
         createBodySection();
 
-        informationMainPanel.add(informationBoxPanel, new CC().height("100%").span().grow().wrap());
+        informationBoxScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        informationBoxScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        informationBoxScroll.getVerticalScrollBar().setValue(informationBoxScroll.getVerticalScrollBar().getMaximum());
+
+        informationMainPanel.add(informationBoxScroll, new CC().height("100%").span().grow().wrap());
         informationMainPanel.add(createSeparator(DARK_BLUE_COLOR), new CC().spanX().growX().wrap());
 
         return informationMainPanel;
@@ -81,7 +84,7 @@ public class InformationPanel {
      * @param information information that is to be added
      */
     public void addNewInformation(final String information) {
-        if (informationList.size() >= Math.floor((double) informationBoxPanel.getHeight() / MAX_NEWS_ROW_HEIGHT) - 2) {
+        if (informationList.size() >= 20) {
             informationList.remove(0);
         }
         informationList.add(new Pair<>(information, getCurrentTime()));
@@ -106,8 +109,7 @@ public class InformationPanel {
 
     private void createBodySection() {
         informationBoxPanel.removeAll();
-        final String size = String.format("%dpx:%dpx:%dpx", MAX_NEWS_ROW_HEIGHT, MAX_NEWS_ROW_HEIGHT, MAX_NEWS_ROW_HEIGHT);
-        final MigLayout layout = new MigLayout(new LC().bottomToTop().fillX().flowY(), null, new AC().size(size));
+        final MigLayout layout = new MigLayout(new LC().bottomToTop().fillX().flowY());
         informationBoxPanel.setBackground(Color.WHITE);
         informationBoxPanel.setLayout(layout);
 
@@ -121,19 +123,20 @@ public class InformationPanel {
         } else {
             informationBoxPanel.add(createInformationLabel(Optional.empty()), new CC().spanX().growX());
         }
+        informationBoxScroll.getVerticalScrollBar().setValue(informationBoxScroll.getVerticalScrollBar().getMaximum());
     }
 
     private JLabel createInformationLabel(final Optional<Pair<String, String>> information) {
         final JLabel infoLabel = information
-                .map(pair -> new JLabel(String.format("[%s] %s", pair.getSecond(), pair.getFirst())))
-                .orElseGet(() -> new JLabel(String.format("[%s] %s", getCurrentTime(),"There are no latest news")));
-        infoLabel.setFont(NEWS_FONT);
+                .map(pair -> new JLabel(String.format("[%s]: %s", pair.getSecond(), pair.getFirst())))
+                .orElseGet(() -> new JLabel(String.format("[%s]: %s", getCurrentTime(), "There are no latest news")));
+        infoLabel.setFont(DESCRIPTION_FONT);
         infoLabel.setForeground(BLUE_COLOR);
         return infoLabel;
     }
 
     private String getCurrentTime() {
-        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         return formatter.format(LocalDateTime.now());
     }
 }

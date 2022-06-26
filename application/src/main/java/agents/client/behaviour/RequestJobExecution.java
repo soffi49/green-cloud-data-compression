@@ -1,6 +1,7 @@
 package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
+import static common.GUIUtils.announceNewClient;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
@@ -94,6 +95,7 @@ public class RequestJobExecution extends ContractNetInitiator {
             } catch (JsonProcessingException e) {
                 throw new IncorrectServerOfferException();
             }
+            announceNewClient(myClientAgent);
             acceptances.add(ReplyMessageFactory.prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
             rejectJobOffers(myClientAgent, pricedJob.getJobId(), chosenOffer, proposals);
         }

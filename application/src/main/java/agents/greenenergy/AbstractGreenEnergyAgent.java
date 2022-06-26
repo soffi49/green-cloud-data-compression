@@ -1,5 +1,6 @@
 package agents.greenenergy;
 
+import agents.AbstractAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
  */
-public abstract class AbstractGreenEnergyAgent extends Agent {
+public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
     protected int maximumCapacity;
     protected Location location;
@@ -23,6 +24,7 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
     protected AID ownerServer;
 
     AbstractGreenEnergyAgent() {
+        super.setup();
     }
 
     /**

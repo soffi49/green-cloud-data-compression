@@ -23,6 +23,8 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
     private static final MessageTemplate messageTemplate = and(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
                                                                   MatchPerformative(INFORM));
 
+    private final ClientAgent myClientAgent;
+
     /**
      * Behaviours constructor.
      *
@@ -30,6 +32,7 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
      */
     public WaitForJobStatusUpdate(final ClientAgent clientAgent) {
         super(clientAgent);
+        this.myClientAgent = clientAgent;
     }
 
     /**
@@ -40,7 +43,10 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
             switch (message.getProtocol()){
-                case FINISH_JOB_PROTOCOL -> logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
+                case FINISH_JOB_PROTOCOL -> {
+                    myClientAgent.getGuiController().updateClientsCountByValue(-1);
+                    logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
+                }
                 case DELAYED_JOB_PROTOCOL ->  logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
             }
         } else {
