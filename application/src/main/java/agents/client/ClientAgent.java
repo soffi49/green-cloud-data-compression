@@ -34,13 +34,6 @@ public class ClientAgent extends AbstractClientAgent {
         if (Objects.nonNull(args) && args.length == 4) {
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
-
-            //TODO to be removed (added for testing purposes)
-            try {
-                TimeUnit.SECONDS.sleep(7);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
             addBehaviour(prepareStartingBehaviour(jobToBeExecuted));
             addBehaviour(new WaitForJobStatusUpdate(this));
         } else {
