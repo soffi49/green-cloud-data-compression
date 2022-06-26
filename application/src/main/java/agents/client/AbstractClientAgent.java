@@ -6,7 +6,7 @@ import jade.core.Agent;
 /**
  * Abstract agent class storing the data regarding Client Agent
  */
-public class AbstractClientAgent extends Agent {
+public abstract class AbstractClientAgent extends Agent {
 
     protected AID chosenCloudNetworkAgent;
 

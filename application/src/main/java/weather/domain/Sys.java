@@ -7,16 +7,22 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
 import org.jetbrains.annotations.Nullable;
 
-@JsonSerialize(as = ImmutableWind.class)
-@JsonDeserialize(as = ImmutableWind.class)
+@JsonSerialize(as = ImmutableSys.class)
+@JsonDeserialize(as = ImmutableSys.class)
 @JsonInclude(Include.NON_NULL)
 @Immutable
-public interface Wind {
-
-    Double getSpeed();
-
-    Double getDeg();
+public interface Sys {
 
     @Nullable
-    Double getGust();
+    String getCountry();
+
+    @Nullable
+    String getType();
+
+    @Nullable
+    String getId();
+
+    String getSunrise();
+
+    String getSunset();
 }

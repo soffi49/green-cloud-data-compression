@@ -1,6 +1,8 @@
 package runner.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.gui.controller.GUIControllerImpl;
+import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import org.apache.commons.io.FileUtils;
@@ -22,14 +24,16 @@ public class ScenarioService {
     private static final XmlMapper XML_MAPPER = new XmlMapper();
 
     private final AgentControllerFactory factory;
+    private final GUIControllerImpl GUIControllerImpl;
 
     /**
      * Service constructor
      *
      * @param containerController container controller in which agents' controllers are to be created
      */
-    public ScenarioService(ContainerController containerController) {
+    public ScenarioService(ContainerController containerController, GUIControllerImpl GUIControllerImpl) {
         this.factory = new AgentControllerFactoryImpl(containerController);
+        this.GUIControllerImpl = GUIControllerImpl;
     }
 
     /**
@@ -43,9 +47,13 @@ public class ScenarioService {
             final ScenarioArgs scenario = XML_MAPPER.readValue(scenarioFile, ScenarioArgs.class);
 
             if (Objects.nonNull(scenario.getServerAgentsArgs())) {
+
                 scenario.getAgentsArgs().forEach(agentArgs -> {
                     try {
-                        factory.createAgentController(agentArgs).start();
+                        final AgentController agentController = factory.createAgentController(agentArgs);
+                        GUIControllerImpl.addAgentNodeToGraph(factory.createAgentNode(agentArgs, scenario));
+                        agentController.putO2AObject(GUIControllerImpl, AgentController.ASYNC);
+                        agentController.start();
                     } catch (StaleProxyException e) {
                         e.printStackTrace();
                     }

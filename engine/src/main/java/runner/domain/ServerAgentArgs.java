@@ -3,6 +3,7 @@ package runner.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Arguments of the Server Agent
@@ -26,5 +27,17 @@ public interface ServerAgentArgs extends AgentArgs {
      * @return price per 1-hour
      */
     String getPrice();
+
+    /**
+     * @return location's latitude
+     */
+    @Nullable
+    String getLatitude();
+
+    /**
+     * @return location's longitude
+     */
+    @Nullable
+    String getLongitude();
 
 }

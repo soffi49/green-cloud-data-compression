@@ -9,95 +9,116 @@
         <monitoringAgent>
             <name>Weather3</name>
         </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather4</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather5</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather6</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather7</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather8</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather9</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather10</name>
+        </monitoringAgent>
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
             <name>Solar</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>20.0</latitude>
-            <longitude>101.1</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Water</name>
-            <monitoringAgent>Weather1</monitoringAgent>
-            <ownerSever>Server2</ownerSever>
-            <latitude>10.0</latitude>
-            <longitude>11.1</longitude>
+            <latitude>52</latitude>
+            <longitude>22</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>WindFarm</name>
-            <monitoringAgent>Weather2</monitoringAgent>
+            <monitoringAgent>Weather3</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>20.0</latitude>
-            <longitude>131.1</longitude>
+            <latitude>52</latitude>
+            <longitude>20</longitude>
             <pricePerPowerUnit>5</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>SolarFarm</name>
+            <name>Soil</name>
+            <monitoringAgent>Weather10</monitoringAgent>
+            <ownerSever>Server1</ownerSever>
+            <latitude>51</latitude>
+            <longitude>21</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Water</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server2</ownerSever>
-            <latitude>30.0</latitude>
-            <longitude>37.1</longitude>
+            <latitude>52</latitude>
+            <longitude>17</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>SolarFarm</name>
+            <monitoringAgent>Weather4</monitoringAgent>
+            <ownerSever>Server2</ownerSever>
+            <latitude>52</latitude>
+            <longitude>16</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Geothermal</name>
-            <monitoringAgent>Weather3</monitoringAgent>
+            <monitoringAgent>Weather5</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>30.0</latitude>
-            <longitude>54.1</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Biomas</name>
-            <monitoringAgent>Weather3</monitoringAgent>
-            <ownerSever>Server4</ownerSever>
-            <latitude>10.0</latitude>
-            <longitude>11.1</longitude>
+            <latitude>51</latitude>
+            <longitude>17</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Biogas</name>
-            <monitoringAgent>Weather1</monitoringAgent>
+            <monitoringAgent>Weather7</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>50.0</latitude>
-            <longitude>116.1</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Hydropower</name>
-            <monitoringAgent>Weather1</monitoringAgent>
-            <ownerSever>Server4</ownerSever>
-            <latitude>56.0</latitude>
-            <longitude>101.1</longitude>
+            <latitude>51</latitude>
+            <longitude>18</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
             <name>BioGasCompany</name>
-            <monitoringAgent>Weather2</monitoringAgent>
+            <monitoringAgent>Weather9</monitoringAgent>
             <ownerSever>Server3</ownerSever>
-            <latitude>40.0</latitude>
-            <longitude>131.1</longitude>
+            <latitude>51</latitude>
+            <longitude>17</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Soil</name>
-            <monitoringAgent>Weather2</monitoringAgent>
-            <ownerSever>Server1</ownerSever>
-            <latitude>40.0</latitude>
-            <longitude>131.1</longitude>
+            <name>Biomas</name>
+            <monitoringAgent>Weather6</monitoringAgent>
+            <ownerSever>Server4</ownerSever>
+            <latitude>50</latitude>
+            <longitude>20</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Hydropower</name>
+            <monitoringAgent>Weather8</monitoringAgent>
+            <ownerSever>Server4</ownerSever>
+            <latitude>50</latitude>
+            <longitude>21</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>

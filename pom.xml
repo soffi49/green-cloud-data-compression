@@ -13,7 +13,7 @@
   <modules>
     <module>engine</module>
     <module>application</module>
-      <module>graph</module>
+    <module>gui</module>
   </modules>
 
   <properties>

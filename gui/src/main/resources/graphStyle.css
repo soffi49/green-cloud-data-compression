@@ -1,0 +1,51 @@
+graph {
+    fill-color: rgb(239, 244, 246);
+}
+
+node.labelStyle {
+    text-mode: normal;
+    text-background-mode: plain;
+    text-background-color: #ffffff;
+    text-style: bold;
+    text-alignment: under;
+    text-padding: 2;
+    text-size: 12;
+}
+
+node.client {
+    size: 10;
+    fill-mode: plain;
+    fill-color: #81777f;
+    shape: box;
+}
+
+node.cloudNetwork {
+    size: 30;
+    fill-mode: plain;
+    fill-color: #5883c4;
+    shape: circle;
+}
+
+node.server {
+    size: 20;
+    fill-mode: plain;
+    fill-color: #ffffff;
+    shape: circle;
+    stroke-mode: plain;
+    stroke-color: #d20000;
+    stroke-width: 2;
+}
+
+node.greenEnergy {
+    size: 15;
+    fill-mode: plain;
+    fill-color: #d20000;
+    shape: circle;
+}
+
+node.monitoring {
+    size: 10;
+    fill-mode: plain;
+    fill-color: #8eb4ec;
+    shape: cross;
+}
