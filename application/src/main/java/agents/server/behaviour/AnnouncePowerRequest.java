@@ -11,6 +11,7 @@ import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
 import domain.GreenSourceData;
+import domain.job.PricedJob;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
@@ -22,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
+import java.util.function.Predicate;
 
 /**
  * Behaviours responsible for passing the power request to green sources and choosing one to provide the power
@@ -31,6 +33,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
     private static final Logger logger = LoggerFactory.getLogger(AnnouncePowerRequest.class);
     private final ACLMessage replyMessage;
     private final ServerAgent myServerAgent;
+    private final Predicate<ACLMessage> isValidProposal;
 
     /**
      * Behaviour constructor
@@ -43,6 +46,14 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
         super(agent, powerRequest);
         this.replyMessage = replyMessage;
         this.myServerAgent = (ServerAgent) myAgent;
+        this.isValidProposal = (message) -> {
+            try {
+                var content = getMapper().readValue(message.getContent(), GreenSourceData.class);
+                return true;
+            } catch (JsonProcessingException e) {
+                return false;
+            }
+        };
     }
 
     /**
@@ -62,23 +73,25 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
             logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
-            List<ACLMessage> validProposals = proposals;
-            ACLMessage chosenGreenSourceOffer = null;
-            GreenSourceData chosenGreenSourceData = null;
-            while(!validProposals.isEmpty() && Objects.isNull(chosenGreenSourceData)){
-                chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(validProposals);
-                try {
-                    chosenGreenSourceData = getMapper().readValue(chosenGreenSourceOffer.getContent(), GreenSourceData.class);
-                } catch (JsonProcessingException e) {
-                    ReplyMessageFactory.prepareReply(chosenGreenSourceOffer.createReply(), InvalidJobIdConstant.INVALID_JOB_ID, REJECT_PROPOSAL);
-                    validProposals.remove(chosenGreenSourceOffer);
-                    if(validProposals.isEmpty()){
-                        logger.error("[{}] I didn't understand any proposal from the Green Sources", myAgent.getName());
-                        myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
-                        return;
-                    }
-                }
+            List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
+
+            if (validProposals.isEmpty()){
+                logger.info("I didn't understand any proposal from Green Energy Agents");
+                rejectJobOffers(myAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+                myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
+                return;
             }
+
+            ACLMessage chosenGreenSourceOffer = chooseGreenSourceToExecuteJob(validProposals);
+            GreenSourceData chosenGreenSourceData;
+
+            try {
+                chosenGreenSourceData = getMapper().readValue(chosenGreenSourceOffer.getContent(), GreenSourceData.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+
             logger.info("[{}] Chosen Green Source for the job: {}", myAgent.getName(), chosenGreenSourceOffer.getSender().getLocalName());
             final String jobId = chosenGreenSourceData.getJobId();
             final double servicePrice = calculateServicePrice(chosenGreenSourceData);
@@ -86,7 +99,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 
             myServerAgent.getGreenSourceForJobMap().put(jobId, chosenGreenSourceOffer.getSender());
             logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent.getName());
-            myAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, chosenGreenSourceOffer.createReply()));
+            myServerAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, chosenGreenSourceOffer.createReply()));
             rejectJobOffers(myAgent, jobId, chosenGreenSourceOffer, proposals);
         }
     }

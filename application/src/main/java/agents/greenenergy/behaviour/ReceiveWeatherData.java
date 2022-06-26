@@ -82,20 +82,21 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
         } else {
             logger.info("[{}] Too bad weather conditions, sending refuse message to server.", guid);
-            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
     }
 
     private void handleRefuse(final ACLMessage cfp) {
         logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
-        myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
+        myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
     }
 
     private MonitoringData readMonitoringData(ACLMessage message) {
         try {
             return getMapper().readValue(message.getContent(), MonitoringData.class);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.info("[{}] I didn't understand the response with the weather data, sending refuse message to server", guid);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
         return null;
     }

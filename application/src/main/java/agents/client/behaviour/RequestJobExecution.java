@@ -3,7 +3,6 @@ package agents.client.behaviour;
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
-import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
@@ -24,8 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
+import java.util.function.Predicate;
 
 /**
  * Behaviour responsible for sending and handling job's call for proposal
@@ -37,6 +36,7 @@ public class RequestJobExecution extends ContractNetInitiator {
     private final Job job;
     private final ClientAgent myClientAgent;
     private final String guid;
+    private final Predicate<ACLMessage> isValidProposal;
 
     /**
      * Behaviour constructor.
@@ -50,6 +50,14 @@ public class RequestJobExecution extends ContractNetInitiator {
         this.myClientAgent = (ClientAgent) agent;
         this.guid = agent.getName();
         this.job = job;
+        this.isValidProposal = (message) -> {
+            try {
+                var content = getMapper().readValue(message.getContent(), PricedJob.class);
+                return true;
+            } catch (JsonProcessingException e) {
+                return false;
+            }
+        };
     }
 
     /**
@@ -86,24 +94,27 @@ public class RequestJobExecution extends ContractNetInitiator {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myAgent.doDelete();
         } else {
-            List<ACLMessage> validProposals = proposals;
-            ACLMessage chosenOffer = null;
-            PricedJob pricedJob = null;
-            while(!validProposals.isEmpty() && Objects.isNull(pricedJob)){
-                chosenOffer = chooseCNAToExecuteJob(validProposals);
-                myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
-                try {
-                    pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
-                } catch (JsonProcessingException e) {
-                    ReplyMessageFactory.prepareReply(chosenOffer.createReply(), InvalidJobIdConstant.INVALID_JOB_ID, REJECT_PROPOSAL);
-                    validProposals.remove(chosenOffer);
-                    if(validProposals.isEmpty()){
-                        logger.error("[{}] I didn't understand any proposal from Cloud Network Agents.", guid);
-                        myAgent.doDelete();
-                    }
-                }
+            List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
+
+            if(validProposals.isEmpty()){
+                rejectJobOffers(myClientAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+                myAgent.doDelete();
+                logger.info("[{}] I didn't understand any proposal from Cloud Network Agents", guid);
+                return;
             }
+
+            ACLMessage chosenOffer = chooseCNAToExecuteJob(validProposals);
+            PricedJob pricedJob;
+
+            try {
+                pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+
             logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
+            myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
             acceptances.add(ReplyMessageFactory.prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
             rejectJobOffers(myClientAgent, pricedJob.getJobId(), chosenOffer, proposals);
         }

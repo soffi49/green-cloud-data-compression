@@ -15,6 +15,7 @@ import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,12 +67,14 @@ public class ReceivePowerRequest extends CyclicBehaviour {
         }
     }
 
-    private PowerJob readJob(ACLMessage callForProposal) throws NotUnderstoodException {
+    private PowerJob readJob(ACLMessage callForProposal){
         try {
             return getMapper().readValue(callForProposal.getContent(), PowerJob.class);
         } catch (JsonProcessingException e) {
-            throw new NotUnderstoodException(e.getMessage());
+            logger.info("[{}] I didn't understand the message from the server, refusing the job", guid);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(callForProposal.createReply()));
         }
+        return null;
     }
 
     private void requestMonitoringData(final ACLMessage cfp, final String jobId) {

@@ -11,6 +11,7 @@ import agents.cloudnetwork.CloudNetworkAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
 import domain.ServerData;
+import domain.job.PricedJob;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
+import java.util.function.Predicate;
 
 /**
  * Behaviour which is responsible for broadcasting client's job to servers and choosing server to execute the job
@@ -31,6 +33,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
     private final ACLMessage replyMessage;
     private final CloudNetworkAgent myCloudNetworkAgent;
     private final String guid;
+    private final Predicate<ACLMessage> isValidProposal;
 
     /**
      * Behaviour constructor.
@@ -44,6 +47,14 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
         this.guid = agent.getName();
         this.replyMessage = replyMessage;
+        this.isValidProposal = (message) -> {
+            try {
+                var content = getMapper().readValue(message.getContent(), ServerData.class);
+                return true;
+            } catch (JsonProcessingException e) {
+                return false;
+            }
+        };
     }
 
     /**
@@ -63,22 +74,23 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             logger.info("[{}] No Servers available - sending refuse message to client", guid);
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
-            List<ACLMessage> validProposals = proposals;
-            ACLMessage chosenServerOffer = null;
-            ServerData chosenServerData = null;
-            while(!validProposals.isEmpty() && Objects.isNull(chosenServerData)) {
-                chosenServerOffer = chooseServerToExecuteJob(validProposals);
-                try {
-                    chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
-                } catch (JsonProcessingException e) {
-                    validProposals.remove(chosenServerOffer);
-                    ReplyMessageFactory.prepareReply(chosenServerOffer.createReply(), InvalidJobIdConstant.INVALID_JOB_ID, REJECT_PROPOSAL);
-                    if(validProposals.isEmpty()){
-                        logger.error("[{}] I didn't understand any proposal from the Servers", myAgent.getName());
-                        myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
-                        return;
-                    }
-                }
+            List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
+
+            if (validProposals.isEmpty()){
+                logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
+                rejectJobOffers(myCloudNetworkAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+                myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
+                return;
+            }
+
+            ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
+            ServerData chosenServerData;
+
+            try {
+                chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
             }
 
             logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
@@ -86,7 +98,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
             logger.info("[{}] Sending job execution offer to Client", guid);
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-            myAgent.addBehaviour(new ProposeJobOffer(myAgent, makeJobOfferForClient(chosenServerData, replyMessage), serverReplyMessage));
+            myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent, makeJobOfferForClient(chosenServerData, replyMessage), serverReplyMessage));
             rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
     }
