@@ -60,7 +60,7 @@ public class ReceivePowerRequest extends CyclicBehaviour {
                 }
                 logger.info("[{}] Sending weather request to monitoring agent.", guid);
                 myGreenEnergyAgent.getPowerJobs().put(job, JobStatusEnum.PROCESSING);
-                requestMonitoringData(cfp, job.getJobId());
+                requestMonitoringData(cfp, job);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -77,10 +77,10 @@ public class ReceivePowerRequest extends CyclicBehaviour {
         }
     }
 
-    private void requestMonitoringData(final ACLMessage cfp, final String jobId) {
+    private void requestMonitoringData(final ACLMessage cfp, final PowerJob job) {
         var sequentialBehaviour = new SequentialBehaviour();
-        sequentialBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent, cfp.getConversationId()));
-        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, jobId));
+        sequentialBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent, cfp.getConversationId(), job));
+        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, job.getJobId()));
         myAgent.addBehaviour(sequentialBehaviour);
     }
 }
