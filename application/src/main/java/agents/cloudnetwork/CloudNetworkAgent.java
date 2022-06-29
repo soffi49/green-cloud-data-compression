@@ -28,6 +28,12 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
         addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(), new ReturnCompletedJob())));
     }
 
+    @Override
+    protected void takeDown() {
+        getGuiController().removeAgentNodeFromGraph(getAgentNode());
+        super.takeDown();
+    }
+
     private void initializeAgent() {
         register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
     }

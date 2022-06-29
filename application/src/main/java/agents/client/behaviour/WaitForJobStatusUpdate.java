@@ -6,6 +6,8 @@ import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
 
 import agents.client.ClientAgent;
+import com.gui.domain.nodes.ClientAgentNode;
+import com.gui.domain.types.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -44,10 +46,14 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             switch (message.getProtocol()){
                 case FINISH_JOB_PROTOCOL -> {
-                    myClientAgent.getGuiController().updateClientsCountByValue(-1);
                     logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
+                    ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.FINISHED);
+                    myClientAgent.getGuiController().updateClientsCountByValue(-1);;
                 }
-                case DELAYED_JOB_PROTOCOL ->  logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
+                case DELAYED_JOB_PROTOCOL ->  {
+                    logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
+                    ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.DELAYED);
+                }
             }
         } else {
             block();

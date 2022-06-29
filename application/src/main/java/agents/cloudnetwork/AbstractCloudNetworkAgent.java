@@ -44,14 +44,24 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
         serverForJobMap = new HashMap<>();
         networkJobs = new HashMap<>();
     }
-    public int getPowerInUse(final OffsetDateTime startDate, final OffsetDateTime endDate) {
+
+    /**
+     * Method calculates the power in use at the given moment
+     *
+     * @return current power in use
+     */
+    public int getCurrentPowerInUse() {
         return networkJobs.entrySet().stream()
-                .filter(job -> !job.getValue().equals(JobStatusEnum.PROCESSING) &&
-                        job.getKey().getStartTime().isBefore(endDate) &&
-                        job.getKey().getEndTime().isAfter(startDate))
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
                 .mapToInt(job -> job.getKey().getPower()).sum();
     }
 
+    /**
+     * Method retrieves the job by the job id from job map
+     *
+     * @param jobId job identifier
+     * @return job
+     */
     public Job getJobById(final String jobId) {
         return networkJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
     }

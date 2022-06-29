@@ -57,6 +57,33 @@ public abstract class AbstractServerAgent extends AbstractAgent {
         this.ownerCloudNetworkAgent = ownerCloudNetworkAgent;
     }
 
+    /**
+     * Method calculates the power in use at the given moment for the server
+     *
+     * @return current power in use
+     */
+    public int getCurrentPowerInUse() {
+        return serverJobs.entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    /**
+     * Method retrieves if the given server is currently active or idle
+     *
+     * @return green source state
+     */
+    public boolean getIsActiveState() {
+        return !serverJobs.entrySet().stream().filter(entry -> entry.getValue().equals(JobStatusEnum.IN_PROGRESS)).toList().isEmpty();
+    }
+
+    /**
+     * Method computes the available power for given time frame
+     *
+     * @param startDate starting date
+     * @param endDate   end date
+     * @return available power
+     */
     public int getAvailableCapacity(final OffsetDateTime startDate,
                                     final OffsetDateTime endDate) {
         final int powerInUser =

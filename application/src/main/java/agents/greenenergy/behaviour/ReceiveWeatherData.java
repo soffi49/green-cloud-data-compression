@@ -1,5 +1,6 @@
 package agents.greenenergy.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.MessageTemplate.*;
 import static java.util.Objects.nonNull;
@@ -79,15 +80,20 @@ public class ReceiveWeatherData extends CyclicBehaviour {
                     .availablePowerInTime(power)
                     .jobId(jobId)
                     .build();
+            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
         } else {
             logger.info("[{}] Too bad weather conditions, sending refuse message to server.", guid);
+            myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.getJobById(jobId));
+            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
         }
     }
 
     private void handleRefuse(final ACLMessage cfp) {
         logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
+        myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.getJobById(jobId));
+        displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
     }
 
@@ -102,6 +108,6 @@ public class ReceiveWeatherData extends CyclicBehaviour {
 
     private int computePower(MonitoringData data) {
         //TODO: implement power computation logic
-        return 10;
+        return 50;
     }
 }

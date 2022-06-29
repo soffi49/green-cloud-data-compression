@@ -2,6 +2,7 @@ package behaviours;
 
 import agents.AbstractAgent;
 import com.gui.controller.GUIController;
+import com.gui.domain.nodes.AgentNode;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
@@ -19,6 +20,7 @@ public class ReceiveGUIController extends CyclicBehaviour {
 
     private final AbstractAgent abstractAgent;
     private final List<Behaviour> initialBehaviours;
+    private int objectCounter;
 
     /**
      * Behaviour constructor.
@@ -30,6 +32,7 @@ public class ReceiveGUIController extends CyclicBehaviour {
         super(agent);
         this.abstractAgent = (AbstractAgent) agent;
         this.initialBehaviours = initialBehaviours;
+        this.objectCounter = 0;
     }
 
     /**
@@ -37,11 +40,18 @@ public class ReceiveGUIController extends CyclicBehaviour {
      */
     @Override
     public void action() {
-        final Object controller = abstractAgent.getO2AObject();
-        if (controller != null) {
-            logger.info("[{}] Agent connected with the controller", myAgent.getName());
-            abstractAgent.setGuiController((GUIController) controller);
-            initialBehaviours.forEach(abstractAgent::addBehaviour);
+        final Object object = abstractAgent.getO2AObject();
+        if (object != null) {
+            if(object instanceof GUIController) {
+                abstractAgent.setGuiController((GUIController) object);
+            } else if (object instanceof AgentNode) {
+                abstractAgent.setAgentNode((AgentNode) object);
+            }
+            if(objectCounter == 1) {
+                logger.info("[{}] Agent connected with the controller", myAgent.getName());
+                initialBehaviours.forEach(abstractAgent::addBehaviour);
+            }
+            objectCounter++;
         } else {
             block();
         }

@@ -51,8 +51,8 @@ public class ReceiveStartedJobs extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             logger.info("[{}] Sending information that the job execution is started", myAgent.getName());
             final String jobId = message.getContent();
-            announceStartedJob(myCloudNetworkAgent, jobId);
             myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobId), JobStatusEnum.IN_PROGRESS);
+            announceStartedJob(myCloudNetworkAgent);
             myAgent.send(prepareConfirmationReply(jobId, replyMessage));
         } else {
             block();

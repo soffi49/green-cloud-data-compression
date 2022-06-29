@@ -1,6 +1,6 @@
 package com.gui.domain.guielements;
 
-import static com.gui.utils.StyleUtils.*;
+import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.domain.CommonConstants.INFORMATION_PANEL;
 import static com.gui.utils.domain.StyleConstants.*;
 
@@ -20,62 +20,27 @@ import java.util.stream.IntStream;
 
 /**
  * Class represents the information panel of the GUI
+ * <p>
+ * {@value TITLE_LABEL}  title of the information panel
  */
 public class InformationPanel {
 
     private static final String TITLE_LABEL = "LATEST NEWS";
+    private static final CC ROW_ATTRIBUTES = new CC().spanX().growX();
 
     private final JPanel informationBoxPanel;
-    private JScrollPane informationBoxScroll;
     private final JPanel mainPanel;
     private final List<Pair<String, String>> informationList;
+    private final JScrollPane informationBoxScroll;
 
     /**
      * Default constructor
      */
     public InformationPanel() {
         this.informationList = new ArrayList<>();
-        this.informationBoxPanel = new JPanel();
-        this.informationBoxScroll = new JScrollPane(informationBoxPanel);
-        this.mainPanel = createInformationPanel();
-    }
-
-    /**
-     * Class constructor
-     *
-     * @param informationList list of information to be displayed in panel
-     */
-    public InformationPanel(List<Pair<String, String>> informationList) {
-        this.informationList = informationList;
-        this.informationBoxPanel = new JPanel();
-        this.informationBoxScroll = new JScrollPane(informationBoxPanel);
-        this.mainPanel = createInformationPanel();
-    }
-
-    /**
-     * Function creates the information panel
-     *
-     * @return JPanel being the information panel
-     */
-    public JPanel createInformationPanel() {
-        final MigLayout panelLayout = new MigLayout(new LC().fillX());
-        final JPanel informationMainPanel = new JPanel();
-        informationMainPanel.setName(INFORMATION_PANEL);
-        informationMainPanel.setBackground(Color.WHITE);
-        informationMainPanel.setLayout(panelLayout);
-        informationMainPanel.setBorder(createCardShadow());
-
-        createTitleSection(informationMainPanel);
-        createBodySection();
-
-        informationBoxScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        informationBoxScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        informationBoxScroll.getVerticalScrollBar().setValue(informationBoxScroll.getVerticalScrollBar().getMaximum());
-
-        informationMainPanel.add(informationBoxScroll, new CC().height("100%").span().grow().wrap());
-        informationMainPanel.add(createSeparator(DARK_BLUE_COLOR), new CC().spanX().growX().wrap());
-
-        return informationMainPanel;
+        this.informationBoxPanel = initializeInformationBoxPanel();
+        this.informationBoxScroll = initializeInformationBoxScroll();
+        this.mainPanel = initializeMainPanel();
     }
 
     /**
@@ -83,8 +48,8 @@ public class InformationPanel {
      *
      * @param information information that is to be added
      */
-    public void addNewInformation(final String information) {
-        if (informationList.size() >= 20) {
+    public synchronized void addNewInformation(final String information) {
+        if (informationList.size() >= 50) {
             informationList.remove(0);
         }
         informationList.add(new Pair<>(information, getCurrentTime()));
@@ -98,41 +63,56 @@ public class InformationPanel {
         return mainPanel;
     }
 
-    private void createTitleSection(final JPanel panel) {
-        final JLabel titleLabel = new JLabel(TITLE_LABEL);
-        titleLabel.setFont(FIRST_HEADER_FONT);
-        titleLabel.setForeground(DARK_BLUE_COLOR);
 
-        panel.add(titleLabel, new CC().height("20px").spanX());
-        panel.add(createSeparator(DARK_BLUE_COLOR), new CC().spanX().growX().wrap());
+    private JPanel initializeInformationBoxPanel() {
+        final JPanel infoBoxPanel = new JPanel();
+        final MigLayout informationBoxLayout = new MigLayout(new LC().bottomToTop().fillX().flowY());
+        infoBoxPanel.setBackground(Color.WHITE);
+        infoBoxPanel.setLayout(informationBoxLayout);
+        return infoBoxPanel;
+    }
+
+    private JScrollPane initializeInformationBoxScroll() {
+        final JScrollPane infoBoxScroll = new JScrollPane(informationBoxPanel);
+        infoBoxScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        infoBoxScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        infoBoxScroll.getVerticalScrollBar().setValue(infoBoxScroll.getVerticalScrollBar().getMaximum());
+        return infoBoxScroll;
+    }
+
+    private JPanel initializeMainPanel() {
+        final MigLayout panelLayout = new MigLayout(new LC().fillX());
+        final JPanel informationMainPanel = createDefaultSubPanel(INFORMATION_PANEL, panelLayout);
+        informationMainPanel.add(createJLabel(FIRST_HEADER_FONT, DARK_BLUE_COLOR, TITLE_LABEL), new CC().height("20px").spanX());
+        informationMainPanel.add(createSeparator(DARK_BLUE_COLOR), new CC().spanX().growX().wrap());
+
+        createBodySection();
+
+        informationMainPanel.add(informationBoxScroll, new CC().height("100%").span().grow().wrap());
+        informationMainPanel.add(createSeparator(DARK_BLUE_COLOR), new CC().spanX().growX().wrap());
+        return informationMainPanel;
     }
 
     private void createBodySection() {
         informationBoxPanel.removeAll();
-        final MigLayout layout = new MigLayout(new LC().bottomToTop().fillX().flowY());
-        informationBoxPanel.setBackground(Color.WHITE);
-        informationBoxPanel.setLayout(layout);
-
         final int lastIdx = informationList.size();
 
         if (!informationList.isEmpty()) {
             IntStream.range(0, lastIdx).forEach(idx -> {
                 final Pair<String, String> information = informationList.get(lastIdx - 1 - idx);
-                informationBoxPanel.add(createInformationLabel(Optional.ofNullable(information)), new CC().spanX().growX());
+                informationBoxPanel.add(createInformationLabel(Optional.ofNullable(information)), ROW_ATTRIBUTES);
             });
         } else {
-            informationBoxPanel.add(createInformationLabel(Optional.empty()), new CC().spanX().growX());
+            informationBoxPanel.add(createInformationLabel(Optional.empty()), ROW_ATTRIBUTES);
         }
         informationBoxScroll.getVerticalScrollBar().setValue(informationBoxScroll.getVerticalScrollBar().getMaximum());
     }
 
     private JLabel createInformationLabel(final Optional<Pair<String, String>> information) {
-        final JLabel infoLabel = information
-                .map(pair -> new JLabel(String.format("[%s]: %s", pair.getSecond(), pair.getFirst())))
-                .orElseGet(() -> new JLabel(String.format("[%s]: %s", getCurrentTime(), "There are no latest news")));
-        infoLabel.setFont(DESCRIPTION_FONT);
-        infoLabel.setForeground(BLUE_COLOR);
-        return infoLabel;
+        final String labelText =
+                information.map(info -> String.format("[%s]: %s", info.getSecond(), info.getFirst()))
+                        .orElse(String.format("[%s]: %s", getCurrentTime(), "There are no latest news"));
+        return createJLabel(DESCRIPTION_FONT, BLUE_COLOR, labelText);
     }
 
     private String getCurrentTime() {

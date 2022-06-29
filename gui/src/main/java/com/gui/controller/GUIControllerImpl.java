@@ -1,15 +1,17 @@
 package com.gui.controller;
 
-import static com.gui.utils.StyleUtils.createCardShadow;
-import static com.gui.utils.StyleUtils.createSeparator;
+import static com.gui.utils.GUIUtils.createCardShadow;
+import static com.gui.utils.GUIUtils.createSeparator;
 import static com.gui.utils.domain.StyleConstants.*;
 
+import com.gui.domain.guielements.DetailsPanel;
 import com.gui.domain.guielements.InformationPanel;
 import com.gui.domain.guielements.SummaryPanel;
 import com.gui.domain.nodes.AgentNode;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.swing_viewer.SwingViewer;
@@ -18,6 +20,7 @@ import org.graphstream.ui.view.Viewer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,19 +33,22 @@ public class GUIControllerImpl implements GUIController {
 
     private static final String STYLE_FILE = "url(graphStyle.css)";
     private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
-    private static final double GUI_FRAME_SIZE = 0.75;
-    private final List<AgentNode> graphNodes;
+    private static final double GUI_FRAME_SIZE = 0.9;
+
     private final InformationPanel informationPanel;
     private final SummaryPanel summaryPanel;
-    private Graph graph;
+    private final DetailsPanel detailsPanel;
+    private final List<AgentNode> graphNodes;
     private JPanel mainPanel;
     private JFrame mainFrame;
+    private Graph graph;
 
     public GUIControllerImpl() {
         System.setProperty("org.graphstream.ui", "swing");
         this.graphNodes = new ArrayList<>();
         this.summaryPanel = new SummaryPanel();
         this.informationPanel = new InformationPanel();
+        this.detailsPanel = new DetailsPanel(graphNodes);
         createGraph();
         createMainPanel();
         createMainFrame();
@@ -54,43 +60,58 @@ public class GUIControllerImpl implements GUIController {
     }
 
     @Override
-    public void addAgentNodeToGraph(final AgentNode agent) {
+    public synchronized void addAgentNodeToGraph(final AgentNode agent) {
         graphNodes.add(agent);
         agent.addToGraph(graph);
-        agent.createEdges(graph);
+        detailsPanel.revalidateComboBoxModel();
     }
 
     @Override
-    public void removeAgentNodeToGraph(final String agentName) {
-        graphNodes.removeIf(agentNode -> agentName.equals(agentNode.getName()));
-        graph.removeNode(agentName);
+    public synchronized void createEdges() {
+        graphNodes.forEach(node -> node.createEdges(graph));
     }
 
+    @Override
+    public synchronized void removeAgentNodeFromGraph(final AgentNode agentNode) {
+        graphNodes.remove(agentNode);
+        graph.removeNode(agentNode.getName());
+        detailsPanel.revalidateComboBoxModel();
+    }
 
     @Override
-    public void updateClientsCountByValue(int value) {
+    public synchronized void updateClientsCountByValue(int value) {
         summaryPanel.updateClientsCountByValue(value);
         refreshMainFrame();
     }
 
-
     @Override
-    public void updateActiveJobsCountByValue(int value) {
+    public synchronized void updateActiveJobsCountByValue(int value) {
         summaryPanel.updateActiveJobsCountByValue(value);
         refreshMainFrame();
     }
 
+    @Override
+    public synchronized void updateAllJobsCountByValue(int value) {
+        summaryPanel.updateAllJobsCountByValue(value);
+        refreshMainFrame();
+    }
 
     @Override
-    public void addNewInformation(String information) {
+    public synchronized void addNewInformation(String information) {
         informationPanel.addNewInformation(information);
         refreshMainFrame();
     }
 
     @Override
-    public void updateAllJobsCountByValue(int value) {
-        summaryPanel.updateAllJobsCountByValue(value);
-        refreshMainFrame();
+    public synchronized void displayMessageArrow(final AgentNode senderAgent, final List<String> receiversNames) {
+        final List<Edge> edgesToDisplay = senderAgent.getEdges().stream()
+                .filter(edge -> edge.isDirected() && receiversNames.contains(edge.getTargetNode().getId()))
+                .toList();
+        edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_MESSAGE_STYLE));
+
+        final ActionListener hideMessageArrowAction = e -> edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
+        final Timer hideMessageArrowTimer = new Timer(900, hideMessageArrowAction);
+        hideMessageArrowTimer.start();
     }
 
     private void createMainFrame() {
@@ -104,15 +125,16 @@ public class GUIControllerImpl implements GUIController {
 
     private void createMainPanel() {
         mainPanel = new JPanel();
-        final MigLayout panelLayout = new MigLayout(new LC().wrapAfter(3));
+        final MigLayout panelLayout = new MigLayout(new LC().wrapAfter(4));
         mainPanel.setLayout(panelLayout);
         mainPanel.setBackground(Color.WHITE);
 
         mainPanel.add(createTitleLabel(), new CC().height("25px").gapAfter("5px").growX().spanX());
         mainPanel.add(createSeparator(BLUE_COLOR), new CC().growX().spanX());
-        mainPanel.add(summaryPanel.getMainPanel(), new CC().height("30%").width("30%"));
-        mainPanel.add(createGraphView(), new CC().height("100%").width("70%").grow().span(2, 2));
-        mainPanel.add(informationPanel.getMainPanel(), new CC().height("70%").width("30%"));
+        mainPanel.add(summaryPanel.getMainPanel(), new CC().height("30%").width("20%"));
+        mainPanel.add(createGraphView(), new CC().height("100%").width("60%").grow().span(2, 2));
+        mainPanel.add(detailsPanel.getDetailPanel(), new CC().height("80%").width("20%").alignY("center").spanY(2).wrap());
+        mainPanel.add(informationPanel.getMainPanel(), new CC().height("70%").width("20%"));
     }
 
     private JLabel createTitleLabel() {
@@ -127,6 +149,7 @@ public class GUIControllerImpl implements GUIController {
     private void createGraph() {
         graph = new MultiGraph("Cloud Network");
         graph.setAttribute("ui.stylesheet", STYLE_FILE);
+        graph.setAttribute("layout.quality", "2");
         graph.setAttribute("ui.antialias");
     }
 

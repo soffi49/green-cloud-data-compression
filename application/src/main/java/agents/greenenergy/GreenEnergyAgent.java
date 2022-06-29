@@ -37,6 +37,12 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this))));
     }
 
+    @Override
+    protected void takeDown() {
+        getGuiController().removeAgentNodeFromGraph(getAgentNode());
+        super.takeDown();
+    }
+
     private void initializeAgent(final Object[] args) {
         if (Objects.nonNull(args) && args.length == 6) {
 

@@ -2,6 +2,7 @@ package runner.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gui.controller.GUIControllerImpl;
+import com.gui.domain.nodes.AgentNode;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
@@ -13,7 +14,10 @@ import runner.factory.AgentControllerFactoryImpl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service used in running the scenarios
@@ -24,16 +28,16 @@ public class ScenarioService {
     private static final XmlMapper XML_MAPPER = new XmlMapper();
 
     private final AgentControllerFactory factory;
-    private final GUIControllerImpl GUIControllerImpl;
+    private final GUIControllerImpl guiController;
 
     /**
      * Service constructor
      *
      * @param containerController container controller in which agents' controllers are to be created
      */
-    public ScenarioService(ContainerController containerController, GUIControllerImpl GUIControllerImpl) {
+    public ScenarioService(ContainerController containerController, GUIControllerImpl guiController) {
         this.factory = new AgentControllerFactoryImpl(containerController);
-        this.GUIControllerImpl = GUIControllerImpl;
+        this.guiController = guiController;
     }
 
     /**
@@ -43,6 +47,7 @@ public class ScenarioService {
      */
     public void createAgentsFromScenarioFile(final String fileName) {
         final File scenarioFile = getFileFromResourceFileName(fileName);
+        final List<AgentController> agentsToRun = new ArrayList<>();
         try {
             final ScenarioArgs scenario = XML_MAPPER.readValue(scenarioFile, ScenarioArgs.class);
 
@@ -51,15 +56,23 @@ public class ScenarioService {
                 scenario.getAgentsArgs().forEach(agentArgs -> {
                     try {
                         final AgentController agentController = factory.createAgentController(agentArgs);
-                        GUIControllerImpl.addAgentNodeToGraph(factory.createAgentNode(agentArgs, scenario));
-                        agentController.putO2AObject(GUIControllerImpl, AgentController.ASYNC);
-                        agentController.start();
+                        final AgentNode agentNode = factory.createAgentNode(agentArgs, scenario);
+                        guiController.addAgentNodeToGraph(agentNode);
+                        agentController.putO2AObject(guiController, AgentController.ASYNC);
+                        agentController.putO2AObject(agentNode, AgentController.ASYNC);
+                        agentsToRun.add(agentController);
                     } catch (StaleProxyException e) {
                         e.printStackTrace();
                     }
                 });
+                guiController.createEdges();
+                // next line is added on purpose! It waits for the graph to fully initialize
+                //TimeUnit.SECONDS.sleep(7);
+                for (AgentController agentController : agentsToRun) {
+                    agentController.start();
+                }
             }
-        } catch (IOException e) {
+        } catch (IOException | StaleProxyException e) {
             e.printStackTrace();
         }
     }

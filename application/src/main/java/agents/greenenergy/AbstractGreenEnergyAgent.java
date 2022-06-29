@@ -1,12 +1,10 @@
 package agents.greenenergy;
 
 import agents.AbstractAgent;
-import domain.job.Job;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
-import jade.core.Agent;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -33,7 +31,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
      * @param maximumCapacity   maximum available power capacity of the green source
      * @param location          geographical location (longitude and latitude) of the green source
      * @param pricePerPowerUnit price for the 1 power unit (1 kWh)
-     * @param powerJobs      list of power orders together with their statuses
+     * @param powerJobs         list of power orders together with their statuses
      * @param monitoringAgent   address of the corresponding monitoring agent
      * @param ownerServer       address of the server which owns the given green source
      */
@@ -51,16 +49,50 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
         this.ownerServer = ownerServer;
     }
 
+    /**
+     * Method calculates the power in use at the given moment for the green source
+     *
+     * @return current power in use
+     */
+    public int getCurrentPowerInUse() {
+        return powerJobs.entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    /**
+     * Method retrieves if the given green source is currently active or idle
+     *
+     * @return green source state
+     */
+    public boolean getIsActiveState() {
+        return !powerJobs.entrySet().stream().filter(entry -> entry.getValue().equals(JobStatusEnum.IN_PROGRESS)).toList().isEmpty();
+    }
+
+    /**
+     * Method computes the available power for given time frame
+     *
+     * @param startDate starting date
+     * @param endDate   end date
+     * @return available power
+     */
     public int getAvailablePower(final OffsetDateTime startDate,
-                                    final OffsetDateTime endDate) {
+                                 final OffsetDateTime endDate) {
         final int powerInUser =
-                powerJobs.keySet().stream()
-                        .filter(job -> job.getStartTime().isBefore(endDate) &&
-                                job.getEndTime().isAfter(startDate))
-                        .mapToInt(PowerJob::getPower).sum();
+                powerJobs.entrySet().stream()
+                        .filter(entry -> entry.getKey().getStartTime().isBefore(endDate) &&
+                                entry.getKey().getEndTime().isAfter(startDate) &&
+                                !entry.getValue().equals(JobStatusEnum.PROCESSING))
+                        .mapToInt(entry -> entry.getKey().getPower()).sum();
         return maximumCapacity - powerInUser;
     }
 
+    /**
+     * Method retrieves the job by the job id from job map
+     *
+     * @param jobId job identifier
+     * @return job
+     */
     public PowerJob getJobById(final String jobId) {
         return powerJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
     }
