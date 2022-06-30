@@ -12,6 +12,7 @@ import domain.location.Location;
 import jade.core.AID;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
@@ -28,10 +29,10 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
      * energyType        allows to differentiate between SOLAR and WIND energy sources
      */
 
-    protected GreenPower greenPower;
-    protected Location location;
+    protected transient GreenPower greenPower;
+    protected transient Location location;
     protected double pricePerPowerUnit;
-    protected Map<PowerJob, JobStatusEnum> powerJobs;
+    protected transient ConcurrentMap<PowerJob, JobStatusEnum> powerJobs;
     protected AID monitoringAgent;
     protected AID ownerServer;
     protected EnergyTypeEnum energyType;
@@ -98,7 +99,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
         return powerJobs;
     }
 
-    public void setPowerJobs(Map<PowerJob, JobStatusEnum> powerJobs) {
+    public void setPowerJobs(ConcurrentMap<PowerJob, JobStatusEnum> powerJobs) {
         this.powerJobs = powerJobs;
     }
 
