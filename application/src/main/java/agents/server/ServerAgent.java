@@ -26,6 +26,7 @@ public class ServerAgent extends AbstractServerAgent {
      */
     @Override
     protected void setup() {
+        super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
