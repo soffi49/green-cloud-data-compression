@@ -1,5 +1,6 @@
 package agents.greenenergy.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
@@ -54,6 +55,7 @@ public class RequestWeatherData extends OneShotBehaviour {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+        displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getMonitoringAgent());
         myAgent.send(request);
     }
 }

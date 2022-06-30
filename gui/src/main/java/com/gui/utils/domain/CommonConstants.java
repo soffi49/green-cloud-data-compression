@@ -7,5 +7,5 @@ public class CommonConstants {
 
     public static final String SUMMARY_PANEL  = "SUMMARY_PANEL";
     public static final String INFORMATION_PANEL  = "INFORMATION_PANEL";
-    public static final String MAIN_PANEL  = "MAIN_PANEL";
+    public static final String DETAIL_PANEL  = "DETAIL_PANEL";
 }

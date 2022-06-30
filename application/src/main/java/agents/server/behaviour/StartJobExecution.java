@@ -1,10 +1,13 @@
 package agents.server.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
+import static common.GUIUtils.updateServerState;
 import static messages.domain.JobStatusMessageFactory.prepareJobStartedMessage;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -58,9 +61,10 @@ public class StartJobExecution extends WakerBehaviour {
     protected void onWake() {
         logger.info("[{}] Start executing the job for {}", myAgent.getName(), jobToExecute.getClientIdentifier());
         myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
-        final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(),
-                                                                      List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()),
-                                                                              myServerAgent.getOwnerCloudNetworkAgent()));
+        updateServerState(myServerAgent, false);
+        final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()), myServerAgent.getOwnerCloudNetworkAgent());
+        final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(), receivers);
+        displayMessageArrow(myServerAgent, receivers);
         myAgent.send(startedJobMessage);
         myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, jobToExecute));
     }

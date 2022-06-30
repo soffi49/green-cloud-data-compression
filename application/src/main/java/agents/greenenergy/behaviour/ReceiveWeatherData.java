@@ -1,5 +1,6 @@
 package agents.greenenergy.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.MessageTemplate.MatchConversationId;
 import static jade.lang.acl.MessageTemplate.MatchSender;
@@ -80,6 +81,7 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid,
                 job.getJobId(), job.getPower(), power);
             myGreenEnergyAgent.getPowerJobs().remove(job);
+            displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
 
@@ -90,10 +92,12 @@ public class ReceiveWeatherData extends CyclicBehaviour {
                     .availablePowerInTime(power)
                     .jobId(job.getJobId())
                     .build();
+            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
         } else {
             logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, job.getJobId());
             myGreenEnergyAgent.getPowerJobs().remove(job);
+            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
     }
@@ -101,6 +105,7 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     private void handleRefuse(final ACLMessage cfp) {
         logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
         myGreenEnergyAgent.getPowerJobs().remove(job);
+        displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
     }
 

@@ -1,27 +1,24 @@
 package agents.greenenergy;
 
-import static domain.job.JobStatusEnum.ACCEPTED;
-import static domain.job.JobStatusEnum.IN_PROGRESS;
-
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
 import domain.MonitoringData;
+import agents.AbstractAgent;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
-import jade.core.Agent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
  */
-public abstract class AbstractGreenEnergyAgent extends Agent {
+public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractGreenEnergyAgent.class);
 
@@ -43,18 +40,52 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
     protected AID ownerServer;
     protected EnergyTypeEnum energyType;
 
+    /**
+     * Method calculates the power in use at the given moment for the green source
+     *
+     * @return current power in use
+     */
+    public int getCurrentPowerInUse() {
+        return powerJobs.entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    /**
+     * Method retrieves if the given green source is currently active or idle
+     *
+     * @return green source state
+     */
+    public boolean getIsActiveState() {
+        return !powerJobs.entrySet().stream().filter(entry -> entry.getValue().equals(JobStatusEnum.IN_PROGRESS)).toList().isEmpty();
+    }
+
+    /**
+     * Method computes the available power for given time frame
+     *
+     * @param startTime starting date
+     * @param endTime   end date
+     * @param weather   current weather
+     * @return available power
+     */
     public double getAvailablePower(final OffsetDateTime startTime, final OffsetDateTime endTime,
                                     final MonitoringData weather) {
         final int powerInUse = powerJobs.keySet().stream()
-            .filter(job -> job.getStartTime().isBefore(endTime) && job.getEndTime().isAfter(startTime))
-            .filter(job -> powerJobs.get(job).equals(ACCEPTED) || powerJobs.get(job).equals(IN_PROGRESS))
-            .mapToInt(PowerJob::getPower).sum();
+                .filter(job -> job.getStartTime().isBefore(endTime) && job.getEndTime().isAfter(startTime))
+                .filter(job -> powerJobs.get(job).equals(ACCEPTED) || powerJobs.get(job).equals(IN_PROGRESS))
+                .mapToInt(PowerJob::getPower).sum();
         double availablePower = getCapacity(weather, startTime.toZonedDateTime()) - powerInUse;
         logger.info("[{}] Calculated available {} power {} at {} for {}", ((Agent) this).getName(), energyType,
-            String.format("%.2f", availablePower), startTime, weather);
+                    String.format("%.2f", availablePower), startTime, weather);
         return availablePower;
     }
 
+    /**
+     * Method retrieves the job by the job id from job map
+     *
+     * @param jobId job identifier
+     * @return job
+     */
     public PowerJob getJobById(final String jobId) {
         return powerJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
     }

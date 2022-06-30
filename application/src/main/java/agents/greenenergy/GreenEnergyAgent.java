@@ -7,12 +7,14 @@ import static yellowpages.YellowPagesService.register;
 import agents.greenenergy.behaviour.ReceivePowerRequest;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
+import behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,11 +31,16 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
      */
     @Override
     protected void setup() {
-        super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(new ReceivePowerRequest(this));
+        addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this))));
+    }
+
+    @Override
+    protected void takeDown() {
+        getGuiController().removeAgentNodeFromGraph(getAgentNode());
+        super.takeDown();
     }
 
     private void initializeAgent(final Object[] args) {
