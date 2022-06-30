@@ -48,7 +48,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
             response.setPerformative(INFORM);
             try {
                 var requestData = getMapper().readValue(message.getContent(), GreenSourceRequestData.class);
-                var data = monitoringAgent.getWeather(requestData);
+                var data = monitoringAgent.getForecast(requestData);
                 response.setContent(getMapper().writeValueAsString(data));
             } catch (IOException e) {
                 e.printStackTrace();
