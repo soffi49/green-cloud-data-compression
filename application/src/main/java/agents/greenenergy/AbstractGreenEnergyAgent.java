@@ -1,5 +1,8 @@
 package agents.greenenergy;
 
+import static domain.job.JobStatusEnum.ACCEPTED;
+import static domain.job.JobStatusEnum.IN_PROGRESS;
+
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
 import domain.MonitoringData;
@@ -13,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,6 +45,10 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
     protected AID ownerServer;
     protected EnergyTypeEnum energyType;
 
+    AbstractGreenEnergyAgent() {
+        super.setup();
+    }
+
     /**
      * Method calculates the power in use at the given moment for the green source
      *
@@ -47,7 +56,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
      */
     public int getCurrentPowerInUse() {
         return powerJobs.entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
+                .filter(job -> job.getValue().equals(IN_PROGRESS))
                 .mapToInt(job -> job.getKey().getPower()).sum();
     }
 
@@ -57,7 +66,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
      * @return green source state
      */
     public boolean getIsActiveState() {
-        return !powerJobs.entrySet().stream().filter(entry -> entry.getValue().equals(JobStatusEnum.IN_PROGRESS)).toList().isEmpty();
+        return !powerJobs.entrySet().stream().filter(entry -> entry.getValue().equals(IN_PROGRESS)).toList().isEmpty();
     }
 
     /**
@@ -75,7 +84,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
                 .filter(job -> powerJobs.get(job).equals(ACCEPTED) || powerJobs.get(job).equals(IN_PROGRESS))
                 .mapToInt(PowerJob::getPower).sum();
         double availablePower = getCapacity(weather, startTime.toZonedDateTime()) - powerInUse;
-        logger.info("[{}] Calculated available {} power {} at {} for {}", ((Agent) this).getName(), energyType,
+        logger.info("[{}] Calculated available {} power {} at {} for {}", getName(), energyType,
                     String.format("%.2f", availablePower), startTime, weather);
         return availablePower;
     }

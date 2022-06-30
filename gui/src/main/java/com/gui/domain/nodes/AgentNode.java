@@ -4,6 +4,8 @@ import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
 
 import com.gui.domain.types.LabelEnum;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -60,7 +62,6 @@ public class AgentNode {
      */
     public void createInformationPanel() {
         final JPanel panel = createLabelListPanel(labelsMap);
-        panel.setBorder(createCardShadow());
         this.informationPanel = panel;
     }
 

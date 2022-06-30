@@ -1,9 +1,8 @@
 package com.gui.domain.guielements;
 
-import static com.gui.utils.GUIUtils.createDefaultSubPanel;
-import static com.gui.utils.GUIUtils.createJLabel;
-import static com.gui.utils.domain.CommonConstants.DETAIL_PANEL;
-import static com.gui.utils.domain.StyleConstants.*;
+import static com.gui.utils.GUIUtils.*;
+import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
+import static com.gui.utils.domain.StyleConstants.VERY_LIGHT_GRAY_COLOR;
 
 import com.gui.domain.nodes.AgentNode;
 import com.gui.domain.nodes.MonitoringAgentNode;
@@ -12,7 +11,6 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -22,11 +20,12 @@ import java.util.List;
  */
 public class DetailsPanel {
 
-    private static final String TITLE_LABEL = "SELECT AGENT TO VIEW DETAILS";
+    private static final String TITLE_LABEL = "AGENT STATISTICS";
     private static final JPanel DEFAULT_INFO_PANEL = createDefaultMessagePanel();
+    private static final CC DETAIL_PANEL_STYLE = new CC().height("100%").growX().spanX().gapY("10px", "10px");
 
     private static final int INFORMATION_PANEL_IDX = 2;
-    private final List<AgentNode> allNetworkAgentNodes;
+    private List<AgentNode> allNetworkAgentNodes;
     private final JPanel detailPanel;
     private final JComboBox comboBox;
     private JPanel agentDetailsPanel;
@@ -44,8 +43,8 @@ public class DetailsPanel {
     }
 
     private static JPanel createDefaultMessagePanel() {
-        final JPanel jPanel = createDefaultSubPanel("NO_SELECTED_AGENT_PANEL", new MigLayout(new LC().fill()));
-        jPanel.add(createJLabel(TITLE_FONT, BLUE_COLOR, "NO AGENT SELECTED"), new CC().spanX().spanY());
+        final JPanel jPanel = new JPanel();
+        jPanel.setBackground(VERY_LIGHT_GRAY_COLOR);
         return jPanel;
     }
 
@@ -56,17 +55,18 @@ public class DetailsPanel {
      */
     public JPanel createDetailsPanel() {
         final MigLayout panelLayout = new MigLayout(new LC().fillX());
-        final JPanel detailsPanel = createDefaultSubPanel(DETAIL_PANEL, panelLayout);
-        detailsPanel.add(createJLabel(FIRST_HEADER_FONT, DARK_BLUE_COLOR, TITLE_LABEL), new CC().spanX().gapY("0", "7px"));
+        final JPanel detailsPanel = createBorderPanel(panelLayout);
+        addPanelHeader(TITLE_LABEL, detailsPanel);
         detailsPanel.add(comboBox, new CC().height("25px").growX().spanX());
-        detailsPanel.add(agentDetailsPanel, new CC().height("25px").growX().spanX());
+        detailsPanel.add(agentDetailsPanel, DETAIL_PANEL_STYLE);
         return detailsPanel;
     }
 
     /**
      * Method updates the drop-down with new agent nodes
      */
-    public void revalidateComboBoxModel() {
+    public void revalidateComboBoxModel(final List<AgentNode> agentNodes) {
+        allNetworkAgentNodes = agentNodes;
         comboBox.setModel(new DefaultComboBoxModel(getDropDownNetworkAgentsNames()));
     }
 
@@ -78,11 +78,8 @@ public class DetailsPanel {
     }
 
     private JComboBox initializeComboBox() {
-        final JComboBox jComboBox = new JComboBox(new DefaultComboBoxModel(getDropDownNetworkAgentsNames()));
+        final JComboBox jComboBox = createDefaultComboBox(getDropDownNetworkAgentsNames());
         jComboBox.addActionListener(e -> changeSelectedAgent((String) jComboBox.getSelectedItem()));
-        jComboBox.setBackground(Color.WHITE);
-        jComboBox.setForeground(DARK_BLUE_COLOR);
-        jComboBox.setFont(SECOND_HEADER_FONT);
         return jComboBox;
     }
 
@@ -106,7 +103,7 @@ public class DetailsPanel {
 
     private void refreshDetailsPanel() {
         detailPanel.remove(INFORMATION_PANEL_IDX);
-        detailPanel.add(agentDetailsPanel, new CC().height("25px").growX().spanX());
+        detailPanel.add(agentDetailsPanel, DETAIL_PANEL_STYLE);
         detailPanel.revalidate();
         detailPanel.repaint();
     }

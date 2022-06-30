@@ -2,8 +2,6 @@ package com.gui.domain.guielements;
 
 import static com.gui.domain.types.SummaryPanelLabelEnum.*;
 import static com.gui.utils.GUIUtils.*;
-import static com.gui.utils.domain.CommonConstants.SUMMARY_PANEL;
-import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.types.LabelEnum;
 import net.miginfocom.layout.CC;
@@ -49,7 +47,7 @@ public class SummaryPanel {
      */
     public synchronized void updateClientsCountByValue(final int value) {
         clientsCount += value;
-        labelMap.get(CLIENT_COUNT_LABEL).setText(String.valueOf(clientsCount));
+        labelMap.get(CLIENT_COUNT_LABEL).setText(formatToHTML(formatToHTML(String.valueOf(clientsCount))));
     }
 
     /**
@@ -59,7 +57,7 @@ public class SummaryPanel {
      */
     public synchronized void updateActiveJobsCountByValue(final int value) {
         activeJobsCount += value;
-        labelMap.get(ACTIVE_JOBS_LABEL).setText(String.valueOf(activeJobsCount));
+        labelMap.get(ACTIVE_JOBS_LABEL).setText(formatToHTML(String.valueOf(activeJobsCount)));
     }
 
     /**
@@ -69,7 +67,7 @@ public class SummaryPanel {
      */
     public synchronized void updateAllJobsCountByValue(final int value) {
         allJobsCount += value;
-        labelMap.get(ALL_JOBS_COUNT).setText(String.valueOf(allJobsCount));
+        labelMap.get(ALL_JOBS_COUNT).setText(formatToHTML(String.valueOf(allJobsCount)));
     }
 
     /**
@@ -81,17 +79,17 @@ public class SummaryPanel {
 
     public JPanel initializeSummaryPanel() {
         final MigLayout panelLayout = new MigLayout(new LC().fillX().gridGapX("15px"));
-        final JPanel summaryPanel = createDefaultSubPanel(SUMMARY_PANEL, panelLayout);
-        summaryPanel.add(createJLabel(FIRST_HEADER_FONT, DARK_BLUE_COLOR, TITLE_LABEL), new CC().spanX().gapY("0", "7px"));
+        final JPanel summaryPanel = createBorderPanel(panelLayout);
+        addPanelHeader(TITLE_LABEL, summaryPanel);
         summaryPanel.add(createLabelListPanel(labelMap), new CC().grow());
         return summaryPanel;
     }
 
     private Map<LabelEnum, JLabel> initializeLabels() {
         final Map<LabelEnum, JLabel> jLabelMap = new LinkedHashMap<>();
-        jLabelMap.put(CLIENT_COUNT_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(clientsCount)));
-        jLabelMap.put(ACTIVE_JOBS_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(activeJobsCount)));
-        jLabelMap.put(ALL_JOBS_COUNT, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(allJobsCount)));
+        jLabelMap.put(CLIENT_COUNT_LABEL, createListLabel(String.valueOf(clientsCount)));
+        jLabelMap.put(ACTIVE_JOBS_LABEL, createListLabel(String.valueOf(activeJobsCount)));
+        jLabelMap.put(ALL_JOBS_COUNT, createListLabel(String.valueOf(allJobsCount)));
         return jLabelMap;
     }
 }

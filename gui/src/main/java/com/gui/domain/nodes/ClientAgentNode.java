@@ -1,7 +1,7 @@
 package com.gui.domain.nodes;
 
 import static com.gui.domain.types.JobStatusEnum.CREATED;
-import static com.gui.utils.GUIUtils.createJLabel;
+import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
@@ -45,7 +45,7 @@ public class ClientAgentNode extends AgentNode {
      */
     public synchronized void updateJobStatus(final JobStatusEnum jobStatusEnum) {
         this.jobStatusEnum = jobStatusEnum;
-        labelsMap.get(AgentNodeLabelEnum.JOB_STATUS).setText(jobStatusEnum.getStatus());
+        labelsMap.get(AgentNodeLabelEnum.JOB_STATUS).setText(formatToHTML(jobStatusEnum.getStatus()));
     }
 
     @Override
@@ -58,9 +58,9 @@ public class ClientAgentNode extends AgentNode {
     @Override
     protected void initializeLabelsMap() {
         super.initializeLabelsMap();
-        labelsMap.put(AgentNodeLabelEnum.JOB_ID_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, jobId));
-        labelsMap.put(AgentNodeLabelEnum.JOB_START_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, startDate));
-        labelsMap.put(AgentNodeLabelEnum.JOB_END_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, endDate));
-        labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, jobStatusEnum.getStatus()));
+        labelsMap.put(AgentNodeLabelEnum.JOB_ID_LABEL, createListLabel(jobId));
+        labelsMap.put(AgentNodeLabelEnum.JOB_START_LABEL, createListLabel(startDate));
+        labelsMap.put(AgentNodeLabelEnum.JOB_END_LABEL, createListLabel(endDate));
+        labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createListLabel(jobStatusEnum.getStatus()));
     }
 }

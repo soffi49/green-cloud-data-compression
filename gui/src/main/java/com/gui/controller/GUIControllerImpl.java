@@ -1,7 +1,6 @@
 package com.gui.controller;
 
-import static com.gui.utils.GUIUtils.createCardShadow;
-import static com.gui.utils.GUIUtils.createSeparator;
+import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.guielements.DetailsPanel;
@@ -25,21 +24,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * {@value STYLE_FILE}      url for the file containing graph styling
- * {@value GUI_FRAME_SIZE}  multiplier describing the percentage of window's size which the GUI will take
- */
 public class GUIControllerImpl implements GUIController {
 
-    private static final String STYLE_FILE = "url(graphStyle.css)";
-    private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
-    private static final double GUI_FRAME_SIZE = 0.9;
+    private static final Dimension MAIN_SIZE = new Dimension((int) (SCREEN_SIZE.width * GUI_FRAME_SIZE_WIDTH) + SCROLL_BAR_WIDTH,
+                                                             (int) (SCREEN_SIZE.height * GUI_FRAME_SIZE_HEIGHT) + SCROLL_BAR_WIDTH);
 
     private final InformationPanel informationPanel;
     private final SummaryPanel summaryPanel;
     private final DetailsPanel detailsPanel;
     private final List<AgentNode> graphNodes;
-    private JPanel mainPanel;
+    private JScrollPane mainPanelScroll;
     private JFrame mainFrame;
     private Graph graph;
 
@@ -63,7 +57,7 @@ public class GUIControllerImpl implements GUIController {
     public synchronized void addAgentNodeToGraph(final AgentNode agent) {
         graphNodes.add(agent);
         agent.addToGraph(graph);
-        detailsPanel.revalidateComboBoxModel();
+        detailsPanel.revalidateComboBoxModel(graphNodes);
     }
 
     @Override
@@ -75,7 +69,7 @@ public class GUIControllerImpl implements GUIController {
     public synchronized void removeAgentNodeFromGraph(final AgentNode agentNode) {
         graphNodes.remove(agentNode);
         graph.removeNode(agentNode.getName());
-        detailsPanel.revalidateComboBoxModel();
+        detailsPanel.revalidateComboBoxModel(graphNodes);
     }
 
     @Override
@@ -116,34 +110,40 @@ public class GUIControllerImpl implements GUIController {
 
     private void createMainFrame() {
         mainFrame = new JFrame("CLOUD NETWORK");
-        mainFrame.setPreferredSize(new Dimension((int) (SCREEN_SIZE.width * GUI_FRAME_SIZE), (int) (SCREEN_SIZE.height * GUI_FRAME_SIZE)));
-        mainFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        mainFrame.add(mainPanel);
+        mainFrame.getContentPane().setPreferredSize(MAIN_SIZE);
+        mainFrame.setResizable(false);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.getContentPane().add(mainPanelScroll);
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
     }
 
     private void createMainPanel() {
-        mainPanel = new JPanel();
-        final MigLayout panelLayout = new MigLayout(new LC().wrapAfter(4));
+        final JPanel mainPanel = new JPanel();
+        mainPanel.setPreferredSize(MAIN_SIZE);
+        final MigLayout panelLayout = new MigLayout(new LC().wrapAfter(3).gridGap("10px", "10px").insets("10px", "10px", "10px", "10px"));
         mainPanel.setLayout(panelLayout);
         mainPanel.setBackground(Color.WHITE);
 
-        mainPanel.add(createTitleLabel(), new CC().height("25px").gapAfter("5px").growX().spanX());
-        mainPanel.add(createSeparator(BLUE_COLOR), new CC().growX().spanX());
-        mainPanel.add(summaryPanel.getMainPanel(), new CC().height("30%").width("20%"));
-        mainPanel.add(createGraphView(), new CC().height("100%").width("60%").grow().span(2, 2));
-        mainPanel.add(detailsPanel.getDetailPanel(), new CC().height("80%").width("20%").alignY("center").spanY(2).wrap());
-        mainPanel.add(informationPanel.getMainPanel(), new CC().height("70%").width("20%"));
+        mainPanel.add(createTitleLabel("GREEN CLOUD NETWORK"), new CC().height("10%").gapAfter("5px").growX().spanX());
+        mainPanel.add(createNetworkDetailsPanel(), new CC().height("100%").width("35%").spanY());
+        mainPanel.add(createGraphView(), new CC().height("70%").width("65%").grow().spanX(2).wrap());
+        mainPanel.add(createInformationPanel(), new CC().height("30%").grow().spanX(2));
+        mainPanelScroll = createDefaultScrollPane(mainPanel);
+        mainPanelScroll.setPreferredSize(MAIN_SIZE);
     }
 
-    private JLabel createTitleLabel() {
-        final JLabel titleLabel = new JLabel("GREEN CLOUD NETWORK");
-        titleLabel.setFont(TITLE_FONT);
-        titleLabel.setForeground(DARK_BLUE_COLOR);
-        titleLabel.setBackground(Color.WHITE);
-        titleLabel.setOpaque(true);
-        return titleLabel;
+    private JPanel createNetworkDetailsPanel() {
+        final JPanel networkDetailsPanel = createShadowPanel(new MigLayout(new LC().fill().wrapAfter(1)));
+        networkDetailsPanel.add(summaryPanel.getMainPanel(), new CC().height("30%").spanX().grow().gapY("10px", "20px"));
+        networkDetailsPanel.add(detailsPanel.getDetailPanel(), new CC().height("70%").spanX().grow().gapY("0px", "10px"));
+        return networkDetailsPanel;
+    }
+
+    private JPanel createInformationPanel() {
+        final JPanel networkDetailsPanel = createShadowPanel(new MigLayout(new LC().fill().wrapAfter(1)));
+        networkDetailsPanel.add(informationPanel.getMainPanel(), new CC().spanX().grow());
+        return networkDetailsPanel;
     }
 
     private void createGraph() {

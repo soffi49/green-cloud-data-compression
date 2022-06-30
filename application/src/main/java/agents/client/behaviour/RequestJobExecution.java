@@ -87,6 +87,7 @@ public class RequestJobExecution extends ContractNetInitiator {
         } else if (proposals.isEmpty()) {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myClientAgent.getGuiController().updateClientsCountByValue(-1);
+            ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);
         } else {
             final ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
             logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());

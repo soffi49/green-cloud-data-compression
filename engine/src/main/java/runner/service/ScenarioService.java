@@ -3,11 +3,9 @@ package runner.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gui.controller.GUIControllerImpl;
 import com.gui.domain.nodes.AgentNode;
-import jade.core.Agent;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import java.util.List;
 import org.apache.commons.io.FileUtils;
 import runner.domain.AgentArgs;
 import runner.domain.ScenarioArgs;
@@ -29,10 +27,9 @@ public class ScenarioService {
 
     private static final String RESOURCE_SCENARIO_PATH = "./scenarios/";
     private static final XmlMapper XML_MAPPER = new XmlMapper();
-
+    final List<AgentController> agentsToRun = new ArrayList<>();
     private final AgentControllerFactory factory;
     private final GUIControllerImpl guiController;
-    final List<AgentController> agentsToRun = new ArrayList<>();
 
 
     /**

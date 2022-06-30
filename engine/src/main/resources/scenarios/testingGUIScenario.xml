@@ -30,200 +30,120 @@
         <monitoringAgent>
             <name>Weather10</name>
         </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather11</name>
-        </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather12</name>
-        </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather13</name>
-        </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather14</name>
-        </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather15</name>
-        </monitoringAgent>
-        <monitoringAgent>
-            <name>Weather16</name>
-        </monitoringAgent>
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
-            <name>Solar</name>
+            <name>Solar1</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server1</ownerSever>
             <latitude>52</latitude>
             <longitude>22</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>SOLAR</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>WindFarm</name>
+            <name>WindFarm1</name>
             <monitoringAgent>Weather3</monitoringAgent>
             <ownerSever>Server1</ownerSever>
             <latitude>52</latitude>
             <longitude>20</longitude>
             <pricePerPowerUnit>5</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Soil</name>
+            <name>Solar2</name>
             <monitoringAgent>Weather10</monitoringAgent>
             <ownerSever>Server1</ownerSever>
             <latitude>51</latitude>
             <longitude>21</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>SOLAR</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Water</name>
+            <name>Wind2</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server2</ownerSever>
             <latitude>52</latitude>
             <longitude>17</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>SolarFarm</name>
+            <name>Solar3</name>
             <monitoringAgent>Weather4</monitoringAgent>
             <ownerSever>Server2</ownerSever>
             <latitude>52</latitude>
             <longitude>16</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>SOLAR</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Geothermal</name>
+            <name>Wind3</name>
             <monitoringAgent>Weather5</monitoringAgent>
             <ownerSever>Server3</ownerSever>
             <latitude>51</latitude>
             <longitude>17</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Biogas</name>
+            <name>Solar4</name>
             <monitoringAgent>Weather7</monitoringAgent>
             <ownerSever>Server3</ownerSever>
             <latitude>51</latitude>
             <longitude>18</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>SOLAR</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>BioGasCompany</name>
+            <name>Wind4</name>
             <monitoringAgent>Weather9</monitoringAgent>
             <ownerSever>Server3</ownerSever>
             <latitude>51</latitude>
             <longitude>17</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Biomas</name>
+            <name>Solar5</name>
             <monitoringAgent>Weather6</monitoringAgent>
             <ownerSever>Server4</ownerSever>
             <latitude>50</latitude>
             <longitude>20</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>SOLAR</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Hydropower</name>
+            <name>Wind5</name>
             <monitoringAgent>Weather8</monitoringAgent>
             <ownerSever>Server4</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Solar_Nine</name>
-            <monitoringAgent>Weather9</monitoringAgent>
-            <ownerSever>Server5</ownerSever>
-            <latitude>50</latitude>
-            <longitude>20</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Hydropower_Extra</name>
-            <monitoringAgent>Weather10</monitoringAgent>
-            <ownerSever>Server5</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Solar5</name>
-            <monitoringAgent>Weather11</monitoringAgent>
-            <ownerSever>Server5</ownerSever>
-            <latitude>50</latitude>
-            <longitude>20</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>WaterSth</name>
-            <monitoringAgent>Weather12</monitoringAgent>
-            <ownerSever>Server6</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Solar_A_Lot</name>
-            <monitoringAgent>Weather13</monitoringAgent>
-            <ownerSever>Server6</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Biomas10</name>
-            <monitoringAgent>Weather14</monitoringAgent>
-            <ownerSever>Server7</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Biomas9</name>
-            <monitoringAgent>Weather15</monitoringAgent>
-            <ownerSever>Server8</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Solar15</name>
-            <monitoringAgent>Weather16</monitoringAgent>
-            <ownerSever>Server8</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server1</name>
             <ownerCloudNetwork>CNA1</ownerCloudNetwork>
-            <maximumCapacity>100</maximumCapacity>
+            <maximumCapacity>10</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server2</name>
             <ownerCloudNetwork>CNA1</ownerCloudNetwork>
-            <maximumCapacity>100</maximumCapacity>
+            <maximumCapacity>15</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
@@ -235,31 +155,7 @@
         <serverAgentsArgs>
             <name>Server4</name>
             <ownerCloudNetwork>CNA2</ownerCloudNetwork>
-            <maximumCapacity>150</maximumCapacity>
-            <price>100.5</price>
-        </serverAgentsArgs>
-        <serverAgentsArgs>
-            <name>Server5</name>
-            <ownerCloudNetwork>CNA3</ownerCloudNetwork>
-            <maximumCapacity>200</maximumCapacity>
-            <price>50.5</price>
-        </serverAgentsArgs>
-        <serverAgentsArgs>
-            <name>Server6</name>
-            <ownerCloudNetwork>CNA3</ownerCloudNetwork>
-            <maximumCapacity>150</maximumCapacity>
-            <price>100.5</price>
-        </serverAgentsArgs>
-        <serverAgentsArgs>
-            <name>Server7</name>
-            <ownerCloudNetwork>CNA4</ownerCloudNetwork>
-            <maximumCapacity>200</maximumCapacity>
-            <price>50.5</price>
-        </serverAgentsArgs>
-        <serverAgentsArgs>
-            <name>Server8</name>
-            <ownerCloudNetwork>CNA4</ownerCloudNetwork>
-            <maximumCapacity>150</maximumCapacity>
+            <maximumCapacity>15</maximumCapacity>
             <price>100.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>
@@ -270,12 +166,6 @@
         <cloudNetworkAgent>
             <name>CNA2</name>
         </cloudNetworkAgent>
-        <cloudNetworkAgent>
-            <name>CNA3</name>
-        </cloudNetworkAgent>
-        <cloudNetworkAgent>
-            <name>CNA4</name>
-        </cloudNetworkAgent>
     </cloudNetworkAgentsArgs>
     <clientAgentsArgs>
         <clientAgent>
@@ -283,56 +173,28 @@
             <jobId>1</jobId>
             <start>5</start>
             <end>10</end>
-            <power>100</power>
+            <power>2</power>
         </clientAgent>
         <clientAgent>
             <name>Second_Client</name>
             <jobId>2</jobId>
             <start>3</start>
             <end>4</end>
-            <power>100</power>
+            <power>3</power>
         </clientAgent>
         <clientAgent>
             <name>Third_Client</name>
             <jobId>3</jobId>
             <start>6</start>
             <end>8</end>
-            <power>100</power>
+            <power>4</power>
         </clientAgent>
         <clientAgent>
             <name>Fourth_Client</name>
             <jobId>4</jobId>
             <start>0</start>
             <end>2</end>
-            <power>100</power>
-        </clientAgent>
-        <clientAgent>
-            <name>Fifth_Client</name>
-            <jobId>5</jobId>
-            <start>5</start>
-            <end>10</end>
-            <power>100</power>
-        </clientAgent>
-        <clientAgent>
-            <name>Sixth_Client</name>
-            <jobId>6</jobId>
-            <start>3</start>
-            <end>4</end>
-            <power>100</power>
-        </clientAgent>
-        <clientAgent>
-            <name>Seventh_Client</name>
-            <jobId>7</jobId>
-            <start>6</start>
-            <end>8</end>
-            <power>100</power>
-        </clientAgent>
-        <clientAgent>
-            <name>Eight_Client</name>
-            <jobId>8</jobId>
-            <start>0</start>
-            <end>2</end>
-            <power>100</power>
+            <power>5</power>
         </clientAgent>
     </clientAgentsArgs>
 </ScenarioArgs>

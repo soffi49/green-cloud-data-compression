@@ -1,7 +1,6 @@
 package com.gui.domain.nodes;
 
-import static com.gui.utils.GUIUtils.concatenateStyles;
-import static com.gui.utils.GUIUtils.createJLabel;
+import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
 import static com.gui.utils.domain.StyleConstants.*;
 
@@ -16,10 +15,10 @@ import java.util.List;
 public class CloudNetworkAgentNode extends AgentNode {
 
     private final double maximumCapacity;
+    private final List<String> serverAgents;
     private double traffic;
     private int totalNumberOfClients;
     private int numberOfExecutedJobs;
-    private final List<String> serverAgents;
 
     /**
      * Cloud network node constructor
@@ -47,7 +46,7 @@ public class CloudNetworkAgentNode extends AgentNode {
      */
     public synchronized void updateClientNumber(final int value) {
         this.totalNumberOfClients += value;
-        labelsMap.get(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL).setText(String.valueOf(totalNumberOfClients));
+        labelsMap.get(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL).setText(formatToHTML(String.valueOf(totalNumberOfClients)));
     }
 
     /**
@@ -57,7 +56,7 @@ public class CloudNetworkAgentNode extends AgentNode {
      */
     public synchronized void updateTraffic(final double powerInUse) {
         this.traffic = (powerInUse / maximumCapacity) * 100;
-        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(String.valueOf(traffic));
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.valueOf(traffic)));
         updateGraphUI();
     }
 
@@ -68,7 +67,7 @@ public class CloudNetworkAgentNode extends AgentNode {
      */
     public synchronized void updateJobsCount(final int value) {
         this.numberOfExecutedJobs += value;
-        labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(String.valueOf(numberOfExecutedJobs));
+        labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
     }
 
     @Override
@@ -86,22 +85,17 @@ public class CloudNetworkAgentNode extends AgentNode {
 
     @Override
     public void createEdges(Graph graph) {
-        serverAgents.forEach(serverName -> {
-            final String biDirectionEdgeName = String.join("_", name, serverName, "BI");
-            graph.addEdge(biDirectionEdgeName, name, serverName, false);
-
-            addAgentEdgeToGraph(graph, edges, name, serverName);
-        });
+        serverAgents.forEach(serverName -> addAgentEdgeToGraph(graph, edges, name, serverName));
     }
 
     @Override
     protected void initializeLabelsMap() {
         super.initializeLabelsMap();
-        labelsMap.put(AgentNodeLabelEnum.SERVERS_NUMBER_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(serverAgents.size())));
-        labelsMap.put(AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(maximumCapacity)));
-        labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(traffic)));
-        labelsMap.put(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(totalNumberOfClients)));
-        labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createJLabel(SECOND_HEADER_FONT, BLUE_COLOR, String.valueOf(numberOfExecutedJobs)));
+        labelsMap.put(AgentNodeLabelEnum.SERVERS_NUMBER_LABEL, createListLabel(String.valueOf(serverAgents.size())));
+        labelsMap.put(AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
+        labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.valueOf(traffic)));
+        labelsMap.put(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL, createListLabel(String.valueOf(totalNumberOfClients)));
+        labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createListLabel(String.valueOf(numberOfExecutedJobs)));
     }
 
 }
