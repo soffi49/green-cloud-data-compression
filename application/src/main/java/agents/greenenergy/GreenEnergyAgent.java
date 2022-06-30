@@ -95,7 +95,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         return Optional.of(availablePower);
     }
 
-    private Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
+    private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
         var start = powerJob.getStartTime().toInstant();
         var end = powerJob.getEndTime().toInstant();
         var timetable = getJobsTimetable(powerJob).stream()
@@ -112,12 +112,12 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
         return timetable.stream()
             .collect(toMap(Function.identity(), time -> powerJobs.stream()
-                .filter(j -> j.isExecutedAtTime(time))
+                .filter(job -> job.isExecutedAtTime(time))
                 .map(PowerJob::getPower)
                 .map(power ->  greenPower.getAvailablePower(weather, time, location) - power)
                 .mapToDouble(a -> a)
                 .average()
-                .getAsDouble()));
+                .orElse(0)));
     }
 
     /**

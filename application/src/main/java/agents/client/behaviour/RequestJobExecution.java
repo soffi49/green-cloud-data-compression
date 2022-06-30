@@ -1,7 +1,7 @@
 package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
-import static common.GUIUtils.announceNewClient;
+import static agents.client.ClientAgentConstants.MAX_TRAFFIC_DIFFERENCE;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
@@ -14,7 +14,6 @@ import com.gui.domain.nodes.ClientAgentNode;
 import com.gui.domain.types.JobStatusEnum;
 import domain.job.Job;
 import domain.job.PricedJob;
-import exception.IncorrectCloudNetworkOfferException;
 import exception.IncorrectServerOfferException;
 import jade.core.AID;
 import jade.core.Agent;
@@ -115,13 +114,20 @@ public class RequestJobExecution extends ContractNetInitiator {
     }
 
     private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {
-        final Comparator<ACLMessage> compareCNA = Comparator.comparingDouble(offer -> {
-            try {
-                return getMapper().readValue(offer.getContent(), PricedJob.class).getPriceForJob();
-            } catch (JsonProcessingException e) {
-                throw new IncorrectCloudNetworkOfferException();
-            }
-        });
-        return receivedOffers.stream().min(compareCNA).orElseThrow();
+        return receivedOffers.stream().min(this::compareCNAOffers).orElseThrow();
+    }
+
+    private int compareCNAOffers(final ACLMessage cnaOffer1, final ACLMessage cnaOffer2) {
+        PricedJob cna1;
+        PricedJob cna2;
+        try {
+            cna1 = getMapper().readValue(cnaOffer1.getContent(), PricedJob.class);
+            cna2 = getMapper().readValue(cnaOffer2.getContent(), PricedJob.class);
+        } catch (JsonProcessingException e) {
+            throw new IncorrectServerOfferException();
+        }
+        double powerDifference = cna1.getPowerInUse() - cna2.getPowerInUse();
+        int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());
+        return MAX_TRAFFIC_DIFFERENCE.isValidIntValue((int) powerDifference) ? priceDifference : (int) powerDifference;
     }
 }

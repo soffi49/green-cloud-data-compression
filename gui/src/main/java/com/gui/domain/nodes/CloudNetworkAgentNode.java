@@ -56,7 +56,7 @@ public class CloudNetworkAgentNode extends AgentNode {
      */
     public synchronized void updateTraffic(final double powerInUse) {
         this.traffic = (powerInUse / maximumCapacity) * 100;
-        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.valueOf(traffic)));
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic)));
         updateGraphUI();
     }
 
@@ -71,7 +71,7 @@ public class CloudNetworkAgentNode extends AgentNode {
     }
 
     @Override
-    public void updateGraphUI() {
+    public synchronized void updateGraphUI() {
         if (traffic > 85) {
             node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, CLOUD_NETWORK_HIGH_STYLE)));
         } else if (traffic > 50) {
@@ -93,7 +93,7 @@ public class CloudNetworkAgentNode extends AgentNode {
         super.initializeLabelsMap();
         labelsMap.put(AgentNodeLabelEnum.SERVERS_NUMBER_LABEL, createListLabel(String.valueOf(serverAgents.size())));
         labelsMap.put(AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
-        labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.valueOf(traffic)));
+        labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.format("%.2f%%",traffic)));
         labelsMap.put(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL, createListLabel(String.valueOf(totalNumberOfClients)));
         labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createListLabel(String.valueOf(numberOfExecutedJobs)));
     }

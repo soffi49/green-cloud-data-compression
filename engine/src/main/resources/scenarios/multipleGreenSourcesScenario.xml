@@ -40,13 +40,4 @@
             <name>CNA</name>
         </cloudNetworkAgent>
     </cloudNetworkAgentsArgs>
-    <clientAgentsArgs>
-        <clientAgent>
-            <name>Client</name>
-            <jobId>1</jobId>
-            <start>3</start>
-            <end>5</end>
-            <power>5</power>
-        </clientAgent>
-    </clientAgentsArgs>
 </ScenarioArgs>
