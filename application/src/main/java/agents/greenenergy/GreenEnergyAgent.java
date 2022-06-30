@@ -112,7 +112,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
         return timetable.stream()
             .collect(toMap(Function.identity(), time -> powerJobs.stream()
-                .filter(j -> j.isExecutedAtTime(time))
+                .filter(job -> job.isExecutedAtTime(time))
                 .map(PowerJob::getPower)
                 .map(power ->  greenPower.getAvailablePower(weather, time, location) - power)
                 .mapToDouble(a -> a)

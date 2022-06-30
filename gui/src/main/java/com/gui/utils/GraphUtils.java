@@ -53,7 +53,7 @@ public class GraphUtils {
      * @param edges    list of edges
      * @param isActive is component active status
      */
-    public static void updateActiveEdgeStyle(final List<Edge> edges, final boolean isActive, final String agent1, final String agent2) {
+    public synchronized static void updateActiveEdgeStyle(final List<Edge> edges, final boolean isActive, final String agent1, final String agent2) {
         final String dynamicEdgeStyle = isActive ? EDGE_ACTIVE_STYLE : EDGE_INACTIVE_STYLE;
         final String edgeName = String.join("_", agent1, agent2, "BI");
         edges.stream().filter(edge -> edge.getId().equals(edgeName)).forEach(edge -> edge.setAttribute("ui.class", dynamicEdgeStyle));

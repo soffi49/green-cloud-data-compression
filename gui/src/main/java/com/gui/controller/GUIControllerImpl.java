@@ -7,6 +7,7 @@ import com.gui.domain.guielements.DetailsPanel;
 import com.gui.domain.guielements.InformationPanel;
 import com.gui.domain.guielements.SummaryPanel;
 import com.gui.domain.nodes.AgentNode;
+import com.gui.domain.nodes.ClientAgentNode;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
@@ -57,7 +58,9 @@ public class GUIControllerImpl implements GUIController {
     public synchronized void addAgentNodeToGraph(final AgentNode agent) {
         graphNodes.add(agent);
         agent.addToGraph(graph);
-        detailsPanel.revalidateComboBoxModel(graphNodes);
+        if (!(agent instanceof ClientAgentNode)) {
+            detailsPanel.revalidateComboBoxModel(graphNodes);
+        }
     }
 
     @Override
@@ -69,7 +72,9 @@ public class GUIControllerImpl implements GUIController {
     public synchronized void removeAgentNodeFromGraph(final AgentNode agentNode) {
         graphNodes.remove(agentNode);
         graph.removeNode(agentNode.getName());
-        detailsPanel.revalidateComboBoxModel(graphNodes);
+        if (!(agentNode instanceof ClientAgentNode)) {
+            detailsPanel.revalidateComboBoxModel(graphNodes);
+        }
     }
 
     @Override

@@ -25,10 +25,12 @@ public class JobOfferMessageFactory {
      *
      * @param server       data sent by the server which will execute the job
      * @param replyMessage reply message as which the job offer is to be sent
+     * @param powerInUse   current power in use in given network segment
      * @return proposal ACLMessage
      */
-    public static ACLMessage makeJobOfferForClient(final ServerData server, final ACLMessage replyMessage) {
+    public static ACLMessage makeJobOfferForClient(final ServerData server, final double powerInUse, final ACLMessage replyMessage) {
         final PricedJob pricedJob = ImmutablePricedJob.builder()
+                .powerInUse(powerInUse)
                 .jobId(server.getJobId())
                 .priceForJob(server.getServicePrice())
                 .build();

@@ -50,9 +50,7 @@ public class ClientAgentNode extends AgentNode {
 
     @Override
     public Node addToGraph(Graph graph) {
-        final Node node = super.addToGraph(graph);
-        node.setAttribute("ui.hide", "true");
-        return node;
+        return null;
     }
 
     @Override

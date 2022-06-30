@@ -1,5 +1,7 @@
 package runner.service;
 
+import static runner.service.domain.ScenarioConstants.*;
+
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gui.controller.GUIControllerImpl;
 import com.gui.domain.nodes.AgentNode;
@@ -8,6 +10,8 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import org.apache.commons.io.FileUtils;
 import runner.domain.AgentArgs;
+import runner.domain.ClientAgentArgs;
+import runner.domain.ImmutableClientAgentArgs;
 import runner.domain.ScenarioArgs;
 import runner.factory.AgentControllerFactory;
 import runner.factory.AgentControllerFactoryImpl;
@@ -18,13 +22,16 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * Service used in running the scenarios
  */
 public class ScenarioService {
 
+    private static final int CLIENT_NUMBER = 200;
     private static final String RESOURCE_SCENARIO_PATH = "./scenarios/";
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     final List<AgentController> agentsToRun = new ArrayList<>();
@@ -57,7 +64,6 @@ public class ScenarioService {
                 createAgents(scenario.getGreenEnergyAgentsArgs(), scenario);
                 createAgents(scenario.getServerAgentsArgs(), scenario);
                 createAgents(scenario.getCloudNetworkAgentsArgs(), scenario);
-                createAgents(scenario.getClientAgentsArgs(), scenario);
             }
             guiController.createEdges();
             // next line is added on purpose! It waits for the graph to fully initialize
@@ -66,6 +72,8 @@ public class ScenarioService {
                 agentController.start();
                 agentController.activate();
             }
+            createClientAgents(CLIENT_NUMBER, scenario);
+
         } catch (IOException | InterruptedException | StaleProxyException e) {
             e.printStackTrace();
         }
@@ -82,6 +90,34 @@ public class ScenarioService {
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
                 agentsToRun.add(agentController);
             } catch (StaleProxyException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void createClientAgents(final int agentsNumber, final ScenarioArgs scenario) {
+        IntStream.rangeClosed(1, agentsNumber).forEach(idx -> {
+            final Random random = new Random();
+            final int randomPower = MIN_JOB_POWER + random.nextInt(MAX_JOB_POWER);
+            final int randomStart = START_TIME_MIN + random.nextInt(START_TIME_MAX);
+            final int randomEnd = randomStart + 1 + random.nextInt(END_TIME_MAX);
+            final ClientAgentArgs clientAgentArgs =
+                    ImmutableClientAgentArgs.builder()
+                            .name(String.format("Client%d", idx))
+                            .jobId(String.valueOf(idx))
+                            .power(String.valueOf(randomPower))
+                            .start(String.valueOf(randomStart))
+                            .end(String.valueOf(randomEnd))
+                            .build();
+            try {
+                final AgentController agentController = factory.createAgentController(clientAgentArgs);
+                final AgentNode agentNode = factory.createAgentNode(clientAgentArgs, scenario);
+                guiController.addAgentNodeToGraph(agentNode);
+                agentController.putO2AObject(guiController, AgentController.ASYNC);
+                agentController.putO2AObject(agentNode, AgentController.ASYNC);
+                agentController.start();
+                agentController.activate();
+            } catch (StaleProxyException  e) {
                 e.printStackTrace();
             }
         });

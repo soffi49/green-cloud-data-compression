@@ -76,7 +76,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
             logger.info("[{}] Sending job execution offer to Client", guid);
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-            myAgent.addBehaviour(new ProposeJobOffer(myAgent, makeJobOfferForClient(chosenServerData, replyMessage), serverReplyMessage));
+            myAgent.addBehaviour(new ProposeJobOffer(myAgent, makeJobOfferForClient(chosenServerData, myCloudNetworkAgent.getCurrentPowerInUse(), replyMessage), serverReplyMessage));
             rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
     }

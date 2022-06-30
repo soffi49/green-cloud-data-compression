@@ -1,10 +1,10 @@
 package com.gui.domain.guielements;
 
 import static com.gui.utils.GUIUtils.*;
-import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
 import static com.gui.utils.domain.StyleConstants.VERY_LIGHT_GRAY_COLOR;
 
 import com.gui.domain.nodes.AgentNode;
+import com.gui.domain.nodes.ClientAgentNode;
 import com.gui.domain.nodes.MonitoringAgentNode;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -85,7 +85,7 @@ public class DetailsPanel {
 
     private String[] getDropDownNetworkAgentsNames() {
         final List<String> agentNames = new java.util.ArrayList<>(allNetworkAgentNodes.stream()
-                                                                          .filter(agentNode -> !(agentNode instanceof MonitoringAgentNode))
+                                                                          .filter(agentNode -> !(agentNode instanceof MonitoringAgentNode) && !(agentNode instanceof ClientAgentNode))
                                                                           .map(AgentNode::getName)
                                                                           .toList());
         agentNames.add(0, "Please select the agent");

@@ -3,9 +3,11 @@ package runner.domain;
 import static java.util.stream.Stream.concat;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Arguments of the entire scenario
@@ -13,6 +15,7 @@ import java.util.List;
 public class ScenarioArgs implements Serializable {
 
     @JacksonXmlElementWrapper(localName = "clientAgentsArgs")
+    @Nullable
     private List<ImmutableClientAgentArgs> clientAgentsArgs;
     @JacksonXmlElementWrapper(localName = "cloudNetworkAgentsArgs")
     private List<ImmutableCloudNetworkArgs> cloudNetworkAgentsArgs;
@@ -93,15 +96,14 @@ public class ScenarioArgs implements Serializable {
      * @return stream of all scenario's agents' arguments
      */
     public List<AgentArgs> getAgentsArgs() {
-        var clientArgs = clientAgentsArgs.stream().map(AgentArgs.class::cast);
         var serverArgs = serverAgentsArgs.stream().map(AgentArgs.class::cast);
         var cloudNetworkArgs = cloudNetworkAgentsArgs.stream().map(AgentArgs.class::cast);
         var monitoringArgs = monitoringAgentsArgs.stream().map(AgentArgs.class::cast);
         var greenEnergyArgs = greenEnergyAgentsArgs.stream().map(AgentArgs.class::cast);
+        var firstArgs = Objects.nonNull(clientAgentsArgs) ? concat(cloudNetworkArgs, clientAgentsArgs.stream().map(AgentArgs.class::cast)) : cloudNetworkArgs;
 
         return concat(monitoringArgs,
                       concat(greenEnergyArgs,
-                             concat(serverArgs,
-                                    concat(cloudNetworkArgs, clientArgs)))).toList();
+                             concat(serverArgs, firstArgs))).toList();
     }
 }
