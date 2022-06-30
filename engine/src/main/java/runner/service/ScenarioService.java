@@ -67,13 +67,15 @@ public class ScenarioService {
                 });
                 guiController.createEdges();
                 // next line is added on purpose! It waits for the graph to fully initialize
-                //TimeUnit.SECONDS.sleep(7);
+                TimeUnit.SECONDS.sleep(7);
                 for (AgentController agentController : agentsToRun) {
                     agentController.start();
                 }
             }
         } catch (IOException | StaleProxyException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

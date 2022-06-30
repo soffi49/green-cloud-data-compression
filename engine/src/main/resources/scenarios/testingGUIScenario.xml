@@ -48,6 +48,12 @@
         <monitoringAgent>
             <name>Weather16</name>
         </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather17</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather18</name>
+        </monitoringAgent>
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
@@ -61,7 +67,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>WindFarm</name>
-            <monitoringAgent>Weather3</monitoringAgent>
+            <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server1</ownerSever>
             <latitude>52</latitude>
             <longitude>20</longitude>
@@ -70,7 +76,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Soil</name>
-            <monitoringAgent>Weather10</monitoringAgent>
+            <monitoringAgent>Weather3</monitoringAgent>
             <ownerSever>Server1</ownerSever>
             <latitude>51</latitude>
             <longitude>21</longitude>
@@ -79,7 +85,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Water</name>
-            <monitoringAgent>Weather2</monitoringAgent>
+            <monitoringAgent>Weather4</monitoringAgent>
             <ownerSever>Server2</ownerSever>
             <latitude>52</latitude>
             <longitude>17</longitude>
@@ -88,7 +94,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>SolarFarm</name>
-            <monitoringAgent>Weather4</monitoringAgent>
+            <monitoringAgent>Weather5</monitoringAgent>
             <ownerSever>Server2</ownerSever>
             <latitude>52</latitude>
             <longitude>16</longitude>
@@ -97,7 +103,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Geothermal</name>
-            <monitoringAgent>Weather5</monitoringAgent>
+            <monitoringAgent>Weather6</monitoringAgent>
             <ownerSever>Server3</ownerSever>
             <latitude>51</latitude>
             <longitude>17</longitude>
@@ -115,7 +121,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>BioGasCompany</name>
-            <monitoringAgent>Weather9</monitoringAgent>
+            <monitoringAgent>Weather8</monitoringAgent>
             <ownerSever>Server3</ownerSever>
             <latitude>51</latitude>
             <longitude>17</longitude>
@@ -124,7 +130,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Biomas</name>
-            <monitoringAgent>Weather6</monitoringAgent>
+            <monitoringAgent>Weather9</monitoringAgent>
             <ownerSever>Server4</ownerSever>
             <latitude>50</latitude>
             <longitude>20</longitude>
@@ -133,7 +139,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Hydropower</name>
-            <monitoringAgent>Weather8</monitoringAgent>
+            <monitoringAgent>Weather10</monitoringAgent>
             <ownerSever>Server4</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>
@@ -142,24 +148,6 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Solar_Nine</name>
-            <monitoringAgent>Weather9</monitoringAgent>
-            <ownerSever>Server5</ownerSever>
-            <latitude>50</latitude>
-            <longitude>20</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Hydropower_Extra</name>
-            <monitoringAgent>Weather10</monitoringAgent>
-            <ownerSever>Server5</ownerSever>
-            <latitude>50</latitude>
-            <longitude>21</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
-            <maximumCapacity>200</maximumCapacity>
-        </greenenergyAgent>
-        <greenenergyAgent>
-            <name>Solar5</name>
             <monitoringAgent>Weather11</monitoringAgent>
             <ownerSever>Server5</ownerSever>
             <latitude>50</latitude>
@@ -168,8 +156,26 @@
             <maximumCapacity>200</maximumCapacity>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>WaterSth</name>
+            <name>Hydropower_Extra</name>
             <monitoringAgent>Weather12</monitoringAgent>
+            <ownerSever>Server5</ownerSever>
+            <latitude>50</latitude>
+            <longitude>21</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Solar5</name>
+            <monitoringAgent>Weather13</monitoringAgent>
+            <ownerSever>Server5</ownerSever>
+            <latitude>50</latitude>
+            <longitude>20</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>WaterSth</name>
+            <monitoringAgent>Weather14</monitoringAgent>
             <ownerSever>Server6</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>
@@ -178,7 +184,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Solar_A_Lot</name>
-            <monitoringAgent>Weather13</monitoringAgent>
+            <monitoringAgent>Weather15</monitoringAgent>
             <ownerSever>Server6</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>
@@ -187,7 +193,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Biomas10</name>
-            <monitoringAgent>Weather14</monitoringAgent>
+            <monitoringAgent>Weather16</monitoringAgent>
             <ownerSever>Server7</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>
@@ -196,7 +202,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Biomas9</name>
-            <monitoringAgent>Weather15</monitoringAgent>
+            <monitoringAgent>Weather17</monitoringAgent>
             <ownerSever>Server8</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>
@@ -205,7 +211,7 @@
         </greenenergyAgent>
         <greenenergyAgent>
             <name>Solar15</name>
-            <monitoringAgent>Weather16</monitoringAgent>
+            <monitoringAgent>Weather18</monitoringAgent>
             <ownerSever>Server8</ownerSever>
             <latitude>50</latitude>
             <longitude>21</longitude>

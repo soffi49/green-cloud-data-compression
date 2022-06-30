@@ -5,11 +5,12 @@ package com.gui.domain.types;
  */
 public enum JobStatusEnum {
 
-    CREATED("CREATED"),
+    CREATED("BEFORE SEND"),
     PROCESSING("PROCESSING"),
     IN_PROGRESS("IN PROGRESS"),
     DELAYED("DELAYED"),
-    FINISHED("FINISHED");
+    FINISHED("FINISHED"),
+    REJECTED("REJECTED");
 
     private final String status;
 

@@ -1,5 +1,7 @@
 package com.gui.domain.types;
 
+import static com.gui.utils.GUIUtils.formatToHTML;
+
 /**
  * Enum storing all possible labels describing the agent node
  */
@@ -33,6 +35,6 @@ public enum AgentNodeLabelEnum implements LabelEnum {
     }
 
     public String getLabel() {
-        return label;
+        return formatToHTML(label);
     }
 }

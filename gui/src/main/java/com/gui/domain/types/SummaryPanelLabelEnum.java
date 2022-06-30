@@ -1,5 +1,7 @@
 package com.gui.domain.types;
 
+import static com.gui.utils.GUIUtils.formatToHTML;
+
 /**
  * Enum storing all available summary panel label types
  */
@@ -16,6 +18,6 @@ public enum SummaryPanelLabelEnum implements LabelEnum {
     }
 
     public String getLabel() {
-        return label;
+        return formatToHTML(label);
     }
 }
