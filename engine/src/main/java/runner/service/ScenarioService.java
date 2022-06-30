@@ -3,10 +3,13 @@ package runner.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gui.controller.GUIControllerImpl;
 import com.gui.domain.nodes.AgentNode;
+import jade.core.Agent;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
+import java.util.List;
 import org.apache.commons.io.FileUtils;
+import runner.domain.AgentArgs;
 import runner.domain.ScenarioArgs;
 import runner.factory.AgentControllerFactory;
 import runner.factory.AgentControllerFactoryImpl;
@@ -29,6 +32,8 @@ public class ScenarioService {
 
     private final AgentControllerFactory factory;
     private final GUIControllerImpl guiController;
+    final List<AgentController> agentsToRun = new ArrayList<>();
+
 
     /**
      * Service constructor
@@ -47,34 +52,42 @@ public class ScenarioService {
      */
     public void createAgentsFromScenarioFile(final String fileName) {
         final File scenarioFile = getFileFromResourceFileName(fileName);
-        final List<AgentController> agentsToRun = new ArrayList<>();
         try {
             final ScenarioArgs scenario = XML_MAPPER.readValue(scenarioFile, ScenarioArgs.class);
 
-            if (Objects.nonNull(scenario.getServerAgentsArgs())) {
-
-                scenario.getAgentsArgs().forEach(agentArgs -> {
-                    try {
-                        final AgentController agentController = factory.createAgentController(agentArgs);
-                        final AgentNode agentNode = factory.createAgentNode(agentArgs, scenario);
-                        guiController.addAgentNodeToGraph(agentNode);
-                        agentController.putO2AObject(guiController, AgentController.ASYNC);
-                        agentController.putO2AObject(agentNode, AgentController.ASYNC);
-                        agentsToRun.add(agentController);
-                    } catch (StaleProxyException e) {
-                        e.printStackTrace();
-                    }
-                });
-                guiController.createEdges();
-                // next line is added on purpose! It waits for the graph to fully initialize
-                //TimeUnit.SECONDS.sleep(7);
-                for (AgentController agentController : agentsToRun) {
-                    agentController.start();
-                }
+            if (Objects.nonNull(scenario.getAgentsArgs())) {
+                createAgents(scenario.getMonitoringAgentsArgs(), scenario);
+                createAgents(scenario.getGreenEnergyAgentsArgs(), scenario);
+                createAgents(scenario.getServerAgentsArgs(), scenario);
+                createAgents(scenario.getCloudNetworkAgentsArgs(), scenario);
+                createAgents(scenario.getClientAgentsArgs(), scenario);
             }
-        } catch (IOException | StaleProxyException e) {
+            guiController.createEdges();
+            // next line is added on purpose! It waits for the graph to fully initialize
+            TimeUnit.SECONDS.sleep(7);
+            for (AgentController agentController : agentsToRun) {
+                agentController.start();
+                agentController.activate();
+            }
+        } catch (IOException | InterruptedException | StaleProxyException e) {
             e.printStackTrace();
         }
+    }
+
+    private void createAgents(List<?> agentArgsList, ScenarioArgs scenario) {
+        agentArgsList.forEach(agentArgs -> {
+            var args = (AgentArgs) agentArgs;
+            try {
+                final AgentController agentController = factory.createAgentController(args);
+                final AgentNode agentNode = factory.createAgentNode(args, scenario);
+                guiController.addAgentNodeToGraph(agentNode);
+                agentController.putO2AObject(guiController, AgentController.ASYNC);
+                agentController.putO2AObject(agentNode, AgentController.ASYNC);
+                agentsToRun.add(agentController);
+            } catch (StaleProxyException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private File getFileFromResourceFileName(final String fileName) {

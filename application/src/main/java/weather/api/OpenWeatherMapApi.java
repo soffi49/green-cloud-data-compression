@@ -16,14 +16,17 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import weather.domain.OpenWeatherMap;
+import weather.domain.CurrentWeather;
+import weather.domain.Forecast;
 
 public class OpenWeatherMapApi {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenWeatherMapApi.class);
 
-    private static final String URL =
+    private static final String WEATHER_URL =
         "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric";
+    private static final String FORECAST_URL =
+        "https://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s&appid=%s&units=metric";
     private static final ObjectMapper MAPPER = getMapper();
 
     private final String apiKey;
@@ -45,12 +48,37 @@ public class OpenWeatherMapApi {
         this.client = new OkHttpClient();
     }
 
-    public OpenWeatherMap getWeather(Location location) {
-        var url = format(URL, location.getLatitude(), location.getLongitude(), apiKey);
+    /**
+     * Provides weather for the current location for the current moment.
+     *
+     * @param location to request weather for
+     * @return {@link CurrentWeather} for the provided location
+     */
+    public CurrentWeather getWeather(Location location) {
+        var url = format(WEATHER_URL, location.getLatitude(), location.getLongitude(), apiKey);
         Request request = new Request.Builder().url(url).build();
 
         try (Response response = client.newCall(request).execute()) {
-            return MAPPER.readValue(response.body().string(), OpenWeatherMap.class);
+            return MAPPER.readValue(response.body().string(), CurrentWeather.class);
+        } catch (IOException | NullPointerException e) {
+            logger.error("Network error fetching weather", e);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get 5 day 3-hour forecast for the location.
+     *
+     * @param location to request weather for
+     * @return {@link Forecast} with a list of {@link CurrentWeather}
+     */
+    public Forecast getForecast(Location location) {
+        var url = format(FORECAST_URL, location.getLatitude(), location.getLongitude(), apiKey);
+        Request request = new Request.Builder().url(url).build();
+
+        try (Response response = client.newCall(request).execute()) {
+            return MAPPER.readValue(response.body().string(), Forecast.class);
         } catch (IOException | NullPointerException e) {
             logger.error("Network error fetching weather", e);
         }
