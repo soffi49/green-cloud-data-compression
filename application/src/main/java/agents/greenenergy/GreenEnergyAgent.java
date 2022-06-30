@@ -17,11 +17,11 @@ import domain.location.ImmutableLocation;
 import jade.core.AID;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -56,7 +56,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
     private void initializeAgent(final Object[] args) {
         if (Objects.nonNull(args) && args.length == 7) {
-            this.powerJobs = new HashMap<>();
+            this.powerJobs = new ConcurrentHashMap<>();
             this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
             this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
             try {
@@ -84,7 +84,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
      * @param weather  monitoring data with weather for requested timetable
      * @return
      */
-    public Optional<Double> getAverageAvailablePower(final PowerJob powerJob, final MonitoringData weather) {
+    public synchronized Optional<Double> getAverageAvailablePower(final PowerJob powerJob, final MonitoringData weather) {
         var powerChart = getPowerChart(powerJob, weather);
         var availablePower = powerChart.values().stream().mapToDouble(a -> a).average().getAsDouble();
         logger.info("[{}] Calculated available {} average power {} between {} and {}", this.getName(), energyType,
@@ -95,7 +95,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         return Optional.of(availablePower);
     }
 
-    private Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
+    private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
         var start = powerJob.getStartTime().toInstant();
         var end = powerJob.getEndTime().toInstant();
         var timetable = getJobsTimetable(powerJob).stream()
@@ -117,7 +117,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
                 .map(power ->  greenPower.getAvailablePower(weather, time, location) - power)
                 .mapToDouble(a -> a)
                 .average()
-                .getAsDouble()));
+                .orElseGet(() -> 0.0)));
     }
 
     /**
