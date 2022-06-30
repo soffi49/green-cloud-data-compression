@@ -5,7 +5,10 @@ import static java.util.Comparator.comparingLong;
 import agents.monitoring.behaviour.ServeWeatherInformation;
 import domain.GreenSourceRequestData;
 import domain.ImmutableMonitoringData;
+import domain.ImmutableWeatherData;
 import domain.MonitoringData;
+import domain.WeatherData;
+import domain.location.Location;
 import jade.core.Agent;
 import java.time.Instant;
 import java.util.List;
@@ -48,27 +51,39 @@ public class MonitoringAgent extends Agent {
     }
 
     public MonitoringData getWeather(GreenSourceRequestData requestData) {
-        logger.info("Retrieving weather info for {}...", requestData.getLocation());
+        logger.info("Retrieving weather info for {}!", requestData.getLocation());
         var weather = api.getWeather(requestData.getLocation());
-        return buildMonitoringData(weather);
+        return ImmutableMonitoringData.builder()
+            .addWeatherData(buildWeatherData(weather, weather.getTimestamp()))
+            .build();
     }
 
     public MonitoringData getForecast(GreenSourceRequestData requestData) {
         var location = requestData.getLocation();
-        var timestamp = requestData.getStartDate().toInstant();
-        logger.info("Retrieving forecast info for {} at {}...", location, timestamp);
-        return cache.getForecast(location, timestamp).map(this::buildMonitoringData).orElseGet(() -> {
-            var forecast = api.getForecast(location);
-            cache.updateCache(location, forecast);
-            return buildMonitoringData(getNearestForecast(forecast.getList(), timestamp));
-        });
+        logger.info("Retrieving forecast info for {}!", location);
+        var weatherData = requestData.getTimetable().stream()
+            .map(time -> getWeatherData(location, time))
+            .toList();
+        return ImmutableMonitoringData.builder()
+            .weatherData(weatherData)
+            .build();
     }
 
-    private MonitoringData buildMonitoringData(AbstractWeather weather) {
-        return ImmutableMonitoringData.builder()
+    private WeatherData getWeatherData(Location location, Instant time) {
+        return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
+                var forecast = api.getForecast(location);
+                cache.updateCache(location, forecast);
+                return buildWeatherData(getNearestForecast(forecast.getList(), time), time);
+            }
+        );
+    }
+
+    private WeatherData buildWeatherData(AbstractWeather weather, Instant timestamp) {
+        return ImmutableWeatherData.builder()
             .temperature(weather.getMain().getTemp())
             .cloudCover(weather.getClouds().getAll())
             .windSpeed(weather.getWind().getSpeed())
+            .time(timestamp)
             .build();
     }
 
