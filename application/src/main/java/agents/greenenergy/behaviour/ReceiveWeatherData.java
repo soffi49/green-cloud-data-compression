@@ -1,7 +1,9 @@
 package agents.greenenergy.behaviour;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchConversationId;
+import static jade.lang.acl.MessageTemplate.MatchSender;
+import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.ReplyMessageFactory.prepareReply;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.GreenSourceData;
 import domain.ImmutableGreenSourceData;
 import domain.MonitoringData;
+import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -29,22 +32,22 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     private final MessageTemplate template;
     private final String guid;
     private final ACLMessage cfp;
-    private final String jobId;
+    private final PowerJob job;
 
     /**
      * Behaviour constructor.
      *
      * @param myGreenAgent agent which is executing the behaviour
      * @param cfp          call for proposal sent by the server to which the Green Source has to reply
-     * @param jobId        identifier of the job that is being processed
+     * @param job          job that is being processed
      */
-    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final String jobId) {
+    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob job) {
         this.myGreenEnergyAgent = myGreenAgent;
         this.template = and(MatchSender(myGreenAgent.getMonitoringAgent()),
                             MatchConversationId(cfp.getConversationId()));
         this.guid = myGreenEnergyAgent.getName();
         this.cfp = cfp;
-        this.jobId = jobId;
+        this.job = job;
     }
 
     /**
@@ -71,23 +74,33 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     }
 
     private void handleInform(final MonitoringData data) {
-        final int power = computePower(data);
-        logger.info("[{}] Replying with propose message to server.", guid);
+        final double power = myGreenEnergyAgent.getAvailablePower(job.getStartTime(), job.getEndTime(), data);
+
+        if (job.getPower() > power) {
+            logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid,
+                job.getJobId(), job.getPower(), power);
+            myGreenEnergyAgent.getPowerJobs().remove(job);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
+        }
+
         if (power > 0) {
+            logger.info("[{}] Replying with propose message to server for job with id {}.", guid, job.getJobId());
             final GreenSourceData responseData = ImmutableGreenSourceData.builder()
                     .pricePerPowerUnit(myGreenEnergyAgent.getPricePerPowerUnit())
                     .availablePowerInTime(power)
-                    .jobId(jobId)
+                    .jobId(job.getJobId())
                     .build();
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
         } else {
-            logger.info("[{}] Too bad weather conditions, sending refuse message to server.", guid);
-            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
+            logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, job.getJobId());
+            myGreenEnergyAgent.getPowerJobs().remove(job);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
     }
 
     private void handleRefuse(final ACLMessage cfp) {
         logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
+        myGreenEnergyAgent.getPowerJobs().remove(job);
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
     }
 
@@ -98,10 +111,5 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private int computePower(MonitoringData data) {
-        //TODO: implement power computation logic
-        return 10;
     }
 }
