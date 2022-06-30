@@ -2,7 +2,9 @@ package agents.monitoring;
 
 import static java.util.Comparator.comparingLong;
 
+import agents.AbstractAgent;
 import agents.monitoring.behaviour.ServeWeatherInformation;
+import behaviours.ReceiveGUIController;
 import domain.GreenSourceRequestData;
 import domain.ImmutableMonitoringData;
 import domain.ImmutableWeatherData;
@@ -20,24 +22,29 @@ import weather.cache.WeatherCache;
 import weather.domain.AbstractWeather;
 import weather.domain.FutureWeather;
 
+import java.util.List;
+
 /**
  * Agent which is responsible for monitoring the weather and sending the data to the Green Source Agent
  */
-public class MonitoringAgent extends Agent {
+public class MonitoringAgent extends AbstractAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitoringAgent.class);
 
     private OpenWeatherMapApi api;
     private WeatherCache cache;
 
+    public MonitoringAgent() {
+        super.setup();
+    }
+
     /**
      * Method run at the agent start. It starts the behaviour which is listening for the weather requests.
      */
     @Override
     protected void setup() {
-        super.setup();
-        addBehaviour(new ServeWeatherInformation(this));
         api = new OpenWeatherMapApi();
+        addBehaviour(new ReceiveGUIController(this, List.of(new ServeWeatherInformation(this))));
         cache = WeatherCache.getInstance();
     }
 
@@ -47,6 +54,7 @@ public class MonitoringAgent extends Agent {
     @Override
     protected void takeDown() {
         logger.info("I'm finished. Bye!");
+        getGuiController().removeAgentNodeFromGraph(getAgentNode());
         super.takeDown();
     }
 
