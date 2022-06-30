@@ -18,6 +18,7 @@ import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Optional;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,22 +34,22 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     private final MessageTemplate template;
     private final String guid;
     private final ACLMessage cfp;
-    private final PowerJob job;
+    private final PowerJob powerJob;
 
     /**
      * Behaviour constructor.
      *
      * @param myGreenAgent agent which is executing the behaviour
      * @param cfp          call for proposal sent by the server to which the Green Source has to reply
-     * @param job          job that is being processed
+     * @param powerJob          job that is being processed
      */
-    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob job) {
+    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob powerJob) {
         this.myGreenEnergyAgent = myGreenAgent;
         this.template = and(MatchSender(myGreenAgent.getMonitoringAgent()),
                             MatchConversationId(cfp.getConversationId()));
         this.guid = myGreenEnergyAgent.getName();
         this.cfp = cfp;
-        this.job = job;
+        this.powerJob = powerJob;
     }
 
     /**
@@ -75,36 +76,36 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     }
 
     private void handleInform(final MonitoringData data) {
-        final double power = myGreenEnergyAgent.getAvailablePower(job.getStartTime(), job.getEndTime(), data);
+        Optional<Double> averageAvailablePower = myGreenEnergyAgent.getAverageAvailablePower(powerJob, data);
 
-        if (job.getPower() > power) {
+        if(averageAvailablePower.isEmpty()) {
+            logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, powerJob.getJobId());
+            myGreenEnergyAgent.getPowerJobs().remove(powerJob);
+            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
+        }
+        else if (powerJob.getPower() > averageAvailablePower.get()) {
             logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid,
-                job.getJobId(), job.getPower(), power);
-            myGreenEnergyAgent.getPowerJobs().remove(job);
+                powerJob.getJobId(), powerJob.getPower(),  averageAvailablePower.get());
+            myGreenEnergyAgent.getPowerJobs().remove(powerJob);
             displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
-
-        if (power > 0) {
-            logger.info("[{}] Replying with propose message to server for job with id {}.", guid, job.getJobId());
+        else {
+            logger.info("[{}] Replying with propose message to server for job with id {}.", guid, powerJob.getJobId());
             final GreenSourceData responseData = ImmutableGreenSourceData.builder()
                     .pricePerPowerUnit(myGreenEnergyAgent.getPricePerPowerUnit())
-                    .availablePowerInTime(power)
-                    .jobId(job.getJobId())
+                    .availablePowerInTime(averageAvailablePower.get())
+                    .jobId(powerJob.getJobId())
                     .build();
             displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
-        } else {
-            logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, job.getJobId());
-            myGreenEnergyAgent.getPowerJobs().remove(job);
-            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
-            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
     }
 
     private void handleRefuse(final ACLMessage cfp) {
         logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
-        myGreenEnergyAgent.getPowerJobs().remove(job);
+        myGreenEnergyAgent.getPowerJobs().remove(powerJob);
         displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
     }

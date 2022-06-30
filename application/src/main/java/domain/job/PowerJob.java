@@ -2,6 +2,7 @@ package domain.job;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
 import org.immutables.value.Value;
 
 import java.time.OffsetDateTime;
@@ -33,4 +34,9 @@ public interface PowerJob {
      * @return power that is to be delivered
      */
     int getPower();
+
+     default boolean isExecutedAtTime(Instant timestamp) {
+        return (timestamp.isAfter(getStartTime().toInstant()) && timestamp.isBefore(getEndTime().toInstant())) ||
+            timestamp.equals(getStartTime().toInstant());
+    }
 }

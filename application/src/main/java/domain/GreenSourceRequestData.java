@@ -3,9 +3,9 @@ package domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import domain.location.Location;
+import java.time.Instant;
+import java.util.List;
 import org.immutables.value.Value;
-
-import java.time.OffsetDateTime;
 
 /**
  * Object storing the data passed by the Green Source in the weather request message
@@ -21,12 +21,7 @@ public interface GreenSourceRequestData {
     Location getLocation();
 
     /**
-     * @return starting date from which the weather should be retrieved
+     * @return timetable for which weather is requested
      */
-    OffsetDateTime getStartDate();
-
-    /**
-     * @return end date to which the weather should be retrieved
-     */
-    OffsetDateTime getEndDate();
+    List<Instant> getTimetable();
 }
