@@ -49,8 +49,8 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
             this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
             this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
             try {
-                this.greenPower = new GreenPower(Integer.parseInt(args[3].toString()), this);
-                this.pricePerPowerUnit = Double.parseDouble(args[2].toString());
+                this.greenPower = new GreenPower(Integer.parseInt(args[2].toString()), this);
+                this.pricePerPowerUnit = Double.parseDouble(args[3].toString());
                 this.location = ImmutableLocation.builder()
                         .latitude(Double.parseDouble(args[4].toString()))
                         .longitude(Double.parseDouble(args[5].toString()))
