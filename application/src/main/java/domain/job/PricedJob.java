@@ -21,4 +21,9 @@ public interface PricedJob {
      * @return cost of execution of the given job
      */
     double getPriceForJob();
+
+    /**
+     * @return power in use for given CNA
+     */
+    double getPowerInUse();
 }

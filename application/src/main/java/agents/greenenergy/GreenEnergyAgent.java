@@ -2,18 +2,30 @@ package agents.greenenergy;
 
 import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
+import static domain.job.JobStatusEnum.ACCEPTED;
+import static domain.job.JobStatusEnum.IN_PROGRESS;
+import static java.util.stream.Collectors.toMap;
 import static yellowpages.YellowPagesService.register;
 
-import agents.greenenergy.behaviour.ListenForFinishedJobs;
 import agents.greenenergy.behaviour.ReceivePowerRequest;
+import agents.greenenergy.domain.EnergyTypeEnum;
+import agents.greenenergy.domain.GreenPower;
+import behaviours.ReceiveGUIController;
+import domain.MonitoringData;
+import domain.job.PowerJob;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
-import jade.core.behaviours.ParallelBehaviour;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Objects;
 
 /**
  * Agent representing the Green Energy Source Agent that produces the power for the Servers
@@ -33,22 +45,28 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(createInitialBehaviour());
+        addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this))));
+    }
+
+    @Override
+    protected void takeDown() {
+        getGuiController().removeAgentNodeFromGraph(getAgentNode());
+        super.takeDown();
     }
 
     private void initializeAgent(final Object[] args) {
-        if (Objects.nonNull(args) && args.length == 6) {
-
-            this.powerJobs = new HashMap<>();
+        if (Objects.nonNull(args) && args.length == 7) {
+            this.powerJobs = new ConcurrentHashMap<>();
             this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
             this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
             try {
-                this.maximumCapacity = Integer.parseInt(args[2].toString());
+                this.greenPower = new GreenPower(Integer.parseInt(args[2].toString()), this);
                 this.pricePerPowerUnit = Double.parseDouble(args[3].toString());
                 this.location = ImmutableLocation.builder()
                         .latitude(Double.parseDouble(args[4].toString()))
                         .longitude(Double.parseDouble(args[5].toString()))
                         .build();
+                this.energyType = (EnergyTypeEnum) args[6];
             } catch (NumberFormatException e) {
                 logger.info("Incorrect argument: please check arguments in the documentation");
                 doDelete();
@@ -59,10 +77,62 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         }
     }
 
-    private ParallelBehaviour createInitialBehaviour() {
-        final ParallelBehaviour behaviour = new ParallelBehaviour();
-        behaviour.addSubBehaviour(new ReceivePowerRequest(this));
-        behaviour.addSubBehaviour(new ListenForFinishedJobs(this));
-        return behaviour;
+    /**
+     * computes average power available during computation of the job being processed
+     *
+     * @param powerJob job being processed (not yet accepted!)
+     * @param weather  monitoring data with weather for requested timetable
+     * @return
+     */
+    public synchronized Optional<Double> getAverageAvailablePower(final PowerJob powerJob, final MonitoringData weather) {
+        var powerChart = getPowerChart(powerJob, weather);
+        var availablePower = powerChart.values().stream().mapToDouble(a -> a).average().getAsDouble();
+        logger.info("[{}] Calculated available {} average power {} between {} and {}", this.getName(), energyType,
+            String.format("%.2f", availablePower), powerJob.getStartTime(), powerJob.getEndTime());
+        if(powerChart.values().stream().anyMatch(value -> value <= 0)) {
+            return Optional.empty();
+        }
+        return Optional.of(availablePower);
+    }
+
+    private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
+        var start = powerJob.getStartTime().toInstant();
+        var end = powerJob.getEndTime().toInstant();
+        var timetable = getJobsTimetable(powerJob).stream()
+            .filter(time -> (time.isAfter(start) && time.isBefore(end)) || time.equals(start) || time.equals(end))
+            .toList();
+        var powerJobs = getPowerJobs().keySet().stream()
+            .filter(job -> getPowerJobs().get(job).equals(ACCEPTED) || getPowerJobs().get(job).equals(IN_PROGRESS))
+            .toList();
+
+        if(powerJobs.isEmpty()) {
+            return timetable.stream()
+                .collect(toMap(Function.identity(), time -> greenPower.getAvailablePower(weather, time, location)));
+        }
+
+        return timetable.stream()
+            .collect(toMap(Function.identity(), time -> powerJobs.stream()
+                .filter(job -> job.isExecutedAtTime(time))
+                .map(PowerJob::getPower)
+                .map(power ->  greenPower.getAvailablePower(weather, time, location) - power)
+                .mapToDouble(a -> a)
+                .average()
+                .orElseGet(() -> 0.0)));
+    }
+
+    /**
+     * Finds distinct start and end times of taken {@link PowerJob}s including the candidate job
+     *
+     * @param candidateJob job defining the search time window
+     * @return list of all start and end times
+     */
+    public List<Instant> getJobsTimetable(PowerJob candidateJob) {
+        return Stream.concat(Stream.of(candidateJob.getStartTime(), candidateJob.getEndTime()),
+                Stream.concat(
+                    powerJobs.keySet().stream().map(PowerJob::getStartTime),
+                    powerJobs.keySet().stream().map(PowerJob::getEndTime)))
+            .map(OffsetDateTime::toInstant)
+            .distinct()
+            .toList();
     }
 }

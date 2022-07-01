@@ -16,9 +16,11 @@ import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import messages.domain.ReplyMessageFactory;
+import net.miginfocom.layout.AC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -98,7 +100,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
             logger.info("[{}] Sending job execution offer to Client", guid);
             myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-            myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent, makeJobOfferForClient(chosenServerData, replyMessage), serverReplyMessage));
+            myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent, makeJobOfferForClient(chosenServerData,myCloudNetworkAgent.getCurrentPowerInUse(), replyMessage), serverReplyMessage));
             rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
     }

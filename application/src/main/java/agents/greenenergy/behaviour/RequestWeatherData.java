@@ -1,10 +1,12 @@
 package agents.greenenergy.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.ImmutableGreenSourceRequestData;
+import domain.job.PowerJob;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
@@ -20,16 +22,19 @@ public class RequestWeatherData extends OneShotBehaviour {
     private final GreenEnergyAgent myGreenEnergyAgent;
 
     private final String conversationId;
+    private final PowerJob powerJob;
 
     /**
      * Behaviour constructor.
      *
      * @param greenEnergyAgent agent which is executing the behaviour
      * @param conversationId   conversation identifier for given job processing
+     * @param job              power job for which the weather is requested
      */
-    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, String conversationId) {
+    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, String conversationId, PowerJob job) {
         myGreenEnergyAgent = greenEnergyAgent;
         this.conversationId = conversationId;
+        this.powerJob = job;
     }
 
     /**
@@ -42,12 +47,14 @@ public class RequestWeatherData extends OneShotBehaviour {
         request.setConversationId(conversationId);
         var requestData = ImmutableGreenSourceRequestData.builder()
                 .location(myGreenEnergyAgent.getLocation())
+                .timetable(myGreenEnergyAgent.getJobsTimetable(powerJob))
                 .build();
         try {
             request.setContent(getMapper().writeValueAsString(requestData));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+        displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getMonitoringAgent());
         myAgent.send(request);
     }
 }

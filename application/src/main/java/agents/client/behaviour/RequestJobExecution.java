@@ -1,6 +1,7 @@
 package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
+import static agents.client.ClientAgentConstants.MAX_TRAFFIC_DIFFERENCE;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
@@ -10,8 +11,11 @@ import static messages.MessagingUtils.retrieveProposals;
 import agents.client.ClientAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
+import com.gui.domain.nodes.ClientAgentNode;
+import com.gui.domain.types.JobStatusEnum;
 import domain.job.Job;
 import domain.job.PricedJob;
+import exception.IncorrectServerOfferException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -92,14 +96,16 @@ public class RequestJobExecution extends ContractNetInitiator {
             myAgent.doDelete();
         } else if (proposals.isEmpty()) {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
-            myAgent.doDelete();
+            myClientAgent.getGuiController().updateClientsCountByValue(-1);
+            ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);
         } else {
             List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
 
             if(validProposals.isEmpty()){
                 rejectJobOffers(myClientAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
-                myAgent.doDelete();
                 logger.info("[{}] I didn't understand any proposal from Cloud Network Agents", guid);
+                myClientAgent.getGuiController().updateClientsCountByValue(-1);
+                ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);
                 return;
             }
 
@@ -128,16 +134,24 @@ public class RequestJobExecution extends ContractNetInitiator {
     @Override
     protected void handleInform(final ACLMessage inform) {
         logger.info("[{}] The execution of my job started!", myAgent);
+        ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
     }
 
     private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {
-        final Comparator<ACLMessage> compareCNA = Comparator.comparingDouble(offer -> {
-            try {
-                return getMapper().readValue(offer.getContent(), PricedJob.class).getPriceForJob();
-            } catch (JsonProcessingException e) {
-                return Double.MAX_VALUE;
-            }
-        });
-        return receivedOffers.stream().min(compareCNA).orElseThrow();
+        return receivedOffers.stream().min(this::compareCNAOffers).orElseThrow();
+    }
+
+    private int compareCNAOffers(final ACLMessage cnaOffer1, final ACLMessage cnaOffer2) {
+        PricedJob cna1;
+        PricedJob cna2;
+        try {
+            cna1 = getMapper().readValue(cnaOffer1.getContent(), PricedJob.class);
+            cna2 = getMapper().readValue(cnaOffer2.getContent(), PricedJob.class);
+        } catch (JsonProcessingException e) {
+            return Integer.MAX_VALUE;
+        }
+        double powerDifference = cna1.getPowerInUse() - cna2.getPowerInUse();
+        int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());
+        return MAX_TRAFFIC_DIFFERENCE.isValidIntValue((int) powerDifference) ? priceDifference : (int) powerDifference;
     }
 }

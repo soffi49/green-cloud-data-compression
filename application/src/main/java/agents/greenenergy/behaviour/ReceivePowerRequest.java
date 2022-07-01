@@ -1,5 +1,6 @@
 package agents.greenenergy.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.MessageTemplate.*;
@@ -7,18 +8,19 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
-import jade.domain.FIPAAgentManagement.RefuseException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -49,16 +51,12 @@ public class ReceivePowerRequest extends CyclicBehaviour {
     @Override
     public void action() {
         final ACLMessage cfp = myAgent.receive(messageTemplate);
-
         if (Objects.nonNull(cfp)) {
             try {
                 final PowerJob job = readJob(cfp);
-                if (job.getPower() > myGreenEnergyAgent.getAvailablePower(job.getStartTime(), job.getEndTime())) {
-                    logger.info("[{}] Refusing job with id {} - not enough available power.", guid, job.getJobId());
-                    throw new RefuseException(cfp.getContent());
-                }
                 logger.info("[{}] Sending weather request to monitoring agent.", guid);
-                requestMonitoringData(cfp, job.getJobId());
+                myGreenEnergyAgent.getPowerJobs().put(job, JobStatusEnum.PROCESSING);
+                requestMonitoringData(cfp, job);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -77,10 +75,10 @@ public class ReceivePowerRequest extends CyclicBehaviour {
         return null;
     }
 
-    private void requestMonitoringData(final ACLMessage cfp, final String jobId) {
+    private void requestMonitoringData(final ACLMessage cfp, final PowerJob job) {
         var sequentialBehaviour = new SequentialBehaviour();
-        sequentialBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent, cfp.getConversationId()));
-        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, jobId));
+        sequentialBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent, cfp.getConversationId(), job));
+        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, job));
         myAgent.addBehaviour(sequentialBehaviour);
     }
 }

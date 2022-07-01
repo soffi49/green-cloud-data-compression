@@ -1,12 +1,18 @@
 package weather.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
+import org.jetbrains.annotations.Nullable;
 
 @JsonSerialize(as = ImmutableMain.class)
 @JsonDeserialize(as = ImmutableMain.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(Include.NON_NULL)
 @Immutable
 public interface Main {
 
@@ -26,8 +32,10 @@ public interface Main {
     Double getHumidity();
 
     @JsonProperty("sea_level")
+    @Nullable
     Double getSeaLeve();
 
     @JsonProperty("grnd_level")
+    @Nullable
     Double getGroundLever();
 }

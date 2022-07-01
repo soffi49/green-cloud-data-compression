@@ -1,5 +1,6 @@
 package agents.monitoring.behaviour;
 
+import static common.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
@@ -47,13 +48,14 @@ public class ServeWeatherInformation extends CyclicBehaviour {
             response.setPerformative(INFORM);
             try {
                 var requestData = getMapper().readValue(message.getContent(), GreenSourceRequestData.class);
-                var data = monitoringAgent.getWeather(requestData);
+                var data = monitoringAgent.getForecast(requestData);
                 response.setContent(getMapper().writeValueAsString(data));
             } catch (IOException e) {
                 e.printStackTrace();
             }
             response.setConversationId(message.getConversationId());
             logger.info("Sending message with the weather data");
+            displayMessageArrow(monitoringAgent, message.getSender());
             monitoringAgent.send(response);
         } else {
             block();

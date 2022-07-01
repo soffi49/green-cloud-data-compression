@@ -1,5 +1,7 @@
 package messages.domain;
 
+import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static mapper.JsonMapper.getMapper;
 
@@ -64,6 +66,7 @@ public class ReplyMessageFactory {
      */
     public static ACLMessage prepareConfirmationReply(final String jobId, final ACLMessage replyMessage) {
         replyMessage.setPerformative(ACLMessage.INFORM);
+        replyMessage.setProtocol(STARTED_JOB_PROTOCOL);
         replyMessage.setContent(String.format("The execution of job %s started!", jobId));
         return replyMessage;
     }

@@ -100,7 +100,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
             myServerAgent.getGreenSourceForJobMap().put(jobId, chosenGreenSourceOffer.getSender());
             logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent.getName());
             myServerAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, chosenGreenSourceOffer.createReply()));
-            rejectJobOffers(myAgent, jobId, chosenGreenSourceOffer, proposals);
+            rejectJobOffers(myServerAgentAgent, jobId, chosenGreenSourceOffer, proposals);
         }
     }
 
@@ -115,11 +115,11 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 
     private ACLMessage chooseGreenSourceToExecuteJob(final List<ACLMessage> greenSourceOffers) {
         final Comparator<ACLMessage> compareGreenSources =
-                Comparator.comparingInt(greenSource -> {
+                Comparator.comparingDouble(greenSource -> {
                     try {
                         return getMapper().readValue(greenSource.getContent(), GreenSourceData.class).getAvailablePowerInTime();
                     } catch (final JsonProcessingException e) {
-                        return Integer.MAX_VALUE;
+                        return Double.MAX_VALUE;
                     }
                 });
         return greenSourceOffers.stream().min(compareGreenSources).orElseThrow();

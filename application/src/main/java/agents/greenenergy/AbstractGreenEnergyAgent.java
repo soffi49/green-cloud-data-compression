@@ -1,64 +1,72 @@
 package agents.greenenergy;
 
-import domain.job.Job;
+import static domain.job.JobStatusEnum.IN_PROGRESS;
+
+import agents.AbstractAgent;
+import agents.greenenergy.domain.EnergyTypeEnum;
+import agents.greenenergy.domain.GreenPower;
+import domain.WeatherData;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
-import jade.core.Agent;
-
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
  */
-public abstract class AbstractGreenEnergyAgent extends Agent {
+public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
-    protected int maximumCapacity;
-    protected Location location;
+    /**
+     * greenPower        defines maximum power of the green source and holds algorithms to compute available power
+     * location          geographical location (longitude and latitude) of the green source
+     * pricePerPowerUnit price for the 1 power unit (1 kWh)
+     * powerJobs         list of power orders together with their statuses
+     * monitoringAgent   address of the corresponding monitoring agent
+     * ownerServer       address of the server which owns the given green source
+     * energyType        allows to differentiate between SOLAR and WIND energy sources
+     */
+
+    protected transient GreenPower greenPower;
+    protected transient Location location;
     protected double pricePerPowerUnit;
-    protected Map<PowerJob, JobStatusEnum> powerJobs;
+    protected transient ConcurrentMap<PowerJob, JobStatusEnum> powerJobs;
     protected AID monitoringAgent;
     protected AID ownerServer;
+    protected EnergyTypeEnum energyType;
 
     AbstractGreenEnergyAgent() {
+        super.setup();
     }
 
     /**
-     * Abstract Green Source Energy Agent constructor
+     * Method calculates the power in use at the given moment for the green source
      *
-     * @param maximumCapacity   maximum available power capacity of the green source
-     * @param location          geographical location (longitude and latitude) of the green source
-     * @param pricePerPowerUnit price for the 1 power unit (1 kWh)
-     * @param powerJobs      list of power orders together with their statuses
-     * @param monitoringAgent   address of the corresponding monitoring agent
-     * @param ownerServer       address of the server which owns the given green source
+     * @return current power in use
      */
-    AbstractGreenEnergyAgent(int maximumCapacity,
-                             Location location,
-                             double pricePerPowerUnit,
-                             Map<PowerJob, JobStatusEnum> powerJobs,
-                             AID monitoringAgent,
-                             AID ownerServer) {
-        this.maximumCapacity = maximumCapacity;
-        this.location = location;
-        this.pricePerPowerUnit = pricePerPowerUnit;
-        this.powerJobs = powerJobs;
-        this.monitoringAgent = monitoringAgent;
-        this.ownerServer = ownerServer;
+    public int getCurrentPowerInUse() {
+        return powerJobs.entrySet().stream()
+            .filter(job -> job.getValue().equals(IN_PROGRESS))
+            .mapToInt(job -> job.getKey().getPower()).sum();
     }
 
-    public int getAvailablePower(final OffsetDateTime startDate,
-                                    final OffsetDateTime endDate) {
-        final int powerInUser =
-                powerJobs.keySet().stream()
-                        .filter(job -> job.getStartTime().isBefore(endDate) &&
-                                job.getEndTime().isAfter(startDate))
-                        .mapToInt(PowerJob::getPower).sum();
-        return maximumCapacity - powerInUser;
+    /**
+     * Method retrieves if the given green source is currently active or idle
+     *
+     * @return green source state
+     */
+    public boolean getIsActiveState() {
+        return !powerJobs.entrySet().stream().filter(entry -> entry.getValue().equals(IN_PROGRESS)).toList().isEmpty();
     }
 
+    /**
+     * Method retrieves the job by the job id from job map
+     *
+     * @param jobId job identifier
+     * @return job
+     */
     public PowerJob getJobById(final String jobId) {
         return powerJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
     }
@@ -79,19 +87,19 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
         this.pricePerPowerUnit = pricePerPowerUnit;
     }
 
-    public int getMaximumCapacity() {
-        return maximumCapacity;
+    public double getCapacity(WeatherData weather, ZonedDateTime startTime) {
+        return greenPower.getAvailablePower(weather, startTime, location);
     }
 
     public void setMaximumCapacity(int maximumCapacity) {
-        this.maximumCapacity = maximumCapacity;
+        this.greenPower.setMaximumCapacity(maximumCapacity);
     }
 
     public Map<PowerJob, JobStatusEnum> getPowerJobs() {
         return powerJobs;
     }
 
-    public void setPowerJobs(Map<PowerJob, JobStatusEnum> powerJobs) {
+    public void setPowerJobs(ConcurrentMap<PowerJob, JobStatusEnum> powerJobs) {
         this.powerJobs = powerJobs;
     }
 
@@ -109,5 +117,9 @@ public abstract class AbstractGreenEnergyAgent extends Agent {
 
     public void setMonitoringAgent(AID monitoringAgent) {
         this.monitoringAgent = monitoringAgent;
+    }
+
+    public EnergyTypeEnum getEnergyType() {
+        return energyType;
     }
 }

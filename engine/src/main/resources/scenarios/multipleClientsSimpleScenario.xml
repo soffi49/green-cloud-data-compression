@@ -43,20 +43,4 @@
             <name>CNA</name>
         </cloudNetworkAgent>
     </cloudNetworkAgentsArgs>
-    <clientAgentsArgs>
-        <clientAgent>
-            <name>First_Client</name>
-            <jobId>1</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 10:40</endDate>
-            <power>5</power>
-        </clientAgent>
-        <clientAgent>
-            <name>Second_Client</name>
-            <jobId>2</jobId>
-            <startDate>10/12/2021 10:30</startDate>
-            <endDate>10/12/2021 10:40</endDate>
-            <power>10</power>
-        </clientAgent>
-    </clientAgentsArgs>
 </ScenarioArgs>

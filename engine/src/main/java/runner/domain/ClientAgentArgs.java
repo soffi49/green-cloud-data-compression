@@ -18,14 +18,14 @@ public interface ClientAgentArgs extends AgentArgs {
     String getJobId();
 
     /**
-     * @return job execution start time
+     * @return number of hours after which the job execution should start
      */
-    String getStartDate();
+    String getStart();
 
     /**
-     * @return job execution finish time
+     * @return number of hours after which the job execution should finish
      */
-    String getEndDate();
+    String getEnd();
 
     /**
      * @return power required for the job
