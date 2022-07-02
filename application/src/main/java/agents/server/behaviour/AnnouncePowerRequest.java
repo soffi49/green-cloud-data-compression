@@ -77,7 +77,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 
             if (validProposals.isEmpty()){
                 logger.info("I didn't understand any proposal from Green Energy Agents");
-                rejectJobOffers(myAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+                rejectJobOffers(myServerAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
                 myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
                 return;
             }
@@ -100,7 +100,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
             myServerAgent.getGreenSourceForJobMap().put(jobId, chosenGreenSourceOffer.getSender());
             logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent.getName());
             myServerAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, chosenGreenSourceOffer.createReply()));
-            rejectJobOffers(myServerAgentAgent, jobId, chosenGreenSourceOffer, proposals);
+            rejectJobOffers(myServerAgent, jobId, chosenGreenSourceOffer, proposals);
         }
     }
 
