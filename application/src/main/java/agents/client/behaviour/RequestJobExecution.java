@@ -10,6 +10,7 @@ import static messages.MessagingUtils.retrieveProposals;
 
 import agents.client.ClientAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.constant.InvalidJobIdConstant;
 import com.gui.domain.nodes.ClientAgentNode;
 import com.gui.domain.types.JobStatusEnum;
 import domain.job.Job;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
+import java.util.function.Predicate;
 
 /**
  * Behaviour responsible for sending and handling job's call for proposal
@@ -38,6 +40,7 @@ public class RequestJobExecution extends ContractNetInitiator {
     private final Job job;
     private final ClientAgent myClientAgent;
     private final String guid;
+    private final Predicate<ACLMessage> isValidProposal;
 
     /**
      * Behaviour constructor.
@@ -51,6 +54,14 @@ public class RequestJobExecution extends ContractNetInitiator {
         this.myClientAgent = (ClientAgent) agent;
         this.guid = agent.getName();
         this.job = job;
+        this.isValidProposal = (message) -> {
+            try {
+                var content = getMapper().readValue(message.getContent(), PricedJob.class);
+                return true;
+            } catch (JsonProcessingException e) {
+                return false;
+            }
+        };
     }
 
     /**
@@ -77,7 +88,7 @@ public class RequestJobExecution extends ContractNetInitiator {
      *                    Cloud Network Agent
      */
     @Override
-    protected void handleAllResponses(final Vector responses, final Vector acceptances) {
+    protected void handleAllResponses(final Vector responses, final Vector acceptances){
         final List<ACLMessage> proposals = retrieveProposals(responses);
 
         if (responses.isEmpty()) {
@@ -88,15 +99,28 @@ public class RequestJobExecution extends ContractNetInitiator {
             myClientAgent.getGuiController().updateClientsCountByValue(-1);
             ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);
         } else {
-            final ACLMessage chosenOffer = chooseCNAToExecuteJob(proposals);
-            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
-            myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
+            List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
+
+            if(validProposals.isEmpty()){
+                rejectJobOffers(myClientAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+                logger.info("[{}] I didn't understand any proposal from Cloud Network Agents", guid);
+                myClientAgent.getGuiController().updateClientsCountByValue(-1);
+                ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);
+                return;
+            }
+
+            ACLMessage chosenOffer = chooseCNAToExecuteJob(validProposals);
             PricedJob pricedJob;
+
             try {
                 pricedJob = getMapper().readValue(chosenOffer.getContent(), PricedJob.class);
             } catch (JsonProcessingException e) {
-                throw new IncorrectServerOfferException();
+                e.printStackTrace();
+                throw new RuntimeException();
             }
+
+            logger.info("[{}] Sending ACCEPT_PROPOSAL to {}", guid, chosenOffer.getSender().getName());
+            myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
             acceptances.add(ReplyMessageFactory.prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
             rejectJobOffers(myClientAgent, pricedJob.getJobId(), chosenOffer, proposals);
         }
@@ -124,7 +148,7 @@ public class RequestJobExecution extends ContractNetInitiator {
             cna1 = getMapper().readValue(cnaOffer1.getContent(), PricedJob.class);
             cna2 = getMapper().readValue(cnaOffer2.getContent(), PricedJob.class);
         } catch (JsonProcessingException e) {
-            throw new IncorrectServerOfferException();
+            return Integer.MAX_VALUE;
         }
         double powerDifference = cna1.getPowerInUse() - cna2.getPowerInUse();
         int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());

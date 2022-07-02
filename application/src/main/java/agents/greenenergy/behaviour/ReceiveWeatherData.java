@@ -108,13 +108,15 @@ public class ReceiveWeatherData extends CyclicBehaviour {
         myGreenEnergyAgent.getPowerJobs().remove(powerJob);
         displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
+        myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
     }
 
     private MonitoringData readMonitoringData(ACLMessage message) {
         try {
             return getMapper().readValue(message.getContent(), MonitoringData.class);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.info("[{}] I didn't understand the response with the weather data, sending refuse message to server", guid);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         }
         return null;
     }
