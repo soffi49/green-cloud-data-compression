@@ -6,23 +6,25 @@ import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.Location;
 import com.gui.domain.types.AgentNodeLabelEnum;
-import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Agent node class representing the green energy source
  */
 public class GreenEnergyAgentNode extends AgentNode {
 
-    private boolean isActive;
     private final Location location;
-    private final double maximumCapacity;
-    private double traffic;
-    private int numberOfExecutedJobs;
+    private final AtomicReference<Double> maximumCapacity;
     private final String monitoringAgent;
     private final String serverAgent;
+    private final AtomicBoolean isActive;
+    private final AtomicReference<Double> traffic;
+    private final AtomicInteger numberOfExecutedJobs;
 
     /**
      * Green energy source node constructor
@@ -34,14 +36,14 @@ public class GreenEnergyAgentNode extends AgentNode {
      */
     public GreenEnergyAgentNode(String name, double maximumCapacity, String monitoringAgent, String serverAgent, Location location) {
         super(name);
-        this.maximumCapacity = maximumCapacity;
+        this.maximumCapacity = new AtomicReference<>(maximumCapacity);
         this.location = location;
         this.serverAgent = serverAgent;
         this.monitoringAgent = monitoringAgent;
         this.style = GREEN_ENERGY_STYLE;
-        this.isActive = false;
-        this.traffic = 0;
-        this.numberOfExecutedJobs = 0;
+        this.isActive = new AtomicBoolean(false);
+        this.traffic = new AtomicReference<>(0D);
+        this.numberOfExecutedJobs = new AtomicInteger(0);
         initializeLabelsMap();
         createInformationPanel();
     }
@@ -51,9 +53,9 @@ public class GreenEnergyAgentNode extends AgentNode {
      *
      * @param powerInUse current power in use
      */
-    public synchronized void updateTraffic(final double powerInUse) {
-        this.traffic = (powerInUse / maximumCapacity) * 100;
-        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%",traffic)));
+    public void updateTraffic(final double powerInUse) {
+        this.traffic.set((powerInUse / maximumCapacity.get()) * 100);
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
 
@@ -62,8 +64,8 @@ public class GreenEnergyAgentNode extends AgentNode {
      *
      * @param value value to be added to the number of jobs being executed
      */
-    public synchronized void updateJobsCount(final int value) {
-        this.numberOfExecutedJobs += value;
+    public void updateJobsCount(final int value) {
+        this.numberOfExecutedJobs.getAndAdd(value);
         labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
     }
 
@@ -72,17 +74,17 @@ public class GreenEnergyAgentNode extends AgentNode {
      *
      * @param isActive information if the green source is active
      */
-    public synchronized void updateIsActive(final boolean isActive) {
-        this.isActive = isActive;
+    public void updateIsActive(final boolean isActive) {
+        this.isActive.set(isActive);
         labelsMap.get(AgentNodeLabelEnum.IS_ACTIVE_LABEL).setText(formatToHTML(isActive ? "ACTIVE" : "INACTIVE"));
         updateGraphUI();
     }
 
     @Override
     public void updateGraphUI() {
-        final String dynamicStyle = isActive ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE;
+        final String dynamicStyle = isActive.get() ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE;
         node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicStyle)));
-        updateActiveEdgeStyle(edges, isActive, name, serverAgent);
+        updateActiveEdgeStyle(edges, isActive.get(), name, serverAgent);
     }
 
     @Override
@@ -96,11 +98,11 @@ public class GreenEnergyAgentNode extends AgentNode {
     @Override
     protected void initializeLabelsMap() {
         super.initializeLabelsMap();
-        labelsMap.put(AgentNodeLabelEnum.IS_ACTIVE_LABEL, createListLabel(isActive ? "ACTIVE" : "INACTIVE"));
+        labelsMap.put(AgentNodeLabelEnum.IS_ACTIVE_LABEL, createListLabel(isActive.get() ? "ACTIVE" : "INACTIVE"));
         labelsMap.put(AgentNodeLabelEnum.LOCATION_LATITUDE_LABEL, createListLabel(location.getLatitude()));
         labelsMap.put(AgentNodeLabelEnum.LOCATION_LONGITUDE_LABEL, createListLabel(location.getLongitude()));
         labelsMap.put(AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
-        labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.format("%.2f%%",traffic)));
+        labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.format("%.2f%%", traffic.get())));
         labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createListLabel(String.valueOf(numberOfExecutedJobs)));
     }
 }

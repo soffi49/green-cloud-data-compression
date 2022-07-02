@@ -12,11 +12,14 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 import org.graphstream.graph.Edge;
+import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.swing_viewer.SwingViewer;
 import org.graphstream.ui.swing_viewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +29,8 @@ import java.util.List;
 
 
 public class GUIControllerImpl implements GUIController {
+
+    private static final Logger logger = LoggerFactory.getLogger(GUIControllerImpl.class);
 
     private static final Dimension MAIN_SIZE = new Dimension((int) (SCREEN_SIZE.width * GUI_FRAME_SIZE_WIDTH) + SCROLL_BAR_WIDTH,
                                                              (int) (SCREEN_SIZE.height * GUI_FRAME_SIZE_HEIGHT) + SCROLL_BAR_WIDTH);
@@ -69,28 +74,32 @@ public class GUIControllerImpl implements GUIController {
     }
 
     @Override
-    public synchronized void removeAgentNodeFromGraph(final AgentNode agentNode) {
+    public void removeAgentNodeFromGraph(final AgentNode agentNode) {
+        try {
+            graph.removeNode(agentNode.getName());
+        } catch (ElementNotFoundException e) {
+            logger.info("Agent node {} was already removed", agentNode.getName());
+        }
         graphNodes.remove(agentNode);
-        graph.removeNode(agentNode.getName());
         if (!(agentNode instanceof ClientAgentNode)) {
             detailsPanel.revalidateComboBoxModel(graphNodes);
         }
     }
 
     @Override
-    public synchronized void updateClientsCountByValue(int value) {
+    public void updateClientsCountByValue(int value) {
         summaryPanel.updateClientsCountByValue(value);
         refreshMainFrame();
     }
 
     @Override
-    public synchronized void updateActiveJobsCountByValue(int value) {
+    public void updateActiveJobsCountByValue(int value) {
         summaryPanel.updateActiveJobsCountByValue(value);
         refreshMainFrame();
     }
 
     @Override
-    public synchronized void updateAllJobsCountByValue(int value) {
+    public void updateAllJobsCountByValue(int value) {
         summaryPanel.updateAllJobsCountByValue(value);
         refreshMainFrame();
     }
@@ -102,13 +111,19 @@ public class GUIControllerImpl implements GUIController {
     }
 
     @Override
-    public synchronized void displayMessageArrow(final AgentNode senderAgent, final List<String> receiversNames) {
+    public void displayMessageArrow(final AgentNode senderAgent, final List<String> receiversNames) {
         final List<Edge> edgesToDisplay = senderAgent.getEdges().stream()
                 .filter(edge -> edge.isDirected() && receiversNames.contains(edge.getTargetNode().getId()))
                 .toList();
-        edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_MESSAGE_STYLE));
+        synchronized (graph) {
+            edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_MESSAGE_STYLE));
+        }
 
-        final ActionListener hideMessageArrowAction = e -> edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
+        final ActionListener hideMessageArrowAction = e -> {
+            synchronized (graph) {
+                edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
+            }
+        };
         final Timer hideMessageArrowTimer = new Timer(900, hideMessageArrowAction);
         hideMessageArrowTimer.start();
     }
@@ -167,7 +182,9 @@ public class GUIControllerImpl implements GUIController {
     }
 
     private void refreshMainFrame() {
-        mainFrame.revalidate();
-        mainFrame.repaint();
+        synchronized (mainFrame) {
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        }
     }
 }

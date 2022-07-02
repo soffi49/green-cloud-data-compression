@@ -11,6 +11,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class represents the summary panel of the GUI
@@ -24,18 +25,18 @@ public class SummaryPanel {
     private final JPanel mainPanel;
     private final Map<LabelEnum, JLabel> labelMap;
 
-    private int clientsCount;
-    private int activeJobsCount;
-    private int allJobsCount;
+    private final AtomicInteger clientsCount;
+    private final AtomicInteger activeJobsCount;
+    private final AtomicInteger allJobsCount;
 
 
     /**
      * Default constructor
      */
     public SummaryPanel() {
-        this.clientsCount = 0;
-        this.activeJobsCount = 0;
-        this.allJobsCount = 0;
+        this.clientsCount = new AtomicInteger(0);
+        this.activeJobsCount = new AtomicInteger(0);
+        this.allJobsCount = new AtomicInteger(0);
         this.labelMap = initializeLabels();
         this.mainPanel = initializeSummaryPanel();
     }
@@ -45,8 +46,8 @@ public class SummaryPanel {
      *
      * @param value value to be added to the clients number
      */
-    public synchronized void updateClientsCountByValue(final int value) {
-        clientsCount += value;
+    public void updateClientsCountByValue(final int value) {
+        clientsCount.getAndAdd(value);
         labelMap.get(CLIENT_COUNT_LABEL).setText(formatToHTML(formatToHTML(String.valueOf(clientsCount))));
     }
 
@@ -55,8 +56,8 @@ public class SummaryPanel {
      *
      * @param value value to be added to the active jobs number
      */
-    public synchronized void updateActiveJobsCountByValue(final int value) {
-        activeJobsCount += value;
+    public void updateActiveJobsCountByValue(final int value) {
+        activeJobsCount.getAndAdd(value);
         labelMap.get(ACTIVE_JOBS_LABEL).setText(formatToHTML(String.valueOf(activeJobsCount)));
     }
 
@@ -65,8 +66,8 @@ public class SummaryPanel {
      *
      * @param value value to be added to the all jobs number
      */
-    public synchronized void updateAllJobsCountByValue(final int value) {
-        allJobsCount += value;
+    public void updateAllJobsCountByValue(final int value) {
+        allJobsCount.getAndAdd(value);
         labelMap.get(ALL_JOBS_COUNT).setText(formatToHTML(String.valueOf(allJobsCount)));
     }
 
