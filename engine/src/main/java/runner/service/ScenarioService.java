@@ -30,8 +30,6 @@ import java.util.stream.IntStream;
  * Service used in running the scenarios
  */
 public class ScenarioService {
-
-    private static final int CLIENT_NUMBER = 200;
     private static final String RESOURCE_SCENARIO_PATH = "./scenarios/";
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     final List<AgentController> agentsToRun = new ArrayList<>();
