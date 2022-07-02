@@ -71,7 +71,7 @@ public class ClientAgent extends AbstractClientAgent {
         try {
             final OffsetDateTime startTime = TimeUtils.convertToOffsetDateTime(arguments[0].toString());
             final OffsetDateTime endTime = TimeUtils.convertToOffsetDateTime(arguments[1].toString());
-            final OffsetDateTime currentTime = TimeUtils.getCurrentTime();
+            final OffsetDateTime currentTime = TimeUtils.getCurrentTimeMinusError();
             if (startTime.isBefore(currentTime) || endTime.isBefore(currentTime)) {
                 logger.error("The job execution dates cannot be before current time!");
                 doDelete();
