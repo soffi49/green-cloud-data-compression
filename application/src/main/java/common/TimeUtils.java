@@ -30,7 +30,7 @@ public class TimeUtils {
     public static OffsetDateTime convertToOffsetDateTime(final String date) {
         try {
             final LocalDateTime datetime = LocalDateTime.parse(date, DATE_TIME_FORMATTER);
-            final ZonedDateTime zoned = datetime.atZone(ZoneId.of("Europe/Berlin"));
+            final ZonedDateTime zoned = datetime.atZone(ZoneId.of("UTC"));
             return zoned.toOffsetDateTime();
         } catch (DateTimeParseException e) {
             logger.info("The provided date format is incorrect");
@@ -42,7 +42,14 @@ public class TimeUtils {
     /**
      * @return current time with possible error delay
      */
+    public static OffsetDateTime getCurrentTimeMinusError() {
+        return getCurrentTime().minusMinutes(TIME_ERROR);
+    }
+
+    /**
+     * @return current time
+     */
     public static OffsetDateTime getCurrentTime() {
-        return OffsetDateTime.now().minusMinutes(TIME_ERROR);
+        return OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
     }
 }

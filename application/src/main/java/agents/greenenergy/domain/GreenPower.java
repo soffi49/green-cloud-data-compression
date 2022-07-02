@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 public class GreenPower {
 
     private static final Logger logger = LoggerFactory.getLogger(GreenPower.class);
+    //TODO set the next value to 0 to get real weather (multiplier is for testing purposes)
+    private static final int TEST_MULTIPLIER = 50;
 
     private GreenEnergyAgent greenEnergyAgent;
     private int maximumCapacity;
@@ -67,7 +69,7 @@ public class GreenPower {
             return 0;
         }
 
-        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1);
+        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
     }
 
     /**
@@ -79,7 +81,7 @@ public class GreenPower {
     private double getWindPower(WeatherData weather) {
         //TODO get proper wind speed, for now +5 m/s to get wind at some height above ground level
         return maximumCapacity * pow(
-            (weather.getWindSpeed() + 5 - CUT_ON_WIND_SPEED) / (RATED_WIND_SPEED - CUT_ON_WIND_SPEED), 2);
+            (weather.getWindSpeed() + 5 - CUT_ON_WIND_SPEED) / (RATED_WIND_SPEED - CUT_ON_WIND_SPEED), 2) * TEST_MULTIPLIER;
     }
 
     private SunTimes getSunTimes(ZonedDateTime dateTime, Location location) {

@@ -2,6 +2,7 @@ package agents.server.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.GUIUtils.updateServerState;
+import static common.TimeUtils.getCurrentTime;
 import static messages.domain.JobStatusMessageFactory.prepareJobStartedMessage;
 
 import agents.server.ServerAgent;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class StartJobExecution extends WakerBehaviour {
      * @return behaviour to be run
      */
     public static StartJobExecution createFor(final ServerAgent serverAgent, final Job jobToExecute) {
-        final long hourDifference = ChronoUnit.HOURS.between(OffsetDateTime.now(), jobToExecute.getStartTime());
+        final long hourDifference = ChronoUnit.HOURS.between(getCurrentTime(), jobToExecute.getStartTime());
         final long timeOut = hourDifference < 0 ? 0 : hourDifference * 2 * 1000;
         return new StartJobExecution(serverAgent, timeOut, jobToExecute);
     }

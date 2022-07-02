@@ -2,6 +2,7 @@ package agents.cloudnetwork.behaviour;
 
 import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.getCurrentTime;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
@@ -85,7 +86,7 @@ public class ProposeJobOffer extends ProposeInitiator {
     }
 
     private Long calculateJobStartTimeout(final Job job) {
-        final long hourDifference = ChronoUnit.HOURS.between(OffsetDateTime.now(), job.getStartTime());
+        final long hourDifference = ChronoUnit.HOURS.between(getCurrentTime(), job.getStartTime());
         return (hourDifference < 0 ? 0 : hourDifference * 2 * 1000) + MAX_ERROR_IN_JOB_START;
     }
 }
