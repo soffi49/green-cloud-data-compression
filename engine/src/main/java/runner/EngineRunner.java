@@ -36,7 +36,7 @@ public class EngineRunner {
         final ScenarioService scenarioService = new ScenarioService(container, guiController);
 
         guiController.createGUI();
-        scenarioService.createAgentsFromScenarioFile("complicatedScenarioNoWeatherChanging");
+        scenarioService.createAgentsFromScenarioFile("multipleClientsSimpleScenario");
     }
 
     /**
