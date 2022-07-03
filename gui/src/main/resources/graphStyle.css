@@ -98,7 +98,7 @@ edge.active {
 
 edge.messageFlow {
     fill-color: #227910;
-    arrow-size: 2;
+    arrow-size: 4;
     stroke-mode: dots;
 }
 
