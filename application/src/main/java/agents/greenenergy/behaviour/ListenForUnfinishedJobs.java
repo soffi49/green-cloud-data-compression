@@ -5,6 +5,7 @@ import static common.GUIUtils.updateGreenSourceState;
 import static messages.domain.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 
 import agents.greenenergy.GreenEnergyAgent;
+import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -44,7 +45,7 @@ public class ListenForUnfinishedJobs extends WakerBehaviour {
     @Override
     protected void onWake() {
         final PowerJob job = myGreenEnergyAgent.getJobById(jobId);
-        if (Objects.nonNull(job)) {
+        if (Objects.nonNull(job) && myGreenEnergyAgent.getPowerJobs().containsKey(job) && myGreenEnergyAgent.getPowerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
             logger.error("[{}] The power delivery should be finished! Finishing power delivery by hand.", myAgent.getName());
             myGreenEnergyAgent.getPowerJobs().remove(job);
             updateGreenSourceState(myGreenEnergyAgent, true);

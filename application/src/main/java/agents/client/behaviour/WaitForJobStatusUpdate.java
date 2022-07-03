@@ -1,5 +1,7 @@
 package agents.client.behaviour;
 
+import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -14,6 +16,8 @@ import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
@@ -46,9 +50,9 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             switch (message.getProtocol()){
                 case FINISH_JOB_PROTOCOL -> {
-                    logger.info("[{}] The execution of my job finished! :)", myAgent.getName());
+                    checkIfJobFinishedOnTime();
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.FINISHED);
-                    myClientAgent.getGuiController().updateClientsCountByValue(-1);;
+                    myClientAgent.getGuiController().updateClientsCountByValue(-1);
                 }
                 case DELAYED_JOB_PROTOCOL ->  {
                     logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
@@ -57,6 +61,16 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
             }
         } else {
             block();
+        }
+    }
+
+    private void checkIfJobFinishedOnTime() {
+        final OffsetDateTime endTime = getCurrentTime();
+        final long timeDifference = ChronoUnit.MILLIS.between(endTime, myClientAgent.getSimulatedJobEnd());
+        if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
+            logger.info("[{}] The execution of my job finished on time! :)", myAgent.getName());
+        } else {
+            logger.info("[{}] The execution of my job finished with a delay equal to {}! :(", myAgent.getName(), timeDifference);
         }
     }
 }
