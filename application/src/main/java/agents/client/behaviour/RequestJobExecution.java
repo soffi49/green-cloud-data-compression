@@ -1,7 +1,7 @@
 package agents.client.behaviour;
 
-import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
-import static agents.client.ClientAgentConstants.MAX_TRAFFIC_DIFFERENCE;
+import static agents.client.ClientAgentConstants.*;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
@@ -10,12 +10,11 @@ import static messages.MessagingUtils.retrieveProposals;
 
 import agents.client.ClientAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import common.constant.InvalidJobIdConstant;
 import com.gui.domain.nodes.ClientAgentNode;
 import com.gui.domain.types.JobStatusEnum;
+import common.constant.InvalidJobIdConstant;
 import domain.job.Job;
 import domain.job.PricedJob;
-import exception.IncorrectServerOfferException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -25,7 +24,8 @@ import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Vector;
 import java.util.function.Predicate;
@@ -88,7 +88,7 @@ public class RequestJobExecution extends ContractNetInitiator {
      *                    Cloud Network Agent
      */
     @Override
-    protected void handleAllResponses(final Vector responses, final Vector acceptances){
+    protected void handleAllResponses(final Vector responses, final Vector acceptances) {
         final List<ACLMessage> proposals = retrieveProposals(responses);
 
         if (responses.isEmpty()) {
@@ -101,7 +101,7 @@ public class RequestJobExecution extends ContractNetInitiator {
         } else {
             List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
 
-            if(validProposals.isEmpty()){
+            if (validProposals.isEmpty()) {
                 rejectJobOffers(myClientAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
                 logger.info("[{}] I didn't understand any proposal from Cloud Network Agents", guid);
                 myClientAgent.getGuiController().updateClientsCountByValue(-1);
@@ -133,8 +133,18 @@ public class RequestJobExecution extends ContractNetInitiator {
      */
     @Override
     protected void handleInform(final ACLMessage inform) {
-        logger.info("[{}] The execution of my job started!", myAgent);
+        checkIfJobStartedOnTime();
         ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
+    }
+
+    private void checkIfJobStartedOnTime() {
+        final OffsetDateTime endTime = getCurrentTime();
+        final long timeDifference = ChronoUnit.MILLIS.between(endTime, myClientAgent.getSimulatedJobStart());
+        if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
+            logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
+        } else {
+            logger.info("[{}] The execution of my job started with a delay equal to {}! :(", myAgent.getName(), timeDifference);
+        }
     }
 
     private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {

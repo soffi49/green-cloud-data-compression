@@ -9,6 +9,7 @@ import static mapper.JsonMapper.getMapper;
 import agents.server.ServerAgent;
 import domain.job.Job;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
@@ -49,12 +50,19 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
                 final Job job = myServerAgent.getJobById(jobId);
                 logger.info("[{}] Scheduling the execution of the job", myAgent.getName());
                 announceBookedJob(myServerAgent, jobId);
-                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, job));
+                myAgent.addBehaviour(prepareBehaviour(job));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
             block();
         }
+    }
+
+    private ParallelBehaviour prepareBehaviour(final Job job) {
+        final ParallelBehaviour behaviour = new ParallelBehaviour();
+        behaviour.addSubBehaviour(StartJobExecution.createFor(myServerAgent, job));
+        behaviour.addSubBehaviour(new ListenForUnfinishedJobInformation());
+        return behaviour;
     }
 }

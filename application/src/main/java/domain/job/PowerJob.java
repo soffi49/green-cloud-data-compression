@@ -1,5 +1,7 @@
 package domain.job;
 
+import static common.TimeUtils.isWithinTimeStamp;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
@@ -36,7 +38,6 @@ public interface PowerJob {
     int getPower();
 
      default boolean isExecutedAtTime(Instant timestamp) {
-        return (timestamp.isAfter(getStartTime().toInstant()) && timestamp.isBefore(getEndTime().toInstant())) ||
-            timestamp.equals(getStartTime().toInstant());
+        return isWithinTimeStamp(getStartTime().toInstant(), getEndTime().toInstant(), timestamp);
     }
 }
