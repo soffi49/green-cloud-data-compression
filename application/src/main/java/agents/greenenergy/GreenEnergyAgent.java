@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.toMap;
 import static yellowpages.YellowPagesService.register;
 
 import agents.greenenergy.behaviour.ReceivePowerRequest;
+import agents.greenenergy.behaviour.RegisterGreenAgentInDF;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
 import behaviours.ReceiveGUIController;
@@ -44,8 +45,10 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
-        register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this))));
+        //register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerServer().getName());
+        addBehaviour(new ReceiveGUIController(this, List.of(
+                new ReceivePowerRequest(this),
+                new RegisterGreenAgentInDF(this, Long.valueOf(2 * 60 * 60 * 100)))));
     }
 
     @Override

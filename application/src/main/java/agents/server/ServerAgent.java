@@ -4,6 +4,7 @@ import static common.constant.DFServiceConstants.*;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
+import agents.greenenergy.behaviour.RegisterServerInDF;
 import agents.server.behaviour.ReceiveJobRequest;
 import behaviours.ReceiveGUIController;
 import jade.core.AID;
@@ -29,8 +30,10 @@ public class ServerAgent extends AbstractServerAgent {
         super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
-        register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
-        addBehaviour(new ReceiveGUIController(this, List.of(new ReceiveJobRequest())));
+        //register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
+        addBehaviour(new ReceiveGUIController(this, List.of(
+                new ReceiveJobRequest(),
+                new RegisterServerInDF(this, Long.valueOf(2 * 60 * 60 * 100)))));
     }
 
     @Override
