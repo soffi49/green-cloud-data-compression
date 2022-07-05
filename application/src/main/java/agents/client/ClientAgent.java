@@ -1,5 +1,8 @@
 package agents.client;
 
+import static common.TimeUtils.convertToSimulationTime;
+import static common.TimeUtils.getCurrentTime;
+
 import agents.client.behaviour.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
 import agents.client.behaviour.WaitForJobStatusUpdate;
@@ -13,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +61,7 @@ public class ClientAgent extends AbstractClientAgent {
     @Override
     protected void takeDown() {
         logger.info("I'm finished. Bye!");
-        if(Objects.nonNull(getGuiController())) {
+        if (Objects.nonNull(getGuiController())) {
             getGuiController().removeAgentNodeFromGraph(getAgentNode());
         }
         super.takeDown();
@@ -72,6 +76,7 @@ public class ClientAgent extends AbstractClientAgent {
             final OffsetDateTime startTime = TimeUtils.convertToOffsetDateTime(arguments[0].toString());
             final OffsetDateTime endTime = TimeUtils.convertToOffsetDateTime(arguments[1].toString());
             final OffsetDateTime currentTime = TimeUtils.getCurrentTimeMinusError();
+            prepareSimulatedTimes(startTime, endTime);
             if (startTime.isBefore(currentTime) || endTime.isBefore(currentTime)) {
                 logger.error("The job execution dates cannot be before current time!");
                 doDelete();
@@ -95,6 +100,14 @@ public class ClientAgent extends AbstractClientAgent {
             doDelete();
         }
         return null;
+    }
+
+    private void prepareSimulatedTimes(final OffsetDateTime startTime, final OffsetDateTime endTime) {
+        final OffsetDateTime currentTime = getCurrentTime();
+        final long expectedJobStart = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, startTime));
+        final long expectedJobEnd = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, endTime));
+        setSimulatedJobStart(currentTime.plus(expectedJobStart, ChronoUnit.MILLIS));
+        setSimulatedJobEnd(currentTime.plus(expectedJobEnd, ChronoUnit.MILLIS));
     }
 
     private SequentialBehaviour prepareStartingBehaviour(final Job job) {

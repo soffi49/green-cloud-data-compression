@@ -1,5 +1,6 @@
 package agents.greenenergy;
 
+import static common.TimeUtils.isWithinTimeStamp;
 import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static domain.job.JobStatusEnum.ACCEPTED;
@@ -99,7 +100,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         var start = powerJob.getStartTime().toInstant();
         var end = powerJob.getEndTime().toInstant();
         var timetable = getJobsTimetable(powerJob).stream()
-            .filter(time -> (time.isAfter(start) && time.isBefore(end)) || time.equals(start) || time.equals(end))
+            .filter(time -> isWithinTimeStamp(start, end, time))
             .toList();
         var powerJobs = getPowerJobs().keySet().stream()
             .filter(job -> getPowerJobs().get(job).equals(ACCEPTED) || getPowerJobs().get(job).equals(IN_PROGRESS))

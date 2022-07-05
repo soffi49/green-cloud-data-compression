@@ -1,10 +1,14 @@
 package agents.server;
 
+import static common.GUIUtils.displayMessageArrow;
+import static common.GUIUtils.updateServerState;
+import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
+
 import agents.AbstractAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
-import jade.core.Agent;
+import jade.lang.acl.ACLMessage;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -92,6 +96,21 @@ public abstract class AbstractServerAgent extends AbstractAgent {
                                 job.getEndTime().isAfter(startDate))
                         .mapToInt(Job::getPower).sum();
         return maximumCapacity - powerInUser;
+    }
+
+    /**
+     * Method performs default behaviour when the job is finished
+     *
+     * @param jobToFinish job to be finished
+     */
+    public void finishJobExecution(final Job jobToFinish) {
+        final List<AID> receivers = List.of(greenSourceForJobMap.get(jobToFinish.getJobId()), ownerCloudNetworkAgent);
+        final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), receivers);
+        serverJobs.remove(jobToFinish);
+        greenSourceForJobMap.remove(jobToFinish.getJobId());
+        updateServerState((ServerAgent) this, true);
+        displayMessageArrow(this, receivers);
+        this.send(finishJobMessage);
     }
 
     public Job getJobById(final String jobId) {

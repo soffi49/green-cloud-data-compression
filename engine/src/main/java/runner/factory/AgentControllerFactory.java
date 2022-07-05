@@ -16,7 +16,6 @@ public interface AgentControllerFactory {
      *
      * @param agentArgs agent arguments
      * @return AgentController that can be started
-     * @throws StaleProxyException
      */
     AgentController createAgentController(AgentArgs agentArgs) throws StaleProxyException;
 
