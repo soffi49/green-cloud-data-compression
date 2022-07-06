@@ -6,13 +6,19 @@ import agents.AbstractAgent;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
 import domain.WeatherData;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
+
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
@@ -48,8 +54,8 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
      */
     public int getCurrentPowerInUse() {
         return powerJobs.entrySet().stream()
-            .filter(job -> job.getValue().equals(IN_PROGRESS))
-            .mapToInt(job -> job.getKey().getPower()).sum();
+                .filter(job -> job.getValue().equals(IN_PROGRESS))
+                .mapToInt(job -> job.getKey().getPower()).sum();
     }
 
     /**
@@ -62,13 +68,47 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
     }
 
     /**
+     * Method retrieves the number of jobs that are executed by the green source
+     *
+     * @return jobs count
+     */
+    public int getJobCount() {
+        return powerJobs.keySet().stream().map(PowerJob::getJobId).collect(Collectors.toSet()).size();
+    }
+
+    /**
      * Method retrieves the job by the job id from job map
      *
      * @param jobId job identifier
      * @return job
      */
     public PowerJob getJobById(final String jobId) {
-        return powerJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
+        return powerJobs.keySet().stream()
+                .filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
+    }
+
+    /**
+     * Method retrieves the job by the job id and star time from job map
+     *
+     * @param jobId     job identifier
+     * @param startTime job start time
+     * @return job
+     */
+    public PowerJob getJobByIdAndStartDate(final String jobId, final OffsetDateTime startTime) {
+        return powerJobs.keySet().stream()
+                .filter(job -> job.getJobId().equals(jobId) && job.getStartTime().isEqual(startTime)).findFirst().orElse(null);
+    }
+
+    /**
+     * Method retrieves the job by the job id and star time from job map
+     *
+     * @param jobInstanceId unique identifier of the job instance
+     * @return job
+     */
+    public PowerJob getJobByIdAndStartDate(final JobInstanceIdentifier jobInstanceId) {
+        return powerJobs.keySet().stream()
+                .filter(job -> job.getJobId().equals(jobInstanceId.getJobId()) && job.getStartTime().isEqual(jobInstanceId.getStartTime()))
+                .findFirst().orElse(null);
     }
 
     public AID getOwnerServer() {
@@ -93,6 +133,10 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
     public void setMaximumCapacity(int maximumCapacity) {
         this.greenPower.setMaximumCapacity(maximumCapacity);
+    }
+
+    public int getMaximumCapacity() {
+        return this.greenPower.getMaximumCapacity();
     }
 
     public Map<PowerJob, JobStatusEnum> getPowerJobs() {

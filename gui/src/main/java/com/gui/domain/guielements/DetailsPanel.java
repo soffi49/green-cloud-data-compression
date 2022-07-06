@@ -11,7 +11,9 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class represents the details' panel of the GUI
@@ -24,21 +26,23 @@ public class DetailsPanel {
     private static final JPanel DEFAULT_INFO_PANEL = createDefaultMessagePanel();
     private static final CC DETAIL_PANEL_STYLE = new CC().height("100%").growX().spanX().gapY("10px", "10px");
 
-    private static final int INFORMATION_PANEL_IDX = 2;
-    private List<AgentNode> allNetworkAgentNodes;
+    private static final int INFORMATION_PANEL_IDX = 3;
     private final JPanel detailPanel;
-    private final JComboBox comboBox;
+    private final JComboBox comboBoxNetwork;
+    private final JComboBox comboBoxClients;
+    private List<AgentNode> allNetworkAgentNodes;
+    private List<AgentNode> allClientNodes;
     private JPanel agentDetailsPanel;
 
     /**
      * Class constructor
-     *
-     * @param agentNodes all agents nodes included in the select
      */
-    public DetailsPanel(final List<AgentNode> agentNodes) {
-        this.allNetworkAgentNodes = agentNodes;
+    public DetailsPanel() {
+        this.allNetworkAgentNodes = new ArrayList<>();
+        this.allClientNodes = new ArrayList<>();
         this.agentDetailsPanel = DEFAULT_INFO_PANEL;
-        this.comboBox = initializeComboBox();
+        this.comboBoxNetwork = initializeNetworkComboBox();
+        this.comboBoxClients = initializeClientsComboBox();
         this.detailPanel = createDetailsPanel();
     }
 
@@ -57,17 +61,26 @@ public class DetailsPanel {
         final MigLayout panelLayout = new MigLayout(new LC().fillX());
         final JPanel detailsPanel = createBorderPanel(panelLayout);
         addPanelHeader(TITLE_LABEL, detailsPanel);
-        detailsPanel.add(comboBox, new CC().height("25px").growX().spanX());
+        detailsPanel.add(comboBoxNetwork, new CC().height("20px").growX().spanX());
+        detailsPanel.add(comboBoxClients, new CC().height("20px").growX().spanX());
         detailsPanel.add(agentDetailsPanel, DETAIL_PANEL_STYLE);
         return detailsPanel;
     }
 
     /**
-     * Method updates the drop-down with new agent nodes
+     * Method updates the network drop-down with new agent nodes
      */
-    public void revalidateComboBoxModel(final List<AgentNode> agentNodes) {
-        allNetworkAgentNodes = agentNodes;
-        comboBox.setModel(new DefaultComboBoxModel(getDropDownNetworkAgentsNames()));
+    public void revalidateNetworkComboBoxModel(final List<AgentNode> agentNodes) {
+        allNetworkAgentNodes = agentNodes.stream().filter(agentNode -> !(agentNode instanceof MonitoringAgentNode) && !(agentNode instanceof ClientAgentNode)).toList();
+        comboBoxNetwork.setModel(new DefaultComboBoxModel(getDropDownNetworkAgentsNames()));
+    }
+
+    /**
+     * Method updates the network drop-down with new agent nodes
+     */
+    public void revalidateClientComboBoxModel(final List<AgentNode> agentNodes) {
+        allClientNodes = agentNodes.stream().filter(ClientAgentNode.class::isInstance).toList();
+        comboBoxClients.setModel(new DefaultComboBoxModel(getDropDownClientAgentsNames()));
     }
 
     /**
@@ -77,28 +90,52 @@ public class DetailsPanel {
         return detailPanel;
     }
 
-    private JComboBox initializeComboBox() {
+    private JComboBox initializeNetworkComboBox() {
         final JComboBox jComboBox = createDefaultComboBox(getDropDownNetworkAgentsNames());
-        jComboBox.addActionListener(e -> changeSelectedAgent((String) jComboBox.getSelectedItem()));
+        jComboBox.addActionListener(e -> changeSelectedNetworkAgent((String) jComboBox.getSelectedItem()));
+        return jComboBox;
+    }
+
+    private JComboBox initializeClientsComboBox() {
+        final JComboBox jComboBox = createDefaultComboBox(getDropDownClientAgentsNames());
+        jComboBox.addActionListener(e -> changeSelectedClientAgent((String) jComboBox.getSelectedItem()));
         return jComboBox;
     }
 
     private String[] getDropDownNetworkAgentsNames() {
-        final List<String> agentNames = new java.util.ArrayList<>(allNetworkAgentNodes.stream()
-                                                                          .filter(agentNode -> !(agentNode instanceof MonitoringAgentNode) && !(agentNode instanceof ClientAgentNode))
-                                                                          .map(AgentNode::getName)
-                                                                          .toList());
+        final List<String> agentNames = new java.util.ArrayList<>(allNetworkAgentNodes.stream().map(AgentNode::getName).toList());
         agentNames.add(0, "Please select the agent");
         return agentNames.toArray(new String[0]);
     }
 
-    private void changeSelectedAgent(final String newAgentName) {
-        agentDetailsPanel = allNetworkAgentNodes.stream()
-                .filter(agent -> agent.getName().equals(newAgentName))
-                .findFirst()
-                .map(AgentNode::getInformationPanel)
-                .orElse(DEFAULT_INFO_PANEL);
-        refreshDetailsPanel();
+    private String[] getDropDownClientAgentsNames() {
+        final List<String> agentNames = new java.util.ArrayList<>(allClientNodes.stream().map(AgentNode::getName).toList());
+        agentNames.add(0, "Please select the client");
+        return agentNames.toArray(new String[0]);
+    }
+
+    private void changeSelectedNetworkAgent(final String newAgentName) {
+        if(!(comboBoxClients.getSelectedIndex() != 0 && comboBoxNetwork.getSelectedIndex() == 0)) {
+            agentDetailsPanel = allNetworkAgentNodes.stream()
+                    .filter(agent -> agent.getName().equals(newAgentName))
+                    .findFirst()
+                    .map(AgentNode::getInformationPanel)
+                    .orElse(DEFAULT_INFO_PANEL);
+            refreshDetailsPanel();
+            comboBoxClients.setSelectedIndex(0);
+        }
+    }
+
+    private void changeSelectedClientAgent(final String newAgentName) {
+        if(!(comboBoxNetwork.getSelectedIndex() != 0 && comboBoxClients.getSelectedIndex() == 0)) {
+            agentDetailsPanel = allClientNodes.stream()
+                    .filter(agent -> agent.getName().equals(newAgentName))
+                    .findFirst()
+                    .map(AgentNode::getInformationPanel)
+                    .orElse(DEFAULT_INFO_PANEL);
+            refreshDetailsPanel();
+            comboBoxNetwork.setSelectedIndex(0);
+        }
     }
 
     private void refreshDetailsPanel() {

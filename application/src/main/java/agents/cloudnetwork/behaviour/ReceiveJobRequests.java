@@ -1,6 +1,5 @@
 package agents.cloudnetwork.behaviour;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.SERVER_AGENTS;
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
@@ -9,17 +8,15 @@ import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import domain.job.JobStatusEnum;
-import messages.domain.CallForProposalMessageFactory;
 import domain.job.Job;
-import jade.core.AID;
+import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import messages.domain.CallForProposalMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -54,10 +51,9 @@ public class ReceiveJobRequests extends CyclicBehaviour {
                 logger.info("[{}] Sending call for proposal to Server Agents", myAgent.getName());
 
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
-                final List<AID> serverAgents = (List<AID>) getParent().getDataStore().get(SERVER_AGENTS);
-                final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, serverAgents, CNA_JOB_CFP_PROTOCOL);
+                final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, myCloudNetworkAgent.getOwnedServers(), CNA_JOB_CFP_PROTOCOL);
 
-                displayMessageArrow(myCloudNetworkAgent, serverAgents);
+                displayMessageArrow(myCloudNetworkAgent, myCloudNetworkAgent.getOwnedServers());
                 myCloudNetworkAgent.getNetworkJobs().put(job, JobStatusEnum.PROCESSING);
                 myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, message.createReply()));
             } catch (Exception e) {

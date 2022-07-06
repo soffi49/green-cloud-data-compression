@@ -7,6 +7,7 @@ import static yellowpages.YellowPagesService.register;
 import agents.cloudnetwork.behaviour.FindServerAgents;
 import agents.cloudnetwork.behaviour.ReceiveJobRequests;
 import agents.cloudnetwork.behaviour.ReturnCompletedJob;
+import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerPowerShortage;
 import behaviours.ReceiveGUIController;
 import jade.core.behaviours.SequentialBehaviour;
 
@@ -25,7 +26,9 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
     protected void setup() {
         super.setup();
         initializeAgent();
-        addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(), new ReturnCompletedJob())));
+        addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(),
+                                                            new ReturnCompletedJob(),
+                                                            new ListenForServerPowerShortage())));
     }
 
     @Override

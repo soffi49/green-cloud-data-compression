@@ -4,9 +4,11 @@ import static common.GUIUtils.announceFinishedJob;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
+import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.JobInstanceIdentifier;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -43,11 +45,15 @@ public class ReturnCompletedJob extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
-            logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
-            final String jobId = message.getContent();
-            final String clientId = myCloudNetworkAgent.getJobById(jobId).getClientIdentifier();
-            updateNetworkInformation(jobId);
-            myAgent.send(prepareFinishMessageForClient(jobId, clientId));
+            try {
+                logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
+                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
+                final String clientId = myCloudNetworkAgent.getJobById(jobInstanceId.getJobId()).getClientIdentifier();
+                updateNetworkInformation(jobInstanceId.getJobId());
+                myAgent.send(prepareFinishMessageForClient(jobInstanceId.getJobId(), clientId));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             block();
         }

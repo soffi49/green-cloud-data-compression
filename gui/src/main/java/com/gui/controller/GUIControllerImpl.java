@@ -3,6 +3,7 @@ package com.gui.controller;
 import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.domain.StyleConstants.*;
 
+import com.gui.domain.guielements.AdminControlPanel;
 import com.gui.domain.guielements.DetailsPanel;
 import com.gui.domain.guielements.InformationPanel;
 import com.gui.domain.guielements.SummaryPanel;
@@ -38,9 +39,11 @@ public class GUIControllerImpl implements GUIController {
     private final InformationPanel informationPanel;
     private final SummaryPanel summaryPanel;
     private final DetailsPanel detailsPanel;
+    private final AdminControlPanel adminControlPanel;
     private final List<AgentNode> graphNodes;
     private JScrollPane mainPanelScroll;
     private JFrame mainFrame;
+    private JFrame adminFrame;
     private Graph graph;
 
     public GUIControllerImpl() {
@@ -48,15 +51,18 @@ public class GUIControllerImpl implements GUIController {
         this.graphNodes = new ArrayList<>();
         this.summaryPanel = new SummaryPanel();
         this.informationPanel = new InformationPanel();
-        this.detailsPanel = new DetailsPanel(graphNodes);
+        this.detailsPanel = new DetailsPanel();
+        this.adminControlPanel = new AdminControlPanel();
         createGraph();
         createMainPanel();
         createMainFrame();
+        createAdminFrame();
     }
 
     @Override
     public void createGUI() {
         mainFrame.setVisible(true);
+        SwingUtilities.invokeLater(() -> adminFrame.setVisible(true));
     }
 
     @Override
@@ -64,7 +70,10 @@ public class GUIControllerImpl implements GUIController {
         graphNodes.add(agent);
         agent.addToGraph(graph);
         if (!(agent instanceof ClientAgentNode)) {
-            detailsPanel.revalidateComboBoxModel(graphNodes);
+            detailsPanel.revalidateNetworkComboBoxModel(graphNodes);
+            adminControlPanel.revalidateNetworkComboBoxModel(graphNodes);
+        } else {
+            detailsPanel.revalidateClientComboBoxModel(graphNodes);
         }
     }
 
@@ -74,15 +83,18 @@ public class GUIControllerImpl implements GUIController {
     }
 
     @Override
-    public void removeAgentNodeFromGraph(final AgentNode agentNode) {
+    public void removeAgentNodeFromGraph(final AgentNode agent) {
         try {
-            graph.removeNode(agentNode.getName());
+            graph.removeNode(agent.getName());
         } catch (ElementNotFoundException e) {
-            logger.info("Agent node {} was already removed", agentNode.getName());
+            logger.info("Agent node {} was already removed", agent.getName());
         }
-        graphNodes.remove(agentNode);
-        if (!(agentNode instanceof ClientAgentNode)) {
-            detailsPanel.revalidateComboBoxModel(graphNodes);
+        graphNodes.remove(agent);
+        if (!(agent instanceof ClientAgentNode)) {
+            detailsPanel.revalidateNetworkComboBoxModel(graphNodes);
+            adminControlPanel.revalidateNetworkComboBoxModel(graphNodes);
+        } else {
+            detailsPanel.revalidateClientComboBoxModel(graphNodes);
         }
     }
 
@@ -128,11 +140,20 @@ public class GUIControllerImpl implements GUIController {
         hideMessageArrowTimer.start();
     }
 
+    private void createAdminFrame() {
+        adminFrame = new JFrame("ADMIN PANEL");
+        adminFrame.setSize(new Dimension(MAIN_SIZE.width / 2, MAIN_SIZE.height / 2));
+        adminFrame.setResizable(false);
+        adminFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        adminFrame.add(adminControlPanel.getAdminControlPanel());
+        mainFrame.setLocationRelativeTo(null);
+    }
+
     private void createMainFrame() {
         mainFrame = new JFrame("CLOUD NETWORK");
-        mainFrame.getContentPane().setPreferredSize(MAIN_SIZE);
+        mainFrame.setSize(MAIN_SIZE);
         mainFrame.setResizable(false);
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         mainFrame.getContentPane().add(mainPanelScroll);
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
@@ -185,6 +206,8 @@ public class GUIControllerImpl implements GUIController {
         synchronized (mainFrame) {
             mainFrame.revalidate();
             mainFrame.repaint();
+            adminFrame.revalidate();
+            adminFrame.repaint();
         }
     }
 }

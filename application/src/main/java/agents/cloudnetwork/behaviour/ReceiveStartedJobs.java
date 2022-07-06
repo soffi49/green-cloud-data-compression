@@ -4,9 +4,11 @@ import static common.GUIUtils.announceStartedJob;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
+import static mapper.JsonMapper.getMapper;
 import static messages.domain.ReplyMessageFactory.prepareConfirmationReply;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -49,11 +51,15 @@ public class ReceiveStartedJobs extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
-            logger.info("[{}] Sending information that the job execution has started", myAgent.getName());
-            final String jobId = message.getContent();
-            myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobId), JobStatusEnum.IN_PROGRESS);
-            announceStartedJob(myCloudNetworkAgent);
-            myAgent.send(prepareConfirmationReply(jobId, replyMessage));
+            try {
+                logger.info("[{}] Sending information that the job execution has started", myAgent.getName());
+                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
+                myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobInstanceId.getJobId()), JobStatusEnum.IN_PROGRESS);
+                announceStartedJob(myCloudNetworkAgent);
+                myAgent.send(prepareConfirmationReply(jobInstanceId.getJobId(), replyMessage));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             block();
         }

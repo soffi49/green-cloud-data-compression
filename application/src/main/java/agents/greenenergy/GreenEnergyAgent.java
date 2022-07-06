@@ -3,12 +3,16 @@ package agents.greenenergy;
 import static common.TimeUtils.isWithinTimeStamp;
 import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
-import static domain.job.JobStatusEnum.ACCEPTED;
-import static domain.job.JobStatusEnum.IN_PROGRESS;
+import static domain.job.JobStatusEnum.*;
 import static java.util.stream.Collectors.toMap;
 import static yellowpages.YellowPagesService.register;
 
 import agents.greenenergy.behaviour.ReceivePowerRequest;
+import agents.greenenergy.behaviour.listener.ListenForFinishedJobs;
+import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
+import agents.greenenergy.behaviour.listener.ListenForStartedJobs;
+import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferCancellation;
+import agents.greenenergy.behaviour.powershortage.listener.ListenForTransferConfirmation;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
 import behaviours.ReceiveGUIController;
@@ -18,13 +22,12 @@ import domain.location.ImmutableLocation;
 import jade.core.AID;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import jade.core.behaviours.Behaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +49,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this))));
+        addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
     }
 
     @Override
@@ -78,6 +81,17 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         }
     }
 
+    private List<Behaviour> behavioursRunAtStart() {
+        final List<Behaviour> behaviours = new ArrayList<>();
+        behaviours.add(new ReceivePowerRequest(this));
+        behaviours.add(new ListenForFinishedJobs(this));
+        behaviours.add(new ListenForStartedJobs(this));
+        behaviours.add(new ListenForGreenSourceEvent(this));
+        behaviours.add(new ListenForPowerTransferCancellation(this));
+        behaviours.add(new ListenForTransferConfirmation(this));
+        return behaviours;
+    }
+
     /**
      * computes average power available during computation of the job being processed
      *
@@ -103,7 +117,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
             .filter(time -> isWithinTimeStamp(start, end, time))
             .toList();
         var powerJobs = getPowerJobs().keySet().stream()
-            .filter(job -> getPowerJobs().get(job).equals(ACCEPTED) || getPowerJobs().get(job).equals(IN_PROGRESS))
+            .filter(job -> getPowerJobs().get(job).equals(ACCEPTED) || getPowerJobs().get(job).equals(IN_PROGRESS) || getPowerJobs().get(job).equals(ON_HOLD))
             .toList();
 
         if(powerJobs.isEmpty()) {

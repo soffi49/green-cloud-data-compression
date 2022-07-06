@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.SERVER_AGENTS;
 import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.search;
 
@@ -41,6 +40,6 @@ public class FindServerAgents extends OneShotBehaviour {
             logger.info("[{}] No Server Agents were found", myCloudNetworkAgent.getName());
             myCloudNetworkAgent.doDelete();
         }
-        getParent().getDataStore().put(SERVER_AGENTS, serverAgents);
+        myCloudNetworkAgent.setOwnedServers(serverAgents);
     }
 }

@@ -39,6 +39,10 @@ public class GreenPower {
         this.maximumCapacity = maximumCapacity;
     }
 
+    public int getMaximumCapacity() {
+        return maximumCapacity;
+    }
+
     public double getAvailablePower(WeatherData weather, ZonedDateTime dateTime, Location location) {
         return switch (greenEnergyAgent.getEnergyType()) {
             case SOLAR -> getSolarPower(weather, dateTime, location);

@@ -6,6 +6,9 @@
         <monitoringAgent>
             <name>Weather2</name>
         </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather3</name>
+        </monitoringAgent>
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
@@ -22,6 +25,16 @@
             <name>Wind</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server2</ownerSever>
+            <latitude>52</latitude>
+            <longitude>22</longitude>
+            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
+        </greenenergyAgent>
+        <greenenergyAgent>
+            <name>Wind2</name>
+            <monitoringAgent>Weather3</monitoringAgent>
+            <ownerSever>Server1</ownerSever>
             <latitude>52</latitude>
             <longitude>22</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>

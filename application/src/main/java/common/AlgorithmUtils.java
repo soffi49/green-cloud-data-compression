@@ -1,7 +1,9 @@
 package common;
 
+import domain.job.Job;
 import domain.job.PowerJob;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -13,11 +15,12 @@ public class AlgorithmUtils {
     /**
      * Method retrieves from the list of jobs, the ones which summed power will be the closest to the finalPower
      *
-     * @param powerJobs  list of jobs to go through
+     * @param jobs       list of jobs to go through
      * @param finalPower power bound
+     * @param type       type of the list objects
      * @return list of power jobs
      */
-    public static List<PowerJob> findJobsWithinPower(final List<PowerJob> powerJobs, final double finalPower) {
+    public static <T> List<T> findJobsWithinPower(final List<?> jobs, final double finalPower, final Class<T> type) {
         if (finalPower == 0) {
             return Collections.emptyList();
         }
@@ -27,13 +30,13 @@ public class AlgorithmUtils {
         final Set<SubJobList> sums = new HashSet<>();
         sums.add(result.get());
 
-        powerJobs.forEach(powerJob -> {
+        jobs.forEach(job -> {
             final Set<SubJobList> newSums = new HashSet<>();
-
             sums.forEach(sum -> {
-                final List<PowerJob> newSubList = new ArrayList<>(sum.subList);
-                newSubList.add(powerJob);
-                final SubJobList newSum = new SubJobList(sum.size + powerJob.getPower(), newSubList);
+                final List<T> newSubList = new ArrayList<>((Collection<? extends T>) sum.subList);
+                newSubList.add((T) job);
+                final int power = type.equals(PowerJob.class)? ((PowerJob) job).getPower() : ((Job) job).getPower();
+                final SubJobList newSum = new SubJobList(sum.size + power, newSubList);
 
                 if (newSum.size <= finalPower) {
                     newSums.add(newSum);
@@ -44,7 +47,7 @@ public class AlgorithmUtils {
             });
             sums.addAll(newSums);
         });
-        return result.get().subList;
+        return (List<T>) result.get().subList;
     }
 
     /**
@@ -52,13 +55,13 @@ public class AlgorithmUtils {
      */
     public static class SubJobList {
         public int size;
-        public List<PowerJob> subList;
+        public List<?> subList;
 
         public SubJobList() {
             this(0, new ArrayList<>());
         }
 
-        public SubJobList(int size, List<PowerJob> subList) {
+        public SubJobList(int size, List<?> subList) {
             this.size = size;
             this.subList = subList;
         }

@@ -1,13 +1,16 @@
-package agents.server.behaviour;
+package agents.server.behaviour.listener;
 
 import static common.GUIUtils.announceBookedJob;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_JOB_TRANSFER_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import agents.server.behaviour.StartJobExecution;
 import domain.job.Job;
+import domain.job.JobInstanceIdentifier;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -23,8 +26,8 @@ import java.util.Objects;
 public class ListenForPowerConfirmation extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenForPowerConfirmation.class);
-    private static final MessageTemplate messageTemplate = and(MatchPerformative(INFORM), MatchProtocol(SERVER_JOB_CFP_PROTOCOL));
 
+    private MessageTemplate messageTemplate;
     private ServerAgent myServerAgent;
 
     /**
@@ -33,7 +36,8 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
     @Override
     public void onStart() {
         super.onStart();
-        myServerAgent = (ServerAgent) myAgent;
+        this.myServerAgent = (ServerAgent) myAgent;
+        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL), MatchProtocol(POWER_SHORTAGE_JOB_TRANSFER_PROTOCOL)));
     }
 
     /**
@@ -44,25 +48,20 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
     public void action() {
         final ACLMessage inform = myAgent.receive(messageTemplate);
 
-        if (Objects.nonNull(inform)) {
+        if (Objects.nonNull(inform) && !inform.getSender().equals(myServerAgent.getOwnerCloudNetworkAgent())) {
             try {
-                final String jobId = getMapper().readValue(inform.getContent(), String.class);
-                final Job job = myServerAgent.getJobById(jobId);
+                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
+                final boolean informCloudNetwork = inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL);
                 logger.info("[{}] Scheduling the execution of the job", myAgent.getName());
-                announceBookedJob(myServerAgent, jobId);
-                myAgent.addBehaviour(prepareBehaviour(job));
+                if(informCloudNetwork) {
+                    announceBookedJob(myServerAgent, jobInstanceId.getJobId());
+                }
+                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, jobInstanceId, informCloudNetwork));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
             block();
         }
-    }
-
-    private ParallelBehaviour prepareBehaviour(final Job job) {
-        final ParallelBehaviour behaviour = new ParallelBehaviour();
-        behaviour.addSubBehaviour(StartJobExecution.createFor(myServerAgent, job));
-        behaviour.addSubBehaviour(new ListenForUnfinishedJobInformation());
-        return behaviour;
     }
 }

@@ -4,9 +4,9 @@ import static common.TimeUtils.isWithinTimeStamp;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.time.Instant;
 import org.immutables.value.Value;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 /**
@@ -37,7 +37,7 @@ public interface PowerJob {
      */
     int getPower();
 
-     default boolean isExecutedAtTime(Instant timestamp) {
+    default boolean isExecutedAtTime(Instant timestamp) {
         return isWithinTimeStamp(getStartTime().toInstant(), getEndTime().toInstant(), timestamp);
     }
 }

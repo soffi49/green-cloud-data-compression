@@ -1,12 +1,17 @@
 package messages.domain;
 
-import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.job.ImmutableJobInstanceIdentifier;
+import domain.job.ImmutableJobWithProtocol;
+import domain.job.JobWithProtocol;
 import jade.lang.acl.ACLMessage;
+
+import java.time.OffsetDateTime;
 
 /**
  * Class storing methods used in creating reply messages
@@ -54,6 +59,29 @@ public class ReplyMessageFactory {
     public static ACLMessage prepareRefuseReply(final ACLMessage replyMessage) {
         replyMessage.setPerformative(REFUSE);
         replyMessage.setContent("REFUSE");
+        return replyMessage;
+    }
+
+    /**
+     * Method prepares the reply accept message containing the conversation topic as content protocol
+     *
+     * @param replyMessage reply ACLMessage that is to be sent
+     * @param jobId        unique job identifier
+     * @param jobStartTime time when the job execution started
+     * @param protocol     conversation topic being expected response protocol
+     * @return reply ACLMessage
+     */
+    public static ACLMessage prepareAcceptReplyWithProtocol(final ACLMessage replyMessage, final String jobId, final OffsetDateTime jobStartTime, final String protocol) {
+        final JobWithProtocol pricedJob = ImmutableJobWithProtocol.builder()
+                .jobInstanceIdentifier(ImmutableJobInstanceIdentifier.builder().jobId(jobId).startTime(jobStartTime).build())
+                .replyProtocol(protocol)
+                .build();
+        replyMessage.setPerformative(ACCEPT_PROPOSAL);
+        try {
+            replyMessage.setContent(getMapper().writeValueAsString(pricedJob));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return replyMessage;
     }
 

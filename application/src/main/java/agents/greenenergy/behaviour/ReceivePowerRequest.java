@@ -1,6 +1,5 @@
 package agents.greenenergy.behaviour;
 
-import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.MessageTemplate.*;
@@ -13,14 +12,12 @@ import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
-import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -65,7 +62,7 @@ public class ReceivePowerRequest extends CyclicBehaviour {
         }
     }
 
-    private PowerJob readJob(ACLMessage callForProposal){
+    private PowerJob readJob(ACLMessage callForProposal) {
         try {
             return getMapper().readValue(callForProposal.getContent(), PowerJob.class);
         } catch (JsonProcessingException e) {

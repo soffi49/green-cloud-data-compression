@@ -9,9 +9,7 @@ import com.gui.domain.nodes.GreenEnergyAgentNode;
 import com.gui.domain.nodes.ServerAgentNode;
 import jade.core.AID;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -51,28 +49,28 @@ public class GUIUtils {
     }
 
     /**
-     * Method updates the GUI when the green source changes the state (finishes the job or starts the job)
+     * Method updates the GUI with green source current state
      *
-     * @param agent         agent updating the GUI
-     * @param isJobFinished flag indicating if the state update is caused by finished or started job
+     * @param agent green energy agent updating the GUI
      */
-    public static void updateGreenSourceState(final GreenEnergyAgent agent, final boolean isJobFinished) {
+    public static void updateGreenSourceState(final GreenEnergyAgent agent) {
         final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) agent.getAgentNode();
-        greenEnergyAgentNode.updateJobsCount(isJobFinished? -1 : 1);
+        greenEnergyAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
+        greenEnergyAgentNode.updateJobsCount(agent.getJobCount());
         greenEnergyAgentNode.updateIsActive(agent.getIsActiveState());
         greenEnergyAgentNode.updateTraffic(agent.getCurrentPowerInUse());
     }
 
     /**
-     * Method updates the GUI when the server changes the state (finishes the job or starts the job)
+     * Method updates the GUI with server current state
      *
-     * @param agent         agent updating the GUI
-     * @param isJobFinished flag indicating if the state update is caused by finished or started job
+     * @param agent server agent updating the GUI
      */
-    public static void updateServerState(final ServerAgent agent, final boolean isJobFinished) {
+    public static void updateServerState(final ServerAgent agent) {
         final ServerAgentNode serverAgentNode = (ServerAgentNode) agent.getAgentNode();
-        serverAgentNode.updateJobsCount(isJobFinished? -1 : 1);
-        serverAgentNode.updateClientNumber(isJobFinished? -1 : 1);
+        serverAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
+        serverAgentNode.updateJobsCount(agent.getJobCount());
+        serverAgentNode.updateClientNumber(agent.getJobCount());
         serverAgentNode.updateIsActive(agent.getIsActiveState());
         serverAgentNode.updateTraffic(agent.getCurrentPowerInUse());
     }

@@ -2,8 +2,7 @@ package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
-import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.*;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
 
@@ -26,7 +25,7 @@ import java.util.Objects;
 public class WaitForJobStatusUpdate extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(WaitForJobStatusUpdate.class);
-    private static final MessageTemplate messageTemplate = and(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
+    private static final MessageTemplate messageTemplate = and(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)), MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL)),
                                                                   MatchPerformative(INFORM));
 
     private final ClientAgent myClientAgent;
@@ -57,6 +56,10 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
                 case DELAYED_JOB_PROTOCOL ->  {
                     logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.DELAYED);
+                }
+                case BACK_UP_POWER_JOB_PROTOCOL -> {
+                    logger.info("[{}] My job is being executed using the back up power!", myAgent.getName());
+                    ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.ON_BACK_UP);
                 }
             }
         } else {

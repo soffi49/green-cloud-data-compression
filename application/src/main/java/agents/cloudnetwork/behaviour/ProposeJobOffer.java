@@ -2,13 +2,16 @@ package agents.cloudnetwork.behaviour;
 
 import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
+import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
+import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.ImmutableJobInstanceIdentifier;
 import domain.job.Job;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.core.behaviours.ParallelBehaviour;
@@ -18,7 +21,6 @@ import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -57,10 +59,14 @@ public class ProposeJobOffer extends ProposeInitiator {
         logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
         final String jobId = accept_proposal.getContent();
         final Job job = myCloudNetworkAgent.getJobById(jobId);
+        final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder()
+                .jobId(jobId)
+                .startTime(job.getStartTime())
+                .build();
         myCloudNetworkAgent.getNetworkJobs().replace(job, JobStatusEnum.ACCEPTED);
         myAgent.addBehaviour(createWaitingForJobStartBehaviour(accept_proposal, job));
         displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
-        myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
+        myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobId, jobInstanceId.getStartTime(), SERVER_JOB_CFP_PROTOCOL));
     }
 
     /**
@@ -76,7 +82,7 @@ public class ProposeJobOffer extends ProposeInitiator {
         myCloudNetworkAgent.getServerForJobMap().remove(jobId);
         myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
         displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
-        myCloudNetworkAgent.send(ReplyMessageFactory.prepareReply(replyMessage, jobId, REJECT_PROPOSAL));
+        myCloudNetworkAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, REJECT_PROPOSAL));
     }
 
     private ParallelBehaviour createWaitingForJobStartBehaviour(final ACLMessage accept_proposal, final Job job) {
@@ -87,7 +93,7 @@ public class ProposeJobOffer extends ProposeInitiator {
     }
 
     private Long calculateJobStartTimeout(final Job job) {
-        final long hourDifference = ChronoUnit.SECONDS.between(getCurrentTime(), job.getStartTime());
-        return convertToSimulationTime(hourDifference < 0 ? 0 : hourDifference) + MAX_ERROR_IN_JOB_START;
+        final long timeout = ChronoUnit.MILLIS.between(getCurrentTime(), job.getStartTime());
+        return (timeout < 0 ? 0 : timeout) + MAX_ERROR_IN_JOB_START;
     }
 }

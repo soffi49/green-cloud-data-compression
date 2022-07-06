@@ -138,8 +138,8 @@ public class RequestJobExecution extends ContractNetInitiator {
     }
 
     private void checkIfJobStartedOnTime() {
-        final OffsetDateTime endTime = getCurrentTime();
-        final long timeDifference = ChronoUnit.MILLIS.between(endTime, myClientAgent.getSimulatedJobStart());
+        final OffsetDateTime startTime = getCurrentTime();
+        final long timeDifference = ChronoUnit.MILLIS.between(startTime, myClientAgent.getSimulatedJobStart());
         if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
             logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
         } else {

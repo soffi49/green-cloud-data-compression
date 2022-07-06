@@ -34,9 +34,9 @@ public class EngineRunner {
 
         final ContainerController container = runtime.createMainContainer(profile);
         final ScenarioService scenarioService = new ScenarioService(container, guiController);
-
+        runRMAAgent(container);
         guiController.createGUI();
-        scenarioService.createAgentsFromScenarioFile("multipleClientsSimpleScenario");
+        scenarioService.createAgentsFromScenarioFile("complicatedScenarioNoWeatherChanging");
     }
 
     /**
@@ -44,7 +44,7 @@ public class EngineRunner {
      *
      * @param container controller container
      */
-    private void runRMAAgent(final ContainerController container) {
+    private static void runRMAAgent(final ContainerController container) {
         try {
             final AgentController rma = container.createNewAgent("rma", "jade.tools.rma.rma", null);
             rma.start();

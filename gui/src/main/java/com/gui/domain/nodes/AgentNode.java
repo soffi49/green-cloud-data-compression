@@ -3,6 +3,7 @@ package com.gui.domain.nodes;
 import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
 
+import com.gui.domain.event.AbstractEvent;
 import com.gui.domain.types.LabelEnum;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
@@ -16,7 +17,7 @@ import java.util.*;
 /**
  * Class represents abstract agent node
  */
-public class AgentNode {
+public abstract class AgentNode {
 
     protected String name;
     protected String style;
@@ -24,6 +25,7 @@ public class AgentNode {
     protected List<Edge> edges;
     protected JPanel informationPanel;
     protected Map<LabelEnum, JLabel> labelsMap;
+    protected AbstractEvent event;
 
     /**
      * Class constructor
@@ -33,6 +35,7 @@ public class AgentNode {
     public AgentNode(String name) {
         this.name = name;
         this.edges = new ArrayList<>();
+        this.event = null;
     }
 
     /**
@@ -96,6 +99,22 @@ public class AgentNode {
      */
     public JPanel getInformationPanel() {
         return informationPanel;
+    }
+
+    /**
+     * @return gets the current event
+     */
+    public synchronized AbstractEvent getEvent() {
+        return event;
+    }
+
+    /**
+     * Set the event
+     *
+     * @param event new event
+     */
+    public synchronized void setEvent(AbstractEvent event) {
+        this.event = event;
     }
 
     @Override

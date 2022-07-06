@@ -35,6 +35,7 @@ public class StyleConstants {
     public static final String FONT_FAMILY = "Dialog";
     public static final Font TITLE_FONT = new Font(FONT_FAMILY, Font.BOLD, (int) SCREEN_SIZE.getWidth() / TITLE_FONT_SIZE_PERCENT);
     public static final Font FIRST_HEADER_FONT = new Font(FONT_FAMILY, Font.BOLD, (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PERCENT + 35));
+    public static final Font SECOND_HEADER_FONT = new Font(FONT_FAMILY, Font.BOLD, (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PERCENT + 45));
     public static final Font LIST_VALUE_FONT = new Font(FONT_FAMILY, Font.BOLD, (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PERCENT + 55));
     public static final Font LIST_LABEL_FONT = new Font(FONT_FAMILY, Font.BOLD, (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PERCENT + 60));
     public static final Font PARAGRAPH_FONT = new Font(FONT_FAMILY, Font.PLAIN, (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PERCENT + 80));

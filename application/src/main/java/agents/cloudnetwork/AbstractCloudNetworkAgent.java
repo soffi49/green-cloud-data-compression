@@ -4,10 +4,9 @@ import agents.AbstractAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
-import jade.core.Agent;
 
-import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,6 +16,7 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
     protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
+    protected List<AID> ownedServers;
 
     AbstractCloudNetworkAgent() {
         super.setup();
@@ -28,10 +28,12 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
      * @param networkJobs     list of the jobs together with their statuses
      *                        that are being processed in the network
      * @param serverForJobMap map storing jobs and corresponding job's executor addresses
+     * @param ownedServers    list of addresses of the owned servers
      */
-    AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap) {
+    AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap, List<AID> ownedServers) {
         this.serverForJobMap = serverForJobMap;
         this.networkJobs = networkJobs;
+        this.ownedServers = ownedServers;
     }
 
     /**
@@ -80,5 +82,13 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
     public void setNetworkJobs(Map<Job, JobStatusEnum> networkJobs) {
         this.networkJobs = networkJobs;
+    }
+
+    public List<AID> getOwnedServers() {
+        return ownedServers;
+    }
+
+    public void setOwnedServers(List<AID> ownedServers) {
+        this.ownedServers = ownedServers;
     }
 }

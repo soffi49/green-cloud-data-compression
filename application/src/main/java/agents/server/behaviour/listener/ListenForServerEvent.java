@@ -1,0 +1,48 @@
+package agents.server.behaviour.listener;
+
+import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
+import agents.server.ServerAgent;
+import agents.server.behaviour.powershortage.announcer.AnnouncePowerShortage;
+import com.gui.domain.event.AbstractEvent;
+import com.gui.domain.event.PowerShortageEvent;
+import jade.core.behaviours.TickerBehaviour;
+
+import java.util.Objects;
+
+/**
+ * Behaviour is responsible for listening for the outside world events
+ */
+public class ListenForServerEvent extends TickerBehaviour {
+
+    private static final int TICK_TIMEOUT = 100;
+    private final ServerAgent myServerAgent;
+
+    /**
+     * Behaviour constructor.
+     *
+     * @param myServerAgent agent which is executing the behaviour
+     */
+    public ListenForServerEvent(final ServerAgent myServerAgent) {
+        super(myServerAgent, TICK_TIMEOUT);
+        this.myServerAgent = myServerAgent;
+    }
+
+    /**
+     * Method verifies if some outside event has occurred
+     */
+    @Override
+    protected void onTick() {
+        final AbstractEvent event = myServerAgent.getAgentNode().getEvent();
+        if (Objects.nonNull(event)) {
+            switch (event.getEventTypeEnum()) {
+                case POWER_SHORTAGE -> {
+                    final PowerShortageEvent powerShortageEvent = (PowerShortageEvent) event;
+                    myServerAgent.addBehaviour(new AnnouncePowerShortage(myServerAgent, event.getOccurrenceTime(), powerShortageEvent.getNewMaximumPower()));
+                }
+            }
+            myServerAgent.getAgentNode().setEvent(null);
+        }
+
+    }
+}
