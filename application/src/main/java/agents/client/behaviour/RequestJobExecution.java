@@ -37,10 +37,10 @@ public class RequestJobExecution extends ContractNetInitiator {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestJobExecution.class);
 
-    private final Job job;
+    private final transient Job job;
     private final ClientAgent myClientAgent;
     private final String guid;
-    private final Predicate<ACLMessage> isValidProposal;
+    private final transient Predicate<ACLMessage> isValidProposal;
 
     /**
      * Behaviour constructor.
@@ -54,9 +54,9 @@ public class RequestJobExecution extends ContractNetInitiator {
         this.myClientAgent = (ClientAgent) agent;
         this.guid = agent.getName();
         this.job = job;
-        this.isValidProposal = (message) -> {
+        this.isValidProposal = message -> {
             try {
-                var content = getMapper().readValue(message.getContent(), PricedJob.class);
+                getMapper().readValue(message.getContent(), PricedJob.class);
                 return true;
             } catch (JsonProcessingException e) {
                 return false;
@@ -72,7 +72,8 @@ public class RequestJobExecution extends ContractNetInitiator {
      */
     @Override
     protected Vector prepareCfps(final ACLMessage callForProposal) {
-        logger.info("[{}] Sending call for proposal to Cloud Network Agents", guid);
+        logger.info("[{}] Sending call for proposal to Cloud Network Agents with job request for a jobId {}", guid,
+            job.getJobId());
         final Vector<ACLMessage> vector = new Vector<>();
         final List<AID> cloudNetworks = (List<AID>) getParent().getDataStore().get(CLOUD_NETWORK_AGENTS);
         vector.add(CallForProposalMessageFactory.createCallForProposal(job, cloudNetworks, CLIENT_JOB_CFP_PROTOCOL));
@@ -94,7 +95,12 @@ public class RequestJobExecution extends ContractNetInitiator {
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", guid);
             myAgent.doDelete();
-        } else if (proposals.isEmpty()) {
+        } else if (proposals.isEmpty() && myClientAgent.getRetries() < MAX_RETRIES) {
+            logger.info("[{}] All Cloud Network Agents refused to the call for proposal - will retry for {} time",
+                guid, myClientAgent.getRetries());
+            myClientAgent.retry();
+            myClientAgent.addBehaviour(new ScheduleRetry(myAgent, RETRY_PAUSE_MILLISECONDS, job));
+        } else if (proposals.isEmpty() && myClientAgent.getRetries() >= MAX_RETRIES){
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myClientAgent.getGuiController().updateClientsCountByValue(-1);
             ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);

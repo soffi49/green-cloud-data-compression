@@ -1,6 +1,5 @@
 package agents.server.behaviour;
 
-import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
@@ -11,19 +10,18 @@ import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
 import domain.GreenSourceData;
-import domain.job.PricedJob;
+import domain.job.Job;
+import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Vector;
+import java.util.function.Predicate;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
-import java.util.function.Predicate;
 
 /**
  * Behaviours responsible for passing the power request to green sources and choosing one to provide the power
@@ -34,6 +32,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
     private final ACLMessage replyMessage;
     private final ServerAgent myServerAgent;
     private final Predicate<ACLMessage> isValidProposal;
+    private final Job job;
 
     /**
      * Behaviour constructor
@@ -42,9 +41,10 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
      * @param powerRequest call for proposal containing the details regarding power needed to execute the job
      * @param replyMessage reply message sent to cloud network after retreiving the green sources' responses
      */
-    public AnnouncePowerRequest(final Agent agent, final ACLMessage powerRequest, final ACLMessage replyMessage) {
+    public AnnouncePowerRequest(final Agent agent, final ACLMessage powerRequest, final ACLMessage replyMessage, final Job job) {
         super(agent, powerRequest);
         this.replyMessage = replyMessage;
+        this.job = job;
         this.myServerAgent = (ServerAgent) myAgent;
         this.isValidProposal = (message) -> {
             try {
@@ -72,7 +72,12 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
         } else if (proposals.isEmpty()) {
             logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
+        } else if (myServerAgent.getAvailableCapacity(job.getStartTime(), job.getEndTime()) <= job.getPower()) {
+            logger.info("[{}] No enough capacity - sending refuse message to Cloud Network Agent", myAgent);
+            myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
         } else {
+            myServerAgent.getServerJobs().replace(myServerAgent.getJobById(job.getJobId()), JobStatusEnum.ACCEPTED);
+
             List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
 
             if (validProposals.isEmpty()){

@@ -4,11 +4,9 @@ import agents.AbstractAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
-import jade.core.Agent;
-
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Abstract agent class storing the data regarding Cloud Network Agent
@@ -17,6 +15,8 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
     protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
+    protected Map<String, Integer> jobRequestRetries;
+    protected AtomicLong completedJobs;
 
     AbstractCloudNetworkAgent() {
         super.setup();
@@ -43,6 +43,8 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
         serverForJobMap = new HashMap<>();
         networkJobs = new HashMap<>();
+        jobRequestRetries = new HashMap<>();
+        completedJobs = new AtomicLong(0L);
     }
 
     /**
@@ -63,22 +65,25 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
      * @return job
      */
     public Job getJobById(final String jobId) {
-        return networkJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
+        return networkJobs.keySet().stream()
+            .filter(job -> job.getJobId().equals(jobId))
+            .findFirst()
+            .orElse(null);
     }
 
     public Map<String, AID> getServerForJobMap() {
         return serverForJobMap;
     }
 
-    public void setServerForJobMap(Map<String, AID> serverForJobMap) {
-        this.serverForJobMap = serverForJobMap;
-    }
-
     public Map<Job, JobStatusEnum> getNetworkJobs() {
         return networkJobs;
     }
 
-    public void setNetworkJobs(Map<Job, JobStatusEnum> networkJobs) {
-        this.networkJobs = networkJobs;
+    public Map<String, Integer> getJobRequestRetries() {
+        return jobRequestRetries;
+    }
+
+    public Long completedJob() {
+        return completedJobs.incrementAndGet();
     }
 }

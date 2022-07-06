@@ -6,9 +6,7 @@ import com.gui.controller.GUIControllerImpl;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
-import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
-import jade.wrapper.StaleProxyException;
 import runner.service.ScenarioService;
 
 /**
@@ -16,14 +14,6 @@ import runner.service.ScenarioService;
  */
 public class EngineRunner {
     public static void main(String[] args) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // code goes here.
-            }
-        }).start();
-
         final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
         final GUIControllerImpl guiController = new GUIControllerImpl();
@@ -37,19 +27,5 @@ public class EngineRunner {
 
         guiController.createGUI();
         scenarioService.createAgentsFromScenarioFile("complicatedScenarioNoWeatherChanging");
-    }
-
-    /**
-     * Method used to run Jade GUI
-     *
-     * @param container controller container
-     */
-    private void runRMAAgent(final ContainerController container) {
-        try {
-            final AgentController rma = container.createNewAgent("rma", "jade.tools.rma.rma", null);
-            rma.start();
-        } catch (StaleProxyException e) {
-            e.printStackTrace();
-        }
     }
 }

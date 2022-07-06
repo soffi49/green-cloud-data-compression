@@ -51,15 +51,24 @@ public class ReceiveJobRequests extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending call for proposal to Server Agents", myAgent.getName());
-
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
+                final String jobId = job.getJobId();
+                if(myCloudNetworkAgent.getJobRequestRetries().containsKey(jobId)) {
+                    logger.info("[{}] Sending call for proposal to Server Agents for a job request with jobId {}, {} retry.",
+                        myAgent.getName(), jobId, myCloudNetworkAgent.getJobRequestRetries().get(jobId));
+                }
+                else {
+                    myCloudNetworkAgent.getJobRequestRetries().put(jobId, 0);
+                    logger.info("[{}] Sending call for proposal to Server Agents for a job request with jobId {}!",
+                        myAgent.getName(), jobId);
+                }
+
                 final List<AID> serverAgents = (List<AID>) getParent().getDataStore().get(SERVER_AGENTS);
                 final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, serverAgents, CNA_JOB_CFP_PROTOCOL);
 
                 displayMessageArrow(myCloudNetworkAgent, serverAgents);
                 myCloudNetworkAgent.getNetworkJobs().put(job, JobStatusEnum.PROCESSING);
-                myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, message.createReply()));
+                myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, message, jobId));
             } catch (Exception e) {
                 e.printStackTrace();
             }

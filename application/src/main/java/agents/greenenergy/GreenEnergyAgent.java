@@ -8,6 +8,8 @@ import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static java.util.stream.Collectors.toMap;
 import static yellowpages.YellowPagesService.register;
 
+import agents.greenenergy.behaviour.ListenForFinishedJobs;
+import agents.greenenergy.behaviour.ListenForStartedJobs;
 import agents.greenenergy.behaviour.ReceivePowerRequest;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
@@ -46,7 +48,8 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this))));
+        addBehaviour(new ReceiveGUIController(this, List.of(new ReceivePowerRequest(this),
+            new ListenForStartedJobs(this), new ListenForFinishedJobs(this))));
     }
 
     @Override

@@ -35,7 +35,10 @@ public class FindCloudNetworkAgents extends OneShotBehaviour {
      */
     @Override
     public void action() {
-        announceNewClient(myClientAgent);
+        if(!myClientAgent.isAnnounced()) {
+            announceNewClient(myClientAgent);
+            myClientAgent.announce();
+        }
         final List<AID> cloudNetworkAgents = search(myAgent, CNA_SERVICE_TYPE);
         if (cloudNetworkAgents.isEmpty()) {
             logger.info("[{}] No Cloud Network Agents were found", myClientAgent.getName());

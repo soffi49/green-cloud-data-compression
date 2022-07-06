@@ -12,14 +12,12 @@ import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
 import jade.core.behaviours.SequentialBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Agent representing the Client that wants to have the job executed by the Cloud Network
@@ -39,14 +37,6 @@ public class ClientAgent extends AbstractClientAgent {
 
         if (Objects.nonNull(args) && args.length == 4) {
             initializeAgent();
-
-            // TODO to be removed (added for testing purposes)
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
             final Job jobToBeExecuted = initializeAgentJob(args);
             addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(jobToBeExecuted), new WaitForJobStatusUpdate(this))));
         } else {
