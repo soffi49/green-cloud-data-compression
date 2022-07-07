@@ -28,10 +28,6 @@ public class RegisterGreenAgentInDF extends TickerBehaviour {
         this.myGreenEnergyAgent = myAgent;
     }
 
-    @Override
-    public void onStart(){
-        //register(myGreenEnergyAgent, GS_SERVICE_TYPE, GS_SERVICE_NAME, myGreenEnergyAgent.getOwnerServer().getName());
-    }
     /**
      * Method registering the agent in the df each period
      */

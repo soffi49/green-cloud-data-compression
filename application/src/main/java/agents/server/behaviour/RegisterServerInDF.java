@@ -29,10 +29,6 @@ public class RegisterServerInDF extends TickerBehaviour {
         this.myServerAgent = myAgent;
     }
 
-    @Override
-    public void onStart(){
-        //register(myServerAgent, GS_SERVICE_TYPE, GS_SERVICE_NAME, myServerAgent.getOwnerCloudNetworkAgent().getName());
-    }
     /**
      * Method registering the agent in the df each period
      */

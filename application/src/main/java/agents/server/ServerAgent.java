@@ -30,10 +30,10 @@ public class ServerAgent extends AbstractServerAgent {
         super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
-        //register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
+        register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
         addBehaviour(new ReceiveGUIController(this, List.of(
-                new ReceiveJobRequest(),
-                new RegisterServerInDF(this, Long.valueOf(2 * 60 * 60 * 100)))));
+                new ReceiveJobRequest()/*,
+                new RegisterServerInDF(this, Long.valueOf(2 * 60 * 60 * 100)*/)));
     }
 
     @Override

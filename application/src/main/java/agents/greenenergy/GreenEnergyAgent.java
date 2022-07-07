@@ -45,10 +45,10 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
-        //register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerServer().getName());
+        register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerServer().getName());
         addBehaviour(new ReceiveGUIController(this, List.of(
-                new ReceivePowerRequest(this),
-                new RegisterGreenAgentInDF(this, Long.valueOf(2 * 60 * 60 * 100)))));
+                new ReceivePowerRequest(this)/*,
+                new RegisterGreenAgentInDF(this, 2 * 60 * 60 * 100)*/)));
     }
 
     @Override
