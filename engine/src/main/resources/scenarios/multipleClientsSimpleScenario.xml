@@ -1,40 +1,45 @@
 <ScenarioArgs>
     <monitoringAgentsArgs>
         <monitoringAgent>
-            <name>Weather</name>
+            <name>Weather1</name>
+        </monitoringAgent>
+        <monitoringAgent>
+            <name>Weather2</name>
         </monitoringAgent>
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
             <name>Solar</name>
-            <monitoringAgent>Weather</monitoringAgent>
+            <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server1</ownerSever>
-            <latitude>10.0</latitude>
-            <longitude>11.1</longitude>
+            <latitude>52</latitude>
+            <longitude>22</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>SOLAR</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Water</name>
-            <monitoringAgent>Weather</monitoringAgent>
+            <name>Wind</name>
+            <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server2</ownerSever>
-            <latitude>10.0</latitude>
-            <longitude>11.1</longitude>
+            <latitude>52</latitude>
+            <longitude>22</longitude>
             <pricePerPowerUnit>10</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server1</name>
             <ownerCloudNetwork>CNA</ownerCloudNetwork>
-            <maximumCapacity>10</maximumCapacity>
+            <maximumCapacity>100</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server2</name>
             <ownerCloudNetwork>CNA</ownerCloudNetwork>
-            <maximumCapacity>15</maximumCapacity>
+            <maximumCapacity>150</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>

@@ -2,6 +2,7 @@ package agents.greenenergy.behaviour;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -79,8 +80,8 @@ public class ProposePowerRequest extends ProposeInitiator {
     }
 
     private Long calculateJobStartTimeout(final PowerJob job) {
-        final long hourDifferenceStart = ChronoUnit.HOURS.between(getCurrentTime(), job.getStartTime());
-        final long hourDifferenceExecution = ChronoUnit.HOURS.between(job.getStartTime(), job.getEndTime());
-        return ((hourDifferenceStart < 0 ? 0 : hourDifferenceStart) + hourDifferenceExecution) * 2 * 1000 + MAX_ERROR_IN_JOB_FINISH;
+        final long hourDifferenceStart = ChronoUnit.SECONDS.between(getCurrentTime(), job.getStartTime());
+        final long hourDifferenceExecution = ChronoUnit.SECONDS.between(job.getStartTime(), job.getEndTime());
+        return convertToSimulationTime((hourDifferenceStart < 0 ? 0 : hourDifferenceStart) + hourDifferenceExecution) + MAX_ERROR_IN_JOB_FINISH;
     }
 }

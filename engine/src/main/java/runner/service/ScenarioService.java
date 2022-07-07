@@ -31,8 +31,6 @@ import java.util.stream.IntStream;
  */
 public class ScenarioService {
 
-    private static final int CLIENT_NUMBER = 500;
-    private static final String RESOURCE_SCENARIO_PATH = "./scenarios/";
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     final List<AgentController> agentsToRun = new ArrayList<>();
     private final AgentControllerFactory factory;
@@ -71,6 +69,7 @@ public class ScenarioService {
             for (AgentController agentController : agentsToRun) {
                 agentController.start();
                 agentController.activate();
+                TimeUnit.MILLISECONDS.sleep(500);
             }
             createClientAgents(CLIENT_NUMBER, scenario);
 

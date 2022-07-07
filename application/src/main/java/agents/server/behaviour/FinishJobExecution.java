@@ -1,20 +1,17 @@
 package agents.server.behaviour;
 
-import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
-import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
+import static common.TimeUtils.convertToSimulationTime;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
-import jade.core.AID;
+import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
-import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * Behaviour responsible for returning to the CNA and GreenSource the information that the job execution has finished
@@ -47,7 +44,7 @@ public class FinishJobExecution extends WakerBehaviour {
      * @return behaviour to be run
      */
     public static FinishJobExecution createFor(final ServerAgent serverAgent, final Job jobToExecute) {
-        final long timeOut = ChronoUnit.HOURS.between(jobToExecute.getStartTime(), jobToExecute.getEndTime()) * 2 * 1000;
+        final long timeOut = convertToSimulationTime(ChronoUnit.SECONDS.between(jobToExecute.getStartTime(), jobToExecute.getEndTime()));
         return new FinishJobExecution(serverAgent, timeOut, jobToExecute);
     }
 
@@ -58,18 +55,9 @@ public class FinishJobExecution extends WakerBehaviour {
      */
     @Override
     protected void onWake() {
-        logger.info("[{}] Finished executing the job for {}", myAgent.getName(), jobToExecute.getClientIdentifier());
-        final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()),
-                                            myServerAgent.getOwnerCloudNetworkAgent());
-        final ACLMessage finishJobMessage = prepareFinishMessage(jobToExecute.getJobId(), receivers);
-        updateNetworkInformation();
-        displayMessageArrow(myServerAgent, receivers);
-        myAgent.send(finishJobMessage);
-    }
-
-    private void updateNetworkInformation() {
-        myServerAgent.getServerJobs().remove(jobToExecute);
-        myServerAgent.getGreenSourceForJobMap().remove(jobToExecute.getJobId());
-        updateServerState(myServerAgent, true);
+        if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && myServerAgent.getServerJobs().get(jobToExecute).equals(JobStatusEnum.IN_PROGRESS)) {
+            logger.info("[{}] Finished executing the job for {}", myAgent.getName(), jobToExecute.getClientIdentifier());
+            myServerAgent.finishJobExecution(jobToExecute);
+        }
     }
 }

@@ -86,7 +86,7 @@ public class JobStatusMessageFactory {
     public static ACLMessage prepareManualFinishMessageForServer(final String jobId, final AID serverAddress) {
         final ACLMessage informationMessage = new ACLMessage(INFORM);
         informationMessage.setProtocol(MANUAL_JOB_FINISH_PROTOCOL);
-        informationMessage.setContent(String.format("The job power delivery %s was finished manually.", jobId));
+        informationMessage.setContent(jobId);
         informationMessage.addReceiver(serverAddress);
         return informationMessage;
     }
