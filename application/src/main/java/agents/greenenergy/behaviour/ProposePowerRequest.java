@@ -9,15 +9,17 @@ import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import common.mapper.JobMapper;
 import domain.job.*;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -53,10 +55,10 @@ public class ProposePowerRequest extends ProposeInitiator {
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         final JobWithProtocol jobWithProtocol = readMessage(accept_proposal);
         if (Objects.nonNull(jobWithProtocol)) {
-            final PowerJob job = myGreenEnergyAgent.getJobByIdAndStartDate(jobWithProtocol.getJobInstanceIdentifier());
+            final PowerJob job = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobWithProtocol.getJobInstanceIdentifier());
             logger.info("[{}] Sending information back to server agent.", guid);
             myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
-            myAgent.addBehaviour(createManualFinishBehaviour(job));
+            myAgent.addBehaviour(new FinishJobManually(myGreenEnergyAgent, calculateExpectedJobEndTime(job), JobMapper.mapToJobInstanceId(job)));
             displayMessageArrow(myGreenEnergyAgent, accept_proposal.getSender());
             sendResponseToServer(accept_proposal, jobWithProtocol);
         }
@@ -87,17 +89,8 @@ public class ProposePowerRequest extends ProposeInitiator {
         return null;
     }
 
-    private Behaviour createManualFinishBehaviour(final PowerJob job) {
-        final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder()
-                .jobId(job.getJobId())
-                .startTime(job.getStartTime())
-                .build();
-        return new FinishJobManually(myGreenEnergyAgent, calculateJobStartTimeout(job), jobInstanceId);
-    }
-
-    private Long calculateJobStartTimeout(final PowerJob job) {
-        final long differenceStart = ChronoUnit.MILLIS.between(getCurrentTime(), job.getStartTime());
-        final long differenceExecution = ChronoUnit.MILLIS.between(job.getStartTime(), job.getEndTime());
-        return ((differenceStart < 0 ? 0 : differenceStart) + differenceExecution) + MAX_ERROR_IN_JOB_FINISH;
+    private Date calculateExpectedJobEndTime(final PowerJob job) {
+        final OffsetDateTime endDate = getCurrentTime().isAfter(job.getEndTime()) ? getCurrentTime() : job.getEndTime();
+        return Date.from(endDate.plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
     }
 }

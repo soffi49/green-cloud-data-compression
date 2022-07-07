@@ -126,27 +126,6 @@ public class RequestJobExecution extends ContractNetInitiator {
         }
     }
 
-    /**
-     * Method that handles the information sent by Cloud Network Agent implying that the job execution has started.
-     *
-     * @param inform retrieved inform message
-     */
-    @Override
-    protected void handleInform(final ACLMessage inform) {
-        checkIfJobStartedOnTime();
-        ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
-    }
-
-    private void checkIfJobStartedOnTime() {
-        final OffsetDateTime startTime = getCurrentTime();
-        final long timeDifference = ChronoUnit.MILLIS.between(startTime, myClientAgent.getSimulatedJobStart());
-        if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
-            logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
-        } else {
-            logger.info("[{}] The execution of my job started with a delay equal to {}! :(", myAgent.getName(), timeDifference);
-        }
-    }
-
     private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {
         return receivedOffers.stream().min(this::compareCNAOffers).orElseThrow();
     }

@@ -48,7 +48,7 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
      */
     @Override
     public void action() {
-        logger.info("[{}] Power shortage was detected! Power shortage will happen at: {}", myGreenAgent.getName(), shortageStartTime);
+        logger.info("[{}] !!!!! Power shortage was detected! Power shortage will happen at: {}", myGreenAgent.getName(), shortageStartTime);
         final List<PowerJob> affectedJobs = getAffectedPowerJobs();
         if (affectedJobs.isEmpty()) {
             logger.info("[{}] Power shortage won't affect any jobs", myGreenAgent.getName());
@@ -69,30 +69,12 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
     }
 
     private void createNewJobInstances(final List<PowerJob> affectedJobs) {
-        affectedJobs.forEach(powerJob -> {
-            final PowerJob onHoldJobInstance = ImmutablePowerJob.builder()
-                    .jobId(powerJob.getJobId())
-                    .power(powerJob.getPower())
-                    .startTime(shortageStartTime)
-                    .endTime(powerJob.getEndTime())
-                    .build();
-            final PowerJob finishedPowerJob = ImmutablePowerJob.builder()
-                    .jobId(powerJob.getJobId())
-                    .power(powerJob.getPower())
-                    .startTime(powerJob.getStartTime())
-                    .endTime(shortageStartTime)
-                    .build();
-            final JobStatusEnum currentJobStatus = myGreenAgent.getPowerJobs().get(powerJob);
-            myGreenAgent.getPowerJobs().remove(powerJob);
-            myGreenAgent.getPowerJobs().put(onHoldJobInstance, JobStatusEnum.ON_HOLD);
-            myGreenAgent.getPowerJobs().put(finishedPowerJob, currentJobStatus);
-        });
+        affectedJobs.forEach(powerJob -> myGreenAgent.manage().divideJobForPowerShortage(powerJob, shortageStartTime));
     }
 
     private List<PowerJob> getAffectedPowerJobs() {
         return myGreenAgent.getPowerJobs().keySet().stream()
-                .filter(job -> isWithinTimeStamp(job.getStartTime(), job.getEndTime(), shortageStartTime) &&
-                        !myGreenAgent.getPowerJobs().get(job).equals(JobStatusEnum.PROCESSING))
+                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myGreenAgent.getPowerJobs().get(job).equals(JobStatusEnum.PROCESSING))
                 .toList();
     }
 }

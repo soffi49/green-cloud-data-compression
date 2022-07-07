@@ -1,8 +1,6 @@
 package common.mapper;
 
-import domain.job.ImmutablePowerJob;
-import domain.job.Job;
-import domain.job.PowerJob;
+import domain.job.*;
 
 import java.time.OffsetDateTime;
 
@@ -35,5 +33,30 @@ public class JobMapper {
                 .startTime(startTime)
                 .endTime(powerJob.getEndTime())
                 .build();
+    }
+
+    /**
+     * @param powerJob PowerJob object
+     * @return JobInstanceIdentifier
+     */
+    public static JobInstanceIdentifier mapToJobInstanceId(final PowerJob powerJob) {
+        return ImmutableJobInstanceIdentifier.builder().jobId(powerJob.getJobId()).startTime(powerJob.getStartTime()).build();
+    }
+
+    /**
+     * @param jobId     job identifier
+     * @param startTime job start time
+     * @return JobInstanceIdentifier
+     */
+    public static JobInstanceIdentifier mapToJobInstanceId(final String jobId, final OffsetDateTime startTime) {
+        return ImmutableJobInstanceIdentifier.builder().jobId(jobId).startTime(startTime).build();
+    }
+
+    /**
+     * @param job Job object
+     * @return JobInstanceIdentifier
+     */
+    public static JobInstanceIdentifier mapToJobInstanceId(final Job job) {
+        return ImmutableJobInstanceIdentifier.builder().jobId(job.getJobId()).startTime(job.getStartTime()).build();
     }
 }

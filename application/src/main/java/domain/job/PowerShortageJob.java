@@ -9,18 +9,18 @@ import java.time.OffsetDateTime;
 /**
  * Object stores the data necessary to perform job transfer
  */
-@JsonSerialize(as = ImmutableJobTransfer.class)
-@JsonDeserialize(as = ImmutableJobTransfer.class)
+@JsonSerialize(as = ImmutablePowerShortageJob.class)
+@JsonDeserialize(as = ImmutablePowerShortageJob.class)
 @Value.Immutable
-public interface JobTransfer {
+public interface PowerShortageJob {
 
     /**
      * @return unique job identifier
      */
-    String getJobId();
+    JobInstanceIdentifier getJobInstanceId();
 
     /**
      * @return time when transfer will happen
      */
-    OffsetDateTime getTransferTime();
+    OffsetDateTime getPowerShortageStart();
 }

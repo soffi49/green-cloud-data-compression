@@ -1,6 +1,6 @@
 package agents.cloudnetwork.behaviour;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
+import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.*;
 import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Vector;
-import java.util.function.Predicate;
 
 /**
  * Behaviour which is responsible for broadcasting client's job to servers and choosing server to execute the job
@@ -69,7 +68,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
                 final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
                 logger.info("[{}] Sending job execution offer to Client", guid);
                 myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-                myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent, makeJobOfferForClient(chosenServerData, myCloudNetworkAgent.getCurrentPowerInUse(), replyMessage), serverReplyMessage));
+                myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent, makeJobOfferForClient(chosenServerData, myCloudNetworkAgent.manage().getCurrentPowerInUse(), replyMessage), serverReplyMessage));
                 rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
             } else {
                 handleInvalidResponses(proposals);

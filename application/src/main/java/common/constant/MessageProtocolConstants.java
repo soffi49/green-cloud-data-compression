@@ -36,16 +36,19 @@ public class MessageProtocolConstants {
 
     /**
      * Power shortage protocols
-     * POWER_SHORTAGE_ALERT_PROTOCOL            - protocol used in messages informing the agent that the power shortage was detected
-     * POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL  - protocol used in messages informing the agent that the transfer of the job between green
-     *                                            sources caused by the power shortage was established
-     * POWER_SHORTAGE_JOB_TRANSFER_PROTOCOL     - protocol used in messages informing the agent that the transfer of the job servers
-     *                                            caused by the power shortage was established
-     * CANCELLED_TRANSFER_PROTOCOL              - protocol informing that the job transfer should be cancelled
+     * POWER_SHORTAGE_ALERT_PROTOCOL                - protocol used in messages informing the agent that the power shortage was detected
+     * POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL      - protocol used in messages informing the agent that the transfer of the job between green
+     *                                                sources caused by the power shortage was established
+     * POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL      - protocol used in messages informing the agent that the transfer of the job between servers
+     *                                                caused by the power shortage was established
+     * POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL       - protocol used in power confirmation messages sent by the green sources indicating that the power
+     *                                                is sent to supply the jobs coming from transfer
+     * CANCELLED_TRANSFER_PROTOCOL                  - protocol informing that the job transfer should be cancelled
      */
     public static final String POWER_SHORTAGE_ALERT_PROTOCOL = "POWER_SHORTAGE_ALERT_PROTOCOL";
     public static final String POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL = "POWER_SHORTAGE_TRANSFER_PROTOCOL";
-    public static final String POWER_SHORTAGE_JOB_TRANSFER_PROTOCOL = "POWER_SHORTAGE_JOB_TRANSFER_PROTOCOL";
+    public static final String POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL";
+    public static final String POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL";
     public static final String CANCELLED_TRANSFER_PROTOCOL = "CANCELLED_TRANSFER_PROTOCOL";
 
 }

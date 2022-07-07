@@ -28,7 +28,7 @@ public class GUIUtils {
         agent.getGuiController().updateActiveJobsCountByValue(1);
         cloudNetworkAgentNode.updateJobsCount(1);
         cloudNetworkAgentNode.updateClientNumber(1);
-        cloudNetworkAgentNode.updateTraffic(agent.getCurrentPowerInUse());
+        cloudNetworkAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
     }
 
     /**
@@ -45,7 +45,7 @@ public class GUIUtils {
         agent.getGuiController().addNewInformation(information);
         cloudNetworkAgentNode.updateJobsCount(-1);
         cloudNetworkAgentNode.updateClientNumber(-1);
-        cloudNetworkAgentNode.updateTraffic(agent.getCurrentPowerInUse());
+        cloudNetworkAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
     }
 
     /**
@@ -56,9 +56,9 @@ public class GUIUtils {
     public static void updateGreenSourceState(final GreenEnergyAgent agent) {
         final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) agent.getAgentNode();
         greenEnergyAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
-        greenEnergyAgentNode.updateJobsCount(agent.getJobCount());
-        greenEnergyAgentNode.updateIsActive(agent.getIsActiveState());
-        greenEnergyAgentNode.updateTraffic(agent.getCurrentPowerInUse());
+        greenEnergyAgentNode.updateJobsCount(agent.manage().getJobCount());
+        greenEnergyAgentNode.updateIsActive(agent.manage().getIsActiveState());
+        greenEnergyAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
     }
 
     /**
@@ -69,10 +69,10 @@ public class GUIUtils {
     public static void updateServerState(final ServerAgent agent) {
         final ServerAgentNode serverAgentNode = (ServerAgentNode) agent.getAgentNode();
         serverAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
-        serverAgentNode.updateJobsCount(agent.getJobCount());
-        serverAgentNode.updateClientNumber(agent.getJobCount());
-        serverAgentNode.updateIsActive(agent.getIsActiveState());
-        serverAgentNode.updateTraffic(agent.getCurrentPowerInUse());
+        serverAgentNode.updateJobsCount(agent.manage().getJobCount());
+        serverAgentNode.updateClientNumber(agent.manage().getJobCount());
+        serverAgentNode.updateIsActive(agent.manage().getIsActiveState());
+        serverAgentNode.updateTraffic(agent.manage().getCurrentPowerInUseForGreenSource());
     }
 
     /**

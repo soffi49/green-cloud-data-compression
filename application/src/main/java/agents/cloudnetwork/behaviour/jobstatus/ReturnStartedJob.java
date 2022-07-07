@@ -1,11 +1,11 @@
-package agents.cloudnetwork.behaviour;
+package agents.cloudnetwork.behaviour.jobstatus;
 
 import static common.GUIUtils.announceStartedJob;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
-import static messages.domain.ReplyMessageFactory.prepareConfirmationReply;
+import static messages.domain.JobStatusMessageFactory.prepareStartMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.JobInstanceIdentifier;
@@ -22,23 +22,19 @@ import java.util.Objects;
 /**
  * Behaviour responsible for receiving information that the execution of the job has started
  */
-public class ReceiveStartedJobs extends CyclicBehaviour {
+public class ReturnStartedJob extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceiveStartedJobs.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReturnStartedJob.class);
     private static final MessageTemplate messageTemplate = and(MatchPerformative(INFORM), MatchProtocol(STARTED_JOB_PROTOCOL));
 
-    private final ACLMessage replyMessage;
-    private final CloudNetworkAgent myCloudNetworkAgent;
+    private CloudNetworkAgent myCloudNetworkAgent;
 
     /**
-     * Behaviour constructor.
-     *
-     * @param agent        agent which is executing the behaviour
-     * @param replyMessage reply inside which the information about the job execution status should be sent
+     * Method runs at the behaviour start. It casts the abstract agent to the agent of type CloudNetworkAgent
      */
-    public ReceiveStartedJobs(Agent agent, ACLMessage replyMessage) {
-        super(agent);
-        this.replyMessage = replyMessage;
+    @Override
+    public void onStart() {
+        super.onStart();
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
     }
 
@@ -52,11 +48,13 @@ public class ReceiveStartedJobs extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending information that the job execution has started", myAgent.getName());
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
-                myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.getJobById(jobInstanceId.getJobId()), JobStatusEnum.IN_PROGRESS);
-                announceStartedJob(myCloudNetworkAgent);
-                myAgent.send(prepareConfirmationReply(jobInstanceId.getJobId(), replyMessage));
+                if (Objects.nonNull(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()))) {
+                    logger.info("[{}] Sending information that the job {} execution has started", myAgent.getName(), jobInstanceId.getJobId());
+                    myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()), JobStatusEnum.IN_PROGRESS);
+                    announceStartedJob(myCloudNetworkAgent);
+                    myAgent.send(prepareStartMessageForClient(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()).getClientIdentifier()));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

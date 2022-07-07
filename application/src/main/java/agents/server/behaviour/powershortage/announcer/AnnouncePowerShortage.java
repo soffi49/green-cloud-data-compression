@@ -2,14 +2,18 @@ package agents.server.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.isWithinTimeStamp;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
+import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
 
-import agents.greenenergy.behaviour.powershortage.handler.SchedulePowerShortage;
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import common.mapper.JobMapper;
-import domain.job.*;
+import domain.job.ImmutablePowerShortageTransfer;
+import domain.job.Job;
+import domain.job.JobStatusEnum;
+import domain.job.PowerShortageTransfer;
+import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +53,7 @@ public class AnnouncePowerShortage extends OneShotBehaviour {
      */
     @Override
     public void action() {
-        logger.info("[{}] Power shortage was detected for server! Power shortage will happen at: {}", myServerAgent.getName(), shortageStartTime);
+        logger.info("[{}] !!!!! Power shortage was detected for server! Power shortage will happen at: {}", myServerAgent.getName(), shortageStartTime);
         final List<Job> affectedJobs = getAffectedPowerJobs();
         if (affectedJobs.isEmpty()) {
             logger.info("[{}] Power shortage won't affect any jobs", myServerAgent.getName());
@@ -71,31 +75,16 @@ public class AnnouncePowerShortage extends OneShotBehaviour {
 
     private void createNewJobInstances(final List<Job> jobList, final OffsetDateTime shortageTime) {
         jobList.forEach(job -> {
-            final Job onBackupEnergyInstance = ImmutableJob.builder()
-                    .jobId(job.getJobId())
-                    .clientIdentifier(job.getClientIdentifier())
-                    .power(job.getPower())
-                    .startTime(shortageTime)
-                    .endTime(job.getEndTime())
-                    .build();
-            final Job finishedPowerJobInstance = ImmutableJob.builder()
-                    .jobId(job.getJobId())
-                    .clientIdentifier(job.getClientIdentifier())
-                    .power(job.getPower())
-                    .startTime(job.getStartTime())
-                    .endTime(shortageTime)
-                    .build();
-            final JobStatusEnum currentJobStatus = myServerAgent.getServerJobs().get(job);
-            myServerAgent.getServerJobs().remove(job);
-            myServerAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
-            myServerAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
+            final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
+            myServerAgent.manage().divideJobForPowerShortage(job, shortageTime);
+            displayMessageArrow(myServerAgent, greenSource);
+            myServerAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToJobInstanceId(job), shortageTime, greenSource, POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL));
         });
     }
 
     private List<Job> getAffectedPowerJobs() {
         return myServerAgent.getServerJobs().keySet().stream()
-                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) &&
-                        !myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.PROCESSING))
+                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.PROCESSING))
                 .toList();
     }
 }

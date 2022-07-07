@@ -1,6 +1,7 @@
 package agents.cloudnetwork;
 
 import agents.AbstractAgent;
+import agents.cloudnetwork.domain.CloudNetworkStateManagement;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
@@ -14,6 +15,7 @@ import java.util.Map;
  */
 public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
+    protected transient CloudNetworkStateManagement stateManagement;
     protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
     protected List<AID> ownedServers;
@@ -47,27 +49,6 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
         networkJobs = new HashMap<>();
     }
 
-    /**
-     * Method calculates the power in use at the given moment
-     *
-     * @return current power in use
-     */
-    public int getCurrentPowerInUse() {
-        return networkJobs.entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
-    }
-
-    /**
-     * Method retrieves the job by the job id from job map
-     *
-     * @param jobId job identifier
-     * @return job
-     */
-    public Job getJobById(final String jobId) {
-        return networkJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
-    }
-
     public Map<String, AID> getServerForJobMap() {
         return serverForJobMap;
     }
@@ -90,5 +71,9 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
     public void setOwnedServers(List<AID> ownedServers) {
         this.ownedServers = ownedServers;
+    }
+
+    public CloudNetworkStateManagement manage() {
+        return stateManagement;
     }
 }

@@ -1,4 +1,4 @@
-package agents.client.behaviour;
+package agents.client.behaviour.df;
 
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
 import static common.GUIUtils.announceNewClient;
@@ -35,12 +35,12 @@ public class FindCloudNetworkAgents extends OneShotBehaviour {
      */
     @Override
     public void action() {
-        announceNewClient(myClientAgent);
         final List<AID> cloudNetworkAgents = search(myAgent, CNA_SERVICE_TYPE);
         if (cloudNetworkAgents.isEmpty()) {
             logger.info("[{}] No Cloud Network Agents were found", myClientAgent.getName());
             myClientAgent.doDelete();
         }
+        announceNewClient(myClientAgent);
         getParent().getDataStore().put(CLOUD_NETWORK_AGENTS, cloudNetworkAgents);
     }
 }

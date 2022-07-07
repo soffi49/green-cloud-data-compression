@@ -6,12 +6,10 @@ import static jade.lang.acl.ACLMessage.REFUSE;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.ImmutableJobInstanceIdentifier;
 import domain.job.ImmutableJobWithProtocol;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobWithProtocol;
 import jade.lang.acl.ACLMessage;
-
-import java.time.OffsetDateTime;
 
 /**
  * Class storing methods used in creating reply messages
@@ -65,15 +63,14 @@ public class ReplyMessageFactory {
     /**
      * Method prepares the reply accept message containing the conversation topic as content protocol
      *
-     * @param replyMessage reply ACLMessage that is to be sent
-     * @param jobId        unique job identifier
-     * @param jobStartTime time when the job execution started
-     * @param protocol     conversation topic being expected response protocol
+     * @param replyMessage  reply ACLMessage that is to be sent
+     * @param jobInstanceId unique job instance identifier
+     * @param protocol      conversation topic being expected response protocol
      * @return reply ACLMessage
      */
-    public static ACLMessage prepareAcceptReplyWithProtocol(final ACLMessage replyMessage, final String jobId, final OffsetDateTime jobStartTime, final String protocol) {
+    public static ACLMessage prepareAcceptReplyWithProtocol(final ACLMessage replyMessage, final JobInstanceIdentifier jobInstanceId, final String protocol) {
         final JobWithProtocol pricedJob = ImmutableJobWithProtocol.builder()
-                .jobInstanceIdentifier(ImmutableJobInstanceIdentifier.builder().jobId(jobId).startTime(jobStartTime).build())
+                .jobInstanceIdentifier(jobInstanceId)
                 .replyProtocol(protocol)
                 .build();
         replyMessage.setPerformative(ACCEPT_PROPOSAL);
@@ -82,20 +79,6 @@ public class ReplyMessageFactory {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return replyMessage;
-    }
-
-    /**
-     * Method prepares the reply message which confirms that the job execution has started
-     *
-     * @param replyMessage reply ACLMessage that is to be sent
-     * @param jobId        unique identifier of the job of interest
-     * @return reply ACLMessage
-     */
-    public static ACLMessage prepareConfirmationReply(final String jobId, final ACLMessage replyMessage) {
-        replyMessage.setPerformative(ACLMessage.INFORM);
-        replyMessage.setProtocol(STARTED_JOB_PROTOCOL);
-        replyMessage.setContent(String.format("The execution of job %s started!", jobId));
         return replyMessage;
     }
 }

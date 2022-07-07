@@ -54,12 +54,9 @@ public class VolunteerForJob extends ProposeInitiator {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
             final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
             final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
-            myServerAgent.getServerJobs().replace(myServerAgent.getJobById(jobInstanceId.getJobId()), JobStatusEnum.ACCEPTED);
+            myServerAgent.getServerJobs().replace(myServerAgent.manage().getJobById(jobInstanceId.getJobId()), JobStatusEnum.ACCEPTED);
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-            myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage,
-                                                                            jobInstanceId.getJobId(),
-                                                                            jobInstanceId.getStartTime(),
-                                                                            jobWithProtocol.getReplyProtocol()));
+            myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,7 +73,7 @@ public class VolunteerForJob extends ProposeInitiator {
         try {
             logger.info("[{}] Cloud Network {} rejected the job volunteering offer", myAgent.getName(), reject_proposal.getSender().getLocalName());
             final String jobId = reject_proposal.getContent();
-            final Job job = myServerAgent.getJobById(jobId);
+            final Job job = myServerAgent.manage().getJobById(jobId);
             myServerAgent.getGreenSourceForJobMap().remove(jobId);
             myServerAgent.getServerJobs().remove(job);
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());

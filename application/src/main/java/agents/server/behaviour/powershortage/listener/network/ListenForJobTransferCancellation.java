@@ -8,11 +8,9 @@ import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
-import agents.greenenergy.GreenEnergyAgent;
 import agents.server.ServerAgent;
 import domain.job.Job;
-import domain.job.JobTransfer;
-import domain.job.PowerJob;
+import domain.job.PowerShortageJob;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -24,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Behaviour listens for messages coming from the cloud network agent that the job transfer is to be cancelled
@@ -57,8 +54,8 @@ public class ListenForJobTransferCancellation extends CyclicBehaviour {
 
         if (Objects.nonNull(inform)) {
             try {
-                final JobTransfer jobTransfer = getMapper().readValue(inform.getContent(), JobTransfer.class);
-                final Job jobToCancel = myServerAgent.getJobByIdAndStartDate(jobTransfer.getJobId(), jobTransfer.getTransferTime());
+                final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
+                final Job jobToCancel = myServerAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId().getJobId(), powerShortageJob.getPowerShortageStart());
                 if (Objects.nonNull(jobToCancel)) {
                     logger.info("[{}] Cancelling the job with id {}", myServerAgent.getLocalName(), jobToCancel.getJobId());
                     informGreenSourceAboutJobFinish(jobToCancel, Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(jobToCancel.getJobId())));

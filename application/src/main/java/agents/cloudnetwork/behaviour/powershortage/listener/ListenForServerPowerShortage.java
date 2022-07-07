@@ -1,8 +1,8 @@
 package agents.cloudnetwork.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
-import static common.constant.MessageProtocolConstants.*;
+import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
@@ -10,7 +10,9 @@ import static messages.domain.JobStatusMessageFactory.preparePowerShortageMessag
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.behaviour.powershortage.announcer.AnnounceJobTransferRequest;
-import domain.job.*;
+import domain.job.ImmutableJob;
+import domain.job.Job;
+import domain.job.PowerShortageTransfer;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -54,24 +56,22 @@ public class ListenForServerPowerShortage extends CyclicBehaviour {
             try {
                 final PowerShortageTransfer powerShortageTransfer = getMapper().readValue(inform.getContent(), PowerShortageTransfer.class);
                 final List<AID> remainingServers = getRemainingServers(inform.getSender());
-                if (!powerShortageTransfer.getJobList().isEmpty()) {
-                    powerShortageTransfer.getJobList().stream()
-                            .map(job -> myCloudNetworkAgent.getJobById(job.getJobId()))
-                            .forEach(job -> {
-                                if(Objects.nonNull(job)) {
-                                    if(!remainingServers.isEmpty()) {
-                                        logger.info("[{}] Sending call for proposal to Server Agents to transfer job with id {}", myAgent.getName(), job.getJobId());
-                                        final ACLMessage cfp = prepareServerCFP(job, powerShortageTransfer.getStartTime(), remainingServers);
-                                        displayMessageArrow(myCloudNetworkAgent, remainingServers);
-                                        myAgent.addBehaviour(new AnnounceJobTransferRequest(myAgent, cfp, powerShortageTransfer.getStartTime(), inform.getSender(), job));
-                                    } else {
-                                        logger.info("[{}] No servers available. Passing the information to client", myAgent.getName());
-                                        displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
-                                        myCloudNetworkAgent.send(preparePowerShortageMessageForClient(job.getJobId(), job.getClientIdentifier()));
-                                    }
+                powerShortageTransfer.getJobList().stream()
+                        .map(job -> myCloudNetworkAgent.manage().getJobById(job.getJobId()))
+                        .forEach(job -> {
+                            if (Objects.nonNull(job)) {
+                                if (!remainingServers.isEmpty()) {
+                                    logger.info("[{}] Sending call for proposal to Server Agents to transfer job with id {}", myAgent.getName(), job.getJobId());
+                                    final ACLMessage cfp = prepareServerCFP(job, powerShortageTransfer.getStartTime(), remainingServers);
+                                    displayMessageArrow(myCloudNetworkAgent, remainingServers);
+                                    myAgent.addBehaviour(new AnnounceJobTransferRequest(myAgent, cfp, powerShortageTransfer.getStartTime(), inform.getSender(), job));
+                                } else {
+                                    logger.info("[{}] No servers available. Passing the information to client", myAgent.getName());
+                                    displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
+                                    myCloudNetworkAgent.send(preparePowerShortageMessageForClient(job.getClientIdentifier()));
                                 }
-                            });
-                }
+                            }
+                        });
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -81,9 +81,10 @@ public class ListenForServerPowerShortage extends CyclicBehaviour {
     }
 
     private ACLMessage prepareServerCFP(final Job job, final OffsetDateTime startPowerShortageTime, final List<AID> remainingServers) {
+        final OffsetDateTime startTime = job.getStartTime().isAfter(startPowerShortageTime)? job.getStartTime() : startPowerShortageTime;
         final Job newJob = ImmutableJob.builder()
                 .power(job.getPower())
-                .startTime(startPowerShortageTime)
+                .startTime(startTime)
                 .endTime(job.getEndTime())
                 .jobId(job.getJobId())
                 .clientIdentifier(job.getClientIdentifier())

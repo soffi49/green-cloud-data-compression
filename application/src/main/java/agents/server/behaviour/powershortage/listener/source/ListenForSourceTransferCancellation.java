@@ -8,7 +8,7 @@ import static mapper.JsonMapper.getMapper;
 import static messages.domain.PowerShortageMessageFactory.prepareTransferCancellationRequest;
 
 import agents.server.ServerAgent;
-import domain.job.JobTransfer;
+import domain.job.PowerShortageJob;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -55,10 +55,10 @@ public class ListenForSourceTransferCancellation extends CyclicBehaviour {
 
         if (Objects.nonNull(inform)) {
             try {
-                final JobTransfer jobTransfer = getMapper().readValue(inform.getContent(), JobTransfer.class);
+                final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
                 logger.info("[{}] Sending the request for transfer cancellation to {}", myAgent.getName(), chosenGreenSourceForTransfer.getLocalName());
                 displayMessageArrow(myServerAgent, chosenGreenSourceForTransfer);
-                myServerAgent.send(prepareTransferCancellationRequest(jobTransfer, chosenGreenSourceForTransfer));
+                myServerAgent.send(prepareTransferCancellationRequest(powerShortageJob, chosenGreenSourceForTransfer));
             } catch (Exception e) {
                 e.printStackTrace();
             }

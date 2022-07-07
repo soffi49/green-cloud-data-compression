@@ -1,27 +1,25 @@
 package agents.cloudnetwork.behaviour;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
+import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import domain.job.ImmutableJobInstanceIdentifier;
+import agents.cloudnetwork.behaviour.jobstatus.ReturnJobDelay;
+import common.mapper.JobMapper;
 import domain.job.Job;
-import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
-import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.temporal.ChronoUnit;
+import java.time.OffsetDateTime;
+import java.util.Date;
 
 /**
  * Behaviour responsible for sending proposal with job execution offer to the client
@@ -58,15 +56,11 @@ public class ProposeJobOffer extends ProposeInitiator {
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
         final String jobId = accept_proposal.getContent();
-        final Job job = myCloudNetworkAgent.getJobById(jobId);
-        final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder()
-                .jobId(jobId)
-                .startTime(job.getStartTime())
-                .build();
+        final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
         myCloudNetworkAgent.getNetworkJobs().replace(job, JobStatusEnum.ACCEPTED);
-        myAgent.addBehaviour(createWaitingForJobStartBehaviour(accept_proposal, job));
+        myAgent.addBehaviour(new ReturnJobDelay(myCloudNetworkAgent, calculateExpectedJobStart(job), job.getJobId()));
         displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
-        myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobId, jobInstanceId.getStartTime(), SERVER_JOB_CFP_PROTOCOL));
+        myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, JobMapper.mapToJobInstanceId(job), SERVER_JOB_CFP_PROTOCOL));
     }
 
     /**
@@ -80,20 +74,13 @@ public class ProposeJobOffer extends ProposeInitiator {
         logger.info("[{}] Client {} rejected the job proposal", guid, reject_proposal.getSender().getName());
         final String jobId = reject_proposal.getContent();
         myCloudNetworkAgent.getServerForJobMap().remove(jobId);
-        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
+        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.manage().getJobById(jobId));
         displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
         myCloudNetworkAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, REJECT_PROPOSAL));
     }
 
-    private ParallelBehaviour createWaitingForJobStartBehaviour(final ACLMessage accept_proposal, final Job job) {
-        final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
-        parallelBehaviour.addSubBehaviour(new ReceiveStartedJobs(myCloudNetworkAgent, accept_proposal.createReply()));
-        parallelBehaviour.addSubBehaviour(new ListenForJobDelay(myCloudNetworkAgent, calculateJobStartTimeout(job), job.getJobId()));
-        return parallelBehaviour;
-    }
-
-    private Long calculateJobStartTimeout(final Job job) {
-        final long timeout = ChronoUnit.MILLIS.between(getCurrentTime(), job.getStartTime());
-        return (timeout < 0 ? 0 : timeout) + MAX_ERROR_IN_JOB_START;
+    private Date calculateExpectedJobStart(final Job job) {
+        final OffsetDateTime startTime = getCurrentTime().isAfter(job.getStartTime()) ? getCurrentTime() : job.getStartTime();
+        return Date.from(startTime.plusSeconds(MAX_ERROR_IN_JOB_START).toInstant());
     }
 }

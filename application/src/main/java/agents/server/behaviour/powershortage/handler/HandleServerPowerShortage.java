@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,13 +30,13 @@ public class HandleServerPowerShortage extends WakerBehaviour {
      * Behaviour constructor.
      *
      * @param myAgent            agent executing the behaviour
-     * @param timeout            timeout after which the jobs should be backed-up by non green energy power source
+     * @param shortageTime       time when the power shortage starts
      * @param jobsToExecute      list of the jobs to be finished
      * @param newMaximumCapacity maximum capacity value during power shortage
      *                           (if null then it means that shortage does not concern server directly)
      */
-    private HandleServerPowerShortage(Agent myAgent, long timeout, List<Job> jobsToExecute, final Integer newMaximumCapacity) {
-        super(myAgent, timeout);
+    private HandleServerPowerShortage(Agent myAgent, Date shortageTime, List<Job> jobsToExecute, final Integer newMaximumCapacity) {
+        super(myAgent, shortageTime);
         this.myServerAgent = (ServerAgent) myAgent;
         this.jobsToExecute = jobsToExecute;
         this.newMaximumCapacity = newMaximumCapacity;
@@ -51,9 +52,8 @@ public class HandleServerPowerShortage extends WakerBehaviour {
      */
     public static HandleServerPowerShortage createFor(final List<Job> jobsToExecute, final OffsetDateTime shortageStartTime,
                                                       final ServerAgent serverAgent, final Integer newMaximumPower) {
-        final long timeDifference = ChronoUnit.MILLIS.between(getCurrentTime(), shortageStartTime);
-        final long timeOut = timeDifference < 0 ? 0 : timeDifference;
-        return new HandleServerPowerShortage(serverAgent, timeOut, jobsToExecute, newMaximumPower);
+        final OffsetDateTime startTime = getCurrentTime().isAfter(shortageStartTime) ? getCurrentTime() : shortageStartTime;
+        return new HandleServerPowerShortage(serverAgent, Date.from(startTime.toInstant()), jobsToExecute, newMaximumPower);
     }
 
     /**

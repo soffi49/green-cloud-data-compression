@@ -70,8 +70,8 @@ public class TransferJobToGreenSource extends WakerBehaviour {
      */
     @Override
     protected void onWake() {
-        final Job jobToStart = myServerAgent.getJobByIdAndStartDate(jobId, shortageStartTime);
-        final Job jobToFinish = myServerAgent.getJobByIdAndEndDate(jobId, shortageStartTime);
+        final Job jobToStart = myServerAgent.manage().getJobByIdAndStartDate(jobId, shortageStartTime);
+        final Job jobToFinish = myServerAgent.manage().getJobByIdAndEndDate(jobId, shortageStartTime);
         if (Objects.nonNull(jobToStart) && Objects.nonNull(jobToFinish)) {
             finishJobExecutionInOldGreenSource(jobToFinish);
             transferJobToNewGreenSource();
@@ -82,7 +82,7 @@ public class TransferJobToGreenSource extends WakerBehaviour {
     private void transferJobToNewGreenSource() {
         logger.info("[{}] Transferring the job with id {} to a new green source", myServerAgent.getName(), jobId);
         myServerAgent.getGreenSourceForJobMap().replace(jobId, newGreenSource);
-        myServerAgent.getServerJobs().replace(myServerAgent.getJobByIdAndStartDate(jobId, shortageStartTime), JobStatusEnum.IN_PROGRESS);
+        myServerAgent.getServerJobs().replace(myServerAgent.manage().getJobByIdAndStartDate(jobId, shortageStartTime), JobStatusEnum.IN_PROGRESS);
         updateServerState(myServerAgent);
     }
 
@@ -94,7 +94,6 @@ public class TransferJobToGreenSource extends WakerBehaviour {
         final ACLMessage startedJobMessage = prepareJobStartedMessage(jobId, shortageStartTime, List.of(newGreenSource));
         displayMessageArrow(myServerAgent, newGreenSource);
         myAgent.send(startedJobMessage);
-        myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, jobToExecute, true));
     }
 
     private void finishJobExecutionInOldGreenSource(final Job jobToFinish) {

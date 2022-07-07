@@ -3,12 +3,14 @@ package agents.server.behaviour;
 import static common.GUIUtils.displayMessageArrow;
 import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
 import static messages.domain.JobStatusMessageFactory.prepareJobStartedMessage;
+import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
+import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
 
 import agents.server.ServerAgent;
-import domain.job.Job;
-import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
+import common.mapper.JobMapper;
+import domain.job.*;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -16,10 +18,12 @@ import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.temporal.ChronoUnit;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class StartJobExecution extends WakerBehaviour {
 
@@ -32,12 +36,12 @@ public class StartJobExecution extends WakerBehaviour {
      * Behaviour constructor.
      *
      * @param agent     agent that is executing the behaviour
-     * @param timeOut   time after which the job will be executed
+     * @param startDate time when the job execution should begin
      * @param jobId     identifier of the job that is to be executed
      * @param informCNA flag indicating whether the cloud network should be informed about job start
      */
-    private StartJobExecution(Agent agent, long timeOut, final JobInstanceIdentifier jobId, final boolean informCNA) {
-        super(agent, timeOut);
+    private StartJobExecution(Agent agent, Date startDate, final JobInstanceIdentifier jobId, final boolean informCNA) {
+        super(agent, startDate);
         this.jobToExecute = jobId;
         myServerAgent = (ServerAgent) agent;
         this.informCNA = informCNA;
@@ -54,9 +58,8 @@ public class StartJobExecution extends WakerBehaviour {
      * @return behaviour to be run
      */
     public static StartJobExecution createFor(final ServerAgent serverAgent, final JobInstanceIdentifier jobId, final boolean informCNA) {
-        final long timeDifference = ChronoUnit.MILLIS.between(getCurrentTime(), jobId.getStartTime());
-        final long timeOut = timeDifference < 0 ? 0 : timeDifference;
-        return new StartJobExecution(serverAgent, timeOut, jobId, informCNA);
+        final OffsetDateTime startDate = getCurrentTime().isAfter(jobId.getStartTime()) ? getCurrentTime() : jobId.getStartTime();
+        return new StartJobExecution(serverAgent, Date.from(startDate.toInstant()), jobId, informCNA);
     }
 
     /**
@@ -66,8 +69,8 @@ public class StartJobExecution extends WakerBehaviour {
      */
     @Override
     protected void onWake() {
-        final Job job = myServerAgent.getJobByIdAndStartDate(jobToExecute.getJobId(), jobToExecute.getStartTime());
-        if(Objects.nonNull(job)) {
+        final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToExecute.getJobId(), jobToExecute.getStartTime());
+        if (Objects.nonNull(job)) {
             logger.info("[{}] Start executing the job for {}", myAgent.getName(), job.getClientIdentifier());
             myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS);
             updateServerState(myServerAgent);

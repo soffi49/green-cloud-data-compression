@@ -9,6 +9,7 @@ import static messages.domain.PowerShortageMessageFactory.preparePowerShortageIn
 import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
+import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.PowerShortageTransfer;
 import jade.core.Agent;
@@ -74,7 +75,7 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
                 displayMessageArrow(myServerAgent, myServerAgent.getGreenSourceForJobMap().get(jobId));
                 displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getAllReceiver());
 
-                myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(), jobId, powerShortageTransfer.getStartTime(), POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
+                myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(), JobMapper.mapToJobInstanceId(jobId, powerShortageTransfer.getStartTime()), POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
                 rejectJobOffers(myServerAgent, jobId, chosenGreenSourceOffer, proposals);
             } else {
                 handleInvalidProposals(proposals);

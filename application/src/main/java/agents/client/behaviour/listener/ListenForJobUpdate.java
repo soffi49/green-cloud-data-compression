@@ -1,4 +1,4 @@
-package agents.client.behaviour;
+package agents.client.behaviour.listener;
 
 import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
 import static common.TimeUtils.getCurrentTime;
@@ -20,12 +20,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
- * Behaviour which handles the information that the job execution is done
+ * Behaviour which handles the information that the job status is updated
  */
-public class WaitForJobStatusUpdate extends CyclicBehaviour {
+public class ListenForJobUpdate extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(WaitForJobStatusUpdate.class);
-    private static final MessageTemplate messageTemplate = and(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)), MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL)),
+    private static final Logger logger = LoggerFactory.getLogger(ListenForJobUpdate.class);
+    private static final MessageTemplate messageTemplate = and(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
+                                                                  or(MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL))),
                                                                   MatchPerformative(INFORM));
 
     private final ClientAgent myClientAgent;
@@ -35,7 +36,7 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
      *
      * @param clientAgent agent executing the behaviour
      */
-    public WaitForJobStatusUpdate(final ClientAgent clientAgent) {
+    public ListenForJobUpdate(final ClientAgent clientAgent) {
         super(clientAgent);
         this.myClientAgent = clientAgent;
     }
@@ -48,6 +49,10 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
             switch (message.getProtocol()){
+                case STARTED_JOB_PROTOCOL -> {
+                    checkIfJobStartedOnTime();
+                    ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
+                }
                 case FINISH_JOB_PROTOCOL -> {
                     checkIfJobFinishedOnTime();
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.FINISHED);
@@ -64,6 +69,16 @@ public class WaitForJobStatusUpdate extends CyclicBehaviour {
             }
         } else {
             block();
+        }
+    }
+
+    private void checkIfJobStartedOnTime() {
+        final OffsetDateTime startTime = getCurrentTime();
+        final long timeDifference = ChronoUnit.MILLIS.between(myClientAgent.getSimulatedJobStart(), startTime);
+        if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
+            logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
+        } else {
+            logger.info("[{}] The execution of my job started with a delay equal to {}! :(", myAgent.getName(), timeDifference);
         }
     }
 

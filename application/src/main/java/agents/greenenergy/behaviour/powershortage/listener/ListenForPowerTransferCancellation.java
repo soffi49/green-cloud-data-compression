@@ -7,7 +7,7 @@ import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
-import domain.job.JobTransfer;
+import domain.job.PowerShortageJob;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -48,8 +48,8 @@ public class ListenForPowerTransferCancellation extends CyclicBehaviour {
 
         if (Objects.nonNull(inform)) {
             try {
-                final JobTransfer jobTransfer = getMapper().readValue(inform.getContent(), JobTransfer.class);
-                final PowerJob jobToCancel = myGreenEnergyAgent.getJobByIdAndStartDate(jobTransfer.getJobId(), jobTransfer.getTransferTime());
+                final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
+                final PowerJob jobToCancel = myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId().getJobId(), powerShortageJob.getPowerShortageStart());
                 if(Objects.nonNull(jobToCancel)) {
                     logger.info("[{}] Cancelling the job with id {}", myGreenEnergyAgent.getLocalName(), jobToCancel.getJobId());
                     myGreenEnergyAgent.getPowerJobs().remove(jobToCancel);

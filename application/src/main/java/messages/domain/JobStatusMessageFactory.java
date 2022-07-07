@@ -19,17 +19,31 @@ import java.util.List;
 public class JobStatusMessageFactory {
 
     /**
-     * Method prepares the information message about the job execution finish which is to be sent
+     * Method prepares the information message about the job execution start which is to be sent
      * to the client
      *
-     * @param jobId    unique identifier of the kob of interest
      * @param clientId client global name
      * @return inform ACLMessage
      */
-    public static ACLMessage prepareFinishMessageForClient(final String jobId, final String clientId) {
+    public static ACLMessage prepareStartMessageForClient(final String clientId) {
+        final ACLMessage informationMessage = new ACLMessage(INFORM);
+        informationMessage.setProtocol(STARTED_JOB_PROTOCOL);
+        informationMessage.setContent(STARTED_JOB_PROTOCOL);
+        informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
+        return informationMessage;
+    }
+
+    /**
+     * Method prepares the information message about the job execution finish which is to be sent
+     * to the client
+     *
+     * @param clientId client global name
+     * @return inform ACLMessage
+     */
+    public static ACLMessage prepareFinishMessageForClient(final String clientId) {
         final ACLMessage informationMessage = new ACLMessage(INFORM);
         informationMessage.setProtocol(FINISH_JOB_PROTOCOL);
-        informationMessage.setContent(String.format("The job %s is finished!", jobId));
+        informationMessage.setContent(FINISH_JOB_PROTOCOL);
         informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
         return informationMessage;
     }
@@ -100,14 +114,13 @@ public class JobStatusMessageFactory {
      * Method prepares the information message about the job execution delay which is to be sent
      * to the client
      *
-     * @param jobId    unique identifier of the kob of interest
      * @param clientId client global name
      * @return inform ACLMessage
      */
-    public static ACLMessage prepareDelayMessageForClient(final String jobId, final String clientId) {
+    public static ACLMessage prepareDelayMessageForClient(final String clientId) {
         final ACLMessage informationMessage = new ACLMessage(INFORM);
         informationMessage.setProtocol(DELAYED_JOB_PROTOCOL);
-        informationMessage.setContent(String.format("The job %s execution has some delay.", jobId));
+        informationMessage.setContent(DELAYED_JOB_PROTOCOL);
         informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
         return informationMessage;
     }
@@ -116,14 +129,13 @@ public class JobStatusMessageFactory {
      * Method prepares the message informing the client that there is a power shortage and that the job will be executed
      * using the backup power
      *
-     * @param jobId    unique identifier of the kob of interest
      * @param clientId client global name
      * @return inform ACLMessage
      */
-    public static ACLMessage preparePowerShortageMessageForClient(final String jobId, final String clientId) {
+    public static ACLMessage preparePowerShortageMessageForClient(final String clientId) {
         final ACLMessage informationMessage = new ACLMessage(INFORM);
         informationMessage.setProtocol(BACK_UP_POWER_JOB_PROTOCOL);
-        informationMessage.setContent(String.format("The job %s is executed using the back-up power.", jobId));
+        informationMessage.setContent(BACK_UP_POWER_JOB_PROTOCOL);
         informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
         return informationMessage;
     }

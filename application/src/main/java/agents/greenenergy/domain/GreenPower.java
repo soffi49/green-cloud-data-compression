@@ -18,6 +18,9 @@ import org.shredzone.commons.suncalc.SunTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ *
+ */
 public class GreenPower {
 
     private static final Logger logger = LoggerFactory.getLogger(GreenPower.class);

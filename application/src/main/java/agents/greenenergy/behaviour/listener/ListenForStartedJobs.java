@@ -50,8 +50,8 @@ public class ListenForStartedJobs extends CyclicBehaviour {
         if (nonNull(message)) {
             try {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
-                if (nonNull(myGreenEnergyAgent.getJobByIdAndStartDate(jobInstanceId))) {
-                    myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
+                if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
+                    myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
                     logger.info("[{}] Started the execution of the job with id {}", guid, jobInstanceId.getJobId());
                     updateGreenSourceState(myGreenEnergyAgent);
                 }

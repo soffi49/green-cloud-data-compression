@@ -13,7 +13,7 @@ import static messages.domain.PowerShortageMessageFactory.prepareTransferCancell
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.JobTransfer;
+import domain.job.PowerShortageJob;
 import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -52,18 +52,18 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myGreenEnergyAgent.receive(messageTemplate);
         if (nonNull(message)) {
-            final JobTransfer jobTransfer = readMessage(message);
-            if (Objects.nonNull(jobTransfer) && nonNull(myGreenEnergyAgent.getJobByIdAndStartDate(jobTransfer.getJobId(), jobTransfer.getTransferTime()))) {
-                logger.info("[{}] Transfer of job with id {} was established successfully", guid, jobTransfer.getJobId());
-                final PowerJob powerJob = myGreenEnergyAgent.getJobByIdAndStartDate(jobTransfer.getJobId(), jobTransfer.getTransferTime());
-                final String jobId = powerJob.getJobId();
-                final boolean willJobFinishBeforeTransfer = powerJob.getEndTime().isBefore(jobTransfer.getTransferTime()) ||
-                        powerJob.getEndTime().isEqual(jobTransfer.getTransferTime());
+            final PowerShortageJob powerShortageJob = readMessage(message);
+            if (Objects.nonNull(powerShortageJob) && nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId().getJobId(), powerShortageJob.getPowerShortageStart()))) {
+                final String jobId = powerShortageJob.getJobInstanceId().getJobId();
+                logger.info("[{}] Transfer of job with id {} was established successfully", guid, jobId);
+                final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobId, powerShortageJob.getPowerShortageStart());
+                final boolean willJobFinishBeforeTransfer = powerJob.getEndTime().isBefore(powerShortageJob.getPowerShortageStart()) ||
+                        powerJob.getEndTime().isEqual(powerShortageJob.getPowerShortageStart());
 
                 if (willJobFinishBeforeTransfer) {
                     logger.info("[{}] Job with id {} will finish before the transfer. Sending cancel transfer information ", guid, jobId);
                     displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
-                    myGreenEnergyAgent.send(prepareTransferCancellationRequest(jobTransfer, myGreenEnergyAgent.getOwnerServer()));
+                    myGreenEnergyAgent.send(prepareTransferCancellationRequest(powerShortageJob, myGreenEnergyAgent.getOwnerServer()));
                 } else {
                     logger.info("[{}] Finishing job with id {} on power shortage", guid, jobId);
                     myGreenEnergyAgent.getPowerJobs().remove(powerJob);
@@ -75,9 +75,9 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
         }
     }
 
-    private JobTransfer readMessage(final ACLMessage message) {
+    private PowerShortageJob readMessage(final ACLMessage message) {
         try {
-            return getMapper().readValue(message.getContent(), JobTransfer.class);
+            return getMapper().readValue(message.getContent(), PowerShortageJob.class);
         } catch (JsonProcessingException e) {
             return null;
         }

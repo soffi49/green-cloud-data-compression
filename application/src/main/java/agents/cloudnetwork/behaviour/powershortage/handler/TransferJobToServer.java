@@ -60,7 +60,7 @@ public class TransferJobToServer extends WakerBehaviour {
      */
     @Override
     protected void onWake() {
-        final Job jobToExecute = myCloudNetworkAgent.getJobById(jobId);
+        final Job jobToExecute = myCloudNetworkAgent.manage().getJobById(jobId);
         if (Objects.nonNull(jobToExecute)) {
             logger.info("[{}] Updating the internal state of the cloud network", myCloudNetworkAgent.getName());
             myCloudNetworkAgent.getServerForJobMap().replace(jobId, newServer);

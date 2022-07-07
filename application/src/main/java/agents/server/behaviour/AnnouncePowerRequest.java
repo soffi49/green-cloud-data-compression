@@ -63,9 +63,9 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
                 final ACLMessage chosenGreenSourceOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
                 final GreenSourceData chosenGreenSourceData = readMessageContent(chosenGreenSourceOffer);
                 final String jobId = chosenGreenSourceData.getJobId();
-                logger.info("[{}] Chosen Green Source for the job: {}", myAgent.getName(), chosenGreenSourceOffer.getSender().getLocalName());
+                logger.info("[{}] Chosen Green Source for the job with id {} : {}", myAgent.getName(), jobId, chosenGreenSourceOffer.getSender().getLocalName());
 
-                final double servicePrice = myServerAgent.calculateServicePrice(chosenGreenSourceData);
+                final double servicePrice = myServerAgent.manage().calculateServicePrice(chosenGreenSourceData);
                 final ACLMessage proposalMessage = makeServerJobOffer(myServerAgent, servicePrice, jobId, replyMessage);
                 myServerAgent.getGreenSourceForJobMap().put(jobId, chosenGreenSourceOffer.getSender());
 

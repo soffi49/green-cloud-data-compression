@@ -1,4 +1,4 @@
-package agents.cloudnetwork.behaviour;
+package agents.cloudnetwork.behaviour.jobstatus;
 
 import static common.GUIUtils.announceFinishedJob;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
@@ -46,11 +46,13 @@ public class ReturnCompletedJob extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
-                final String clientId = myCloudNetworkAgent.getJobById(jobInstanceId.getJobId()).getClientIdentifier();
-                updateNetworkInformation(jobInstanceId.getJobId());
-                myAgent.send(prepareFinishMessageForClient(jobInstanceId.getJobId(), clientId));
+                if (Objects.nonNull(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()))) {
+                    logger.info("[{}] Sending information that the job {} execution is finished", myAgent.getName(), jobInstanceId.getJobId());
+                    final String clientId = myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()).getClientIdentifier();
+                    updateNetworkInformation(jobInstanceId.getJobId());
+                    myAgent.send(prepareFinishMessageForClient(clientId));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -60,7 +62,7 @@ public class ReturnCompletedJob extends CyclicBehaviour {
     }
 
     private void updateNetworkInformation(final String jobId) {
-        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
+        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.manage().getJobById(jobId));
         myCloudNetworkAgent.getServerForJobMap().remove(jobId);
         announceFinishedJob(myCloudNetworkAgent, jobId);
     }

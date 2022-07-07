@@ -12,7 +12,9 @@ import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.announcer.AnnouncePowerRequestTransfer;
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import common.mapper.JobMapper;
-import domain.job.*;
+import domain.job.Job;
+import domain.job.PowerJob;
+import domain.job.PowerShortageTransfer;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -72,7 +74,7 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
                 }
                 if (!powerShortageTransfer.getJobList().isEmpty()) {
                     final List<Job> jobList = powerShortageTransfer.getJobList().stream()
-                            .map(job -> myServerAgent.getJobByIdAndStartDate(job.getJobId(), job.getStartTime()))
+                            .map(job -> myServerAgent.manage().getJobByIdAndStartDate(job.getJobId(), job.getStartTime()))
                             .toList();
                     logger.info("[{}] Scheduling power shortage handling", myAgent.getName());
                     createNewJobInstances(jobList, powerShortageTransfer.getStartTime());
@@ -87,26 +89,7 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
     }
 
     private void createNewJobInstances(final List<Job> jobList, final OffsetDateTime shortageTime) {
-        jobList.forEach(job -> {
-            final Job onBackupEnergyInstance = ImmutableJob.builder()
-                    .jobId(job.getJobId())
-                    .clientIdentifier(job.getClientIdentifier())
-                    .power(job.getPower())
-                    .startTime(shortageTime)
-                    .endTime(job.getEndTime())
-                    .build();
-            final Job finishedPowerJobInstance = ImmutableJob.builder()
-                    .jobId(job.getJobId())
-                    .clientIdentifier(job.getClientIdentifier())
-                    .power(job.getPower())
-                    .startTime(job.getStartTime())
-                    .endTime(shortageTime)
-                    .build();
-            final JobStatusEnum currentJobStatus = myServerAgent.getServerJobs().get(job);
-            myServerAgent.getServerJobs().remove(job);
-            myServerAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
-            myServerAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
-        });
+        jobList.forEach(job -> myServerAgent.manage().divideJobForPowerShortage(job, shortageTime));
     }
 
     private List<AID> getRemainingGreenSources(final AID greenSourceSender) {

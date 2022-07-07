@@ -49,9 +49,9 @@ public class ListenForFinishedJobs extends CyclicBehaviour {
         if (nonNull(message)) {
             try {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
-                if (nonNull(myGreenEnergyAgent.getJobByIdAndStartDate(jobInstanceId))) {
-                    myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.getJobByIdAndStartDate(jobInstanceId));
+                if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
                     logger.info("[{}] Finish the execution of the job with id {}", guid, jobInstanceId.getJobId());
+                    myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId));
                     updateGreenSourceState(myGreenEnergyAgent);
                 }
             } catch (Exception e) {

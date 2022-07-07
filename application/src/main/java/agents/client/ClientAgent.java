@@ -3,20 +3,23 @@ package agents.client;
 import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
 
-import agents.client.behaviour.FindCloudNetworkAgents;
+import agents.client.behaviour.df.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
-import agents.client.behaviour.WaitForJobStatusUpdate;
+import agents.client.behaviour.listener.ListenForJobUpdate;
 import behaviours.ReceiveGUIController;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +51,7 @@ public class ClientAgent extends AbstractClientAgent {
             }
 
             final Job jobToBeExecuted = initializeAgentJob(args);
-            addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(jobToBeExecuted), new WaitForJobStatusUpdate(this))));
+            addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviour(jobToBeExecuted)));
         } else {
             logger.error("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
@@ -85,6 +88,7 @@ public class ClientAgent extends AbstractClientAgent {
                 doDelete();
             }
             prepareSimulatedTimes(startTime, endTime);
+            logger.info("[{}] Job simulation time: from {} to {}", this.getName(), simulatedJobStart, simulatedJobEnd);
             return ImmutableJob.builder()
                     .clientIdentifier(getAID().getName())
                     .startTime(getSimulatedJobStart())
@@ -110,10 +114,13 @@ public class ClientAgent extends AbstractClientAgent {
         setSimulatedJobEnd(currentTime.plus(expectedJobEnd, ChronoUnit.MILLIS));
     }
 
-    private SequentialBehaviour prepareStartingBehaviour(final Job job) {
+    private List<Behaviour> prepareStartingBehaviour(final Job job) {
+        var parallelBehaviour = new ParallelBehaviour();
+        parallelBehaviour.addSubBehaviour(new ListenForJobUpdate(this));
         var startingBehaviour = new SequentialBehaviour(this);
         startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
         startingBehaviour.addSubBehaviour(new RequestJobExecution(this, null, job));
-        return startingBehaviour;
+        parallelBehaviour.addSubBehaviour(startingBehaviour);
+        return Collections.singletonList(parallelBehaviour);
     }
 }
