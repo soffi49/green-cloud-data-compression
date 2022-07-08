@@ -3,7 +3,10 @@ package agents.cloudnetwork.behaviour.powershortage.listener;
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.MatchSender;
+import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.PowerShortageMessageFactory.prepareTransferCancellationRequest;
 
@@ -14,10 +17,9 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour listens for messages coming from the affected server which decided to cancel the job transfer

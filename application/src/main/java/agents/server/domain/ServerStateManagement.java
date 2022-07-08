@@ -3,12 +3,14 @@ package agents.server.domain;
 import static common.GUIUtils.displayMessageArrow;
 import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
+import static domain.job.JobStatusEnum.PROCESSING;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
 import agents.server.ServerAgent;
 import agents.server.behaviour.FinishJobExecution;
 import agents.server.behaviour.StartJobExecution;
+import common.TimeUtils;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.ImmutableJob;
@@ -17,7 +19,6 @@ import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,9 @@ public class ServerStateManagement {
      */
     public int getAvailableCapacity(final OffsetDateTime startDate,
                                     final OffsetDateTime endDate) {
-        final int powerInUser = getUniqueJobsForTimeStamp(startDate, endDate).stream().mapToInt(Job::getPower).sum();
+        final int powerInUser = getUniqueJobsForTimeStamp(startDate, endDate).stream()
+            .mapToInt(Job::getPower)
+            .sum();
         return serverAgent.getMaximumCapacity() - powerInUser;
     }
 
@@ -200,9 +203,12 @@ public class ServerStateManagement {
     private List<Job> getUniqueJobsForTimeStamp(final OffsetDateTime startDate,
                                                 final OffsetDateTime endDate) {
         return serverAgent.getServerJobs().keySet().stream()
-                .filter(job -> job.getStartTime().isBefore(endDate) && job.getEndTime().isAfter(startDate))
+                .filter(job -> !serverAgent.getServerJobs().get(job).equals(PROCESSING))
+                .filter(job -> TimeUtils.isWithinTimeStamp(startDate, endDate, job.getStartTime()) ||
+                    TimeUtils.isWithinTimeStamp(startDate, endDate, job.getEndTime()))
                 .map(Job::getJobId)
                 .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
-                .values().stream().toList();
+                .values().stream()
+                .toList();
     }
 }

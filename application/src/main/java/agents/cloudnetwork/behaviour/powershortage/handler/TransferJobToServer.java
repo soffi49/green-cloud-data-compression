@@ -7,12 +7,11 @@ import domain.job.Job;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.time.OffsetDateTime;
-import java.util.Objects;
 
 /**
  * Behaviour is responsible for updating internal cloud network state according to the job transfer

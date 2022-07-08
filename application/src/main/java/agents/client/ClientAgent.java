@@ -3,8 +3,8 @@ package agents.client;
 import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
 
-import agents.client.behaviour.df.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
+import agents.client.behaviour.df.FindCloudNetworkAgents;
 import agents.client.behaviour.listener.ListenForJobUpdate;
 import behaviours.ReceiveGUIController;
 import common.TimeUtils;
@@ -12,17 +12,13 @@ import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
 import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Agent representing the Client that wants to have the job executed by the Cloud Network
@@ -42,14 +38,6 @@ public class ClientAgent extends AbstractClientAgent {
 
         if (Objects.nonNull(args) && args.length == 4) {
             initializeAgent();
-
-            // TODO to be removed (added for testing purposes)
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
             final Job jobToBeExecuted = initializeAgentJob(args);
             addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviour(jobToBeExecuted)));
         } else {
@@ -115,12 +103,12 @@ public class ClientAgent extends AbstractClientAgent {
     }
 
     private List<Behaviour> prepareStartingBehaviour(final Job job) {
-        var parallelBehaviour = new ParallelBehaviour();
-        parallelBehaviour.addSubBehaviour(new ListenForJobUpdate(this));
         var startingBehaviour = new SequentialBehaviour(this);
         startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
         startingBehaviour.addSubBehaviour(new RequestJobExecution(this, null, job));
-        parallelBehaviour.addSubBehaviour(startingBehaviour);
-        return Collections.singletonList(parallelBehaviour);
+        return List.of(
+            new ListenForJobUpdate(this),
+            startingBehaviour
+        );
     }
 }

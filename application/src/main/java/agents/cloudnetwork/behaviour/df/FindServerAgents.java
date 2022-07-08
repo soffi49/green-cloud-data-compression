@@ -1,15 +1,14 @@
 package agents.cloudnetwork.behaviour.df;
 
+import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
+import static yellowpages.YellowPagesService.search;
+
 import agents.cloudnetwork.CloudNetworkAgent;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-
-import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
-import static yellowpages.YellowPagesService.search;
 
 /**
  * Behaviours which is responsible for finding corresponding server agents for given Cloud Network Agent in DF

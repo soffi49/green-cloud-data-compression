@@ -7,11 +7,10 @@ import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Date;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which is responsible for passing to the client the information that the job execution has some delay.

@@ -2,7 +2,6 @@ package agents.client;
 
 import agents.AbstractAgent;
 import jade.core.AID;
-
 import java.time.OffsetDateTime;
 
 /**
@@ -13,9 +12,12 @@ public abstract class AbstractClientAgent extends AbstractAgent {
     protected AID chosenCloudNetworkAgent;
     protected OffsetDateTime simulatedJobStart;
     protected OffsetDateTime simulatedJobEnd;
+    protected Integer retries;
+    protected boolean announced;
 
     public AbstractClientAgent() {
         super.setup();
+        retries = 0;
     }
 
     /**
@@ -55,5 +57,21 @@ public abstract class AbstractClientAgent extends AbstractAgent {
 
     public void setSimulatedJobEnd(OffsetDateTime simulatedJobEnd) {
         this.simulatedJobEnd = simulatedJobEnd;
+    }
+
+    public Integer getRetries() {
+        return retries;
+    }
+
+    public void retry() {
+        retries++;
+    }
+
+    public void announce() {
+        announced = true;
+    }
+
+    public boolean isAnnounced() {
+        return announced;
     }
 }

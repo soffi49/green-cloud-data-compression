@@ -7,16 +7,13 @@ import static messages.domain.JobStatusMessageFactory.prepareManualFinishMessage
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour responsible for verifying if the job was finished at the correct time.

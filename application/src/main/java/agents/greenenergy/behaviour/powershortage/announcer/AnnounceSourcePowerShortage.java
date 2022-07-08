@@ -2,18 +2,19 @@ package agents.greenenergy.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.isWithinTimeStamp;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powershortage.handler.SchedulePowerShortage;
-import domain.job.*;
+import domain.job.ImmutablePowerShortageTransfer;
+import domain.job.JobStatusEnum;
+import domain.job.PowerJob;
+import domain.job.PowerShortageTransfer;
 import jade.core.behaviours.OneShotBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour sends the information to the server that the green source will have unexpected power shortage

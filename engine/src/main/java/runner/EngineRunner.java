@@ -16,14 +16,6 @@ import runner.service.ScenarioService;
  */
 public class EngineRunner {
     public static void main(String[] args) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // code goes here.
-            }
-        }).start();
-
         final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
         final GUIControllerImpl guiController = new GUIControllerImpl();
@@ -36,7 +28,7 @@ public class EngineRunner {
         final ScenarioService scenarioService = new ScenarioService(container, guiController);
         runRMAAgent(container);
         guiController.createGUI();
-        scenarioService.createAgentsFromScenarioFile("multipleGreenSourcesScenario");
+        scenarioService.createAgentsFromScenarioFile("complicatedScenarioNoWeatherChanging");
     }
 
     /**

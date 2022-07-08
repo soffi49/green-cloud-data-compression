@@ -7,12 +7,11 @@ import agents.server.ServerAgent;
 import domain.job.Job;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour responsible for returning to the CNA and GreenSource the information that the job execution has finished

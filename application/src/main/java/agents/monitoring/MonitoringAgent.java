@@ -11,7 +11,6 @@ import domain.ImmutableWeatherData;
 import domain.MonitoringData;
 import domain.WeatherData;
 import domain.location.Location;
-import jade.core.Agent;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,8 +20,6 @@ import weather.api.OpenWeatherMapApi;
 import weather.cache.WeatherCache;
 import weather.domain.AbstractWeather;
 import weather.domain.FutureWeather;
-
-import java.util.List;
 
 /**
  * Agent which is responsible for monitoring the weather and sending the data to the Green Source Agent

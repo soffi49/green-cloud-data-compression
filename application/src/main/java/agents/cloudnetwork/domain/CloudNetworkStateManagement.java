@@ -22,8 +22,9 @@ public class CloudNetworkStateManagement {
      */
     public int getCurrentPowerInUse() {
         return cloudNetworkAgent.getNetworkJobs().entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
+            .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
+            .mapToInt(job -> job.getKey().getPower())
+            .sum();
     }
 
     /**
@@ -33,6 +34,9 @@ public class CloudNetworkStateManagement {
      * @return job
      */
     public Job getJobById(final String jobId) {
-        return cloudNetworkAgent.getNetworkJobs().keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
+        return cloudNetworkAgent.getNetworkJobs().keySet().stream()
+            .filter(job -> job.getJobId().equals(jobId))
+            .findFirst()
+            .orElse(null);
     }
 }

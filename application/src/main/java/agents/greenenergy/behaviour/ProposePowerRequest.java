@@ -4,23 +4,25 @@ import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_J
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static java.util.Objects.isNull;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.mapper.JobMapper;
-import domain.job.*;
+import domain.job.JobStatusEnum;
+import domain.job.JobWithProtocol;
+import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -55,7 +57,10 @@ public class ProposePowerRequest extends ProposeInitiator {
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         final JobWithProtocol jobWithProtocol = readMessage(accept_proposal);
         if (Objects.nonNull(jobWithProtocol)) {
-            final PowerJob job = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobWithProtocol.getJobInstanceIdentifier());
+            PowerJob job = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobWithProtocol.getJobInstanceIdentifier());
+            if(isNull(job)) {
+                job = myGreenEnergyAgent.manage().getJobById(jobWithProtocol.getJobInstanceIdentifier().getJobId());
+            }
             logger.info("[{}] Sending information back to server agent.", guid);
             myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
             myAgent.addBehaviour(new FinishJobManually(myGreenEnergyAgent, calculateExpectedJobEndTime(job), JobMapper.mapToJobInstanceId(job)));

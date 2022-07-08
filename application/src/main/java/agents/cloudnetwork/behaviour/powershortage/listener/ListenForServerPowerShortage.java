@@ -4,7 +4,9 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.preparePowerShortageMessageForClient;
 
@@ -17,13 +19,12 @@ import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import messages.domain.CallForProposalMessageFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
+import messages.domain.CallForProposalMessageFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour is responsible for receiving the information that the server has power shortage and is unable to execute the given job

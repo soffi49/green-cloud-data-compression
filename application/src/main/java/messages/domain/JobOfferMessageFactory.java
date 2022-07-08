@@ -58,10 +58,10 @@ public class JobOfferMessageFactory {
                                                 final String jobId,
                                                 final ACLMessage replyMessage) {
         final Job job = serverAgent.manage().getJobById(jobId);
-        final int inUsePower = serverAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime());
+        final int availablePower = serverAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime());
         final ImmutableServerData jobOffer = ImmutableServerData.builder()
                 .servicePrice(servicePrice)
-                .availablePower(serverAgent.getMaximumCapacity() - inUsePower)
+                .availablePower(availablePower)
                 .jobId(jobId)
                 .build();
         replyMessage.setPerformative(ACLMessage.PROPOSE);

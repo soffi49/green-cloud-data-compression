@@ -1,7 +1,6 @@
 package agents.greenenergy.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
-
 import static common.GUIUtils.updateGreenSourceState;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -13,15 +12,14 @@ import static messages.domain.PowerShortageMessageFactory.prepareTransferCancell
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.PowerShortageJob;
 import domain.job.PowerJob;
+import domain.job.PowerShortageJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour is responsible for catching the information confirming that the job transfer was successful

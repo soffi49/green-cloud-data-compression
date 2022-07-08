@@ -1,15 +1,12 @@
 package agents.server.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
 import domain.job.JobWithProtocol;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -54,7 +51,6 @@ public class VolunteerForJob extends ProposeInitiator {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
             final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
             final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
-            myServerAgent.getServerJobs().replace(myServerAgent.manage().getJobById(jobInstanceId.getJobId()), JobStatusEnum.ACCEPTED);
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
             myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
         } catch (Exception e) {

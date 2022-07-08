@@ -16,9 +16,6 @@ import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-import java.util.Optional;
-
 /**
  * Behaviour which listens for the information that the execution of the given job finishes.
  */
