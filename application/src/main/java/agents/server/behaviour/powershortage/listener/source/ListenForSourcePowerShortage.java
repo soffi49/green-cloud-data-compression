@@ -62,10 +62,11 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
                 if (!remainingGreenSources.isEmpty() && !powerShortageTransfer.getJobList().isEmpty()) {
                     powerShortageTransfer.getJobList().forEach(job -> {
                         logger.info("[{}] Sending call for proposal to Green Source Agents to transfer job with id {}", myAgent.getName(), job.getJobId());
-                        final PowerJob powerJob = JobMapper.mapPowerJobToPowerJob(job, powerShortageTransfer.getStartTime());
+                        final OffsetDateTime startTime = job.getStartTime().isAfter(powerShortageTransfer.getStartTime())? job.getStartTime() : powerShortageTransfer.getStartTime();
+                        final PowerJob powerJob = JobMapper.mapPowerJobToPowerJob(job, startTime);
                         final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(powerJob, remainingGreenSources, SERVER_JOB_CFP_PROTOCOL);
                         displayMessageArrow(myServerAgent, remainingGreenSources);
-                        myAgent.addBehaviour(new AnnouncePowerRequestTransfer(myAgent, cfp, powerShortageTransfer));
+                        myAgent.addBehaviour(new AnnouncePowerRequestTransfer(myAgent, cfp, powerJob, powerShortageTransfer));
                     });
                 } else if (remainingGreenSources.isEmpty()) {
                     logger.info("[{}] No green sources available. Passing power shortage information to cloud network", myAgent.getName());

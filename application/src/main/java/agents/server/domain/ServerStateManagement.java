@@ -21,6 +21,7 @@ import jade.lang.acl.ACLMessage;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +88,7 @@ public class ServerStateManagement {
                 Collections.singletonList(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()));
         final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(), receivers);
         serverAgent.getServerJobs().remove(jobToFinish);
-        if(informCNA) {
+        if(Objects.isNull(serverAgent.manage().getJobById(jobToFinish.getJobId()))) {
             serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
         }
         updateServerState(serverAgent);
@@ -165,7 +166,7 @@ public class ServerStateManagement {
      * @param powerShortageStart time when power shortage starts
      */
     public void divideJobForPowerShortage(final Job job, final OffsetDateTime powerShortageStart) {
-        if (powerShortageStart.isAfter(job.getStartTime())) {
+        if (powerShortageStart.isAfter(job.getStartTime()) && !powerShortageStart.equals(job.getStartTime())) {
             final Job onBackupEnergyInstance = ImmutableJob.builder()
                     .jobId(job.getJobId())
                     .clientIdentifier(job.getClientIdentifier())
@@ -184,10 +185,12 @@ public class ServerStateManagement {
             serverAgent.getServerJobs().remove(job);
             serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
             serverAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
-            serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
-            serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, onBackupEnergyInstance, true));
+            serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, JobMapper.mapToJobInstanceId(onBackupEnergyInstance), false, true));
             if(getCurrentTime().isBefore(finishedPowerJobInstance.getStartTime())) {
-                serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, JobMapper.mapToJobInstanceId(finishedPowerJobInstance), true));
+                serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, JobMapper.mapToJobInstanceId(finishedPowerJobInstance), true, false));
+            } else {
+                serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
+
             }
         } else {
             serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);

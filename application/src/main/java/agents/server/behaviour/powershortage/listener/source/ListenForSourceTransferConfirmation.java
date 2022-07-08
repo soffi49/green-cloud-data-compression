@@ -56,8 +56,8 @@ public class ListenForSourceTransferConfirmation extends CyclicBehaviour {
                 if (Objects.nonNull(myServerAgent.manage().getJobById(jobId))) {
                     logger.info("[{}] Scheduling the job transfer", myAgent.getName());
                     final AID previousAgent = myServerAgent.getGreenSourceForJobMap().get(jobId);
-                    displayMessageArrow(myServerAgent, myServerAgent.getGreenSourceForJobMap().get(jobId));
-                    myServerAgent.send(prepareJobPowerShortageInformation(jobInstanceId, jobInstanceId.getStartTime(), myServerAgent.getGreenSourceForJobMap().get(jobId), POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
+                    displayMessageArrow(myServerAgent, previousAgent);
+                    myServerAgent.send(prepareJobPowerShortageInformation(jobInstanceId, jobInstanceId.getStartTime(), previousAgent, POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
                     myAgent.addBehaviour(prepareBehaviour(jobInstanceId, inform.getSender(), previousAgent));
                 } else {
                     logger.info("[{}] Job execution finished before transfer", myAgent.getName());
@@ -75,7 +75,7 @@ public class ListenForSourceTransferConfirmation extends CyclicBehaviour {
 
     private ParallelBehaviour prepareBehaviour(final JobInstanceIdentifier jobInstanceId,  final AID newGreenSource, final AID previousGreenSource) {
         final ParallelBehaviour behaviour = new ParallelBehaviour();
-        behaviour.addSubBehaviour(TransferJobToGreenSource.createFor(myServerAgent, jobInstanceId.getJobId(), jobInstanceId.getStartTime(), newGreenSource));
+        behaviour.addSubBehaviour(TransferJobToGreenSource.createFor(myServerAgent, jobInstanceId, newGreenSource));
         behaviour.addSubBehaviour(new ListenForSourceTransferCancellation(myAgent, newGreenSource, previousGreenSource));
         return behaviour;
     }

@@ -10,8 +10,8 @@ import jade.core.behaviours.WakerBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
@@ -28,13 +28,13 @@ public class TransferJobToServer extends WakerBehaviour {
     /**
      * Behaviour constructor.
      *
-     * @param myAgent   agent executing the behaviour
-     * @param timeout   timeout after which the job should be transferred
-     * @param jobId     unique identifier of the job
-     * @param newServer server which will take over the job execution
+     * @param myAgent      agent executing the behaviour
+     * @param transferTime time when the power shortage starts
+     * @param jobId        unique identifier of the job
+     * @param newServer    server which will take over the job execution
      */
-    private TransferJobToServer(Agent myAgent, long timeout, String jobId, AID newServer) {
-        super(myAgent, timeout);
+    private TransferJobToServer(Agent myAgent, Date transferTime, String jobId, AID newServer) {
+        super(myAgent, transferTime);
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
         this.jobId = jobId;
         this.newServer = newServer;
@@ -50,9 +50,8 @@ public class TransferJobToServer extends WakerBehaviour {
      * @return behaviour which transfer the jobs between servers
      */
     public static TransferJobToServer createFor(final CloudNetworkAgent cloudNetworkAgent, final String jobId, final OffsetDateTime shortageStartTime, AID newServer) {
-        final long timeDifference = ChronoUnit.MILLIS.between(getCurrentTime(), shortageStartTime);
-        final long timeOut = timeDifference < 0 ? 0 : timeDifference;
-        return new TransferJobToServer(cloudNetworkAgent, timeOut, jobId, newServer);
+        final OffsetDateTime transferTime = getCurrentTime().isAfter(shortageStartTime) ? getCurrentTime() : shortageStartTime;
+        return new TransferJobToServer(cloudNetworkAgent, Date.from(transferTime.toInstant()), jobId, newServer);
     }
 
     /**

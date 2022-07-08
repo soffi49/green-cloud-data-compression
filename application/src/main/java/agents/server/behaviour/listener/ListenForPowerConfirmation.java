@@ -50,12 +50,12 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
         if (Objects.nonNull(inform)) {
             try {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
-                final boolean informCloudNetwork = inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL) || jobInstanceId.getStartTime().isAfter(getCurrentTime());
-                if (informCloudNetwork) {
+                final boolean informCNAStart = inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL) || jobInstanceId.getStartTime().isAfter(getCurrentTime());
+                if (informCNAStart) {
                     announceBookedJob(myServerAgent, jobInstanceId.getJobId());
                 }
                 logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
-                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, jobInstanceId, informCloudNetwork));
+                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true));
 
             } catch (Exception e) {
                 e.printStackTrace();

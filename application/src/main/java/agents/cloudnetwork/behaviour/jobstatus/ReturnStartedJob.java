@@ -2,15 +2,15 @@ package agents.cloudnetwork.behaviour.jobstatus;
 
 import static common.GUIUtils.announceStartedJob;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareStartMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -51,7 +51,7 @@ public class ReturnStartedJob extends CyclicBehaviour {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
                 if (Objects.nonNull(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()))) {
                     logger.info("[{}] Sending information that the job {} execution has started", myAgent.getName(), jobInstanceId.getJobId());
-                    myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()), JobStatusEnum.IN_PROGRESS);
+                    myCloudNetworkAgent.getNetworkJobs().replace(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()), IN_PROGRESS);
                     announceStartedJob(myCloudNetworkAgent);
                     myAgent.send(prepareStartMessageForClient(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()).getClientIdentifier()));
                 }

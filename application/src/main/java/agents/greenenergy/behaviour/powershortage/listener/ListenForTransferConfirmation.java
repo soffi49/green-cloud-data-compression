@@ -53,12 +53,13 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
         final ACLMessage message = myGreenEnergyAgent.receive(messageTemplate);
         if (nonNull(message)) {
             final PowerShortageJob powerShortageJob = readMessage(message);
-            if (Objects.nonNull(powerShortageJob) && nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId().getJobId(), powerShortageJob.getPowerShortageStart()))) {
+            if (Objects.nonNull(powerShortageJob) && nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId()))) {
                 final String jobId = powerShortageJob.getJobInstanceId().getJobId();
                 logger.info("[{}] Transfer of job with id {} was established successfully", guid, jobId);
-                final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobId, powerShortageJob.getPowerShortageStart());
-                final boolean willJobFinishBeforeTransfer = powerJob.getEndTime().isBefore(powerShortageJob.getPowerShortageStart()) ||
-                        powerJob.getEndTime().isEqual(powerShortageJob.getPowerShortageStart());
+                final PowerJob powerJobGreen = myGreenEnergyAgent.manage().getJobByIdAndEndDate(jobId, powerShortageJob.getJobInstanceId().getStartTime());
+                final PowerJob powerJobBackUp = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobId, powerShortageJob.getJobInstanceId().getStartTime());
+                final boolean willJobFinishBeforeTransfer = powerJobBackUp.getEndTime().isBefore(powerShortageJob.getPowerShortageStart()) ||
+                        powerJobBackUp.getEndTime().isEqual(powerShortageJob.getPowerShortageStart());
 
                 if (willJobFinishBeforeTransfer) {
                     logger.info("[{}] Job with id {} will finish before the transfer. Sending cancel transfer information ", guid, jobId);
@@ -66,7 +67,10 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
                     myGreenEnergyAgent.send(prepareTransferCancellationRequest(powerShortageJob, myGreenEnergyAgent.getOwnerServer()));
                 } else {
                     logger.info("[{}] Finishing job with id {} on power shortage", guid, jobId);
-                    myGreenEnergyAgent.getPowerJobs().remove(powerJob);
+                    myGreenEnergyAgent.getPowerJobs().remove(powerJobBackUp);
+                    if(Objects.nonNull(powerJobGreen)) {
+                        myGreenEnergyAgent.getPowerJobs().remove(powerJobGreen);
+                    }
                     updateGreenSourceState(myGreenEnergyAgent);
                 }
             }

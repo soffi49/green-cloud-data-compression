@@ -82,7 +82,7 @@ public class GreenEnergyStateManagement {
     }
 
     /**
-     * Method retrieves the job by the job id and star time from job map
+     * Method retrieves the job by the job id and start time from job map
      *
      * @param jobId     job identifier
      * @param startTime job start time
@@ -94,7 +94,7 @@ public class GreenEnergyStateManagement {
     }
 
     /**
-     * Method retrieves the job by the job id and star time from job map
+     * Method retrieves the job by the job id and start time from job map
      *
      * @param jobInstanceId unique identifier of the job instance
      * @return job
@@ -103,6 +103,18 @@ public class GreenEnergyStateManagement {
         return greenEnergyAgent.getPowerJobs().keySet().stream()
                 .filter(job -> job.getJobId().equals(jobInstanceId.getJobId()) && job.getStartTime().isEqual(jobInstanceId.getStartTime()))
                 .findFirst().orElse(null);
+    }
+
+    /**
+     * Method retrieves the job by the job id and end time from job map
+     *
+     * @param jobId     job identifier
+     * @param endTime job end time
+     * @return job
+     */
+    public PowerJob getJobByIdAndEndDate(final String jobId, final OffsetDateTime endTime) {
+        return greenEnergyAgent.getPowerJobs().keySet().stream()
+                .filter(job -> job.getJobId().equals(jobId) && job.getEndTime().isEqual(endTime)).findFirst().orElse(null);
     }
 
     /**

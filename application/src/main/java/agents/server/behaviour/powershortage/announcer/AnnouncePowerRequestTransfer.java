@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
+import domain.job.PowerJob;
 import domain.job.PowerShortageTransfer;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -32,18 +33,24 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
 
     private final ServerAgent myServerAgent;
     private final PowerShortageTransfer powerShortageTransfer;
+    private final PowerJob powerJob;
 
     /**
      * Behaviour constructor
      *
      * @param agent                 agent which executes the behaviour
      * @param powerRequest          call for proposal containing the details regarding power needed to execute the job
+     * @param powerJob              affected job
      * @param powerShortageTransfer power shortage transfer for which the call for proposal is executed
      */
-    public AnnouncePowerRequestTransfer(final Agent agent, final ACLMessage powerRequest, final PowerShortageTransfer powerShortageTransfer) {
+    public AnnouncePowerRequestTransfer(final Agent agent,
+                                        final ACLMessage powerRequest,
+                                        final PowerJob powerJob,
+                                        final PowerShortageTransfer powerShortageTransfer) {
         super(agent, powerRequest);
         this.myServerAgent = (ServerAgent) myAgent;
         this.powerShortageTransfer = powerShortageTransfer;
+        this.powerJob = powerJob;
     }
 
     /**
@@ -68,14 +75,13 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
             final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
             if (!validProposals.isEmpty()) {
                 final ACLMessage chosenGreenSourceOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
-                final GreenSourceData chosenGreenSourceData = readMessageContent(chosenGreenSourceOffer);
-                final String jobId = chosenGreenSourceData.getJobId();
+                final String jobId = powerJob.getJobId();
                 logger.info("[{}] Chosen Green Source for the job {} transfer: {}", myAgent.getName(), jobId, chosenGreenSourceOffer.getSender().getLocalName());
 
                 displayMessageArrow(myServerAgent, myServerAgent.getGreenSourceForJobMap().get(jobId));
                 displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getAllReceiver());
 
-                myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(), JobMapper.mapToJobInstanceId(jobId, powerShortageTransfer.getStartTime()), POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
+                myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(), JobMapper.mapToJobInstanceId(powerJob), POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
                 rejectJobOffers(myServerAgent, jobId, chosenGreenSourceOffer, proposals);
             } else {
                 handleInvalidProposals(proposals);
@@ -86,14 +92,5 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
     private void handleInvalidProposals(final List<ACLMessage> proposals) {
         logger.info("I didn't understand any proposal from Green Energy Agents");
         rejectJobOffers(myServerAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
-    }
-
-    private GreenSourceData readMessageContent(final ACLMessage message) {
-        try {
-            return getMapper().readValue(message.getContent(), GreenSourceData.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
-        }
     }
 }
