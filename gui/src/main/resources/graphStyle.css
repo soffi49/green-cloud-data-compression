@@ -61,6 +61,10 @@ node.serverActive {
     stroke-color: #6ec020;
 }
 
+node.serverActiveBackUp {
+    stroke-color: #ff5900;
+}
+
 node.greenEnergy {
     size: 0.025%;
     fill-mode: plain;

@@ -1,7 +1,6 @@
 package agents.server.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
 import static messages.domain.JobStatusMessageFactory.prepareJobStartedMessage;
 
@@ -78,13 +77,19 @@ public class StartJobExecution extends WakerBehaviour {
     protected void onWake() {
         final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToExecute.getJobId(), jobToExecute.getStartTime());
         if (Objects.nonNull(job)) {
-            logger.info("[{}] Start executing the job for {}", myAgent.getName(), job.getClientIdentifier());
-            myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS);
-            updateServerState(myServerAgent);
+            if (informCNAStart) {
+                logger.info("[{}] Start executing the job for {}", myAgent.getName(), job.getClientIdentifier());
+            } else {
+                logger.info("[{}] Start executing the job for {} without informing CNA", myAgent.getName(), job.getClientIdentifier());
+            }
+            if(myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.ACCEPTED)) {
+                myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS);
+            }
             final List<AID> receivers = informCNAStart ? List.of(myServerAgent.getGreenSourceForJobMap().get(job.getJobId()), myServerAgent.getOwnerCloudNetworkAgent()) :
                     Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(job.getJobId()));
             final ACLMessage startedJobMessage = prepareJobStartedMessage(job.getJobId(), job.getStartTime(), receivers);
             displayMessageArrow(myServerAgent, receivers);
+            myServerAgent.manage().incrementStartedJobs(job.getJobId());
             myAgent.send(startedJobMessage);
             myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, job, informCNAFinish));
         }

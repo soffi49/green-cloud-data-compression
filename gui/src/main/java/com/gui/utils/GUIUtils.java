@@ -209,18 +209,22 @@ public class GUIUtils {
      * @return JPanel being the list panel
      */
     public static JPanel createLabelListPanel(final Map<LabelEnum, JLabel> labelMap) {
-        final MigLayout layout = new MigLayout(new LC().fillX().gridGapX("15px"));
+        final MigLayout layout = new MigLayout(new LC().fillX().gridGap("0px", "10px"));
         final JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
         panel.setLayout(layout);
         labelMap.forEach((labelType, labelValue) -> {
-            final JPanel labelContainer = new JPanel(new MigLayout(new LC().wrapAfter(2).fill()));
-            labelContainer.setBackground(MEDIUM_GRAY_COLOR);
+            final JPanel valuePanel = new JPanel();
+            valuePanel.setBackground(MEDIUM_GRAY_COLOR);
+            valuePanel.add(labelValue, new CC().spanX());
+            labelValue.setBorder(new EmptyBorder(2, 2, 2, 2));
+            final JPanel headerPanel = new JPanel();
+            headerPanel.setBackground(MEDIUM_GRAY_COLOR);
             final JLabel headerLabel = createJLabel(LIST_LABEL_FONT, LIGHT_GRAY_COLOR, labelType.getLabel());
-            headerLabel.setBorder(new EmptyBorder(1, 1, 1, 1));
-            labelContainer.add(headerLabel, new CC().width("75%").grow());
-            labelContainer.add(labelValue, new CC().width("25%").grow());
-            panel.add(labelContainer, new CC().grow().spanX());
+            headerLabel.setBorder(new EmptyBorder(2, 2, 2, 2));
+            headerPanel.add(headerLabel, new CC().spanX());
+            panel.add(headerPanel, new CC().spanX(3).grow());
+            panel.add(valuePanel, new CC().spanX(2).grow().wrap());
         });
         return panel;
     }

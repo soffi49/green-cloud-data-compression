@@ -11,13 +11,13 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;
+import domain.job.JobStatusEnum;
+import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 /**
  * Behaviour which listens for the information that the execution of the given job starts.
@@ -51,7 +51,10 @@ public class ListenForStartedJobs extends CyclicBehaviour {
             try {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
                 if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
-                    myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
+                    final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+                    if (myGreenEnergyAgent.getPowerJobs().get(powerJob).equals(JobStatusEnum.ACCEPTED)) {
+                        myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
+                    }
                     logger.info("[{}] Started the execution of the job with id {}", guid, jobInstanceId.getJobId());
                     updateGreenSourceState(myGreenEnergyAgent);
                 }

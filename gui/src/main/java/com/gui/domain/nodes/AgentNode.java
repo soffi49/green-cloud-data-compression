@@ -64,8 +64,7 @@ public abstract class AgentNode {
      * Abstract method which based on the agent status creates the JPanel displaying all data
      */
     public void createInformationPanel() {
-        final JPanel panel = createLabelListPanel(labelsMap);
-        this.informationPanel = panel;
+        this.informationPanel = createLabelListPanel(labelsMap);
     }
 
     /**

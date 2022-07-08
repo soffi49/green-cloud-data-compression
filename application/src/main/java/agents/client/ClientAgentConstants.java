@@ -11,6 +11,6 @@ import java.time.temporal.ValueRange;
  */
 public class ClientAgentConstants {
     public static final ValueRange MAX_TRAFFIC_DIFFERENCE = ValueRange.of(-2, 2);
-    public static final ValueRange MAX_TIME_DIFFERENCE = ValueRange.of(-500, 500);
+    public static final ValueRange MAX_TIME_DIFFERENCE = ValueRange.of(-1500, 1500);
     public static final String CLOUD_NETWORK_AGENTS = "CLOUD_NETWORK_AGENTS_LIST";
 }

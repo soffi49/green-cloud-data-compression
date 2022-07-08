@@ -1,10 +1,6 @@
 package agents.server;
 
-import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
-import static java.time.temporal.ChronoUnit.HOURS;
 import static mapper.JsonMapper.getMapper;
-import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
 import agents.AbstractAgent;
 import agents.server.domain.ServerStateManagement;
@@ -12,15 +8,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
-import domain.job.PowerJob;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
-import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 /**
  * Abstract agent class storing data of the Server Agent

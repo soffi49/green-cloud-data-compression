@@ -1,14 +1,16 @@
 package agents.server.domain;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
+import static common.TimeUtils.isWithinTimeStamp;
+import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
 import agents.server.ServerAgent;
 import agents.server.behaviour.FinishJobExecution;
 import agents.server.behaviour.StartJobExecution;
+import com.gui.domain.nodes.ServerAgentNode;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.ImmutableJob;
@@ -17,11 +19,15 @@ import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -29,39 +35,20 @@ import java.util.stream.Collectors;
  */
 public class ServerStateManagement {
 
+    private static final Logger logger = LoggerFactory.getLogger(ServerStateManagement.class);
+
+    protected final AtomicInteger uniqueStartedJobs;
+    protected final AtomicInteger uniqueFinishedJobs;
+    protected final AtomicInteger startedJobsInstances;
+    protected final AtomicInteger finishedJobsInstances;
     private final ServerAgent serverAgent;
 
     public ServerStateManagement(ServerAgent serverAgent) {
         this.serverAgent = serverAgent;
-    }
-
-    /**
-     * Method calculates the power in use at the given moment for the server
-     *
-     * @return current power in use
-     */
-    public int getCurrentPowerInUseForGreenSource() {
-        return serverAgent.getServerJobs().entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
-    }
-
-    /**
-     * Method retrieves if the given server is currently active or idle
-     *
-     * @return green source state
-     */
-    public boolean getIsActiveState() {
-        return getCurrentPowerInUseForGreenSource() > 0;
-    }
-
-    /**
-     * Method retrieves the number of jobs that are executed by the server
-     *
-     * @return jobs count
-     */
-    public int getJobCount() {
-        return serverAgent.getServerJobs().keySet().stream().map(Job::getJobId).collect(Collectors.toSet()).size();
+        this.uniqueStartedJobs = new AtomicInteger(0);
+        this.uniqueFinishedJobs = new AtomicInteger(0);
+        this.startedJobsInstances = new AtomicInteger(0);
+        this.finishedJobsInstances = new AtomicInteger(0);
     }
 
     /**
@@ -88,10 +75,10 @@ public class ServerStateManagement {
                 Collections.singletonList(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()));
         final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(), receivers);
         serverAgent.getServerJobs().remove(jobToFinish);
-        if(Objects.isNull(serverAgent.manage().getJobById(jobToFinish.getJobId()))) {
+        if (Objects.isNull(serverAgent.manage().getJobById(jobToFinish.getJobId()))) {
             serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
         }
-        updateServerState(serverAgent);
+        incrementFinishedJobs(jobToFinish.getJobId());
         displayMessageArrow(serverAgent, receivers);
         serverAgent.send(finishJobMessage);
     }
@@ -108,6 +95,25 @@ public class ServerStateManagement {
         var computingCost =
                 HOURS.between(job.getEndTime(), job.getStartTime()) * serverAgent.getPricePerHour();
         return powerCost + computingCost;
+    }
+
+    /**
+     * Method returns the instance of the job for current time
+     *
+     * @param jobId unique job identifier
+     * @return pair of job and current status
+     */
+    public Map.Entry<Job, JobStatusEnum> getCurrentJobInstance(final String jobId) {
+        final OffsetDateTime currentTime = getCurrentTime();
+        return serverAgent.getServerJobs().entrySet().stream()
+                .filter(jobEntry -> {
+                    final Job job = jobEntry.getKey();
+                    return job.getJobId().equals(jobId) &&
+                            ((job.getStartTime().isBefore(currentTime) && job.getEndTime().isAfter(currentTime)) ||
+                                    job.getEndTime().equals(currentTime));
+                })
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -160,6 +166,48 @@ public class ServerStateManagement {
     }
 
     /**
+     * Method increments the count of started jobs
+     *
+     * @param jobId unique job identifier
+     */
+    public void incrementStartedJobs(final String jobId) {
+        if (isJobUnique(jobId)) {
+            uniqueStartedJobs.getAndAdd(1);
+            logger.info("[{}] Started job {}. Number of unique started jobs is {}", serverAgent.getLocalName(), jobId, uniqueStartedJobs);
+        }
+        startedJobsInstances.getAndAdd(1);
+        logger.info("[{}] Started job instance {}. Number of started job instances is {}", serverAgent.getLocalName(), jobId, startedJobsInstances);
+        updateServerGUI();
+    }
+
+    /**
+     * Method increments the count of finished jobs
+     *
+     * @param jobId unique identifier of the job
+     */
+    public void incrementFinishedJobs(final String jobId) {
+        if (isJobUnique(jobId)) {
+            uniqueFinishedJobs.getAndAdd(1);
+            logger.info("[{}] Finished job {}. Number of unique finished jobs is {} out of {} started",
+                        serverAgent.getLocalName(), jobId, uniqueFinishedJobs, uniqueStartedJobs);
+        }
+        finishedJobsInstances.getAndAdd(1);
+        logger.info("[{}] Finished job instance {}. Number of finished job instances is {} out of {} started",
+                    serverAgent.getLocalName(), jobId, finishedJobsInstances, startedJobsInstances);
+        updateServerGUI();
+    }
+
+    /**
+     * Method changes the server's maximum capacity
+     *
+     * @param newMaximumCapacity new maximu capacity value
+     */
+    public void updateMaximumCapacity(final int newMaximumCapacity) {
+        serverAgent.setMaximumCapacity(newMaximumCapacity);
+        ((ServerAgentNode) serverAgent.getAgentNode()).updateMaximumCapacity(serverAgent.getMaximumCapacity());
+    }
+
+    /**
      * Method creates new instances for given job which will be affected by the power shortage
      *
      * @param job                affected job
@@ -186,14 +234,11 @@ public class ServerStateManagement {
             serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
             serverAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
             serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, JobMapper.mapToJobInstanceId(onBackupEnergyInstance), false, true));
-            if(getCurrentTime().isBefore(finishedPowerJobInstance.getStartTime())) {
-                serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, JobMapper.mapToJobInstanceId(finishedPowerJobInstance), true, false));
-            } else {
-                serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
-
-            }
+            serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
+            updateServerGUI();
         } else {
             serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+            updateServerGUI();
         }
     }
 
@@ -204,5 +249,64 @@ public class ServerStateManagement {
                 .map(Job::getJobId)
                 .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
                 .values().stream().toList();
+    }
+
+    /**
+     * Method updates the information on the server GUI
+     */
+    public void updateServerGUI() {
+        final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
+        serverAgentNode.updateMaximumCapacity(serverAgent.getMaximumCapacity());
+        serverAgentNode.updateJobsCount(getJobCount());
+        serverAgentNode.updateClientNumber(getClientNumber());
+        serverAgentNode.updateIsActive(getIsActiveState(), getIsActiveBackUpState());
+        serverAgentNode.updateTraffic(getCurrentPowerInUseForServer());
+        serverAgentNode.updateBackUpTraffic(getCurrentBackUpPowerInUseForServer());
+    }
+
+    /**
+     * Method updates the client number
+     */
+    public void updateClientNumber() {
+        ((ServerAgentNode) serverAgent.getAgentNode()).updateClientNumber(getClientNumber());
+    }
+
+    private int getJobCount() {
+        return serverAgent.getServerJobs().entrySet().stream()
+                .filter(job -> JOB_IN_PROGRESS.contains(job.getValue()) &&
+                        isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .map(Map.Entry::getKey)
+                .map(Job::getJobId)
+                .collect(Collectors.toSet()).size();
+    }
+
+    private int getClientNumber() {
+        return serverAgent.getGreenSourceForJobMap().size();
+    }
+
+    private boolean isJobUnique(final String jobId) {
+        return serverAgent.getServerJobs().keySet().stream().filter(job -> job.getJobId().equals(jobId)).toList().size() == 1;
+    }
+
+    private int getCurrentPowerInUseForServer() {
+        return serverAgent.getServerJobs().entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS) &&
+                        isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    private int getCurrentBackUpPowerInUseForServer() {
+        return serverAgent.getServerJobs().entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY) &&
+                        isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    private boolean getIsActiveState() {
+        return getCurrentPowerInUseForServer() > 0 || getCurrentBackUpPowerInUseForServer() > 0;
+    }
+
+    private boolean getIsActiveBackUpState() {
+        return getCurrentBackUpPowerInUseForServer() > 0;
     }
 }

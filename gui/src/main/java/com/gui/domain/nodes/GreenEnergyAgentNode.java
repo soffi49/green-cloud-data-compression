@@ -1,6 +1,6 @@
 package com.gui.domain.nodes;
 
-import static com.gui.domain.types.AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL;
+import static com.gui.domain.types.AgentNodeLabelEnum.CURRENT_MAXIMUM_CAPACITY_LABEL;
 import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.GraphUtils.*;
 import static com.gui.utils.domain.StyleConstants.*;
@@ -55,7 +55,7 @@ public class GreenEnergyAgentNode extends AgentNode {
      * @param powerInUse current power in use
      */
     public void updateTraffic(final double powerInUse) {
-        this.traffic.set(maximumCapacity.get() != 0? ((traffic.get() / maximumCapacity.get()) * 100) : 0);
+        this.traffic.set(maximumCapacity.get() != 0? ((powerInUse / maximumCapacity.get()) * 100) : 0);
         labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
@@ -89,7 +89,7 @@ public class GreenEnergyAgentNode extends AgentNode {
     public void updateMaximumCapacity(final int maxCapacity) {
         this.maximumCapacity.set((double) maxCapacity);
         this.traffic.set(maximumCapacity.get() != 0? ((traffic.get() / maxCapacity) * 100) : 0);
-        labelsMap.get(MAXIMUM_CAPACITY_LABEL).setText(formatToHTML(String.valueOf(maxCapacity)));
+        labelsMap.get(CURRENT_MAXIMUM_CAPACITY_LABEL).setText(formatToHTML(String.valueOf(maxCapacity)));
         labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
@@ -115,7 +115,7 @@ public class GreenEnergyAgentNode extends AgentNode {
         labelsMap.put(AgentNodeLabelEnum.IS_ACTIVE_LABEL, createListLabel(isActive.get() ? "ACTIVE" : "INACTIVE"));
         labelsMap.put(AgentNodeLabelEnum.LOCATION_LATITUDE_LABEL, createListLabel(location.getLatitude()));
         labelsMap.put(AgentNodeLabelEnum.LOCATION_LONGITUDE_LABEL, createListLabel(location.getLongitude()));
-        labelsMap.put(MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
+        labelsMap.put(CURRENT_MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
         labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.format("%.2f%%", traffic.get())));
         labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createListLabel(String.valueOf(numberOfExecutedJobs)));
     }

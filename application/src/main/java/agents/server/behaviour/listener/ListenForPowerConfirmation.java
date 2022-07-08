@@ -56,7 +56,6 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
                 }
                 logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
                 myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true));
-
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -42,12 +42,12 @@ public class CloudNetworkAgentNode extends AgentNode {
     }
 
     /**
-     * Function updates the number of clients by given value
+     * Function updates the number of clients to given
      *
-     * @param value value to be added to client number
+     * @param value value indicating the client number
      */
     public void updateClientNumber(final int value) {
-        this.totalNumberOfClients.getAndAdd(value);
+        this.totalNumberOfClients.set(value);
         labelsMap.get(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL).setText(formatToHTML(String.valueOf(totalNumberOfClients)));
     }
 
@@ -63,12 +63,12 @@ public class CloudNetworkAgentNode extends AgentNode {
     }
 
     /**
-     * Function updates the number of currently executed jobs by given value
+     * Function updates the number of currently executed jobs to given value
      *
-     * @param value value to be added to the number of jobs being executed
+     * @param value new jobs count value
      */
     public void updateJobsCount(final int value) {
-        this.numberOfExecutedJobs.getAndAdd(value);
+        this.numberOfExecutedJobs.set(value);
         labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
     }
 
@@ -94,7 +94,7 @@ public class CloudNetworkAgentNode extends AgentNode {
     protected void initializeLabelsMap() {
         super.initializeLabelsMap();
         labelsMap.put(AgentNodeLabelEnum.SERVERS_NUMBER_LABEL, createListLabel(String.valueOf(serverAgents.size())));
-        labelsMap.put(AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
+        labelsMap.put(AgentNodeLabelEnum.CURRENT_MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(maximumCapacity)));
         labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.format("%.2f%%", traffic.get())));
         labelsMap.put(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL, createListLabel(String.valueOf(totalNumberOfClients)));
         labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createListLabel(String.valueOf(numberOfExecutedJobs)));

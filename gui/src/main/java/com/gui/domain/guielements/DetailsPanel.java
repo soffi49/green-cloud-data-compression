@@ -11,9 +11,9 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Class represents the details' panel of the GUI
@@ -24,7 +24,7 @@ public class DetailsPanel {
 
     private static final String TITLE_LABEL = "AGENT STATISTICS";
     private static final JPanel DEFAULT_INFO_PANEL = createDefaultMessagePanel();
-    private static final CC DETAIL_PANEL_STYLE = new CC().height("100%").growX().spanX().gapY("10px", "10px");
+    private static final CC DETAIL_PANEL_STYLE = new CC().height("100%").span().grow().wrap().gapY("5px", "0px");
 
     private static final int INFORMATION_PANEL_IDX = 3;
     private final JPanel detailPanel;
@@ -47,7 +47,7 @@ public class DetailsPanel {
     }
 
     private static JPanel createDefaultMessagePanel() {
-        final JPanel jPanel = new JPanel();
+        final JPanel jPanel = new JPanel(new MigLayout(new LC().fillX().height("50px")));
         jPanel.setBackground(VERY_LIGHT_GRAY_COLOR);
         return jPanel;
     }
@@ -61,9 +61,9 @@ public class DetailsPanel {
         final MigLayout panelLayout = new MigLayout(new LC().fillX());
         final JPanel detailsPanel = createBorderPanel(panelLayout);
         addPanelHeader(TITLE_LABEL, detailsPanel);
-        detailsPanel.add(comboBoxNetwork, new CC().height("20px").growX().spanX());
-        detailsPanel.add(comboBoxClients, new CC().height("20px").growX().spanX());
-        detailsPanel.add(agentDetailsPanel, DETAIL_PANEL_STYLE);
+        detailsPanel.add(comboBoxNetwork, new CC().height("20px").width("100%").wrap());
+        detailsPanel.add(comboBoxClients, new CC().height("20px").width("100%").wrap());
+        detailsPanel.add(initializeDetailPanelScroll(), DETAIL_PANEL_STYLE);
         return detailsPanel;
     }
 
@@ -96,6 +96,12 @@ public class DetailsPanel {
         return jComboBox;
     }
 
+    private JScrollPane initializeDetailPanelScroll() {
+        final JScrollPane jScrollPane = createDefaultScrollPane(agentDetailsPanel);
+        jScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        return jScrollPane;
+    }
+
     private JComboBox initializeClientsComboBox() {
         final JComboBox jComboBox = createDefaultComboBox(getDropDownClientAgentsNames());
         jComboBox.addActionListener(e -> changeSelectedClientAgent((String) jComboBox.getSelectedItem()));
@@ -115,7 +121,7 @@ public class DetailsPanel {
     }
 
     private void changeSelectedNetworkAgent(final String newAgentName) {
-        if(!(comboBoxClients.getSelectedIndex() != 0 && comboBoxNetwork.getSelectedIndex() == 0)) {
+        if (!(comboBoxClients.getSelectedIndex() != 0 && comboBoxNetwork.getSelectedIndex() == 0)) {
             agentDetailsPanel = allNetworkAgentNodes.stream()
                     .filter(agent -> agent.getName().equals(newAgentName))
                     .findFirst()
@@ -127,12 +133,13 @@ public class DetailsPanel {
     }
 
     private void changeSelectedClientAgent(final String newAgentName) {
-        if(!(comboBoxNetwork.getSelectedIndex() != 0 && comboBoxClients.getSelectedIndex() == 0)) {
+        if (!(comboBoxNetwork.getSelectedIndex() != 0 && comboBoxClients.getSelectedIndex() == 0)) {
             agentDetailsPanel = allClientNodes.stream()
                     .filter(agent -> agent.getName().equals(newAgentName))
                     .findFirst()
                     .map(AgentNode::getInformationPanel)
                     .orElse(DEFAULT_INFO_PANEL);
+            agentDetailsPanel.setPreferredSize(new Dimension(100, 50));
             refreshDetailsPanel();
             comboBoxNetwork.setSelectedIndex(0);
         }
@@ -140,7 +147,7 @@ public class DetailsPanel {
 
     private void refreshDetailsPanel() {
         detailPanel.remove(INFORMATION_PANEL_IDX);
-        detailPanel.add(agentDetailsPanel, DETAIL_PANEL_STYLE);
+        detailPanel.add(initializeDetailPanelScroll(), DETAIL_PANEL_STYLE);
         detailPanel.revalidate();
         detailPanel.repaint();
     }

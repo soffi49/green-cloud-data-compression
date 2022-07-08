@@ -1,7 +1,6 @@
 package agents.server.behaviour.powershortage.listener.network;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
@@ -70,14 +69,15 @@ public class ListenForJobTransferConfirmation extends CyclicBehaviour {
                 } else {
                     logger.info("[{}] Finishing the job with id {} and informing the green source", guid, jobId);
                     final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(jobId));
-                    informGreenSourceAboutJobFinish(jobOnBackUp, receivers);
-                    myServerAgent.getServerJobs().remove(jobOnBackUp);
                     if (Objects.nonNull(jobOnGreen)) {
                         informGreenSourceAboutJobFinish(jobOnGreen, receivers);
                         myServerAgent.getServerJobs().remove(jobOnGreen);
+                        myServerAgent.manage().incrementFinishedJobs(jobOnGreen.getJobId());
                     }
+                    informGreenSourceAboutJobFinish(jobOnBackUp, receivers);
+                    myServerAgent.getServerJobs().remove(jobOnBackUp);
                     myServerAgent.getGreenSourceForJobMap().remove(jobId);
-                    updateServerState(myServerAgent);
+                    myServerAgent.manage().incrementFinishedJobs(jobOnBackUp.getJobId());
                 }
             }
         } else {

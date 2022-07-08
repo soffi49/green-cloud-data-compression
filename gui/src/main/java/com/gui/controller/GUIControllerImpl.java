@@ -100,7 +100,7 @@ public class GUIControllerImpl implements GUIController {
 
     @Override
     public void updateClientsCountByValue(int value) {
-        summaryPanel.updateClientsCountByValue(value);
+        summaryPanel.updateClientsCount(value);
         refreshMainFrame();
     }
 

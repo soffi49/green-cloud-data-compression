@@ -24,12 +24,14 @@ public class MessageProtocolConstants {
      * MANUAL_JOB_FINISH_PROTOCOL  - protocol used in messages informing that the job had to be finished manually because the time
      *                               after which the information about job being finished has passed
      * STARTED_JOB_PROTOCOL        - protocol used in messages informing the agent that the job execution has started
+     * JOB_START_STATUS_PROTOCOL   - protocol used in messages with request of the update regarding the job start status
      * DELAYED_JOB_PROTOCOL        - protocol used in messages informing that the job execution started with the delay
      * BACK_UP_POWER_JOB_PROTOCOL  - protocol used in messages informing that the job is executed using the back-up power
      */
     public static final String FINISH_JOB_PROTOCOL = "FINISH";
     public static final String MANUAL_JOB_FINISH_PROTOCOL = "MANUAL_FINISH";
     public static final String STARTED_JOB_PROTOCOL = "STARTED";
+    public static final String JOB_START_STATUS_PROTOCOL = "START_STATUS_PROTOCOL";
     public static final String DELAYED_JOB_PROTOCOL = "DELAYED";
     public static final String BACK_UP_POWER_JOB_PROTOCOL = "BACK_UP_POWER_JOB_PROTOCOL";
 

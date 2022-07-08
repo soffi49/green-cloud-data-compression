@@ -5,6 +5,7 @@ import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
 import agents.server.behaviour.ReceiveJobRequest;
+import agents.server.behaviour.listener.ListenForJobStarStatusRequest;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.listener.ListenForUnfinishedJobInformation;
@@ -84,6 +85,7 @@ public class ServerAgent extends AbstractServerAgent {
         parallelBehaviour.addSubBehaviour(new ListenForSourceTransferConfirmation());
         parallelBehaviour.addSubBehaviour(new ListenForServerEvent(this));
         parallelBehaviour.addSubBehaviour(new ListenForJobTransferCancellation(this));
+        parallelBehaviour.addSubBehaviour(new ListenForJobStarStatusRequest());
         return Collections.singletonList(parallelBehaviour);
     }
 }

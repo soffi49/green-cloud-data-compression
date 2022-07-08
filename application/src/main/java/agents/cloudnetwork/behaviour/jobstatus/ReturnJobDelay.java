@@ -1,10 +1,11 @@
 package agents.cloudnetwork.behaviour.jobstatus;
 
-import static messages.domain.JobStatusMessageFactory.prepareDelayMessageForClient;
+import static messages.domain.JobStatusMessageFactory.prepareJobStartStatusRequestMessage;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 import org.slf4j.Logger;
@@ -37,16 +38,17 @@ public class ReturnJobDelay extends WakerBehaviour {
     }
 
     /**
-     * Method verifies if the job execution has started at the correct time. If there is some delay - it informs the
-     * client about it.
+     * Method verifies if the job execution has started at the correct time. If there is some delay - it sends the request
+     * to the server to provide information about the job start
      */
     @Override
     protected void onWake() {
         final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
-        if (Objects.nonNull(job) && !myCloudNetworkAgent.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
-            logger.error("[{}] There is no message regarding the job start. Sending delay information", myAgent.getName());
-            myAgent.send(prepareDelayMessageForClient(myCloudNetworkAgent.manage().getJobById(jobId).getClientIdentifier()));
-            //TODO here we can pass another behaviour handling what will happen if the message won't come at all! :)
+        if (Objects.nonNull(job) && !myCloudNetworkAgent.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS) &&
+                myCloudNetworkAgent.getServerForJobMap().containsKey(jobId)) {
+            final AID server = myCloudNetworkAgent.getServerForJobMap().get(job.getJobId());
+            logger.error("[{}] There is no message regarding the job start. Sending request to the server", myAgent.getName());
+            myAgent.addBehaviour(new RequestJobStartStatus(myCloudNetworkAgent, prepareJobStartStatusRequestMessage(jobId, server), jobId));
         }
     }
 }

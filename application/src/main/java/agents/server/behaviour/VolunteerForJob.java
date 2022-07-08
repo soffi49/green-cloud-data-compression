@@ -55,6 +55,7 @@ public class VolunteerForJob extends ProposeInitiator {
             final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
             final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
             myServerAgent.getServerJobs().replace(myServerAgent.manage().getJobById(jobInstanceId.getJobId()), JobStatusEnum.ACCEPTED);
+            myServerAgent.manage().updateClientNumber();
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
             myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
         } catch (Exception e) {

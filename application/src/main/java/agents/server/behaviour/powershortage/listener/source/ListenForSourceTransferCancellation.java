@@ -52,7 +52,6 @@ public class ListenForSourceTransferCancellation extends CyclicBehaviour {
     @Override
     public void action() {
         final ACLMessage inform = myAgent.receive(messageTemplate);
-
         if (Objects.nonNull(inform)) {
             try {
                 final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
