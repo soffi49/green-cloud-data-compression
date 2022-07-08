@@ -13,11 +13,10 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StartJobExecution extends WakerBehaviour {
 
@@ -39,9 +38,9 @@ public class StartJobExecution extends WakerBehaviour {
     }
 
     /**
-     * Method which is responsible for creating the behaviour. It calculates the time after which
-     * the job execution will start. For testing purposes 1h = 2s. If the provided time is later than
-     * the current time then the job execution will start immediately
+     * Method which is responsible for creating the behaviour. It calculates the time after which the job execution will
+     * start. For testing purposes 1h = 2s. If the provided time is later than the current time then the job execution
+     * will start immediately
      *
      * @param serverAgent  agent that will execute the behaviour
      * @param jobToExecute job that will be executed
@@ -54,19 +53,21 @@ public class StartJobExecution extends WakerBehaviour {
     }
 
     /**
-     * Method starts the execution of the job. It updates the server state, then sends the information that the execution has started to the
-     * Green Source Agent and the Cloud Network. Finally, it starts the behaviour responsible for informing about job
-     * execution finish.
+     * Method starts the execution of the job. It updates the server state, then sends the information that the
+     * execution has started to the Green Source Agent and the Cloud Network. Finally, it starts the behaviour
+     * responsible for informing about job execution finish.
      */
     @Override
     protected void onWake() {
         logger.info("[{}] Start executing the job for {}", myAgent.getName(), jobToExecute.getClientIdentifier());
         myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
         updateServerState(myServerAgent, false);
-        final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()), myServerAgent.getOwnerCloudNetworkAgent());
+        final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()),
+            myServerAgent.getOwnerCloudNetworkAgent());
         final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(), receivers);
         displayMessageArrow(myServerAgent, receivers);
         myAgent.send(startedJobMessage);
         myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, jobToExecute));
+
     }
 }

@@ -1,17 +1,20 @@
 package agents.server;
 
-import static common.constant.DFServiceConstants.*;
+import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.SA_SERVICE_NAME;
+import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
+import agents.server.behaviour.ListenForPowerConfirmation;
+import agents.server.behaviour.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.ReceiveJobRequest;
 import behaviours.ReceiveGUIController;
 import jade.core.AID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Agent representing the Server Agent which executes the clients' jobs
@@ -30,7 +33,8 @@ public class ServerAgent extends AbstractServerAgent {
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
-        addBehaviour(new ReceiveGUIController(this, List.of(new ReceiveJobRequest())));
+        addBehaviour(new ReceiveGUIController(this, List.of(new ReceiveJobRequest(),
+            new ListenForUnfinishedJobInformation(), new ListenForPowerConfirmation())));
     }
 
     @Override

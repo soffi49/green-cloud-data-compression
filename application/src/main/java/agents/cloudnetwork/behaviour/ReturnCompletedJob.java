@@ -43,7 +43,9 @@ public class ReturnCompletedJob extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
-            logger.info("[{}] Sending information that the job execution is finished", myAgent.getName());
+            final Long completedJobs = myCloudNetworkAgent.completedJob();
+            logger.info("[{}] Sending information that the job execution is finished. So far completed {} jobs!",
+                myAgent.getName(), completedJobs);
             final String jobId = message.getContent();
             final String clientId = myCloudNetworkAgent.getJobById(jobId).getClientIdentifier();
             updateNetworkInformation(jobId);

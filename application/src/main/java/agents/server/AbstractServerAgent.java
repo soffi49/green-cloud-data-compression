@@ -5,11 +5,11 @@ import static common.GUIUtils.updateServerState;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
 import agents.AbstractAgent;
+import common.TimeUtils;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +69,8 @@ public abstract class AbstractServerAgent extends AbstractAgent {
     public int getCurrentPowerInUse() {
         return serverJobs.entrySet().stream()
                 .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
+                .mapToInt(job -> job.getKey().getPower())
+                .sum();
     }
 
     /**
@@ -90,11 +91,11 @@ public abstract class AbstractServerAgent extends AbstractAgent {
      */
     public int getAvailableCapacity(final OffsetDateTime startDate,
                                     final OffsetDateTime endDate) {
-        final int powerInUser =
-                serverJobs.keySet().stream()
-                        .filter(job -> job.getStartTime().isBefore(endDate) &&
-                                job.getEndTime().isAfter(startDate))
-                        .mapToInt(Job::getPower).sum();
+        final int powerInUser = serverJobs.keySet().stream()
+                .filter(job -> !getServerJobs().get(job).equals(JobStatusEnum.PROCESSING))
+                .filter(job -> TimeUtils.isWithinTimeStamp(startDate, endDate, job.getStartTime()) ||
+                    TimeUtils.isWithinTimeStamp(startDate, endDate, job.getEndTime()))
+                .mapToInt(Job::getPower).sum();
         return maximumCapacity - powerInUser;
     }
 

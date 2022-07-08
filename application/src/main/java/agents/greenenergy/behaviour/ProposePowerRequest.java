@@ -12,13 +12,11 @@ import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
-import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
+import java.time.temporal.ChronoUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.temporal.ChronoUnit;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -56,7 +54,7 @@ public class ProposePowerRequest extends ProposeInitiator {
         myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
         var response = prepareStringReply(accept_proposal.createReply(), jobId, INFORM);
         response.setProtocol(SERVER_JOB_CFP_PROTOCOL);
-        myAgent.addBehaviour(createJobListeningBehaviours(job));
+        myAgent.addBehaviour(new ListenForUnfinishedJobs(myGreenEnergyAgent, calculateJobStartTimeout(job), job.getJobId()));
         displayMessageArrow(myGreenEnergyAgent, accept_proposal.getSender());
         myAgent.send(response);
     }
@@ -69,14 +67,6 @@ public class ProposePowerRequest extends ProposeInitiator {
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         logger.info("[{}] Server rejected the job proposal", guid);
-    }
-
-    private ParallelBehaviour createJobListeningBehaviours(final PowerJob job) {
-        final ParallelBehaviour behaviour = new ParallelBehaviour();
-        behaviour.addSubBehaviour(new ListenForUnfinishedJobs(myGreenEnergyAgent, calculateJobStartTimeout(job), job.getJobId()));
-        behaviour.addSubBehaviour(new ListenForStartedJobs(myGreenEnergyAgent));
-        behaviour.addSubBehaviour(new ListenForFinishedJobs(myGreenEnergyAgent));
-        return behaviour;
     }
 
     private Long calculateJobStartTimeout(final PowerJob job) {

@@ -5,7 +5,6 @@ import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
 import agents.server.ServerAgent;
-import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
@@ -48,8 +47,6 @@ public class VolunteerForJob extends ProposeInitiator {
         try {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
             final String jobId = accept_proposal.getContent();
-            myServerAgent.getServerJobs().replace(myServerAgent.getJobById(jobId), JobStatusEnum.ACCEPTED);
-            myAgent.addBehaviour(new ListenForPowerConfirmation());
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
             myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
         } catch (Exception e) {

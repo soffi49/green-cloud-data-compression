@@ -54,12 +54,12 @@ public class ReceiveJobRequest extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             try {
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
-                if (job.getPower() <= myServerAgent.getAvailableCapacity(job.getStartTime(), job.getEndTime())) {
+                if (job.getPower() < myServerAgent.getAvailableCapacity(job.getStartTime(), job.getEndTime())) {
                     logger.info("[{}] Sending call for proposal to Green Source Agents", myAgent.getName());
                     final ACLMessage cfp = preparePowerJobCFP(job);
                     displayMessageArrow(myServerAgent, myServerAgent.getOwnedGreenSources());
                     myServerAgent.getServerJobs().put(job, JobStatusEnum.PROCESSING);
-                    myAgent.addBehaviour(new AnnouncePowerRequest(myAgent, cfp, message.createReply()));
+                    myAgent.addBehaviour(new AnnouncePowerRequest(myAgent, cfp, message.createReply(), job));
                 } else {
                     logger.info("[{}] Not enough available power! Sending refuse message to Cloud Network Agent", myAgent.getName());
                     displayMessageArrow(myServerAgent, message.getSender());
@@ -69,7 +69,7 @@ public class ReceiveJobRequest extends CyclicBehaviour {
                 e.printStackTrace();
             }
         } else {
-            block();
+            block(200);
         }
     }
 
