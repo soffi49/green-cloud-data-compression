@@ -1,15 +1,13 @@
 package agents.greenenergy;
 
 import static common.TimeUtils.isWithinTimeStamp;
-import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
-import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.*;
 import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static java.util.stream.Collectors.toMap;
 import static yellowpages.YellowPagesService.register;
 
 import agents.greenenergy.behaviour.ReceivePowerRequest;
-import agents.greenenergy.behaviour.RegisterGreenAgentInDF;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenPower;
 import behaviours.ReceiveGUIController;
@@ -26,6 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,10 +45,9 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
-        register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, this.getOwnerServer().getName());
+            register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
         addBehaviour(new ReceiveGUIController(this, List.of(
-                new ReceivePowerRequest(this)/*,
-                new RegisterGreenAgentInDF(this, 2 * 60 * 60 * 100)*/)));
+                new ReceivePowerRequest(this))));
     }
 
     @Override
