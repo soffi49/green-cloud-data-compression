@@ -7,14 +7,16 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.monitoring.MonitoringAgent;
 import domain.GreenSourceRequestData;
+import domain.ImmutableMonitoringData;
+import domain.ImmutableWeatherData;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Behaviour responsible for listening for the upcoming weather requests
@@ -48,8 +50,16 @@ public class ServeWeatherInformation extends CyclicBehaviour {
             response.setPerformative(INFORM);
             try {
                 var requestData = getMapper().readValue(message.getContent(), GreenSourceRequestData.class);
-                var data = monitoringAgent.getForecast(requestData);
-                response.setContent(getMapper().writeValueAsString(data));
+                var dataOffline = ImmutableMonitoringData.builder()
+                        .addWeatherData(ImmutableWeatherData.builder()
+                                             .cloudCover(10D)
+                                             .temperature(50D)
+                                             .windSpeed(100D)
+                                             .time(Instant.now())
+                                             .build())
+                        .build();
+                //var data = monitoringAgent.getForecast(requestData);
+                response.setContent(getMapper().writeValueAsString(dataOffline));
             } catch (IOException e) {
                 e.printStackTrace();
             }

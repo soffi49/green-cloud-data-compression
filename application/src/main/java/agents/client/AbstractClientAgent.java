@@ -2,7 +2,6 @@ package agents.client;
 
 import agents.AbstractAgent;
 import jade.core.AID;
-
 import java.time.OffsetDateTime;
 
 /**

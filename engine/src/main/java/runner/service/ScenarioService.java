@@ -71,7 +71,7 @@ public class ScenarioService {
             for (AgentController agentController : AGENTS_TO_RUN) {
                 agentController.start();
                 agentController.activate();
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(100);
             }
             createClientAgents(CLIENT_NUMBER, scenario);
 

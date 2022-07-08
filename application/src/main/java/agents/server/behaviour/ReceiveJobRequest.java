@@ -4,7 +4,9 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
@@ -15,12 +17,11 @@ import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import messages.domain.CallForProposalMessageFactory;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour which is responsible for handling upcoming job's call for proposals from cloud network agents
@@ -54,7 +55,7 @@ public class ReceiveJobRequest extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             try {
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
-                if (job.getPower() < myServerAgent.getAvailableCapacity(job.getStartTime(), job.getEndTime())) {
+                if (job.getPower() < myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime())) {
                     logger.info("[{}] Sending call for proposal to Green Source Agents", myAgent.getName());
                     final ACLMessage cfp = preparePowerJobCFP(job);
                     displayMessageArrow(myServerAgent, myServerAgent.getOwnedGreenSources());

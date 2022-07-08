@@ -6,11 +6,18 @@ import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
-import agents.server.behaviour.ListenForPowerConfirmation;
 import agents.server.behaviour.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.ReceiveJobRequest;
+import agents.server.behaviour.listener.ListenForPowerConfirmation;
+import agents.server.behaviour.listener.ListenForServerEvent;
+import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
+import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
+import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
+import agents.server.behaviour.powershortage.listener.source.ListenForSourceTransferConfirmation;
+import agents.server.domain.ServerStateManagement;
 import behaviours.ReceiveGUIController;
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -33,8 +40,7 @@ public class ServerAgent extends AbstractServerAgent {
         final Object[] args = getArguments();
         initializeAgent(args);
         register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
-        addBehaviour(new ReceiveGUIController(this, List.of(new ReceiveJobRequest(),
-            new ListenForUnfinishedJobInformation(), new ListenForPowerConfirmation())));
+        addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
     }
 
     @Override
@@ -46,6 +52,7 @@ public class ServerAgent extends AbstractServerAgent {
 
     private void initializeAgent(final Object[] args) {
         if (Objects.nonNull(args) && args.length == 3) {
+            this.stateManagement = new ServerStateManagement(this);
             this.ownedGreenSources = search(this, GS_SERVICE_TYPE, getName());
             if (ownedGreenSources.isEmpty()) {
                 logger.info("I have no corresponding green sources!");
@@ -60,8 +67,22 @@ public class ServerAgent extends AbstractServerAgent {
                 doDelete();
             }
         } else {
-            logger.info("Incorrect arguments: some parameters for server agent are missing - check the parameters in the documentation");
+            logger.info(
+                "Incorrect arguments: some parameters for server agent are missing - check the parameters in the documentation");
             doDelete();
         }
+    }
+
+    private List<Behaviour> behavioursRunAtStart() {
+        return List.of(
+            new ReceiveJobRequest(),
+            new ListenForUnfinishedJobInformation(),
+            new ListenForPowerConfirmation(),
+            new ListenForJobTransferConfirmation(this),
+            new ListenForSourcePowerShortage(),
+            new ListenForSourceTransferConfirmation(),
+            new ListenForServerEvent(this),
+            new ListenForJobTransferCancellation(this)
+        );
     }
 }

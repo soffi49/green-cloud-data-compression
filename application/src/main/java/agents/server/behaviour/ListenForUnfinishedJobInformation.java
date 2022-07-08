@@ -2,7 +2,9 @@ package agents.server.behaviour;
 
 import static common.constant.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
@@ -11,10 +13,9 @@ import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour is responsible for listening for the unfinished job message coming from the green source agent
@@ -45,11 +46,11 @@ public class ListenForUnfinishedJobInformation extends CyclicBehaviour {
         if (Objects.nonNull(inform)) {
             try {
                 final String jobId = getMapper().readValue(inform.getContent(), String.class);
-                final Job job = myServerAgent.getJobById(jobId);
+                final Job job = myServerAgent.manage().getJobById(jobId);
                 if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
                     logger.debug("[{}] Information about finishing job with id {} does not reach the green source", myAgent.getName(), job.getClientIdentifier());
                     logger.info("[{}] Finished executing the job for {}", myAgent.getName(), job.getClientIdentifier());
-                    myServerAgent.finishJobExecution(job);
+                    myServerAgent.manage().finishJobExecution(job, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

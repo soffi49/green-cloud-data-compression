@@ -1,19 +1,22 @@
-package agents.cloudnetwork.behaviour;
+package agents.cloudnetwork.behaviour.jobstatus;
 
 import static common.GUIUtils.announceFinishedJob;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
+import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.JobInstanceIdentifier;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour responsible for returning to the client the information that the job execution has finished
@@ -43,20 +46,28 @@ public class ReturnCompletedJob extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
 
         if (Objects.nonNull(message)) {
-            final Long completedJobs = myCloudNetworkAgent.completedJob();
-            logger.info("[{}] Sending information that the job execution is finished. So far completed {} jobs!",
-                myAgent.getName(), completedJobs);
-            final String jobId = message.getContent();
-            final String clientId = myCloudNetworkAgent.getJobById(jobId).getClientIdentifier();
-            updateNetworkInformation(jobId);
-            myAgent.send(prepareFinishMessageForClient(jobId, clientId));
+            try {
+                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(),
+                    JobInstanceIdentifier.class);
+                if (Objects.nonNull(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()))) {
+                    final Long completedJobs = myCloudNetworkAgent.completedJob();
+                    logger.info("[{}] Sending information that the job {} execution is finished. So far completed {} jobs!",
+                        myAgent.getName(), jobInstanceId.getJobId(), completedJobs);
+                    final String clientId = myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId())
+                        .getClientIdentifier();
+                    updateNetworkInformation(jobInstanceId.getJobId());
+                    myAgent.send(prepareFinishMessageForClient(clientId));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             block();
         }
     }
 
     private void updateNetworkInformation(final String jobId) {
-        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.getJobById(jobId));
+        myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.manage().getJobById(jobId));
         myCloudNetworkAgent.getServerForJobMap().remove(jobId);
         announceFinishedJob(myCloudNetworkAgent, jobId);
     }

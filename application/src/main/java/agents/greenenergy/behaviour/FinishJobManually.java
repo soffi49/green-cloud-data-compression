@@ -2,39 +2,40 @@ package agents.greenenergy.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.GUIUtils.updateGreenSourceState;
+import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static messages.domain.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 
 import agents.greenenergy.GreenEnergyAgent;
-import domain.job.JobStatusEnum;
+import domain.job.JobInstanceIdentifier;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
+import java.util.Date;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour responsible for verifying if the job was finished at the correct time.
  */
-public class ListenForUnfinishedJobs extends WakerBehaviour {
+public class FinishJobManually extends WakerBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForUnfinishedJobs.class);
+    private static final Logger logger = LoggerFactory.getLogger(FinishJobManually.class);
 
-    private final String jobId;
+    private final JobInstanceIdentifier jobInstanceId;
     private final GreenEnergyAgent myGreenEnergyAgent;
 
     /**
      * Behaviour constructor.
      *
-     * @param agent   agent which is executing the behaviour
-     * @param timeout timeout after which the job should finish
-     * @param jobId   unique job identifier
+     * @param agent         agent which is executing the behaviour
+     * @param endDate       date when the job execution should finish
+     * @param jobInstanceId unique job instance identifier
      */
-    public ListenForUnfinishedJobs(Agent agent, long timeout, String jobId) {
-        super(agent, timeout);
+    public FinishJobManually(Agent agent, Date endDate, JobInstanceIdentifier jobInstanceId) {
+        super(agent, endDate);
         this.myGreenEnergyAgent = (GreenEnergyAgent) agent;
-        this.jobId = jobId;
+        this.jobInstanceId = jobInstanceId;
     }
 
     /**
@@ -44,13 +45,13 @@ public class ListenForUnfinishedJobs extends WakerBehaviour {
      */
     @Override
     protected void onWake() {
-        final PowerJob job = myGreenEnergyAgent.getJobById(jobId);
-        if (Objects.nonNull(job) && myGreenEnergyAgent.getPowerJobs().containsKey(job) && myGreenEnergyAgent.getPowerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+        final PowerJob job = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId.getJobId(), jobInstanceId.getStartTime());
+        if (Objects.nonNull(job) && JOB_IN_PROGRESS.contains(myGreenEnergyAgent.getPowerJobs().get(job))) {
             logger.error("[{}] The power delivery should be finished! Finishing power delivery by hand.", myAgent.getName());
             myGreenEnergyAgent.getPowerJobs().remove(job);
-            updateGreenSourceState(myGreenEnergyAgent, true);
+            updateGreenSourceState(myGreenEnergyAgent);
             displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
-            myAgent.send(prepareManualFinishMessageForServer(jobId, myGreenEnergyAgent.getOwnerServer()));
+            myAgent.send(prepareManualFinishMessageForServer(jobInstanceId, myGreenEnergyAgent.getOwnerServer()));
         }
     }
 }

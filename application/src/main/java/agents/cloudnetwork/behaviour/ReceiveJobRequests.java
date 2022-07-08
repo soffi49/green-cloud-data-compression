@@ -1,26 +1,24 @@
 package agents.cloudnetwork.behaviour;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.SERVER_AGENTS;
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import domain.job.JobStatusEnum;
-import messages.domain.CallForProposalMessageFactory;
 import domain.job.Job;
-import jade.core.AID;
+import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
+import messages.domain.CallForProposalMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Behaviour which is responsible for handling upcoming call for proposals from clients
@@ -63,10 +61,9 @@ public class ReceiveJobRequests extends CyclicBehaviour {
                         myAgent.getName(), jobId);
                 }
 
-                final List<AID> serverAgents = (List<AID>) getParent().getDataStore().get(SERVER_AGENTS);
-                final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, serverAgents, CNA_JOB_CFP_PROTOCOL);
+                final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, myCloudNetworkAgent.getOwnedServers(), CNA_JOB_CFP_PROTOCOL);
 
-                displayMessageArrow(myCloudNetworkAgent, serverAgents);
+                displayMessageArrow(myCloudNetworkAgent, myCloudNetworkAgent.getOwnedServers());
                 myCloudNetworkAgent.getNetworkJobs().put(job, JobStatusEnum.PROCESSING);
                 myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, message, jobId));
             } catch (Exception e) {

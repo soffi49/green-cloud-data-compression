@@ -4,12 +4,17 @@ import static common.constant.DFServiceConstants.CNA_SERVICE_NAME;
 import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.cloudnetwork.behaviour.FindServerAgents;
 import agents.cloudnetwork.behaviour.ReceiveJobRequests;
-import agents.cloudnetwork.behaviour.ReturnCompletedJob;
+import agents.cloudnetwork.behaviour.df.FindServerAgents;
+import agents.cloudnetwork.behaviour.jobstatus.ReturnCompletedJob;
+import agents.cloudnetwork.behaviour.jobstatus.ReturnStartedJob;
+import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerPowerShortage;
+import agents.cloudnetwork.domain.CloudNetworkStateManagement;
 import behaviours.ReceiveGUIController;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
-
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,7 +30,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
     protected void setup() {
         super.setup();
         initializeAgent();
-        addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(), new ReturnCompletedJob())));
+        addBehaviour(new ReceiveGUIController(this, prepareBehaviours()));
     }
 
     @Override
@@ -36,6 +41,16 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
     private void initializeAgent() {
         register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
+        this.stateManagement = new CloudNetworkStateManagement(this);
+    }
+
+    private List<Behaviour> prepareBehaviours() {
+        final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
+        parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
+        parallelBehaviour.addSubBehaviour(new ReturnCompletedJob());
+        parallelBehaviour.addSubBehaviour(new ListenForServerPowerShortage());
+        parallelBehaviour.addSubBehaviour(new ReturnStartedJob());
+        return Collections.singletonList(parallelBehaviour);
     }
 
     private SequentialBehaviour prepareStartingBehaviour() {

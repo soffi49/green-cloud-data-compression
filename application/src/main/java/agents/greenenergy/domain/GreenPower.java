@@ -18,6 +18,9 @@ import org.shredzone.commons.suncalc.SunTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ *
+ */
 public class GreenPower {
 
     private static final Logger logger = LoggerFactory.getLogger(GreenPower.class);
@@ -37,6 +40,10 @@ public class GreenPower {
 
     public void setMaximumCapacity(int maximumCapacity) {
         this.maximumCapacity = maximumCapacity;
+    }
+
+    public int getMaximumCapacity() {
+        return maximumCapacity;
     }
 
     public double getAvailablePower(WeatherData weather, ZonedDateTime dateTime, Location location) {

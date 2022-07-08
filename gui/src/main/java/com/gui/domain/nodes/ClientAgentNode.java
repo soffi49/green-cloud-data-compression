@@ -15,6 +15,7 @@ import org.graphstream.graph.Node;
 public class ClientAgentNode extends AgentNode {
 
     private final String jobId;
+    private final String  power;
     private final String startDate;
     private final String endDate;
     private JobStatusEnum jobStatusEnum;
@@ -27,9 +28,10 @@ public class ClientAgentNode extends AgentNode {
      * @param startDate start date of job execution
      * @param endDate   end date of job execution
      */
-    public ClientAgentNode(String name, String jobId, String startDate, String endDate) {
+    public ClientAgentNode(String name, String jobId, String startDate, String endDate, String power) {
         super(name);
         this.jobId = jobId;
+        this.power = power;
         this.startDate = startDate;
         this.endDate = endDate;
         this.jobStatusEnum = CREATED;
@@ -57,6 +59,7 @@ public class ClientAgentNode extends AgentNode {
     protected void initializeLabelsMap() {
         super.initializeLabelsMap();
         labelsMap.put(AgentNodeLabelEnum.JOB_ID_LABEL, createListLabel(jobId));
+        labelsMap.put(AgentNodeLabelEnum.JOB_POWER, createListLabel(power));
         labelsMap.put(AgentNodeLabelEnum.JOB_START_LABEL, createListLabel(startDate));
         labelsMap.put(AgentNodeLabelEnum.JOB_END_LABEL, createListLabel(endDate));
         labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createListLabel(jobStatusEnum.getStatus()));

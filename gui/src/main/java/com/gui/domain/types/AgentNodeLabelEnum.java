@@ -23,6 +23,7 @@ public enum AgentNodeLabelEnum implements LabelEnum {
     LOCATION_LONGITUDE_LABEL("LOCATION LONGITUDE:"),
 
     // Clients labels
+    JOB_POWER("JOB POWER:"),
     JOB_ID_LABEL("JOB IDENTIFIER:"),
     JOB_START_LABEL("EXECUTION START DATE:"),
     JOB_END_LABEL("EXECUTION END DATE:"),

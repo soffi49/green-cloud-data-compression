@@ -1,11 +1,12 @@
 package agents.cloudnetwork.behaviour;
 
-import static agents.cloudnetwork.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
-import static agents.cloudnetwork.CloudNetworkAgentConstants.RETRY_LIMIT;
-import static agents.cloudnetwork.CloudNetworkAgentConstants.RETRY_PAUSE_MILLISECONDS;
+import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
+import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.RETRY_LIMIT;
+import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.RETRY_PAUSE_MILLISECONDS;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
+import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
@@ -17,10 +18,10 @@ import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import java.util.List;
 import java.util.Vector;
-import java.util.function.Predicate;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Behaviour which is responsible for broadcasting client's job to servers and choosing server to execute the job
@@ -33,7 +34,6 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
     private final ACLMessage replyMessage;
     private final CloudNetworkAgent myCloudNetworkAgent;
     private final String guid;
-    private final transient Predicate<ACLMessage> isValidProposal;
     private final String jobId;
 
     /**
@@ -50,14 +50,6 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
         this.originalMessage = originalMessage;
         this.replyMessage = originalMessage.createReply();
         this.jobId = jobId;
-        this.isValidProposal = message -> {
-            try {
-                getMapper().readValue(message.getContent(), ServerData.class);
-                return true;
-            } catch (JsonProcessingException e) {
-                return false;
-            }
-        };
     }
 
     /**
@@ -86,35 +78,39 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
                     jobId));
             }
         } else {
-            List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
-
-            if (validProposals.isEmpty()) {
-                logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
-                rejectJobOffers(myCloudNetworkAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
-                myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
-                return;
+            final List<ACLMessage> validProposals = retrieveValidMessages(proposals, ServerData.class);
+            if (!validProposals.isEmpty()) {
+                final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
+                final ServerData chosenServerData = readMessage(chosenServerOffer);
+                logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
+                final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
+                logger.info("[{}] Sending job execution offer to Client", guid);
+                myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
+                myCloudNetworkAgent.addBehaviour(
+                    new ProposeJobOffer(myCloudNetworkAgent,
+                        makeJobOfferForClient(chosenServerData,
+                            myCloudNetworkAgent.manage().getCurrentPowerInUse(),
+                            replyMessage), serverReplyMessage));
+                rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
+            } else {
+                handleInvalidResponses(proposals);
             }
-
-            ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
-            ServerData chosenServerData;
-
-            try {
-                chosenServerData = getMapper().readValue(chosenServerOffer.getContent(), ServerData.class);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                throw new RuntimeException();
-            }
-
-            logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
-            final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
-
-            logger.info("[{}] Sending job execution offer to Client", guid);
-            myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-            myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent,
-                makeJobOfferForClient(chosenServerData, myCloudNetworkAgent.getCurrentPowerInUse(), replyMessage),
-                serverReplyMessage));
-            rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
         }
+    }
+
+    private ServerData readMessage(final ACLMessage message) {
+        try {
+            return getMapper().readValue(message.getContent(), ServerData.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
+    private void handleInvalidResponses(final List<ACLMessage> proposals) {
+        logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
+        rejectJobOffers(myCloudNetworkAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+        myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
     }
 
     private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {

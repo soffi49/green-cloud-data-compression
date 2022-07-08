@@ -1,10 +1,13 @@
 package agents.server.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
-import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import domain.job.Job;
+import domain.job.JobInstanceIdentifier;
+import domain.job.JobWithProtocol;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
@@ -46,9 +49,10 @@ public class VolunteerForJob extends ProposeInitiator {
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         try {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
-            final String jobId = accept_proposal.getContent();
+            final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
+            final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-            myAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, ACCEPT_PROPOSAL));
+            myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,8 +69,9 @@ public class VolunteerForJob extends ProposeInitiator {
         try {
             logger.info("[{}] Cloud Network {} rejected the job volunteering offer", myAgent.getName(), reject_proposal.getSender().getLocalName());
             final String jobId = reject_proposal.getContent();
+            final Job job = myServerAgent.manage().getJobById(jobId);
             myServerAgent.getGreenSourceForJobMap().remove(jobId);
-            myServerAgent.getServerJobs().remove(myServerAgent.getJobById(jobId));
+            myServerAgent.getServerJobs().remove(job);
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
             myServerAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, REJECT_PROPOSAL));
         } catch (final Exception e) {

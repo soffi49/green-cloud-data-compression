@@ -9,29 +9,31 @@
     </monitoringAgentsArgs>
     <greenEnergyAgentsArgs>
         <greenenergyAgent>
-            <name>Water</name>
+            <name>WindFarm1</name>
             <monitoringAgent>Weather1</monitoringAgent>
             <ownerSever>Server</ownerSever>
-            <latitude>10.0</latitude>
-            <longitude>20.1</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <latitude>52</latitude>
+            <longitude>20</longitude>
+            <pricePerPowerUnit>5</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
         <greenenergyAgent>
-            <name>Solar</name>
+            <name>WindFarm3</name>
             <monitoringAgent>Weather2</monitoringAgent>
             <ownerSever>Server</ownerSever>
-            <latitude>50.0</latitude>
-            <longitude>88.1</longitude>
-            <pricePerPowerUnit>10</pricePerPowerUnit>
+            <latitude>52</latitude>
+            <longitude>20</longitude>
+            <pricePerPowerUnit>5</pricePerPowerUnit>
             <maximumCapacity>200</maximumCapacity>
+            <energyType>WIND</energyType>
         </greenenergyAgent>
     </greenEnergyAgentsArgs>
     <serverAgentsArgs>
         <serverAgentsArgs>
             <name>Server</name>
             <ownerCloudNetwork>CNA</ownerCloudNetwork>
-            <maximumCapacity>10</maximumCapacity>
+            <maximumCapacity>500</maximumCapacity>
             <price>10.5</price>
         </serverAgentsArgs>
     </serverAgentsArgs>

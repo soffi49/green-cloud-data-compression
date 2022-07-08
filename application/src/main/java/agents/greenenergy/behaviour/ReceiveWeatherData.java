@@ -41,7 +41,7 @@ public class ReceiveWeatherData extends CyclicBehaviour {
      *
      * @param myGreenAgent agent which is executing the behaviour
      * @param cfp          call for proposal sent by the server to which the Green Source has to reply
-     * @param powerJob          job that is being processed
+     * @param powerJob     job that is being processed
      */
     public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob powerJob) {
         this.myGreenEnergyAgent = myGreenAgent;
@@ -76,27 +76,25 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     }
 
     private void handleInform(final MonitoringData data) {
-        Optional<Double> averageAvailablePower = myGreenEnergyAgent.getAverageAvailablePower(powerJob, data);
+        final Optional<Double> averageAvailablePower = myGreenEnergyAgent.manage().getAverageAvailablePower(powerJob, data);
+        final String jobId = powerJob.getJobId();
 
-        if(averageAvailablePower.isEmpty()) {
-            logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, powerJob.getJobId());
+        if (averageAvailablePower.isEmpty()) {
+            logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, jobId);
             myGreenEnergyAgent.getPowerJobs().remove(powerJob);
             displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
-        }
-        else if (powerJob.getPower() > averageAvailablePower.get()) {
-            logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid,
-                powerJob.getJobId(), powerJob.getPower(),  averageAvailablePower.get());
+        } else if (powerJob.getPower() > averageAvailablePower.get()) {
+            logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid, jobId, powerJob.getPower(), averageAvailablePower.get());
             myGreenEnergyAgent.getPowerJobs().remove(powerJob);
             displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
-        }
-        else {
-            logger.info("[{}] Replying with propose message to server for job with id {}.", guid, powerJob.getJobId());
+        } else {
+            logger.info("[{}] Replying with propose message to server for job with id {}.", guid, jobId);
             final GreenSourceData responseData = ImmutableGreenSourceData.builder()
                     .pricePerPowerUnit(myGreenEnergyAgent.getPricePerPowerUnit())
                     .availablePowerInTime(averageAvailablePower.get())
-                    .jobId(powerJob.getJobId())
+                    .jobId(jobId)
                     .build();
             displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));

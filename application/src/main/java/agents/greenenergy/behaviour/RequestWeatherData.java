@@ -47,7 +47,7 @@ public class RequestWeatherData extends OneShotBehaviour {
         request.setConversationId(conversationId);
         var requestData = ImmutableGreenSourceRequestData.builder()
                 .location(myGreenEnergyAgent.getLocation())
-                .timetable(myGreenEnergyAgent.getJobsTimetable(powerJob))
+                .timetable(myGreenEnergyAgent.manage().getJobsTimetable(powerJob))
                 .build();
         try {
             request.setContent(getMapper().writeValueAsString(requestData));

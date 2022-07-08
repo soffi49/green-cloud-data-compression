@@ -1,6 +1,7 @@
 package com.gui.domain.nodes;
 
 
+import static com.gui.domain.types.AgentNodeLabelEnum.MAXIMUM_CAPACITY_LABEL;
 import static com.gui.utils.GUIUtils.*;
 import static com.gui.utils.GraphUtils.*;
 import static com.gui.utils.domain.StyleConstants.*;
@@ -60,12 +61,12 @@ public class ServerAgentNode extends AgentNode {
     }
 
     /**
-     * Function updates the number of clients by given value
+     * Function updates the number of clients
      *
-     * @param value value to be added to client number
+     * @param value new clients count
      */
     public void updateClientNumber(final int value) {
-        this.totalNumberOfClients.getAndAdd(value);
+        this.totalNumberOfClients.set(value);
         labelsMap.get(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL).setText(formatToHTML(String.valueOf(totalNumberOfClients)));
     }
 
@@ -75,19 +76,32 @@ public class ServerAgentNode extends AgentNode {
      * @param powerInUse current power in use
      */
     public void updateTraffic(final double powerInUse) {
-        this.traffic.set((powerInUse / maximumCapacity.get()) * 100);
+        this.traffic.set(maximumCapacity.get() != 0? ((traffic.get() / maximumCapacity.get()) * 100) : 0);
         labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
 
     /**
-     * Function updates the number of currently executed jobs by given value
+     * Function updates the number of currently executed jobs
      *
-     * @param value value to be added to the number of jobs being executed
+     * @param value new jobs count
      */
     public void updateJobsCount(final int value) {
-        this.numberOfExecutedJobs.getAndAdd(value);
+        this.numberOfExecutedJobs.set(value);
         labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
+    }
+
+    /**
+     * Function updates the current maximum capacity
+     *
+     * @param maxCapacity new maximum capacity
+     */
+    public void updateMaximumCapacity(final int maxCapacity) {
+        this.maximumCapacity.set((double) maxCapacity);
+        this.traffic.set(maximumCapacity.get() != 0? ((traffic.get() / maxCapacity) * 100) : 0);
+        labelsMap.get(MAXIMUM_CAPACITY_LABEL).setText(formatToHTML(String.valueOf(maxCapacity)));
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
+        updateGraphUI();
     }
 
     @Override

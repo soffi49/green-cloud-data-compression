@@ -1,7 +1,6 @@
 package com.gui.utils;
 
 import static com.gui.utils.domain.StyleConstants.*;
-import static javax.swing.BorderFactory.createTitledBorder;
 
 import com.gui.domain.types.LabelEnum;
 import com.gui.utils.domain.ComboBoxRenderer;
@@ -16,8 +15,11 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -175,7 +177,7 @@ public class GUIUtils {
     /**
      * Method creates panel with shadow
      *
-     * @param layout    layout of the panel
+     * @param layout layout of the panel
      * @return styled JPanel
      */
     public static JPanel createShadowPanel(final LayoutManager layout) {
@@ -189,7 +191,7 @@ public class GUIUtils {
     /**
      * Method creates panel with top and bottom border
      *
-     * @param layout    layout of the panel
+     * @param layout layout of the panel
      * @return styled JPanel
      */
     public static JPanel createBorderPanel(final LayoutManager layout) {
@@ -253,5 +255,53 @@ public class GUIUtils {
         customizeScrollBar(scrollPane.getHorizontalScrollBar());
         scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         return scrollPane;
+    }
+
+    /**
+     * Method creates the numeric input field
+     *
+     * @param title input field title
+     * @return numeric input field
+     */
+    public static JFormattedTextField createNumericTextField(final String title) {
+        final JFormattedTextField jFormattedTextField = new JFormattedTextField(NumberFormat.getIntegerInstance());
+        jFormattedTextField.setForeground(DARK_GRAY_COLOR);
+        jFormattedTextField.setFont(LIST_VALUE_FONT);
+        jFormattedTextField.setText("0");
+        jFormattedTextField.setMargin(new Insets(0, 10, 0, 10));
+        final Border border = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(MEDIUM_GRAY_COLOR, 2),
+                                                               title,
+                                                               TitledBorder.LEFT,
+                                                               TitledBorder.TOP,
+                                                               LIST_VALUE_FONT);
+        jFormattedTextField.setBorder(border);
+        return jFormattedTextField;
+    }
+
+    /**
+     * Method creates a default button
+     *
+     * @param title          button text
+     * @param actionListener button action listeners
+     * @return JButton
+     */
+    public static JButton createButton(final String title, final ActionListener actionListener) {
+        final JButton jButton = new JButton(title);
+        jButton.addActionListener(actionListener);
+        jButton.setBorder(BorderFactory.createLineBorder(DARK_GRAY_COLOR));
+        jButton.setFont(SECOND_HEADER_FONT);
+        jButton.setBackground(DARK_GRAY_COLOR);
+        jButton.setForeground(LIGHT_GRAY_COLOR);
+        jButton.setUI(new BasicButtonUI() {
+            @Override
+            protected void paintButtonPressed(Graphics g, AbstractButton b) {
+                if (b.isContentAreaFilled()) {
+                    Dimension size = b.getSize();
+                    g.setColor(LIGHT_GRAY_COLOR);
+                    g.fillRect(0, 0, size.width, size.height);
+                }
+            }
+        });
+        return jButton;
     }
 }

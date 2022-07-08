@@ -5,6 +5,7 @@ import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
 
 import agents.client.ClientAgent;
+import agents.client.behaviour.df.FindCloudNetworkAgents;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import jade.core.Agent;

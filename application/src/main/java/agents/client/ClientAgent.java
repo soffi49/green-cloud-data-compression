@@ -3,14 +3,15 @@ package agents.client;
 import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
 
-import agents.client.behaviour.FindCloudNetworkAgents;
 import agents.client.behaviour.RequestJobExecution;
-import agents.client.behaviour.WaitForJobStatusUpdate;
+import agents.client.behaviour.df.FindCloudNetworkAgents;
+import agents.client.behaviour.listener.ListenForJobUpdate;
 import behaviours.ReceiveGUIController;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -38,7 +39,7 @@ public class ClientAgent extends AbstractClientAgent {
         if (Objects.nonNull(args) && args.length == 4) {
             initializeAgent();
             final Job jobToBeExecuted = initializeAgentJob(args);
-            addBehaviour(new ReceiveGUIController(this, List.of(prepareStartingBehaviour(jobToBeExecuted), new WaitForJobStatusUpdate(this))));
+            addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviour(jobToBeExecuted)));
         } else {
             logger.error("Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
             doDelete();
@@ -66,7 +67,6 @@ public class ClientAgent extends AbstractClientAgent {
             final OffsetDateTime startTime = TimeUtils.convertToOffsetDateTime(arguments[0].toString());
             final OffsetDateTime endTime = TimeUtils.convertToOffsetDateTime(arguments[1].toString());
             final OffsetDateTime currentTime = TimeUtils.getCurrentTimeMinusError();
-            prepareSimulatedTimes(startTime, endTime);
             if (startTime.isBefore(currentTime) || endTime.isBefore(currentTime)) {
                 logger.error("The job execution dates cannot be before current time!");
                 doDelete();
@@ -75,10 +75,12 @@ public class ClientAgent extends AbstractClientAgent {
                 logger.error("The job execution end date cannot be before job execution start date!");
                 doDelete();
             }
+            prepareSimulatedTimes(startTime, endTime);
+            logger.info("[{}] Job simulation time: from {} to {}", this.getName(), simulatedJobStart, simulatedJobEnd);
             return ImmutableJob.builder()
                     .clientIdentifier(getAID().getName())
-                    .startTime(startTime)
-                    .endTime(endTime)
+                    .startTime(getSimulatedJobStart())
+                    .endTime(getSimulatedJobEnd())
                     .power(Integer.parseInt(arguments[2].toString()))
                     .jobId(arguments[3].toString())
                     .build();
@@ -100,10 +102,13 @@ public class ClientAgent extends AbstractClientAgent {
         setSimulatedJobEnd(currentTime.plus(expectedJobEnd, ChronoUnit.MILLIS));
     }
 
-    private SequentialBehaviour prepareStartingBehaviour(final Job job) {
+    private List<Behaviour> prepareStartingBehaviour(final Job job) {
         var startingBehaviour = new SequentialBehaviour(this);
         startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
         startingBehaviour.addSubBehaviour(new RequestJobExecution(this, null, job));
-        return startingBehaviour;
+        return List.of(
+            new ListenForJobUpdate(this),
+            startingBehaviour
+        );
     }
 }

@@ -1,11 +1,14 @@
 package messages.domain;
 
-import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.job.ImmutableJobWithProtocol;
+import domain.job.JobInstanceIdentifier;
+import domain.job.JobWithProtocol;
 import jade.lang.acl.ACLMessage;
 
 /**
@@ -58,16 +61,24 @@ public class ReplyMessageFactory {
     }
 
     /**
-     * Method prepares the reply message which confirms that the job execution has started
+     * Method prepares the reply accept message containing the conversation topic as content protocol
      *
-     * @param replyMessage reply ACLMessage that is to be sent
-     * @param jobId        unique identifier of the job of interest
+     * @param replyMessage  reply ACLMessage that is to be sent
+     * @param jobInstanceId unique job instance identifier
+     * @param protocol      conversation topic being expected response protocol
      * @return reply ACLMessage
      */
-    public static ACLMessage prepareConfirmationReply(final String jobId, final ACLMessage replyMessage) {
-        replyMessage.setPerformative(ACLMessage.INFORM);
-        replyMessage.setProtocol(STARTED_JOB_PROTOCOL);
-        replyMessage.setContent(String.format("The execution of job %s started!", jobId));
+    public static ACLMessage prepareAcceptReplyWithProtocol(final ACLMessage replyMessage, final JobInstanceIdentifier jobInstanceId, final String protocol) {
+        final JobWithProtocol pricedJob = ImmutableJobWithProtocol.builder()
+                .jobInstanceIdentifier(jobInstanceId)
+                .replyProtocol(protocol)
+                .build();
+        replyMessage.setPerformative(ACCEPT_PROPOSAL);
+        try {
+            replyMessage.setContent(getMapper().writeValueAsString(pricedJob));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return replyMessage;
     }
 }

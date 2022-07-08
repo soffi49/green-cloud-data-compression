@@ -1,15 +1,19 @@
-package agents.server.behaviour;
+package agents.server.behaviour.listener;
 
 import static common.GUIUtils.announceBookedJob;
+import static common.TimeUtils.getCurrentTime;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
+import static jade.lang.acl.MessageTemplate.or;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import domain.job.Job;
+import agents.server.behaviour.StartJobExecution;
+import domain.job.JobInstanceIdentifier;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -23,8 +27,8 @@ import org.slf4j.LoggerFactory;
 public class ListenForPowerConfirmation extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenForPowerConfirmation.class);
-    private static final MessageTemplate messageTemplate = and(MatchPerformative(INFORM), MatchProtocol(SERVER_JOB_CFP_PROTOCOL));
 
+    private MessageTemplate messageTemplate;
     private ServerAgent myServerAgent;
 
     /**
@@ -33,7 +37,8 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
     @Override
     public void onStart() {
         super.onStart();
-        myServerAgent = (ServerAgent) myAgent;
+        this.myServerAgent = (ServerAgent) myAgent;
+        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL), MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
     }
 
     /**
@@ -46,11 +51,14 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
 
         if (Objects.nonNull(inform)) {
             try {
-                final String jobId = getMapper().readValue(inform.getContent(), String.class);
-                final Job job = myServerAgent.getJobById(jobId);
-                logger.info("[{}] Scheduling the execution of the job", myAgent.getName());
-                announceBookedJob(myServerAgent, jobId);
-                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, job));
+                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
+                final boolean informCNAStart = inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL) || jobInstanceId.getStartTime().isAfter(getCurrentTime());
+                if (informCNAStart) {
+                    announceBookedJob(myServerAgent, jobInstanceId.getJobId());
+                }
+                logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
+                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true));
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

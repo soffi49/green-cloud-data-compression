@@ -1,7 +1,9 @@
 package agents.client.behaviour;
 
-import static agents.client.ClientAgentConstants.*;
-import static common.TimeUtils.getCurrentTime;
+import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
+import static agents.client.ClientAgentConstants.MAX_RETRIES;
+import static agents.client.ClientAgentConstants.MAX_TRAFFIC_DIFFERENCE;
+import static agents.client.ClientAgentConstants.RETRY_PAUSE_MILLISECONDS;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
@@ -19,16 +21,13 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import java.util.List;
+import java.util.Vector;
+import java.util.function.Predicate;
 import messages.domain.CallForProposalMessageFactory;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Vector;
-import java.util.function.Predicate;
 
 /**
  * Behaviour responsible for sending and handling job's call for proposal
@@ -129,27 +128,6 @@ public class RequestJobExecution extends ContractNetInitiator {
             myClientAgent.setChosenCloudNetworkAgent(chosenOffer.getSender());
             acceptances.add(ReplyMessageFactory.prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
             rejectJobOffers(myClientAgent, pricedJob.getJobId(), chosenOffer, proposals);
-        }
-    }
-
-    /**
-     * Method that handles the information sent by Cloud Network Agent implying that the job execution has started.
-     *
-     * @param inform retrieved inform message
-     */
-    @Override
-    protected void handleInform(final ACLMessage inform) {
-        checkIfJobStartedOnTime();
-        ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
-    }
-
-    private void checkIfJobStartedOnTime() {
-        final OffsetDateTime endTime = getCurrentTime();
-        final long timeDifference = ChronoUnit.MILLIS.between(endTime, myClientAgent.getSimulatedJobStart());
-        if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
-            logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
-        } else {
-            logger.info("[{}] The execution of my job started with a delay equal to {}! :(", myAgent.getName(), timeDifference);
         }
     }
 
