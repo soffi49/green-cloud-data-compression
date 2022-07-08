@@ -1,14 +1,14 @@
 package agents.greenenergy.behaviour.powershortage.listener;
 
-import static common.GUIUtils.updateGreenSourceState;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.*;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
-import domain.job.PowerShortageJob;
+import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
+import domain.job.PowerShortageJob;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -50,10 +50,12 @@ public class ListenForPowerTransferCancellation extends CyclicBehaviour {
             try {
                 final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
                 final PowerJob jobToCancel = myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId().getJobId(), powerShortageJob.getPowerShortageStart());
-                if(Objects.nonNull(jobToCancel)) {
+                if (Objects.nonNull(jobToCancel)) {
                     logger.info("[{}] Cancelling the job with id {}", myGreenEnergyAgent.getLocalName(), jobToCancel.getJobId());
+                    if(myGreenEnergyAgent.getPowerJobs().get(jobToCancel).equals(JobStatusEnum.IN_PROGRESS)) {
+                        myGreenEnergyAgent.manage().incrementFinishedJobs(jobToCancel.getJobId());
+                    }
                     myGreenEnergyAgent.getPowerJobs().remove(jobToCancel);
-                    updateGreenSourceState(myGreenEnergyAgent);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

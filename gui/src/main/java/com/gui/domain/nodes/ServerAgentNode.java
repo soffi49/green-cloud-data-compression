@@ -96,7 +96,7 @@ public class ServerAgentNode extends AgentNode {
      */
     public void updateBackUpTraffic(final double backUpPowerInUse) {
         this.backUpTraffic.set(initialMaximumCapacity != 0 ? ((backUpPowerInUse / initialMaximumCapacity) * 100) : 0);
-        labelsMap.get(AgentNodeLabelEnum.BACK_UP_TRAFFIC).setText(formatToHTML(String.format("%.2f%%", backUpTraffic.get())));
+        labelsMap.get(AgentNodeLabelEnum.BACK_UP_TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", backUpTraffic.get())));
         updateGraphUI();
     }
 
@@ -144,7 +144,7 @@ public class ServerAgentNode extends AgentNode {
         labelsMap.put(AgentNodeLabelEnum.INITIAL_MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(initialMaximumCapacity)));
         labelsMap.put(AgentNodeLabelEnum.CURRENT_MAXIMUM_CAPACITY_LABEL, createListLabel(String.valueOf(currentMaximumCapacity)));
         labelsMap.put(AgentNodeLabelEnum.TRAFFIC_LABEL, createListLabel(String.format("%.2f%%", traffic.get())));
-        labelsMap.put(AgentNodeLabelEnum.BACK_UP_TRAFFIC, createListLabel(String.format("%.2f%%", backUpTraffic.get())));
+        labelsMap.put(AgentNodeLabelEnum.BACK_UP_TRAFFIC_LABEL, createListLabel(String.format("%.2f%%", backUpTraffic.get())));
         labelsMap.put(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL, createListLabel(String.valueOf(totalNumberOfClients)));
         labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL, createListLabel(String.valueOf(numberOfExecutedJobs)));
     }

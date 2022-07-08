@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,12 +30,12 @@ public class SchedulePowerShortage extends WakerBehaviour {
     /**
      * Behaviour constructor.
      *
-     * @param myAgent    agent executing the behaviour
-     * @param timeout    timeout after which the jobs should be halted
-     * @param jobsToHalt list of the jobs to be halted
+     * @param myAgent            agent executing the behaviour
+     * @param powerShortageStart time when the power shortage starts
+     * @param jobsToHalt         list of the jobs to be halted
      */
-    private SchedulePowerShortage(Agent myAgent, long timeout, List<PowerJob> jobsToHalt, int newMaximumCapacity) {
-        super(myAgent, timeout);
+    private SchedulePowerShortage(Agent myAgent, Date powerShortageStart, List<PowerJob> jobsToHalt, int newMaximumCapacity) {
+        super(myAgent, powerShortageStart);
         this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
         this.jobsToHalt = jobsToHalt;
         this.newMaximumCapacity = newMaximumCapacity;
@@ -49,9 +50,8 @@ public class SchedulePowerShortage extends WakerBehaviour {
      * @return behaviour scheduling the power shortage handling
      */
     public static SchedulePowerShortage createFor(final PowerShortageTransfer powerShortageTransfer, final int newMaximumCapacity, final GreenEnergyAgent greenEnergyAgent) {
-        final long timeDifference = ChronoUnit.MILLIS.between(getCurrentTime(), powerShortageTransfer.getStartTime());
-        final long timeOut = timeDifference < 0 ? 0 : timeDifference;
-        return new SchedulePowerShortage(greenEnergyAgent, timeOut, powerShortageTransfer.getJobList(), newMaximumCapacity);
+        final OffsetDateTime powerShortageTime = getCurrentTime().isAfter(powerShortageTransfer.getStartTime()) ? getCurrentTime() : powerShortageTransfer.getStartTime();
+        return new SchedulePowerShortage(greenEnergyAgent, Date.from(powerShortageTime.toInstant()), powerShortageTransfer.getJobList(), newMaximumCapacity);
     }
 
     /**
@@ -63,9 +63,8 @@ public class SchedulePowerShortage extends WakerBehaviour {
      * @return behaviour scheduling the power shortage handling
      */
     public static SchedulePowerShortage createFor(final OffsetDateTime powerShortageTime, final int newMaximumCapacity, final GreenEnergyAgent greenEnergyAgent) {
-        final long timeDifference = ChronoUnit.MILLIS.between(getCurrentTime(), powerShortageTime);
-        final long timeOut = timeDifference < 0 ? 0 : timeDifference;
-        return new SchedulePowerShortage(greenEnergyAgent, timeOut, Collections.emptyList(), newMaximumCapacity);
+        final OffsetDateTime shortageTime = getCurrentTime().isAfter(powerShortageTime) ? getCurrentTime() : powerShortageTime;
+        return new SchedulePowerShortage(greenEnergyAgent, Date.from(shortageTime.toInstant()), Collections.emptyList(), newMaximumCapacity);
     }
 
     /**
@@ -79,7 +78,6 @@ public class SchedulePowerShortage extends WakerBehaviour {
                 logger.info("[{}] Putting job {} on hold", myGreenEnergyAgent.getName(), jobToHalt.getJobId());
             }
         });
-        myGreenEnergyAgent.setMaximumCapacity(newMaximumCapacity);
-        ((GreenEnergyAgentNode) myGreenEnergyAgent.getAgentNode()).updateMaximumCapacity(newMaximumCapacity);
+        myGreenEnergyAgent.manage().updateMaximumCapacity(newMaximumCapacity);
     }
 }

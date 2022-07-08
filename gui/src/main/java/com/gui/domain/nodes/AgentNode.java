@@ -26,6 +26,7 @@ public abstract class AgentNode {
     protected JPanel informationPanel;
     protected Map<LabelEnum, JLabel> labelsMap;
     protected AbstractEvent event;
+    protected boolean isDuringEvent;
 
     /**
      * Class constructor
@@ -36,6 +37,7 @@ public abstract class AgentNode {
         this.name = name;
         this.edges = new ArrayList<>();
         this.event = null;
+        this.isDuringEvent = false;
     }
 
     /**
@@ -114,6 +116,21 @@ public abstract class AgentNode {
      */
     public synchronized void setEvent(AbstractEvent event) {
         this.event = event;
+    }
+
+    /**
+     * @return boolean flag of having an event
+     */
+    public boolean isDuringEvent() {
+        return isDuringEvent;
+    }
+
+    /**
+     * Setting flag indicating if node has some event going on
+     * @param duringEvent event flag
+     */
+    public void setDuringEvent(boolean duringEvent) {
+        isDuringEvent = duringEvent;
     }
 
     @Override

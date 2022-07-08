@@ -83,6 +83,11 @@ node.greenEnergyActive {
     stroke-color: #56a111;
 }
 
+node.greenEnergyOnHold {
+    fill-color: #ff5900;
+    stroke-color: #ec5400;
+}
+
 node.monitoring {
     size: 0.02%;
     fill-mode: plain;

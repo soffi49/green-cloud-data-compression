@@ -1,6 +1,5 @@
 package agents.greenenergy.behaviour.listener;
 
-import static common.GUIUtils.updateGreenSourceState;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -15,9 +14,6 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Behaviour which listens for the information that the execution of the given job finishes.
@@ -52,7 +48,7 @@ public class ListenForFinishedJobs extends CyclicBehaviour {
                 if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
                     logger.info("[{}] Finish the execution of the job with id {}", guid, jobInstanceId.getJobId());
                     myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId));
-                    updateGreenSourceState(myGreenEnergyAgent);
+                    myGreenEnergyAgent.manage().incrementFinishedJobs(jobInstanceId.getJobId());
                 }
             } catch (Exception e) {
                 e.printStackTrace();

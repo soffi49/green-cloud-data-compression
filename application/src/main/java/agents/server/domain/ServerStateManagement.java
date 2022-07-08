@@ -200,7 +200,7 @@ public class ServerStateManagement {
     /**
      * Method changes the server's maximum capacity
      *
-     * @param newMaximumCapacity new maximu capacity value
+     * @param newMaximumCapacity new maximum capacity value
      */
     public void updateMaximumCapacity(final int newMaximumCapacity) {
         serverAgent.setMaximumCapacity(newMaximumCapacity);

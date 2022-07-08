@@ -1,13 +1,11 @@
 package agents.greenenergy.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateGreenSourceState;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static messages.domain.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Behaviour responsible for verifying if the job was finished at the correct time.
@@ -52,7 +49,7 @@ public class FinishJobManually extends WakerBehaviour {
         if (Objects.nonNull(job) && JOB_IN_PROGRESS.contains(myGreenEnergyAgent.getPowerJobs().get(job))) {
             logger.error("[{}] The power delivery should be finished! Finishing power delivery by hand.", myAgent.getName());
             myGreenEnergyAgent.getPowerJobs().remove(job);
-            updateGreenSourceState(myGreenEnergyAgent);
+            myGreenEnergyAgent.manage().incrementFinishedJobs(job.getJobId());
             displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
             myAgent.send(prepareManualFinishMessageForServer(jobInstanceId, myGreenEnergyAgent.getOwnerServer()));
         }

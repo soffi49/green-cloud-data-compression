@@ -1,6 +1,7 @@
 package agents.greenenergy.domain;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
+import static common.TimeUtils.getCurrentTime;
 import static common.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
@@ -8,12 +9,11 @@ import static java.util.stream.Collectors.toMap;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.FinishJobManually;
+import com.gui.domain.nodes.GreenEnergyAgentNode;
+import com.gui.domain.nodes.ServerAgentNode;
 import common.mapper.JobMapper;
 import domain.MonitoringData;
-import domain.job.ImmutablePowerJob;
-import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
-import domain.job.PowerJob;
+import domain.job.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,40 +35,18 @@ import java.util.stream.Stream;
 public class GreenEnergyStateManagement {
 
     private static final Logger logger = LoggerFactory.getLogger(GreenEnergyStateManagement.class);
-
+    protected final AtomicInteger uniqueStartedJobs;
+    protected final AtomicInteger uniqueFinishedJobs;
+    protected final AtomicInteger startedJobsInstances;
+    protected final AtomicInteger finishedJobsInstances;
     private final GreenEnergyAgent greenEnergyAgent;
 
     public GreenEnergyStateManagement(GreenEnergyAgent greenEnergyAgent) {
         this.greenEnergyAgent = greenEnergyAgent;
-    }
-
-    /**
-     * Method calculates the power in use at the given moment for the green source
-     *
-     * @return current power in use
-     */
-    public int getCurrentPowerInUse() {
-        return greenEnergyAgent.getPowerJobs().entrySet().stream()
-                .filter(job -> job.getValue().equals(IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
-    }
-
-    /**
-     * Method retrieves if the given green source is currently active or idle
-     *
-     * @return green source state
-     */
-    public boolean getIsActiveState() {
-        return getCurrentPowerInUse() > 0;
-    }
-
-    /**
-     * Method retrieves the number of jobs that are executed by the green source
-     *
-     * @return jobs count
-     */
-    public int getJobCount() {
-        return greenEnergyAgent.getPowerJobs().keySet().stream().map(PowerJob::getJobId).collect(Collectors.toSet()).size();
+        this.uniqueStartedJobs = new AtomicInteger(0);
+        this.uniqueFinishedJobs = new AtomicInteger(0);
+        this.startedJobsInstances = new AtomicInteger(0);
+        this.finishedJobsInstances = new AtomicInteger(0);
     }
 
     /**
@@ -108,13 +87,55 @@ public class GreenEnergyStateManagement {
     /**
      * Method retrieves the job by the job id and end time from job map
      *
-     * @param jobId     job identifier
+     * @param jobId   job identifier
      * @param endTime job end time
      * @return job
      */
     public PowerJob getJobByIdAndEndDate(final String jobId, final OffsetDateTime endTime) {
         return greenEnergyAgent.getPowerJobs().keySet().stream()
                 .filter(job -> job.getJobId().equals(jobId) && job.getEndTime().isEqual(endTime)).findFirst().orElse(null);
+    }
+
+    /**
+     * Method increments the count of started jobs
+     *
+     * @param jobId unique job identifier
+     */
+    public void incrementStartedJobs(final String jobId) {
+        if (isJobUnique(jobId)) {
+            uniqueStartedJobs.getAndAdd(1);
+            logger.info("[{}] Started job {}. Number of unique started jobs is {}", greenEnergyAgent.getLocalName(), jobId, uniqueStartedJobs);
+        }
+        startedJobsInstances.getAndAdd(1);
+        logger.info("[{}] Started job instance {}. Number of started job instances is {}", greenEnergyAgent.getLocalName(), jobId, startedJobsInstances);
+        updateGreenSourceGUI();
+    }
+
+    /**
+     * Method increments the count of finished jobs
+     *
+     * @param jobId unique identifier of the job
+     */
+    public void incrementFinishedJobs(final String jobId) {
+        if (isJobUnique(jobId)) {
+            uniqueFinishedJobs.getAndAdd(1);
+            logger.info("[{}] Finished job {}. Number of unique finished jobs is {} out of {} started",
+                        greenEnergyAgent.getLocalName(), jobId, uniqueFinishedJobs, uniqueStartedJobs);
+        }
+        finishedJobsInstances.getAndAdd(1);
+        logger.info("[{}] Finished job instance {}. Number of finished job instances is {} out of {} started",
+                    greenEnergyAgent.getLocalName(), jobId, finishedJobsInstances, startedJobsInstances);
+        updateGreenSourceGUI();
+    }
+
+    /**
+     * Method changes the green source's maximum capacity
+     *
+     * @param newMaximumCapacity new maximum capacity value
+     */
+    public void updateMaximumCapacity(final int newMaximumCapacity) {
+        greenEnergyAgent.setMaximumCapacity(newMaximumCapacity);
+        ((GreenEnergyAgentNode) greenEnergyAgent.getAgentNode()).updateMaximumCapacity(greenEnergyAgent.getMaximumCapacity());
     }
 
     /**
@@ -143,8 +164,10 @@ public class GreenEnergyStateManagement {
             greenEnergyAgent.getPowerJobs().put(finishedPowerJob, currentJobStatus);
             final Date endDate = Date.from(onHoldJobInstance.getEndTime().plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
             greenEnergyAgent.addBehaviour(new FinishJobManually(greenEnergyAgent, endDate, JobMapper.mapToJobInstanceId(onHoldJobInstance)));
+            updateGreenSourceGUI();
         } else {
             greenEnergyAgent.getPowerJobs().replace(powerJob, JobStatusEnum.ON_HOLD);
+            updateGreenSourceGUI();
         }
     }
 
@@ -182,6 +205,10 @@ public class GreenEnergyStateManagement {
         return Optional.of(availablePower);
     }
 
+    private boolean isJobUnique(final String jobId) {
+        return greenEnergyAgent.getPowerJobs().keySet().stream().filter(job -> job.getJobId().equals(jobId)).toList().size() == 1;
+    }
+
     private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
         var start = powerJob.getStartTime().toInstant();
         var end = powerJob.getEndTime().toInstant();
@@ -205,6 +232,49 @@ public class GreenEnergyStateManagement {
                         .mapToDouble(a -> a)
                         .average()
                         .orElseGet(() -> 0.0)));
+    }
+
+    /**
+     * Method updates the information on the green source GUI
+     */
+    public void updateGreenSourceGUI() {
+        final GreenEnergyAgentNode serverAgentNode = (GreenEnergyAgentNode) greenEnergyAgent.getAgentNode();
+        serverAgentNode.updateMaximumCapacity(greenEnergyAgent.getMaximumCapacity());
+        serverAgentNode.updateJobsCount(getJobCount());
+        serverAgentNode.updateIsActive(getIsActiveState(), getHasJobsOnHold());
+        serverAgentNode.updateTraffic(getCurrentPowerInUseForGreenSource());
+        serverAgentNode.updateJobsOnHold(getOnHoldJobCount());
+    }
+
+    private int getCurrentPowerInUseForGreenSource() {
+        return greenEnergyAgent.getPowerJobs().entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS) &&
+                        isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .mapToInt(job -> job.getKey().getPower()).sum();
+    }
+
+    private int getOnHoldJobCount() {
+        return greenEnergyAgent.getPowerJobs().entrySet().stream()
+                .filter(job -> job.getValue().equals(JobStatusEnum.ON_HOLD) &&
+                        isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .toList().size();
+    }
+
+    private int getJobCount() {
+        return greenEnergyAgent.getPowerJobs().entrySet().stream()
+                .filter(job -> JOB_IN_PROGRESS.contains(job.getValue()) &&
+                        isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .map(Map.Entry::getKey)
+                .map(PowerJob::getJobId)
+                .collect(Collectors.toSet()).size();
+    }
+
+    private boolean getIsActiveState() {
+        return getCurrentPowerInUseForGreenSource() > 0 || getHasJobsOnHold();
+    }
+
+    private boolean getHasJobsOnHold() {
+        return getOnHoldJobCount() > 0;
     }
 
     private List<PowerJob> getUniquePowerJobsForTimeStamp(final OffsetDateTime startDate,

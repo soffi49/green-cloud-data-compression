@@ -1,8 +1,6 @@
 package agents.greenenergy.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
-
-import static common.GUIUtils.updateGreenSourceState;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -13,8 +11,8 @@ import static messages.domain.PowerShortageMessageFactory.prepareTransferCancell
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.PowerShortageJob;
 import domain.job.PowerJob;
+import domain.job.PowerShortageJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -68,10 +66,11 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
                 } else {
                     logger.info("[{}] Finishing job with id {} on power shortage", guid, jobId);
                     myGreenEnergyAgent.getPowerJobs().remove(powerJobBackUp);
-                    if(Objects.nonNull(powerJobGreen)) {
+                    myGreenEnergyAgent.manage().incrementFinishedJobs(powerJobBackUp.getJobId());
+                    if (Objects.nonNull(powerJobGreen)) {
                         myGreenEnergyAgent.getPowerJobs().remove(powerJobGreen);
+                        myGreenEnergyAgent.manage().incrementFinishedJobs(powerJobBackUp.getJobId());
                     }
-                    updateGreenSourceState(myGreenEnergyAgent);
                 }
             }
         } else {

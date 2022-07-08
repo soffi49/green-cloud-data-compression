@@ -32,19 +32,6 @@ public class GUIUtils {
     }
 
     /**
-     * Method updates the GUI with green source current state
-     *
-     * @param agent green energy agent updating the GUI
-     */
-    public static void updateGreenSourceState(final GreenEnergyAgent agent) {
-        final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) agent.getAgentNode();
-        greenEnergyAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
-        greenEnergyAgentNode.updateJobsCount(agent.manage().getJobCount());
-        greenEnergyAgentNode.updateIsActive(agent.manage().getIsActiveState());
-        greenEnergyAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
-    }
-
-    /**
      * Method updates the GUI to indicate that a new job is planned to be executed
      *
      * @param agent agent updating the GUI

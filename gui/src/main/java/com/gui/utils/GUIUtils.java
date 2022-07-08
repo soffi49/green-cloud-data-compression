@@ -290,12 +290,48 @@ public class GUIUtils {
      * @return JButton
      */
     public static JButton createButton(final String title, final ActionListener actionListener) {
-        final JButton jButton = new JButton(title);
+        final JButton jButton = new JButton();
         jButton.addActionListener(actionListener);
+        makeButtonEnabled(jButton, title);
+        return jButton;
+    }
+
+    /**
+     * Method styles the button as disabled
+     *
+     * @param jButton     button to style
+     * @param disableText text to be placed on the button
+     */
+    public static void makeButtonDisabled(final JButton jButton, final String disableText) {
+        jButton.setBorder(BorderFactory.createLineBorder(GRAY_COLOR));
+        jButton.setFont(SECOND_HEADER_FONT);
+        jButton.setBackground(GRAY_COLOR);
+        jButton.setForeground(LIGHT_GRAY_COLOR);
+        jButton.setText(disableText);
+        jButton.setUI(new BasicButtonUI() {
+            @Override
+            protected void paintButtonPressed(Graphics g, AbstractButton b) {
+                if (b.isContentAreaFilled()) {
+                    Dimension size = b.getSize();
+                    g.setColor(GRAY_COLOR);
+                    g.fillRect(0, 0, size.width, size.height);
+                }
+            }
+        });
+    }
+
+    /**
+     * Method styles the button as enabled
+     *
+     * @param jButton     button to style
+     * @param enabledText text to be placed on the button
+     */
+    public static void makeButtonEnabled(final JButton jButton, final String enabledText) {
         jButton.setBorder(BorderFactory.createLineBorder(DARK_GRAY_COLOR));
         jButton.setFont(SECOND_HEADER_FONT);
         jButton.setBackground(DARK_GRAY_COLOR);
         jButton.setForeground(LIGHT_GRAY_COLOR);
+        jButton.setText(enabledText);
         jButton.setUI(new BasicButtonUI() {
             @Override
             protected void paintButtonPressed(Graphics g, AbstractButton b) {
@@ -306,6 +342,5 @@ public class GUIUtils {
                 }
             }
         });
-        return jButton;
     }
 }
