@@ -4,6 +4,9 @@ import static com.gui.utils.domain.StyleConstants.*;
 
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+import org.graphstream.ui.spriteManager.Sprite;
+import org.graphstream.ui.spriteManager.SpriteManager;
 
 import java.util.List;
 
@@ -57,5 +60,20 @@ public class GraphUtils {
         final String dynamicEdgeStyle = isActive ? EDGE_ACTIVE_STYLE : EDGE_INACTIVE_STYLE;
         final String edgeName = String.join("_", agent1, agent2, "BI");
         edges.stream().filter(edge -> edge.getId().equals(edgeName)).forEach(edge -> edge.setAttribute("ui.class", dynamicEdgeStyle));
+    }
+
+    /**
+     * Method creates sprite for given node
+     *
+     * @param graph graph
+     * @param node  node for which the sprite is added
+     * @return created Sprite
+     */
+    public static Sprite createSpriteForNode(final Graph graph, final Node node) {
+        final SpriteManager spriteManager = new SpriteManager(graph);
+        final Sprite sprite = spriteManager.addSprite(String.join("_", node.getId(), "SPRITE"));
+        sprite.setAttribute("ui.class", SPRITE_DISABLED);
+        sprite.attachToNode(node.getId());
+        return sprite;
     }
 }

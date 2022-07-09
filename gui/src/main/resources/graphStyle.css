@@ -62,7 +62,7 @@ node.serverActive {
 }
 
 node.serverActiveBackUp {
-    stroke-color: #ff5900;
+    stroke-color: #f95300;
 }
 
 node.greenEnergy {
@@ -84,8 +84,8 @@ node.greenEnergyActive {
 }
 
 node.greenEnergyOnHold {
-    fill-color: #ff5900;
-    stroke-color: #ec5400;
+    fill-color: #ffffff;
+    stroke-color: #ff5900;
 }
 
 node.monitoring {
@@ -113,4 +113,24 @@ edge.messageFlow {
 
 edge.messageFlowHidden {
     visibility-mode: hidden;
+}
+
+/* Sprite styles */
+
+sprite.serverActiveBackUp {
+    size: 0.03%;
+    shape: box;
+    fill-mode: image-scaled;
+    fill-image: url('icons/warningIcon.png');
+}
+
+sprite.spriteDisabled {
+    visibility-mode: hidden;
+}
+
+sprite.greenEnergyOnHold {
+    size: 0.025%;
+    shape: box;
+    fill-mode: image-scaled;
+    fill-image: url('icons/pauseIcon.png');
 }

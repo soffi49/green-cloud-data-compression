@@ -8,8 +8,11 @@ import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
 import org.graphstream.graph.Graph;
+import org.graphstream.ui.spriteManager.Sprite;
+import org.graphstream.ui.spriteManager.SpriteManager;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,6 +32,7 @@ public class ServerAgentNode extends AgentNode {
     private final AtomicReference<Double> backUpTraffic;
     private final AtomicInteger totalNumberOfClients;
     private final AtomicInteger numberOfExecutedJobs;
+    private Sprite warningSprite;
 
     /**
      * Server node constructor
@@ -58,7 +62,7 @@ public class ServerAgentNode extends AgentNode {
     /**
      * Function updates the information if the given server is active and whether it has active backup
      *
-     * @param isActive information if the server is active
+     * @param isActive       information if the server is active
      * @param isActiveBackUp information if the server has active backup power support
      */
     public void updateIsActive(final boolean isActive, final boolean isActiveBackUp) {
@@ -126,6 +130,10 @@ public class ServerAgentNode extends AgentNode {
     @Override
     public void updateGraphUI() {
         final String dynamicNodeStyle = isActiveBackUp.get() ? SERVER_ACTIVE_BACK_UP_STYLE : (isActive.get() ? SERVER_ACTIVE_STYLE : SERVER_INACTIVE_STYLE);
+        if (Objects.nonNull(warningSprite)) {
+            final String dynamicSpriteStyle = isActiveBackUp.get() ? SERVER_ACTIVE_BACK_UP_STYLE : SPRITE_DISABLED;
+            warningSprite.setAttribute("ui.class", dynamicSpriteStyle);
+        }
         node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicNodeStyle)));
         updateActiveEdgeStyle(edges, isActive.get(), name, cloudNetworkAgent);
     }
@@ -135,6 +143,7 @@ public class ServerAgentNode extends AgentNode {
         addAgentBidirectionalEdgeToGraph(graph, edges, name, cloudNetworkAgent);
         greenEnergyAgents.forEach(greenEnergyName -> addAgentEdgeToGraph(graph, edges, name, greenEnergyName));
         addAgentEdgeToGraph(graph, edges, name, cloudNetworkAgent);
+        warningSprite = createSpriteForNode(graph, node);
     }
 
     @Override

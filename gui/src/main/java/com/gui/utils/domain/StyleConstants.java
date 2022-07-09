@@ -65,4 +65,5 @@ public class StyleConstants {
     public static final String SERVER_INACTIVE_STYLE = "serverInactive";
     public static final String SERVER_ACTIVE_STYLE = "serverActive";
     public static final String SERVER_ACTIVE_BACK_UP_STYLE = "serverActiveBackUp";
+    public static final String SPRITE_DISABLED = "spriteDisabled";
 }

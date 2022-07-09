@@ -8,8 +8,10 @@ import static com.gui.utils.domain.StyleConstants.*;
 import com.gui.domain.Location;
 import com.gui.domain.types.AgentNodeLabelEnum;
 import org.graphstream.graph.Graph;
+import org.graphstream.ui.spriteManager.Sprite;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,6 +31,7 @@ public class GreenEnergyAgentNode extends AgentNode {
     private final AtomicReference<Double> traffic;
     private final AtomicInteger jobsOnHold;
     private final AtomicInteger numberOfExecutedJobs;
+    private Sprite onHoldSprite;
 
     /**
      * Green energy source node constructor
@@ -116,6 +119,10 @@ public class GreenEnergyAgentNode extends AgentNode {
     public void updateGraphUI() {
         final String dynamicStyle = hasJobsOnHold.get()? GREEN_ENERGY_ON_HOLD_STYLE :
                 (isActive.get() ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE);
+        if(Objects.nonNull(onHoldSprite)) {
+            final String dynamicSpriteStyle = hasJobsOnHold.get() ? GREEN_ENERGY_ON_HOLD_STYLE : SPRITE_DISABLED;
+            onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
+        }
         node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicStyle)));
         updateActiveEdgeStyle(edges, isActive.get(), name, serverAgent);
     }
@@ -126,6 +133,7 @@ public class GreenEnergyAgentNode extends AgentNode {
         addAgentBidirectionalEdgeToGraph(graph, edges, name, monitoringAgent);
         addAgentEdgeToGraph(graph, edges, name, monitoringAgent);
         addAgentEdgeToGraph(graph, edges, name, serverAgent);
+        onHoldSprite = createSpriteForNode(graph, node);
     }
 
     @Override

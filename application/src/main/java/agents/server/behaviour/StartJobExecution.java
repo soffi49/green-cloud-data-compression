@@ -76,7 +76,7 @@ public class StartJobExecution extends WakerBehaviour {
     @Override
     protected void onWake() {
         final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToExecute.getJobId(), jobToExecute.getStartTime());
-        if (Objects.nonNull(job)) {
+        if (Objects.nonNull(job) && myServerAgent.getGreenSourceForJobMap().containsKey(job.getJobId())) {
             if (informCNAStart) {
                 logger.info("[{}] Start executing the job for {}", myAgent.getName(), job.getClientIdentifier());
             } else {
