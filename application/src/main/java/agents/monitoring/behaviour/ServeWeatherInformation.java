@@ -11,7 +11,6 @@ import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.monitoring.MonitoringAgent;
-import domain.GreenSourceForecastData;
 import domain.GreenSourceWeatherData;
 import domain.ImmutableMonitoringData;
 import domain.ImmutableWeatherData;
@@ -22,6 +21,7 @@ import jade.lang.acl.MessageTemplate;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,13 +60,28 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                 var requestData = getMapper()
                     .readValue(message.getContent(), GreenSourceWeatherData.class);
                 if(OFFLINE_MODE) {
-                    response.setContent(getMapper().writeValueAsString(
-                        useStubData())
-                    );
+                    // TODO remove Random - use GUI button
+                    if( new Random().nextInt(100) <= 3) {
+                        logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
+                        response.setContent(getMapper().writeValueAsString(
+                            useBadStubData())
+                        );
+                    } else {
+                        response.setContent(getMapper().writeValueAsString(
+                            useStubData())
+                        );
+                    }
                 } else {
-                    response.setContent(getMapper().writeValueAsString(
-                        useApi(requestData))
-                    );
+                    if( new Random().nextInt(100) <= 3) {
+                        logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
+                        response.setContent(getMapper().writeValueAsString(
+                            useBadStubData())
+                        );
+                    } else {
+                        response.setContent(getMapper().writeValueAsString(
+                            useApi(requestData))
+                        );
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -90,6 +105,17 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                 .cloudCover(25.0)
                 .temperature(25.0)
                 .windSpeed(10.0)
+                .time(Instant.now())
+                .build())
+            .build();
+    }
+
+    private MonitoringData useBadStubData() {
+        return ImmutableMonitoringData.builder()
+            .addWeatherData(ImmutableWeatherData.builder()
+                .cloudCover(50.0)
+                .temperature(10.0)
+                .windSpeed(5.0)
                 .time(Instant.now())
                 .build())
             .build();

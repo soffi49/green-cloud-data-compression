@@ -5,6 +5,7 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
+import static domain.job.JobStatusEnum.PROCESSING;
 import static java.util.stream.Collectors.toMap;
 import static mapper.JsonMapper.getMapper;
 
@@ -24,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -159,10 +161,14 @@ public class GreenEnergyStateManagement {
      * @return list of all start and end times
      */
     public List<Instant> getJobsTimetable(PowerJob candidateJob) {
+        var validJobs = greenEnergyAgent.getPowerJobs().entrySet().stream()
+            .filter(entry -> !entry.getValue().equals(PROCESSING))
+            .map(Entry::getKey)
+            .toList();
         return Stream.concat(Stream.of(candidateJob.getStartTime(), candidateJob.getEndTime()),
                              Stream.concat(
-                                     greenEnergyAgent.getPowerJobs().keySet().stream().map(PowerJob::getStartTime),
-                                     greenEnergyAgent.getPowerJobs().keySet().stream().map(PowerJob::getEndTime)))
+                                     validJobs.stream().map(PowerJob::getStartTime),
+                                     validJobs.stream().map(PowerJob::getEndTime)))
                 .map(OffsetDateTime::toInstant)
                 .distinct()
                 .toList();
@@ -183,6 +189,21 @@ public class GreenEnergyStateManagement {
         if (powerChart.values().stream().anyMatch(value -> value <= 0)) {
             return Optional.empty();
         }
+        return Optional.of(availablePower);
+    }
+
+    /**
+     * Computes average power available during computation of the job being checked before execution
+     *
+     * @param powerJob job being processed (not yet accepted!)
+     * @param weather  monitoring data with weather for requested timetable
+     * @return average available power as decimal or empty optional if power not available
+     */
+    public synchronized Optional<Double> getAverageAvailablePowerCheck(final PowerJob powerJob, final MonitoringData weather) {
+        var powerChart = getPowerChart(powerJob, weather);
+        var availablePower = powerChart.values().stream().mapToDouble(a -> a).average().getAsDouble();
+        logger.info("[{}] Calculated available {} average power {} between {} and {}", greenEnergyAgent.getName(), greenEnergyAgent.getEnergyType(),
+            String.format("%.2f", availablePower), powerJob.getStartTime(), powerJob.getEndTime());
         return Optional.of(availablePower);
     }
 

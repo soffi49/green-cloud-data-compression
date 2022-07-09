@@ -2,9 +2,11 @@ package agents.server.behaviour.powercheck;
 
 import static agents.server.domain.ServerAgentConstants.PREEMTIVE_POWER_CHECK_TIME_WINDOW;
 import static common.GUIUtils.displayMessageArrow;
+import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
 import static common.mapper.JobMapper.mapJobToPowerJob;
 import static common.mapper.JobMapper.mapPowerJobToCheckedPowerJob;
+import static java.util.Objects.isNull;
 import static messages.domain.PowerCheckMessageFactory.preparePowerCheckMessage;
 
 import agents.server.ServerAgent;
@@ -52,6 +54,10 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
                 ? getCurrentTime()
                 : jobInstanceId.getStartTime().minusSeconds(PREEMTIVE_POWER_CHECK_TIME_WINDOW);
         var jobToExecute = serverAgent.manage().getJobById(jobInstanceId.getJobId());
+        if(isNull(jobToExecute)) {
+            abortExecution(serverAgent, jobInstanceId.getJobId());
+            return null;
+        }
         return new CheckWeatherBeforeJobExecution(
             serverAgent,
             Date.from(startDate.toInstant()),
@@ -60,11 +66,25 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
 
     @Override
     protected void onWake() {
-        logger.info("[{}] Checking weather before the job execution with id {}", myAgent.getName(),
-            checkedPowerJob.getPowerJob().getJobId());
+        var jobId = checkedPowerJob.getPowerJob().getJobId();
+        logger.info("[{}] Checking weather before the job execution with id {}", myAgent.getName(), jobId);
         var greenSource = myServerAgent.getGreenSourceForJobMap().get(checkedPowerJob.getPowerJob().getJobId());
+        if(isNull(greenSource)) {
+            abortExecution(myServerAgent, jobId);
+            return;
+        }
         displayMessageArrow(myServerAgent, List.of(greenSource));
         myAgent.send(preparePowerCheckMessage(checkedPowerJob, greenSource.getName(), myServerAgent.getName()));
     }
 
+    private static void abortExecution(ServerAgent serverAgent, String jobId) {
+        updateServerState(serverAgent);
+        var job = serverAgent.manage().getJobById(jobId);
+        if(!isNull(job)) {
+            serverAgent.getServerJobs().remove(serverAgent.manage().getJobById(jobId));
+        }
+        serverAgent.getGreenSourceForJobMap().remove(jobId);
+        logger.error("[{}] Job with id {} must have been moved from the given server in the meantime, won't check weather.",
+            serverAgent.getName(), jobId);
+    }
 }

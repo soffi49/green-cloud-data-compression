@@ -76,7 +76,7 @@ public class GreenPower {
             return 0;
         }
 
-        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
+        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 0.1) * TEST_MULTIPLIER;
     }
 
     /**
