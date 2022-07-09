@@ -58,7 +58,7 @@ public class VolunteerForJob extends ProposeInitiator {
       myServerAgent
           .getServerJobs()
           .replace(
-              myServerAgent.manage().getJobById(jobInstanceId.getJobId()), JobStatusEnum.ACCEPTED);
+              myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
       myServerAgent.manage().updateClientNumber();
       displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
       myAgent.send(
