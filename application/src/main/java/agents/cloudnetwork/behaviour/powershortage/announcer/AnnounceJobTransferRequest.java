@@ -1,8 +1,7 @@
 package agents.cloudnetwork.behaviour.powershortage.announcer;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
+import static common.constant.MessageProtocolConstants.*;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.*;
 import static messages.domain.JobStatusMessageFactory.preparePowerShortageMessageForClient;
@@ -76,10 +75,14 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", guid);
+            myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
+                                                                        affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
         } else if (proposals.isEmpty()) {
-            logger.info("[{}] No Servers available - sending message to client that the job must be executed from backup power", guid);
+            logger.info("[{}] No Servers available - sending message to client and server that the job must be executed from backup power", guid);
             displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
             myCloudNetworkAgent.send(preparePowerShortageMessageForClient(job.getClientIdentifier()));
+            myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
+                                                                        affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
         } else {
             final List<ACLMessage> validProposals = retrieveValidMessages(proposals, ServerData.class);
             if (!validProposals.isEmpty()) {
@@ -114,6 +117,8 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
     private void handleInvalidResponses(final List<ACLMessage> proposals) {
         logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
         rejectJobOffers(myCloudNetworkAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+        myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
+                                                                    affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
     }
 
     private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {

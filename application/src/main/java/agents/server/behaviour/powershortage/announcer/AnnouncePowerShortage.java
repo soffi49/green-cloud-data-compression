@@ -61,14 +61,14 @@ public class AnnouncePowerShortage extends OneShotBehaviour {
         } else {
             logger.info("[{}] Sending power shortage information to cloud network", myServerAgent.getName());
             final List<Job> jobsToKeep = findJobsWithinPower(affectedJobs, recalculatedAvailablePower, Job.class);
-            final List<Job> jobsToTransfer = affectedJobs.stream().filter(job -> !jobsToKeep.contains(job)).toList();
+            final List<Job> jobsToDivide = affectedJobs.stream().filter(job -> !jobsToKeep.contains(job)).toList();
             final PowerShortageTransfer powerShortageTransfer = ImmutablePowerShortageTransfer.builder()
-                    .jobList(jobsToTransfer.stream().map(JobMapper::mapJobToPowerJob).toList())
+                    .jobList(jobsToDivide.stream().map(JobMapper::mapJobToPowerJob).toList())
                     .startTime(shortageStartTime)
                     .build();
-            createNewJobInstances(jobsToTransfer, shortageStartTime);
+            createNewJobInstances(jobsToDivide, shortageStartTime);
             displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
-            myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(jobsToTransfer, powerShortageTransfer.getStartTime(), myServerAgent, recalculatedAvailablePower));
+            myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(jobsToDivide, powerShortageTransfer.getStartTime(), myServerAgent, recalculatedAvailablePower));
             myServerAgent.send(preparePowerShortageInformation(powerShortageTransfer, myServerAgent.getOwnerCloudNetworkAgent()));
         }
     }

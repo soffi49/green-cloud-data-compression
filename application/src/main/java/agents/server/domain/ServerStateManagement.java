@@ -4,6 +4,7 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
+import static domain.job.JobStatusEnum.JOB_ON_BACK_UP;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
@@ -166,6 +167,16 @@ public class ServerStateManagement {
     }
 
     /**
+     * Method verifies if there is only 1 instance of the given job
+     *
+     * @param jobId unique job identifier
+     * @return boolean
+     */
+    public boolean isJobUnique(final String jobId) {
+        return serverAgent.getServerJobs().keySet().stream().filter(job -> job.getJobId().equals(jobId)).toList().size() == 1;
+    }
+
+    /**
      * Method increments the count of started jobs
      *
      * @param jobId unique job identifier
@@ -231,13 +242,13 @@ public class ServerStateManagement {
                     .build();
             final JobStatusEnum currentJobStatus = serverAgent.getServerJobs().get(job);
             serverAgent.getServerJobs().remove(job);
-            serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+            serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
             serverAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
             serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, JobMapper.mapToJobInstanceId(onBackupEnergyInstance), false, true));
             serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
             updateServerGUI();
         } else {
-            serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+            serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
             updateServerGUI();
         }
     }
@@ -247,6 +258,7 @@ public class ServerStateManagement {
         return serverAgent.getServerJobs().keySet().stream()
                 .filter(job -> job.getStartTime().isBefore(endDate) && job.getEndTime().isAfter(startDate))
                 .map(Job::getJobId)
+                .collect(Collectors.toSet()).stream()
                 .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
                 .values().stream().toList();
     }
@@ -284,10 +296,6 @@ public class ServerStateManagement {
         return serverAgent.getGreenSourceForJobMap().size();
     }
 
-    private boolean isJobUnique(final String jobId) {
-        return serverAgent.getServerJobs().keySet().stream().filter(job -> job.getJobId().equals(jobId)).toList().size() == 1;
-    }
-
     private int getCurrentPowerInUseForServer() {
         return serverAgent.getServerJobs().entrySet().stream()
                 .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS) &&
@@ -297,7 +305,7 @@ public class ServerStateManagement {
 
     private int getCurrentBackUpPowerInUseForServer() {
         return serverAgent.getServerJobs().entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY) &&
+                .filter(job -> JOB_ON_BACK_UP.contains(job.getValue()) &&
                         isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .mapToInt(job -> job.getKey().getPower()).sum();
     }

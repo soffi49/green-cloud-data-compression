@@ -39,6 +39,7 @@ public class MessageProtocolConstants {
     /**
      * Power shortage protocols
      * POWER_SHORTAGE_ALERT_PROTOCOL                - protocol used in messages informing the agent that the power shortage was detected
+     * POWER_SHORTAGE_TRANSFER_REFUSAL              - protocol used in messages informing that the power transfer was unsuccessful
      * POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL      - protocol used in messages informing the agent that the transfer of the job between green
      *                                                sources caused by the power shortage was established
      * POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL      - protocol used in messages informing the agent that the transfer of the job between servers
@@ -48,6 +49,7 @@ public class MessageProtocolConstants {
      * CANCELLED_TRANSFER_PROTOCOL                  - protocol informing that the job transfer should be cancelled
      */
     public static final String POWER_SHORTAGE_ALERT_PROTOCOL = "POWER_SHORTAGE_ALERT_PROTOCOL";
+    public static final String POWER_SHORTAGE_TRANSFER_REFUSAL = "POWER_SHORTAGE_TRANSFER_REFUSAL";
     public static final String POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL = "POWER_SHORTAGE_TRANSFER_PROTOCOL";
     public static final String POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL";
     public static final String POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL";

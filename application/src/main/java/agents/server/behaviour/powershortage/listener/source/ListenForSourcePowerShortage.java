@@ -63,7 +63,7 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
                     powerShortageTransfer.getJobList().forEach(job -> {
                         logger.info("[{}] Sending call for proposal to Green Source Agents to transfer job with id {}", myAgent.getName(), job.getJobId());
                         final OffsetDateTime startTime = job.getStartTime().isAfter(powerShortageTransfer.getStartTime())? job.getStartTime() : powerShortageTransfer.getStartTime();
-                        final PowerJob powerJob = JobMapper.mapPowerJobToPowerJob(job, startTime);
+                        final PowerJob powerJob = JobMapper.mapToPowerJob(job, startTime);
                         final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(powerJob, remainingGreenSources, SERVER_JOB_CFP_PROTOCOL);
                         displayMessageArrow(myServerAgent, remainingGreenSources);
                         myAgent.addBehaviour(new AnnouncePowerRequestTransfer(myAgent, cfp, powerJob, powerShortageTransfer));

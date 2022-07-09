@@ -5,7 +5,10 @@ import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROT
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.job.*;
+import domain.job.ImmutablePowerShortageJob;
+import domain.job.JobInstanceIdentifier;
+import domain.job.PowerShortageJob;
+import domain.job.PowerShortageTransfer;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
@@ -41,11 +44,36 @@ public class PowerShortageMessageFactory {
      * @param protocol      message protocol
      * @return inform ACLMessage
      */
-    public static ACLMessage prepareJobPowerShortageInformation(final JobInstanceIdentifier jobInstanceId, final OffsetDateTime shortageTime, final AID receiver, final String protocol) {
+    public static ACLMessage prepareJobPowerShortageInformation(final JobInstanceIdentifier jobInstanceId,
+                                                                final OffsetDateTime shortageTime,
+                                                                final AID receiver,
+                                                                final String protocol) {
         final ACLMessage message = new ACLMessage(ACLMessage.INFORM);
         final PowerShortageJob powerShortageJob = ImmutablePowerShortageJob.builder()
                 .jobInstanceId(jobInstanceId)
                 .powerShortageStart(shortageTime).build();
+        try {
+            message.setContent(getMapper().writeValueAsString(powerShortageJob));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        message.setProtocol(protocol);
+        message.addReceiver(receiver);
+        return message;
+    }
+
+    /**
+     * Method prepares the message passing the job affected by the power shortage with provided protocol
+     *
+     * @param powerShortageJob message content
+     * @param receiver         address of a receiver agent
+     * @param protocol         message protocol
+     * @return inform ACLMessage
+     */
+    public static ACLMessage prepareJobPowerShortageInformation(final PowerShortageJob powerShortageJob,
+                                                                final AID receiver,
+                                                                final String protocol) {
+        final ACLMessage message = new ACLMessage(ACLMessage.INFORM);
         try {
             message.setContent(getMapper().writeValueAsString(powerShortageJob));
         } catch (JsonProcessingException e) {

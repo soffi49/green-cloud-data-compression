@@ -4,13 +4,13 @@ import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerPowerShortage;
 import agents.greenenergy.behaviour.ReceivePowerRequest;
 import agents.greenenergy.behaviour.listener.ListenForFinishedJobs;
 import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
 import agents.greenenergy.behaviour.listener.ListenForStartedJobs;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForParentServerPowerShortage;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferCancellation;
+import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferRefusal;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForTransferConfirmation;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenEnergyStateManagement;
@@ -87,6 +87,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
         behaviours.add(new ListenForPowerTransferCancellation(this));
         behaviours.add(new ListenForTransferConfirmation(this));
         behaviours.add(new ListenForParentServerPowerShortage(this));
+        behaviours.add(new ListenForPowerTransferRefusal(this));
         return behaviours;
     }
 }

@@ -11,6 +11,7 @@ import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.listener.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
+import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferRefusal;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourceTransferConfirmation;
 import agents.server.domain.ServerStateManagement;
@@ -86,6 +87,7 @@ public class ServerAgent extends AbstractServerAgent {
         parallelBehaviour.addSubBehaviour(new ListenForServerEvent(this));
         parallelBehaviour.addSubBehaviour(new ListenForJobTransferCancellation(this));
         parallelBehaviour.addSubBehaviour(new ListenForJobStarStatusRequest());
+        parallelBehaviour.addSubBehaviour(new ListenForJobTransferRefusal(this));
         return Collections.singletonList(parallelBehaviour);
     }
 }

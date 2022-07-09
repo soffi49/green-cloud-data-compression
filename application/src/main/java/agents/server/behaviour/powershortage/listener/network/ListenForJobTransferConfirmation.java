@@ -1,6 +1,7 @@
 package agents.server.behaviour.powershortage.listener.network;
 
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.*;
@@ -57,7 +58,6 @@ public class ListenForJobTransferConfirmation extends CyclicBehaviour {
                 final String transferredJobId = powerShortageJob.getJobInstanceId().getJobId();
                 logger.info("[{}] Transfer of job with id {} was established successfully", guid, transferredJobId);
                 final Job jobOnBackUp = myServerAgent.manage().getJobByIdAndStartDate(transferredJobId, powerShortageJob.getJobInstanceId().getStartTime());
-                final Job jobOnGreen = myServerAgent.manage().getJobByIdAndEndDate(transferredJobId, powerShortageJob.getJobInstanceId().getStartTime());
                 final String jobId = jobOnBackUp.getJobId();
                 final boolean willJobFinishBeforeTransfer = jobOnBackUp.getEndTime().isBefore(powerShortageJob.getPowerShortageStart()) ||
                         jobOnBackUp.getEndTime().isEqual(powerShortageJob.getPowerShortageStart());
@@ -69,15 +69,16 @@ public class ListenForJobTransferConfirmation extends CyclicBehaviour {
                 } else {
                     logger.info("[{}] Finishing the job with id {} and informing the green source", guid, jobId);
                     final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(jobId));
-                    if (Objects.nonNull(jobOnGreen)) {
-                        informGreenSourceAboutJobFinish(jobOnGreen, receivers);
-                        myServerAgent.getServerJobs().remove(jobOnGreen);
-                        myServerAgent.manage().incrementFinishedJobs(jobOnGreen.getJobId());
-                    }
+                    final boolean isJobUnique = myServerAgent.manage().isJobUnique(jobId);
                     informGreenSourceAboutJobFinish(jobOnBackUp, receivers);
                     myServerAgent.getServerJobs().remove(jobOnBackUp);
-                    myServerAgent.getGreenSourceForJobMap().remove(jobId);
-                    myServerAgent.manage().incrementFinishedJobs(jobOnBackUp.getJobId());
+                    if(jobOnBackUp.getStartTime().isBefore(getCurrentTime())) {
+                        myServerAgent.manage().incrementFinishedJobs(jobOnBackUp.getJobId());
+                    }
+                    if (isJobUnique) {
+                        myServerAgent.getGreenSourceForJobMap().remove(jobId);
+                        myServerAgent.manage().updateServerGUI();
+                    }
                 }
             }
         } else {

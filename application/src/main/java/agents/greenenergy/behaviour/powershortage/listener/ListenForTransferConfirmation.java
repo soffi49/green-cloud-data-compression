@@ -1,6 +1,7 @@
 package agents.greenenergy.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -54,7 +55,6 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
             if (Objects.nonNull(powerShortageJob) && nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId()))) {
                 final String jobId = powerShortageJob.getJobInstanceId().getJobId();
                 logger.info("[{}] Transfer of job with id {} was established successfully", guid, jobId);
-                final PowerJob powerJobGreen = myGreenEnergyAgent.manage().getJobByIdAndEndDate(jobId, powerShortageJob.getJobInstanceId().getStartTime());
                 final PowerJob powerJobBackUp = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobId, powerShortageJob.getJobInstanceId().getStartTime());
                 final boolean willJobFinishBeforeTransfer = powerJobBackUp.getEndTime().isBefore(powerShortageJob.getPowerShortageStart()) ||
                         powerJobBackUp.getEndTime().isEqual(powerShortageJob.getPowerShortageStart());
@@ -66,9 +66,7 @@ public class ListenForTransferConfirmation extends CyclicBehaviour {
                 } else {
                     logger.info("[{}] Finishing job with id {} on power shortage", guid, jobId);
                     myGreenEnergyAgent.getPowerJobs().remove(powerJobBackUp);
-                    myGreenEnergyAgent.manage().incrementFinishedJobs(powerJobBackUp.getJobId());
-                    if (Objects.nonNull(powerJobGreen)) {
-                        myGreenEnergyAgent.getPowerJobs().remove(powerJobGreen);
+                    if (powerJobBackUp.getStartTime().isBefore(getCurrentTime())) {
                         myGreenEnergyAgent.manage().incrementFinishedJobs(powerJobBackUp.getJobId());
                     }
                 }

@@ -3,14 +3,13 @@ package agents.greenenergy.domain;
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
 import static common.TimeUtils.getCurrentTime;
 import static common.TimeUtils.isWithinTimeStamp;
-import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
+import static domain.job.JobStatusEnum.JOB_ON_HOLD;
 import static java.util.stream.Collectors.toMap;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.FinishJobManually;
 import com.gui.domain.nodes.GreenEnergyAgentNode;
-import com.gui.domain.nodes.ServerAgentNode;
 import common.mapper.JobMapper;
 import domain.MonitoringData;
 import domain.job.*;
@@ -160,13 +159,13 @@ public class GreenEnergyStateManagement {
                     .build();
             final JobStatusEnum currentJobStatus = greenEnergyAgent.getPowerJobs().get(powerJob);
             greenEnergyAgent.getPowerJobs().remove(powerJob);
-            greenEnergyAgent.getPowerJobs().put(onHoldJobInstance, JobStatusEnum.ON_HOLD);
+            greenEnergyAgent.getPowerJobs().put(onHoldJobInstance, JobStatusEnum.ON_HOLD_TEMPORARY);
             greenEnergyAgent.getPowerJobs().put(finishedPowerJob, currentJobStatus);
             final Date endDate = Date.from(onHoldJobInstance.getEndTime().plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
             greenEnergyAgent.addBehaviour(new FinishJobManually(greenEnergyAgent, endDate, JobMapper.mapToJobInstanceId(onHoldJobInstance)));
             updateGreenSourceGUI();
         } else {
-            greenEnergyAgent.getPowerJobs().replace(powerJob, JobStatusEnum.ON_HOLD);
+            greenEnergyAgent.getPowerJobs().replace(powerJob, JobStatusEnum.ON_HOLD_TEMPORARY);
             updateGreenSourceGUI();
         }
     }
@@ -255,7 +254,7 @@ public class GreenEnergyStateManagement {
 
     private int getOnHoldJobCount() {
         return greenEnergyAgent.getPowerJobs().entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.ON_HOLD) &&
+                .filter(job -> JOB_ON_HOLD.contains(job.getValue()) &&
                         isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .toList().size();
     }
@@ -282,6 +281,7 @@ public class GreenEnergyStateManagement {
         return greenEnergyAgent.getPowerJobs().keySet().stream()
                 .filter(job -> job.getStartTime().isBefore(endDate) && job.getEndTime().isAfter(startDate))
                 .map(PowerJob::getJobId)
+                .collect(Collectors.toSet()).stream()
                 .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
                 .values().stream().toList();
     }
