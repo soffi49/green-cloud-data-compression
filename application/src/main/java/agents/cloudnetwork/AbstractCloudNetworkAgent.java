@@ -5,10 +5,10 @@ import agents.cloudnetwork.domain.CloudNetworkStateManagement;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Abstract agent class storing the data regarding Cloud Network Agent
@@ -18,6 +18,8 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
     protected transient CloudNetworkStateManagement stateManagement;
     protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
+    protected Map<String, Integer> jobRequestRetries;
+    protected AtomicLong completedJobs;
     protected List<AID> ownedServers;
 
     AbstractCloudNetworkAgent() {
@@ -47,22 +49,24 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
         serverForJobMap = new HashMap<>();
         networkJobs = new HashMap<>();
+        jobRequestRetries = new HashMap<>();
+        completedJobs = new AtomicLong(0L);
     }
 
     public Map<String, AID> getServerForJobMap() {
         return serverForJobMap;
     }
 
-    public void setServerForJobMap(Map<String, AID> serverForJobMap) {
-        this.serverForJobMap = serverForJobMap;
-    }
-
     public Map<Job, JobStatusEnum> getNetworkJobs() {
         return networkJobs;
     }
 
-    public void setNetworkJobs(Map<Job, JobStatusEnum> networkJobs) {
-        this.networkJobs = networkJobs;
+    public Map<String, Integer> getJobRequestRetries() {
+        return jobRequestRetries;
+    }
+
+    public Long completedJob() {
+        return completedJobs.incrementAndGet();
     }
 
     public List<AID> getOwnedServers() {

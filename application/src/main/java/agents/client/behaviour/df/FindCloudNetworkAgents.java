@@ -8,10 +8,9 @@ import static yellowpages.YellowPagesService.search;
 import agents.client.ClientAgent;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * Behaviour responsible for finding cloud network agents for communication
@@ -40,7 +39,10 @@ public class FindCloudNetworkAgents extends OneShotBehaviour {
             logger.info("[{}] No Cloud Network Agents were found", myClientAgent.getName());
             myClientAgent.doDelete();
         }
-        announceNewClient(myClientAgent);
+        if(!myClientAgent.isAnnounced()) {
+            announceNewClient(myClientAgent);
+            myClientAgent.announce();
+        }
         getParent().getDataStore().put(CLOUD_NETWORK_AGENTS, cloudNetworkAgents);
     }
 }

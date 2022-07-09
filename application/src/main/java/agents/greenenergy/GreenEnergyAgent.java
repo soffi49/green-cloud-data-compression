@@ -19,13 +19,13 @@ import behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Agent representing the Green Energy Source Agent that produces the power for the Servers
@@ -79,15 +79,14 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
     }
 
     private List<Behaviour> behavioursRunAtStart() {
-        final List<Behaviour> behaviours = new ArrayList<>();
-        behaviours.add(new ReceivePowerRequest(this));
-        behaviours.add(new ListenForFinishedJobs(this));
-        behaviours.add(new ListenForStartedJobs(this));
-        behaviours.add(new ListenForGreenSourceEvent(this));
-        behaviours.add(new ListenForPowerTransferCancellation(this));
-        behaviours.add(new ListenForTransferConfirmation(this));
-        behaviours.add(new ListenForParentServerPowerShortage(this));
-        behaviours.add(new ListenForPowerTransferRefusal(this));
-        return behaviours;
+        return List.of(
+        new ReceivePowerRequest(this),
+        new ListenForFinishedJobs(this),
+        new ListenForStartedJobs(this),
+        new ListenForGreenSourceEvent(this),
+        new ListenForPowerTransferCancellation(this),
+        new ListenForTransferConfirmation(this),
+        new ListenForParentServerPowerShortage(this),
+        new ListenForPowerTransferRefusal(this));
     }
 }

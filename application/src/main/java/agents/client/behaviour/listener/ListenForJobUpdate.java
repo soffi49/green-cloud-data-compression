@@ -2,9 +2,15 @@ package agents.client.behaviour.listener;
 
 import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.*;
+import static common.constant.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
+import static jade.lang.acl.MessageTemplate.or;
 
 import agents.client.ClientAgent;
 import com.gui.domain.nodes.ClientAgentNode;
@@ -12,12 +18,11 @@ import com.gui.domain.types.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which handles the information that the job status is updated

@@ -10,12 +10,11 @@ import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 /**
  * Abstract agent class storing data of the Server Agent
@@ -25,17 +24,17 @@ public abstract class AbstractServerAgent extends AbstractAgent {
     protected transient ServerStateManagement stateManagement;
     protected double pricePerHour;
     protected int maximumCapacity;
-    protected transient ConcurrentMap<Job, JobStatusEnum> serverJobs;
-    protected transient ConcurrentMap<String, AID> greenSourceForJobMap;
+    protected Map<Job, JobStatusEnum> serverJobs;
+    protected Map<String, AID> greenSourceForJobMap;
     protected List<AID> ownedGreenSources;
     protected AID ownerCloudNetworkAgent;
 
     AbstractServerAgent() {
         super.setup();
 
-        serverJobs = new ConcurrentHashMap<>();
+        serverJobs = new HashMap<>();
         ownedGreenSources = new ArrayList<>();
-        greenSourceForJobMap = new ConcurrentHashMap<>();
+        greenSourceForJobMap = new HashMap<>();
     }
 
     /**
@@ -51,8 +50,8 @@ public abstract class AbstractServerAgent extends AbstractAgent {
      */
     AbstractServerAgent(double pricePerHour,
                         int maximumCapacity,
-                        ConcurrentMap<Job, JobStatusEnum> serverJobs,
-                        ConcurrentMap<String, AID> greenSourceForJobMap,
+                        Map<Job, JobStatusEnum> serverJobs,
+                        Map<String, AID> greenSourceForJobMap,
                         List<AID> ownedGreenSources,
                         AID ownerCloudNetworkAgent) {
         this.pricePerHour = pricePerHour;
@@ -105,11 +104,11 @@ public abstract class AbstractServerAgent extends AbstractAgent {
         this.pricePerHour = pricePerHour;
     }
 
-    public ConcurrentMap<Job, JobStatusEnum> getServerJobs() {
+    public Map<Job, JobStatusEnum> getServerJobs() {
         return serverJobs;
     }
 
-    public void setServerJobs(ConcurrentHashMap<Job, JobStatusEnum> serverJobs) {
+    public void setServerJobs(Map<Job, JobStatusEnum> serverJobs) {
         this.serverJobs = serverJobs;
     }
 
@@ -121,11 +120,11 @@ public abstract class AbstractServerAgent extends AbstractAgent {
         this.ownedGreenSources = ownedGreenSources;
     }
 
-    public ConcurrentMap<String, AID> getGreenSourceForJobMap() {
+    public Map<String, AID> getGreenSourceForJobMap() {
         return greenSourceForJobMap;
     }
 
-    public void setGreenSourceForJobMap(ConcurrentHashMap<String, AID> greenSourceForJobMap) {
+    public void setGreenSourceForJobMap(Map<String, AID> greenSourceForJobMap) {
         this.greenSourceForJobMap = greenSourceForJobMap;
     }
 

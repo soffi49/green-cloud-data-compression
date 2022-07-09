@@ -25,7 +25,7 @@ public class GreenPower {
 
     private static final Logger logger = LoggerFactory.getLogger(GreenPower.class);
     //TODO set the next value to 0 to get real weather (multiplier is for testing purposes)
-    private static final int TEST_MULTIPLIER = 50;
+    private static final int TEST_MULTIPLIER = 5;
 
     private GreenEnergyAgent greenEnergyAgent;
     private int maximumCapacity;

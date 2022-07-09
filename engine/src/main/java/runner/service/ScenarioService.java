@@ -32,7 +32,9 @@ import java.util.stream.IntStream;
 public class ScenarioService {
 
     private static final XmlMapper XML_MAPPER = new XmlMapper();
-    final List<AgentController> agentsToRun = new ArrayList<>();
+    private static final List<AgentController> AGENTS_TO_RUN = new ArrayList<>();
+    private static final Random RANDOM = new Random();
+
     private final AgentControllerFactory factory;
     private final GUIControllerImpl guiController;
 
@@ -66,7 +68,7 @@ public class ScenarioService {
             guiController.createEdges();
             // next line is added on purpose! It waits for the graph to fully initialize
             TimeUnit.SECONDS.sleep(7);
-            for (AgentController agentController : agentsToRun) {
+            for (AgentController agentController : AGENTS_TO_RUN) {
                 agentController.start();
                 agentController.activate();
                 TimeUnit.MILLISECONDS.sleep(100);
@@ -87,7 +89,7 @@ public class ScenarioService {
                 guiController.addAgentNodeToGraph(agentNode);
                 agentController.putO2AObject(guiController, AgentController.ASYNC);
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
-                agentsToRun.add(agentController);
+                AGENTS_TO_RUN.add(agentController);
             } catch (StaleProxyException e) {
                 e.printStackTrace();
             }
@@ -96,10 +98,9 @@ public class ScenarioService {
 
     private void createClientAgents(final int agentsNumber, final ScenarioArgs scenario) {
         IntStream.rangeClosed(1, agentsNumber).forEach(idx -> {
-            final Random random = new Random();
-            final int randomPower = MIN_JOB_POWER + random.nextInt(MAX_JOB_POWER);
-            final int randomStart = START_TIME_MIN + random.nextInt(START_TIME_MAX);
-            final int randomEnd = randomStart + 1 + random.nextInt(END_TIME_MAX);
+            final int randomPower = MIN_JOB_POWER + RANDOM.nextInt(MAX_JOB_POWER);
+            final int randomStart = START_TIME_MIN + RANDOM.nextInt(START_TIME_MAX);
+            final int randomEnd = randomStart + 1 + RANDOM.nextInt(END_TIME_MAX);
             final ClientAgentArgs clientAgentArgs =
                     ImmutableClientAgentArgs.builder()
                             .name(String.format("Client%d", idx))

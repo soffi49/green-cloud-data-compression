@@ -14,12 +14,11 @@ import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
+import java.time.OffsetDateTime;
+import java.util.Date;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.OffsetDateTime;
-import java.util.Date;
 
 /**
  * Behaviour responsible for sending proposal with job execution offer to the client

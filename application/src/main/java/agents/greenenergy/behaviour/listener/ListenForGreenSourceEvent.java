@@ -5,7 +5,6 @@ import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerS
 import com.gui.domain.event.AbstractEvent;
 import com.gui.domain.event.PowerShortageEvent;
 import jade.core.behaviours.TickerBehaviour;
-
 import java.util.Objects;
 
 /**

@@ -4,8 +4,8 @@ import static common.constant.DFServiceConstants.CNA_SERVICE_NAME;
 import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.cloudnetwork.behaviour.df.FindServerAgents;
 import agents.cloudnetwork.behaviour.ReceiveJobRequests;
+import agents.cloudnetwork.behaviour.df.FindServerAgents;
 import agents.cloudnetwork.behaviour.jobstatus.ReturnCompletedJob;
 import agents.cloudnetwork.behaviour.jobstatus.ReturnStartedJob;
 import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerPowerShortage;
@@ -14,7 +14,6 @@ import behaviours.ReceiveGUIController;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
-
 import java.util.Collections;
 import java.util.List;
 

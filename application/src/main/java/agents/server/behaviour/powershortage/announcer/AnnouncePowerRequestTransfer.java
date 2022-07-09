@@ -2,12 +2,12 @@ package agents.server.behaviour.powershortage.announcer;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL;
-import static mapper.JsonMapper.getMapper;
-import static messages.MessagingUtils.*;
+import static messages.MessagingUtils.rejectJobOffers;
+import static messages.MessagingUtils.retrieveProposals;
+import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
 
 import agents.server.ServerAgent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
@@ -16,12 +16,11 @@ import domain.job.PowerShortageTransfer;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import java.util.List;
+import java.util.Vector;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Vector;
 
 /**
  * Behaviours responsible for sending the transfer call for proposal to remaining green sources and choosing the one which

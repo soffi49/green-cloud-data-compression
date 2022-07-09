@@ -2,7 +2,9 @@ package agents.greenenergy.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.PROPOSE;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchConversationId;
+import static jade.lang.acl.MessageTemplate.MatchSender;
+import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.ReplyMessageFactory.prepareReply;
@@ -16,11 +18,10 @@ import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Optional;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 /**
  * Behaviour which is responsible for listening for the Monitoring Agent's response with weather data.

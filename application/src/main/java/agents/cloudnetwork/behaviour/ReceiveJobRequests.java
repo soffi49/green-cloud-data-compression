@@ -4,7 +4,9 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
-import static jade.lang.acl.MessageTemplate.*;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.cloudnetwork.CloudNetworkAgent;
@@ -13,11 +15,10 @@ import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import java.util.Objects;
 import messages.domain.CallForProposalMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Behaviour which is responsible for handling upcoming call for proposals from clients
@@ -48,14 +49,23 @@ public class ReceiveJobRequests extends CyclicBehaviour {
 
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending call for proposal to Server Agents", myAgent.getName());
-
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
+                final String jobId = job.getJobId();
+                if(myCloudNetworkAgent.getJobRequestRetries().containsKey(jobId)) {
+                    logger.info("[{}] Sending call for proposal to Server Agents for a job request with jobId {}, {} retry.",
+                        myAgent.getName(), jobId, myCloudNetworkAgent.getJobRequestRetries().get(jobId));
+                }
+                else {
+                    myCloudNetworkAgent.getJobRequestRetries().put(jobId, 0);
+                    logger.info("[{}] Sending call for proposal to Server Agents for a job request with jobId {}!",
+                        myAgent.getName(), jobId);
+                }
+
                 final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, myCloudNetworkAgent.getOwnedServers(), CNA_JOB_CFP_PROTOCOL);
 
                 displayMessageArrow(myCloudNetworkAgent, myCloudNetworkAgent.getOwnedServers());
                 myCloudNetworkAgent.getNetworkJobs().put(job, JobStatusEnum.PROCESSING);
-                myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, message.createReply()));
+                myAgent.addBehaviour(new AnnounceNewJobRequest(myAgent, cfp, message, jobId));
             } catch (Exception e) {
                 e.printStackTrace();
             }

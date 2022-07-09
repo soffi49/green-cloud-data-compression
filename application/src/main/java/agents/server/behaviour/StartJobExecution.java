@@ -12,14 +12,13 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StartJobExecution extends WakerBehaviour {
 
@@ -50,9 +49,9 @@ public class StartJobExecution extends WakerBehaviour {
     }
 
     /**
-     * Method which is responsible for creating the behaviour. It calculates the time after which
-     * the job execution will start. For testing purposes 1h = 2s. If the provided time is later than
-     * the current time then the job execution will start immediately
+     * Method which is responsible for creating the behaviour. It calculates the time after which the job execution will
+     * start. For testing purposes 1h = 2s. If the provided time is later than the current time then the job execution
+     * will start immediately
      *
      * @param serverAgent     agent that will execute the behaviour
      * @param jobId           identifier of the job that is to be executed
@@ -69,9 +68,9 @@ public class StartJobExecution extends WakerBehaviour {
     }
 
     /**
-     * Method starts the execution of the job. It updates the server state, then sends the information that the execution has started to the
-     * Green Source Agent and the Cloud Network. Finally, it starts the behaviour responsible for informing about job
-     * execution finish.
+     * Method starts the execution of the job. It updates the server state, then sends the information that the
+     * execution has started to the Green Source Agent and the Cloud Network. Finally, it starts the behaviour
+     * responsible for informing about job execution finish.
      */
     @Override
     protected void onWake() {

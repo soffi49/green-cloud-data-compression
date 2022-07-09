@@ -8,14 +8,13 @@ import domain.job.PowerJob;
 import domain.job.PowerShortageTransfer;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour schedules when the green source should update its internal state due to the power shortage

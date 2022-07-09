@@ -10,11 +10,9 @@ import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
-
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
@@ -36,7 +34,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
     protected transient GreenEnergyStateManagement stateManagement;
     protected transient Location location;
     protected double pricePerPowerUnit;
-    protected transient ConcurrentMap<PowerJob, JobStatusEnum> powerJobs;
+    protected transient Map<PowerJob, JobStatusEnum> powerJobs;
     protected AID monitoringAgent;
     protected AID ownerServer;
     protected EnergyTypeEnum energyType;

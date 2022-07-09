@@ -19,49 +19,64 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 /**
- * Behaviour is responsible for listening for the power transfer cancellation request coming from the server agent
+ * Behaviour is responsible for listening for the power transfer cancellation request coming from
+ * the server agent
  */
 public class ListenForPowerTransferCancellation extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForPowerTransferCancellation.class);
-    private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST), MatchProtocol(CANCELLED_TRANSFER_PROTOCOL));
+  private static final Logger logger =
+      LoggerFactory.getLogger(ListenForPowerTransferCancellation.class);
+  private static final MessageTemplate messageTemplate =
+      and(MatchPerformative(REQUEST), MatchProtocol(CANCELLED_TRANSFER_PROTOCOL));
 
-    private final GreenEnergyAgent myGreenEnergyAgent;
+  private final GreenEnergyAgent myGreenEnergyAgent;
 
-    /**
-     * Behaviour constructor
-     *
-     * @param myAgent agent executing the behaviour
-     */
-    public ListenForPowerTransferCancellation(final Agent myAgent) {
-        super(myAgent);
-        this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
-    }
+  /**
+   * Behaviour constructor
+   *
+   * @param myAgent agent executing the behaviour
+   */
+  public ListenForPowerTransferCancellation(final Agent myAgent) {
+    super(myAgent);
+    this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
+  }
 
-    /**
-     * Method listens for the message coming from the Server requesting the transfer cancellation. It looks for the job to be cancelled and
-     * cancels its execution
-     */
-    @Override
-    public void action() {
-        final ACLMessage inform = myAgent.receive(messageTemplate);
+  /**
+   * Method listens for the message coming from the Server requesting the transfer cancellation. It
+   * looks for the job to be cancelled and cancels its execution
+   */
+  @Override
+  public void action() {
+    final ACLMessage inform = myAgent.receive(messageTemplate);
 
-        if (Objects.nonNull(inform)) {
-            try {
-                final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
-                final PowerJob jobToCancel = myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId().getJobId(), powerShortageJob.getPowerShortageStart());
-                if (Objects.nonNull(jobToCancel)) {
-                    logger.info("[{}] Cancelling the job with id {}", myGreenEnergyAgent.getLocalName(), jobToCancel.getJobId());
-                    if(myGreenEnergyAgent.getPowerJobs().get(jobToCancel).equals(JobStatusEnum.IN_PROGRESS)) {
-                        myGreenEnergyAgent.manage().incrementFinishedJobs(jobToCancel.getJobId());
-                    }
-                    myGreenEnergyAgent.getPowerJobs().remove(jobToCancel);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            block();
+    if (Objects.nonNull(inform)) {
+      try {
+        final PowerShortageJob powerShortageJob =
+            getMapper().readValue(inform.getContent(), PowerShortageJob.class);
+        final PowerJob jobToCancel =
+            myGreenEnergyAgent
+                .manage()
+                .getJobByIdAndStartDate(
+                    powerShortageJob.getJobInstanceId().getJobId(),
+                    powerShortageJob.getPowerShortageStart());
+        if (Objects.nonNull(jobToCancel)) {
+          logger.info(
+              "[{}] Cancelling the job with id {}",
+              myGreenEnergyAgent.getLocalName(),
+              jobToCancel.getJobId());
+          if (myGreenEnergyAgent
+              .getPowerJobs()
+              .get(jobToCancel)
+              .equals(JobStatusEnum.IN_PROGRESS)) {
+            myGreenEnergyAgent.manage().incrementFinishedJobs(jobToCancel.getJobId());
+          }
+          myGreenEnergyAgent.getPowerJobs().remove(jobToCancel);
         }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    } else {
+      block();
     }
+  }
 }

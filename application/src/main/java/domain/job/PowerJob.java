@@ -37,7 +37,7 @@ public interface PowerJob {
      */
     int getPower();
 
-    default boolean isExecutedAtTime(Instant timestamp) {
+     default boolean isExecutedAtTime(Instant timestamp) {
         return isWithinTimeStamp(getStartTime().toInstant(), getEndTime().toInstant(), timestamp);
     }
 }

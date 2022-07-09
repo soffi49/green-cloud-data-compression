@@ -15,11 +15,10 @@ import domain.job.JobStatusEnum;
 import domain.job.PowerShortageTransfer;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour sends the information to the cloud network that there is some power shortage and the

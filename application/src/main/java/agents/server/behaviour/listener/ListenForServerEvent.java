@@ -1,13 +1,10 @@
 package agents.server.behaviour.listener;
 
-import agents.greenenergy.GreenEnergyAgent;
-import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.announcer.AnnouncePowerShortage;
 import com.gui.domain.event.AbstractEvent;
 import com.gui.domain.event.PowerShortageEvent;
 import jade.core.behaviours.TickerBehaviour;
-
 import java.util.Objects;
 
 /**
