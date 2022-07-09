@@ -10,6 +10,7 @@ import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareStartMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;

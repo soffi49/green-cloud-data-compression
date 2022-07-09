@@ -61,7 +61,8 @@ public class ReceiveJobRequests extends CyclicBehaviour {
                         myAgent.getName(), jobId);
                 }
 
-                final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(job, myCloudNetworkAgent.getOwnedServers(), CNA_JOB_CFP_PROTOCOL);
+                final ACLMessage cfp = CallForProposalMessageFactory
+                    .createCallForProposal(job, myCloudNetworkAgent.getOwnedServers(), CNA_JOB_CFP_PROTOCOL);
 
                 displayMessageArrow(myCloudNetworkAgent, myCloudNetworkAgent.getOwnedServers());
                 myCloudNetworkAgent.getNetworkJobs().put(job, JobStatusEnum.PROCESSING);

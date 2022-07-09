@@ -37,14 +37,16 @@ public class ScheduleRetry extends WakerBehaviour {
     }
 
     private SequentialBehaviour prepareStartingBehaviour(final Job job) {
+        prepareSimulatedTimes(job.getStartTime().plus(Duration.of(JOB_RETRY_MINUTES_ADJUSTMENT, ChronoUnit.MINUTES)),
+            job.getEndTime().plus(Duration.of(JOB_RETRY_MINUTES_ADJUSTMENT, ChronoUnit.MINUTES)));
+
         var jobForRetry = ImmutableJob.builder()
             .jobId(job.getJobId())
-            .startTime(job.getStartTime().plus(Duration.of(JOB_RETRY_MINUTES_ADJUSTMENT, ChronoUnit.MINUTES)))
-            .endTime(job.getEndTime().plus(Duration.of(JOB_RETRY_MINUTES_ADJUSTMENT, ChronoUnit.MINUTES)))
+            .startTime(myClientAgent.getSimulatedJobStart())
+            .endTime(myClientAgent.getSimulatedJobEnd())
             .power(job.getPower())
             .clientIdentifier(job.getClientIdentifier())
             .build();
-        prepareSimulatedTimes(jobForRetry.getStartTime(), jobForRetry.getEndTime());
         var startingBehaviour = new SequentialBehaviour(myAgent);
         startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
         startingBehaviour.addSubBehaviour(new RequestJobExecution(myAgent, null, jobForRetry));
