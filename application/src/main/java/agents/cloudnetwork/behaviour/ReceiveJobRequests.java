@@ -52,6 +52,10 @@ public class ReceiveJobRequests extends CyclicBehaviour {
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
                 final String jobId = job.getJobId();
                 if(myCloudNetworkAgent.getJobRequestRetries().containsKey(jobId)) {
+                    myCloudNetworkAgent.getNetworkJobs().keySet().stream()
+                            .filter(j -> j.getJobId().equals(jobId))
+                            .findFirst()
+                            .ifPresent(myCloudNetworkAgent.getNetworkJobs()::remove);
                     logger.info("[{}] Sending call for proposal to Server Agents for a job request with jobId {}, {} retry.",
                         myAgent.getName(), jobId, myCloudNetworkAgent.getJobRequestRetries().get(jobId));
                 }
