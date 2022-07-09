@@ -17,14 +17,14 @@ import java.time.temporal.ChronoUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ScheduleRetry extends WakerBehaviour {
+public class ScheduleJobRequestRetry extends WakerBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScheduleRetry.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScheduleJobRequestRetry.class);
 
     private final ClientAgent myClientAgent;
     private final Job job;
 
-    public ScheduleRetry(Agent agent, long timeout, Job job) {
+    public ScheduleJobRequestRetry(Agent agent, long timeout, Job job) {
         super(agent, timeout);
         this.job = job;
         this.myClientAgent = (ClientAgent) agent;

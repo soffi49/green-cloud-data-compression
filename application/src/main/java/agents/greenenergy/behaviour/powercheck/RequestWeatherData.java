@@ -1,40 +1,30 @@
-package agents.greenenergy.behaviour;
+package agents.greenenergy.behaviour.powercheck;
 
-import static common.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import domain.ImmutableGreenSourceRequestData;
-import domain.job.PowerJob;
+import domain.ImmutableGreenSourceWeatherData;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour responsible for requesting weather data from monitoring agent
  */
 public class RequestWeatherData extends OneShotBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestWeatherData.class);
-
     private final GreenEnergyAgent myGreenEnergyAgent;
-
-    private final String conversationId;
-    private final PowerJob powerJob;
+    private final ACLMessage message;
 
     /**
      * Behaviour constructor.
      *
      * @param greenEnergyAgent agent which is executing the behaviour
-     * @param conversationId   conversation identifier for given job processing
-     * @param job              power job for which the weather is requested
+     * @param message          request message that was sent to green energy agent
      */
-    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, String conversationId, PowerJob job) {
+    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, ACLMessage message) {
         myGreenEnergyAgent = greenEnergyAgent;
-        this.conversationId = conversationId;
-        this.powerJob = job;
+        this.message = message;
     }
 
     /**
@@ -44,17 +34,16 @@ public class RequestWeatherData extends OneShotBehaviour {
     public void action() {
         ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
         request.addReceiver(myGreenEnergyAgent.getMonitoringAgent());
-        request.setConversationId(conversationId);
-        var requestData = ImmutableGreenSourceRequestData.builder()
-                .location(myGreenEnergyAgent.getLocation())
-                .timetable(myGreenEnergyAgent.manage().getJobsTimetable(powerJob))
-                .build();
+        request.setConversationId(message.getConversationId());
+        request.setProtocol(message.getProtocol());
+        var requestData = ImmutableGreenSourceWeatherData.builder()
+            .location(myGreenEnergyAgent.getLocation())
+            .build();
         try {
             request.setContent(getMapper().writeValueAsString(requestData));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getMonitoringAgent());
         myAgent.send(request);
     }
 }

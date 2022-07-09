@@ -10,6 +10,7 @@ import agents.server.behaviour.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.ReceiveJobRequest;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
+import agents.server.behaviour.listener.ListenForWeather;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
@@ -82,7 +83,8 @@ public class ServerAgent extends AbstractServerAgent {
             new ListenForSourcePowerShortage(),
             new ListenForSourceTransferConfirmation(),
             new ListenForServerEvent(this),
-            new ListenForJobTransferCancellation(this)
+            new ListenForJobTransferCancellation(this),
+            new ListenForWeather(this)
         );
     }
 }

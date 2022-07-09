@@ -74,7 +74,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             } else {
                 myCloudNetworkAgent.getJobRequestRetries().put(jobId, ++retries);
                 logger.info("[{}] No Servers available - schedule {} retry to process the message", guid, retries);
-                myAgent.addBehaviour(new ScheduleRetry(myCloudNetworkAgent, RETRY_PAUSE_MILLISECONDS, originalMessage,
+                myAgent.addBehaviour(new ScheduleReceiveJobRequestRetry(myCloudNetworkAgent, RETRY_PAUSE_MILLISECONDS, originalMessage,
                     jobId));
             }
         } else {

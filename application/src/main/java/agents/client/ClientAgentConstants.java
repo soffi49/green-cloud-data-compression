@@ -14,6 +14,6 @@ public class ClientAgentConstants {
     public static final ValueRange MAX_TIME_DIFFERENCE = ValueRange.of(-500, 500);
     public static final String CLOUD_NETWORK_AGENTS = "CLOUD_NETWORK_AGENTS_LIST";
     public static final Integer MAX_RETRIES = 10;
-    public static final Long RETRY_PAUSE_MILLISECONDS = 1000L;
-    public static final Integer JOB_RETRY_MINUTES_ADJUSTMENT = 90;
+    public static final Long RETRY_PAUSE_MILLISECONDS = 2000L;
+    public static final Integer JOB_RETRY_MINUTES_ADJUSTMENT = 120;
 }

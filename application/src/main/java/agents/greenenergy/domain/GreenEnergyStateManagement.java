@@ -1,19 +1,23 @@
 package agents.greenenergy.domain;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
+import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static java.util.stream.Collectors.toMap;
+import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.FinishJobManually;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import common.mapper.JobMapper;
 import domain.MonitoringData;
 import domain.job.ImmutablePowerJob;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
+import jade.lang.acl.ACLMessage;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -24,6 +28,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,5 +218,24 @@ public class GreenEnergyStateManagement {
                 .map(PowerJob::getJobId)
                 .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
                 .values().stream().toList();
+    }
+
+
+    public void handleRefuse(final ACLMessage message, final PowerJob powerJob) {
+        logger.info("[{}] Weather data not available, sending refuse message to server.", greenEnergyAgent.getName());
+        greenEnergyAgent.getPowerJobs().remove(powerJob);
+        displayMessageArrow(greenEnergyAgent, message.getAllReceiver());
+        greenEnergyAgent.send(ReplyMessageFactory.prepareRefuseReply(message.createReply()));
+    }
+
+    public MonitoringData readMonitoringData(ACLMessage message, ACLMessage originalMessage) {
+        try {
+            return getMapper().readValue(message.getContent(), MonitoringData.class);
+        } catch (JsonProcessingException e) {
+            logger.info("[{}] I didn't understand the response with the weather data, sending refuse message to server",
+                greenEnergyAgent.getName());
+            greenEnergyAgent.send(ReplyMessageFactory.prepareRefuseReply(originalMessage.createReply()));
+        }
+        return null;
     }
 }

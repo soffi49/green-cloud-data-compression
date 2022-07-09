@@ -98,7 +98,7 @@ public class RequestJobExecution extends ContractNetInitiator {
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal - will retry for {} time",
                 guid, myClientAgent.getRetries());
             myClientAgent.retry();
-            myClientAgent.addBehaviour(new ScheduleRetry(myAgent, RETRY_PAUSE_MILLISECONDS, job));
+            myClientAgent.addBehaviour(new ScheduleJobRequestRetry(myAgent, RETRY_PAUSE_MILLISECONDS, job));
         } else if (proposals.isEmpty() && myClientAgent.getRetries() >= MAX_RETRIES){
             logger.info("[{}] All Cloud Network Agents refused to the call for proposal", guid);
             myClientAgent.getGuiController().updateClientsCountByValue(-1);

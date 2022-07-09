@@ -1,11 +1,14 @@
 package agents.monitoring;
 
+import static java.time.Instant.now;
 import static java.util.Comparator.comparingLong;
 
 import agents.AbstractAgent;
+import agents.monitoring.behaviour.ServeForecastInformation;
 import agents.monitoring.behaviour.ServeWeatherInformation;
 import behaviours.ReceiveGUIController;
-import domain.GreenSourceRequestData;
+import domain.GreenSourceForecastData;
+import domain.GreenSourceWeatherData;
 import domain.ImmutableMonitoringData;
 import domain.ImmutableWeatherData;
 import domain.MonitoringData;
@@ -41,7 +44,10 @@ public class MonitoringAgent extends AbstractAgent {
     @Override
     protected void setup() {
         api = new OpenWeatherMapApi();
-        addBehaviour(new ReceiveGUIController(this, List.of(new ServeWeatherInformation(this))));
+        addBehaviour(new ReceiveGUIController(this, List.of(
+            new ServeForecastInformation(this),
+            new ServeWeatherInformation(this)
+        )));
         cache = WeatherCache.getInstance();
     }
 
@@ -55,19 +61,18 @@ public class MonitoringAgent extends AbstractAgent {
         super.takeDown();
     }
 
-    public MonitoringData getWeather(GreenSourceRequestData requestData) {
+    public MonitoringData getWeather(GreenSourceWeatherData requestData) {
         logger.info("Retrieving weather info for {}!", requestData.getLocation());
-        var weather = api.getWeather(requestData.getLocation());
         return ImmutableMonitoringData.builder()
-            .addWeatherData(buildWeatherData(weather, weather.getTimestamp()))
+            .addWeatherData(getWeatherData(requestData.getLocation(), now()))
             .build();
     }
 
-    public MonitoringData getForecast(GreenSourceRequestData requestData) {
+    public MonitoringData getForecast(GreenSourceForecastData requestData) {
         var location = requestData.getLocation();
         logger.info("Retrieving forecast info for {}!", location);
         var weatherData = requestData.getTimetable().stream()
-            .map(time -> getWeatherData(location, time))
+            .map(time -> getForecastData(location, time))
             .toList();
         return ImmutableMonitoringData.builder()
             .weatherData(weatherData)
@@ -75,6 +80,15 @@ public class MonitoringAgent extends AbstractAgent {
     }
 
     private WeatherData getWeatherData(Location location, Instant time) {
+        return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
+                var weather = api.getWeather(location);
+                cache.updateCache(location, weather);
+                return buildWeatherData(weather, weather.getTimestamp());
+            }
+        );
+    }
+
+    private WeatherData getForecastData(Location location, Instant time) {
         return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
                 var forecast = api.getForecast(location);
                 cache.updateCache(location, forecast);
