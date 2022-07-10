@@ -6,16 +6,15 @@ import static jade.lang.acl.MessageTemplate.MatchConversationId;
 import static jade.lang.acl.MessageTemplate.MatchSender;
 import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
-import static mapper.JsonMapper.getMapper;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.greenenergy.GreenEnergyAgent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.GreenSourceData;
 import domain.ImmutableGreenSourceData;
 import domain.MonitoringData;
 import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.util.Optional;
@@ -24,17 +23,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Behaviour which is responsible for listening for the Monitoring Agent's response with weather data.
+ * Behaviour which is responsible for listening for the Monitoring Agent's response with forecast data.
  */
-public class ReceiveWeatherData extends CyclicBehaviour {
+public class ReceiveForecastData extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceiveWeatherData.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiveForecastData.class);
 
     private final GreenEnergyAgent myGreenEnergyAgent;
     private final MessageTemplate template;
     private final String guid;
     private final ACLMessage cfp;
     private final PowerJob powerJob;
+    private final SequentialBehaviour parentBehaviour;
 
     /**
      * Behaviour constructor.
@@ -43,13 +43,15 @@ public class ReceiveWeatherData extends CyclicBehaviour {
      * @param cfp          call for proposal sent by the server to which the Green Source has to reply
      * @param powerJob     job that is being processed
      */
-    public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob powerJob) {
+    public ReceiveForecastData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob powerJob, final
+            SequentialBehaviour parentBehaviour) {
         this.myGreenEnergyAgent = myGreenAgent;
         this.template = and(MatchSender(myGreenAgent.getMonitoringAgent()),
                             MatchConversationId(cfp.getConversationId()));
         this.guid = myGreenEnergyAgent.getName();
         this.cfp = cfp;
         this.powerJob = powerJob;
+        this.parentBehaviour = parentBehaviour;
     }
 
     /**
@@ -62,13 +64,13 @@ public class ReceiveWeatherData extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myAgent.receive(template);
         if (nonNull(message)) {
-            final MonitoringData data = readMonitoringData(message);
+            final MonitoringData data = myGreenEnergyAgent.manage().readMonitoringData(message, cfp);
             if (nonNull(data)) {
                 switch (message.getPerformative()) {
-                    case ACLMessage.REFUSE -> handleRefuse(cfp);
+                    case ACLMessage.REFUSE -> myGreenEnergyAgent.manage().handleRefuse(cfp, powerJob);
                     case ACLMessage.INFORM -> handleInform(data);
-                    default -> block();
                 }
+            myAgent.removeBehaviour(parentBehaviour);
             }
         } else {
             block();
@@ -99,23 +101,5 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
         }
-    }
-
-    private void handleRefuse(final ACLMessage cfp) {
-        logger.info("[{}] Weather data not available, sending refuse message to server.", guid);
-        myGreenEnergyAgent.getPowerJobs().remove(powerJob);
-        displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
-        myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp));
-        myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
-    }
-
-    private MonitoringData readMonitoringData(ACLMessage message) {
-        try {
-            return getMapper().readValue(message.getContent(), MonitoringData.class);
-        } catch (JsonProcessingException e) {
-            logger.info("[{}] I didn't understand the response with the weather data, sending refuse message to server", guid);
-            myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
-        }
-        return null;
     }
 }

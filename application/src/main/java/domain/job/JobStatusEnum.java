@@ -3,9 +3,7 @@ package domain.job;
 import java.util.EnumSet;
 import java.util.Set;
 
-/**
- * Enum describing what is the current status of the job in the network
- */
+/** Enum describing what is the current status of the job in the network */
 public enum JobStatusEnum {
     PROCESSING,
     ACCEPTED,

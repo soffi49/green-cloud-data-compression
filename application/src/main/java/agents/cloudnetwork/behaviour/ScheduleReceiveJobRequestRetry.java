@@ -6,14 +6,14 @@ import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ScheduleRetry extends WakerBehaviour {
+public class ScheduleReceiveJobRequestRetry extends WakerBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScheduleRetry.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScheduleReceiveJobRequestRetry.class);
 
     private final ACLMessage originalMessage;
     private final String jobId;
 
-    public ScheduleRetry(Agent agent, long timeout, ACLMessage originalMessage, String jobId) {
+    public ScheduleReceiveJobRequestRetry(Agent agent, long timeout, ACLMessage originalMessage, String jobId) {
         super(agent, timeout);
         this.originalMessage = originalMessage;
         this.jobId = jobId;

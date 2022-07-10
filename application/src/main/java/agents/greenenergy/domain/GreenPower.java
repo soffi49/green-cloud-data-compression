@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 public class GreenPower {
 
     private static final Logger logger = LoggerFactory.getLogger(GreenPower.class);
-    //TODO set the next value to 0 to get real weather (multiplier is for testing purposes)
-    private static final int TEST_MULTIPLIER = 5;
+    //TODO set the next value to 1 to get real weather (multiplier is for testing purposes)
+    private static final int TEST_MULTIPLIER = 1;
 
     private GreenEnergyAgent greenEnergyAgent;
     private int maximumCapacity;
@@ -69,14 +69,14 @@ public class GreenPower {
      */
     private double getSolarPower(WeatherData weather, ZonedDateTime dateTime, Location location) {
         var sunTimes = getSunTimes(dateTime, location);
-
-        if (dateTime.isBefore(sunTimes.getRise()) || dateTime.isAfter(sunTimes.getSet())) {
+        var dayTime = dateTime.toLocalTime();
+        if (dayTime.isBefore(sunTimes.getRise().toLocalTime()) || dayTime.isAfter(sunTimes.getSet().toLocalTime())) {
             logger.debug("SOLAR farm is shutdown at {}, sunrise at {} & sunset at {}", dateTime, sunTimes.getRise(),
                 sunTimes.getSet());
             return 0;
         }
 
-        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
+        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 0.1) * TEST_MULTIPLIER;
     }
 
     /**
@@ -86,7 +86,6 @@ public class GreenPower {
      * @return available wind speed
      */
     private double getWindPower(WeatherData weather) {
-        //TODO get proper wind speed, for now +5 m/s to get wind at some height above ground level
         return maximumCapacity * pow(
             (weather.getWindSpeed() + 5 - CUT_ON_WIND_SPEED) / (RATED_WIND_SPEED - CUT_ON_WIND_SPEED), 2) * TEST_MULTIPLIER;
     }

@@ -12,7 +12,7 @@ import static jade.lang.acl.MessageTemplate.or;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
-import agents.server.behaviour.StartJobExecution;
+import agents.server.behaviour.powercheck.CheckWeatherBeforeJobExecution;
 import domain.job.JobInstanceIdentifier;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -38,7 +38,8 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
     public void onStart() {
         super.onStart();
         this.myServerAgent = (ServerAgent) myAgent;
-        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL), MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
+        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL),
+            MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
     }
 
     /**
@@ -58,7 +59,8 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
                     announceBookedJob(myServerAgent, jobInstanceId.getJobId());
                 }
                 logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
-                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true));
+                myAgent.addBehaviour(
+                    CheckWeatherBeforeJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true));
             } catch (Exception e) {
                 e.printStackTrace();
             }
