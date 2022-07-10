@@ -2,22 +2,23 @@ package agents.server.behaviour.listener;
 
 import static common.constant.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
-import static jade.lang.acl.ACLMessage.*;
-import static jade.lang.acl.MessageTemplate.*;
-import static mapper.JsonMapper.getMapper;
+import static jade.lang.acl.ACLMessage.AGREE;
+import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.ACLMessage.REQUEST;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
+import static jade.lang.acl.MessageTemplate.MatchProtocol;
+import static jade.lang.acl.MessageTemplate.and;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
-import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour is responsible for listening for the requests for some job start status

@@ -69,6 +69,7 @@ public class TransferJobToGreenSource extends WakerBehaviour {
             myServerAgent.getGreenSourceForJobMap().replace(jobToExecute.getJobId(), newGreenSource);
             myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
             startJobExecutionInNewGreenSource(jobToExecute);
+            myAgent.removeBehaviour(this);
         }
     }
 

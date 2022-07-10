@@ -77,6 +77,7 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
         }
         displayMessageArrow(myServerAgent, List.of(greenSource));
         myAgent.send(preparePowerCheckMessage(checkedPowerJob, greenSource.getName(), myServerAgent.getName()));
+        myAgent.removeBehaviour(this);
     }
 
     private static void abortExecution(ServerAgent serverAgent, String jobId) {

@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 /**
  * Service used in running the scenarios
  */
-public class ScenarioService {
+public class ScenarioService implements Runnable {
 
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     private static final List<AgentController> AGENTS_TO_RUN = new ArrayList<>();
@@ -37,24 +37,24 @@ public class ScenarioService {
 
     private final AgentControllerFactory factory;
     private final GUIControllerImpl guiController;
-
+    private final String fileName;
 
     /**
      * Service constructor
      *
      * @param containerController container controller in which agents' controllers are to be created
      */
-    public ScenarioService(ContainerController containerController, GUIControllerImpl guiController) {
+    public ScenarioService(ContainerController containerController, GUIControllerImpl guiController, String fileName) {
         this.factory = new AgentControllerFactoryImpl(containerController);
         this.guiController = guiController;
+        this.fileName = fileName;
     }
 
     /**
      * Method creates the agent controllers that are to be run from the xml file
-     *
-     * @param fileName XML file containing the scenario description
      */
-    public void createAgentsFromScenarioFile(final String fileName) {
+    @Override
+    public void run() {
         final File scenarioFile = getFileFromResourceFileName(fileName);
         try {
             final ScenarioArgs scenario = XML_MAPPER.readValue(scenarioFile, ScenarioArgs.class);
@@ -117,7 +117,8 @@ public class ScenarioService {
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
                 agentController.start();
                 agentController.activate();
-            } catch (StaleProxyException  e) {
+                TimeUnit.MILLISECONDS.sleep(25);
+            } catch (StaleProxyException | InterruptedException  e) {
                 e.printStackTrace();
             }
         });

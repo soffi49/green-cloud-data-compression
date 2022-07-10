@@ -67,5 +67,6 @@ public class HandleServerPowerShortage extends WakerBehaviour {
         if (Objects.nonNull(newMaximumCapacity)) {
             myServerAgent.manage().updateMaximumCapacity(newMaximumCapacity);
         }
+        myAgent.removeBehaviour(this);
     }
 }

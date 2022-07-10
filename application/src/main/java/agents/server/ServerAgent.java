@@ -6,26 +6,24 @@ import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
-import agents.server.behaviour.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.ReceiveJobRequest;
 import agents.server.behaviour.listener.ListenForJobStarStatusRequest;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
+import agents.server.behaviour.listener.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.listener.ListenForWeather;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferRefusal;
+import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferStatus;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourceTransferConfirmation;
 import agents.server.domain.ServerStateManagement;
 import behaviours.ReceiveGUIController;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Agent representing the Server Agent which executes the clients' jobs */
 public class ServerAgent extends AbstractServerAgent {
@@ -81,13 +79,12 @@ public class ServerAgent extends AbstractServerAgent {
         new ReceiveJobRequest(),
         new ListenForPowerConfirmation(),
         new ListenForUnfinishedJobInformation(),
-        new ListenForJobTransferConfirmation(this),
         new ListenForSourcePowerShortage(),
         new ListenForSourceTransferConfirmation(),
         new ListenForServerEvent(this),
         new ListenForJobTransferCancellation(this),
         new ListenForJobStarStatusRequest(),
-        new ListenForJobTransferRefusal(this),
+        new ListenForJobTransferStatus(this),
         new ListenForWeather(this)
     );
   }

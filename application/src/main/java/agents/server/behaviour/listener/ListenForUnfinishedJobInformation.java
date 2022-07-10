@@ -8,6 +8,7 @@ import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
@@ -46,9 +47,15 @@ public class ListenForUnfinishedJobInformation extends CyclicBehaviour {
 
         if (Objects.nonNull(inform)) {
             try {
-                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
-                final Job job = myServerAgent.manage().getJobById(jobInstanceId.getJobId());
-                if (Objects.nonNull(job) && Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+                Job job = null;
+                try {
+                    final String jobId = getMapper().readValue(inform.getContent(), String.class);
+                    job = myServerAgent.manage().getJobById(jobId);
+                } catch (MismatchedInputException e) {
+                    final JobInstanceIdentifier identifier = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
+                    job = myServerAgent.manage().getJobByIdAndStartDate(identifier);
+                }
+                if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
                     logger.debug("[{}] Information about finishing job with id {} does not reach the green source", myAgent.getName(), job.getClientIdentifier());
                     logger.info("[{}] Finished executing the job for {}", myAgent.getName(), job.getClientIdentifier());
                     myServerAgent.manage().finishJobExecution(job, true);
