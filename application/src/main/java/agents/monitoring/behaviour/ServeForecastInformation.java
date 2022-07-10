@@ -3,6 +3,7 @@ package agents.monitoring.behaviour;
 import static agents.monitoring.MonitoringAgentConstants.OFFLINE_MODE;
 import static common.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
 
@@ -64,6 +65,7 @@ public class ServeForecastInformation extends CyclicBehaviour {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                response.setPerformative(REFUSE);
             }
             response.setConversationId(message.getConversationId());
             logger.info("Sending message with the weather data");
