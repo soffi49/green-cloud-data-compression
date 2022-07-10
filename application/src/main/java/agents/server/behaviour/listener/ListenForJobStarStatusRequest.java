@@ -1,16 +1,22 @@
 package agents.server.behaviour.listener;
 
 import static common.constant.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
+import static common.constant.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.AGREE;
+import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
+import static jade.lang.acl.MessageTemplate.or;
+import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import domain.job.Job;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -27,7 +33,10 @@ public class ListenForJobStarStatusRequest extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenForJobStarStatusRequest.class);
 
-    private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST), MatchProtocol(JOB_START_STATUS_PROTOCOL));
+    private static final MessageTemplate messageTemplate = or(
+        and(MatchPerformative(REQUEST), MatchProtocol(JOB_START_STATUS_PROTOCOL)),
+        and(MatchPerformative(INFORM), MatchProtocol(MANUAL_JOB_FINISH_PROTOCOL))
+    );
     private ServerAgent myServerAgent;
 
     /**
@@ -47,7 +56,7 @@ public class ListenForJobStarStatusRequest extends CyclicBehaviour {
     public void action() {
         final ACLMessage request = myAgent.receive(messageTemplate);
 
-        if (Objects.nonNull(request)) {
+        if (Objects.nonNull(request) && request.getProtocol().equals(JOB_START_STATUS_PROTOCOL)) {
             try {
                 final String jobId = request.getContent();
                 logger.info("[{}] Received request to verify job start status {}", myAgent.getName(), jobId);
@@ -61,6 +70,24 @@ public class ListenForJobStarStatusRequest extends CyclicBehaviour {
                     reply.setPerformative(REFUSE);
                 }
                 myServerAgent.send(reply);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if(Objects.nonNull(request) && request.getProtocol().equals(MANUAL_JOB_FINISH_PROTOCOL)) {
+            try {
+                Job job = null;
+                try {
+                    final String jobId = getMapper().readValue(request.getContent(), String.class);
+                    job = myServerAgent.manage().getJobById(jobId);
+                } catch (MismatchedInputException e) {
+                    final JobInstanceIdentifier identifier = getMapper().readValue(request.getContent(), JobInstanceIdentifier.class);
+                    job = myServerAgent.manage().getJobByIdAndStartDate(identifier);
+                }
+                if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+                    logger.debug("[{}] Information about finishing job with id {} does not reach the green source", myAgent.getName(), job.getClientIdentifier());
+                    logger.info("[{}] Finished executing the job for {}", myAgent.getName(), job.getClientIdentifier());
+                    myServerAgent.manage().finishJobExecution(job, true);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
