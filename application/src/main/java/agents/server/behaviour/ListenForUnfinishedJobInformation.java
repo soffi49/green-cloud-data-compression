@@ -54,7 +54,8 @@ public class ListenForUnfinishedJobInformation extends CyclicBehaviour {
                 } catch (MismatchedInputException e) {
                     final JobInstanceIdentifier identifier = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
                     job = myServerAgent.manage().getJobByIdAndStartDate(identifier);
-                }if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+                }
+                if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
                     logger.debug("[{}] Information about finishing job with id {} does not reach the green source", myAgent.getName(), job.getClientIdentifier());
                     logger.info("[{}] Finished executing the job for {}", myAgent.getName(), job.getClientIdentifier());
                     myServerAgent.manage().finishJobExecution(job, true);

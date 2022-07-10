@@ -21,7 +21,7 @@ public interface Forecast {
     Integer getCnt();
 
     /**
-     * @return List of {@link CurrentWeather} with 3-hour interval.
+     * @return List of {@link FutureWeather} with 3-hour interval.
      */
     List<FutureWeather> getList();
 }

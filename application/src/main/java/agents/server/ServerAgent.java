@@ -1,6 +1,8 @@
 package agents.server;
 
-import static common.constant.DFServiceConstants.*;
+import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
+import static common.constant.DFServiceConstants.SA_SERVICE_NAME;
+import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
@@ -9,6 +11,7 @@ import agents.server.behaviour.ReceiveJobRequest;
 import agents.server.behaviour.listener.ListenForJobStartStatusRequest;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
+import agents.server.behaviour.listener.ListenForWeather;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferRefusal;
@@ -87,6 +90,7 @@ public class ServerAgent extends AbstractServerAgent {
         new ListenForJobTransferCancellation(this),
         new ListenForJobStartStatusRequest(),
         new ListenForJobTransferRefusal(this),
-        new ListenForSourcePowerShortageFinish());
+        new ListenForSourcePowerShortageFinish(),
+        new ListenForWeather(this));
   }
 }

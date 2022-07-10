@@ -1,7 +1,15 @@
 package common.mapper;
 
-import domain.job.*;
-
+import domain.job.CheckedPowerJob;
+import domain.job.ImmutableCheckedPowerJob;
+import domain.job.ImmutableJob;
+import domain.job.ImmutableJobInstanceIdentifier;
+import domain.job.ImmutablePowerJob;
+import domain.job.ImmutablePowerShortageJob;
+import domain.job.Job;
+import domain.job.JobInstanceIdentifier;
+import domain.job.PowerJob;
+import domain.job.PowerShortageJob;
 import java.time.OffsetDateTime;
 
 /**
@@ -32,6 +40,15 @@ public class JobMapper {
                 .power(powerJob.getPower())
                 .startTime(startTime)
                 .endTime(powerJob.getEndTime())
+                .build();
+    }
+
+    public static CheckedPowerJob mapPowerJobToCheckedPowerJob(final PowerJob powerJob, final boolean informCNAStart,
+        final boolean informCNAFinish) {
+        return ImmutableCheckedPowerJob.builder()
+                .powerJob(powerJob)
+                .informCNAStart(informCNAStart)
+                .informCNAFinish(informCNAFinish)
                 .build();
     }
 

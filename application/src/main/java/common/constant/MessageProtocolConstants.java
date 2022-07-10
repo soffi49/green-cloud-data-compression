@@ -57,4 +57,11 @@ public class MessageProtocolConstants {
     public static final String POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL";
     public static final String CANCELLED_TRANSFER_PROTOCOL = "CANCELLED_TRANSFER_PROTOCOL";
 
+    /**
+     * Dynamic weather handling related protocols
+     *
+     * SERVER_JOB_START_CHECK_PROTOCOL      - protocol used in messages to check whether the weather haven't has changed since
+     *                                        accepting the job
+     */
+    public static final String SERVER_JOB_START_CHECK_PROTOCOL = "SERVER_JOB_START_CHECK_PROTOCOL";
 }

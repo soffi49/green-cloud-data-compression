@@ -75,8 +75,8 @@ public class ReceivePowerRequest extends CyclicBehaviour {
 
     private void requestMonitoringData(final ACLMessage cfp, final PowerJob job) {
         var sequentialBehaviour = new SequentialBehaviour();
-        sequentialBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent, cfp.getConversationId(), job));
-        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherData(myGreenEnergyAgent, cfp, job));
+        sequentialBehaviour.addSubBehaviour(new RequestForecastData(myGreenEnergyAgent, cfp.getConversationId(), job));
+        sequentialBehaviour.addSubBehaviour(new ReceiveForecastData(myGreenEnergyAgent, cfp, job, sequentialBehaviour));
         myAgent.addBehaviour(sequentialBehaviour);
     }
 }

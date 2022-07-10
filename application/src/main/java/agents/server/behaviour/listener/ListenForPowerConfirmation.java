@@ -12,6 +12,7 @@ import static jade.lang.acl.MessageTemplate.or;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import agents.server.behaviour.powercheck.CheckWeatherBeforeJobExecution;
 import agents.server.behaviour.StartJobExecution;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
@@ -39,7 +40,8 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
     public void onStart() {
         super.onStart();
         this.myServerAgent = (ServerAgent) myAgent;
-        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL), MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
+        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL),
+            MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
     }
 
     /**
@@ -60,7 +62,7 @@ public class ListenForPowerConfirmation extends CyclicBehaviour {
                     announceBookedJob(myServerAgent, jobInstanceId.getJobId());
                 }
                 logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
-                myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, job, informCNAStart, true));
+                myAgent.addBehaviour(CheckWeatherBeforeJobExecution.createFor(myServerAgent, job, informCNAStart, true));
             } catch (Exception e) {
                 e.printStackTrace();
             }
