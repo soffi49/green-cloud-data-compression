@@ -14,6 +14,6 @@ public class CloudNetworkAgentConstants {
 
     public static final ValueRange MAX_POWER_DIFFERENCE = ValueRange.of(-10, 10);
     public static final Long RETRY_PAUSE_MILLISECONDS = 500L;
-    public static final Integer RETRY_LIMIT = 3;
+    public static final Integer RETRY_LIMIT = 1;
     public static final Long MAX_ERROR_IN_JOB_START = 1L;
 }

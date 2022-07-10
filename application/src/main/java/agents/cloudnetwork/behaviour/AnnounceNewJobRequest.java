@@ -82,7 +82,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             if (!validProposals.isEmpty()) {
                 final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
                 final ServerData chosenServerData = readMessage(chosenServerOffer);
-                logger.info("[{}] Chosen Server for the job: {}", guid, chosenServerOffer.getSender().getName());
+                logger.info("[{}] Chosen Server for the job {}: {}", guid, jobId, chosenServerOffer.getSender().getName());
                 final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
                 logger.info("[{}] Sending job execution offer to Client", guid);
                 myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());

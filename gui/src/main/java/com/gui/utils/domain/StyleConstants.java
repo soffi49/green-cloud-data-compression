@@ -25,6 +25,7 @@ public class StyleConstants {
     public static final Color SCROLL_THUMB_COLOR = new Color(204, 204, 204);
     public static final Color VERY_LIGHT_GRAY_COLOR = new Color(245, 245, 245);
     public static final Color LIGHT_GRAY_COLOR = new Color(204, 203, 203);
+    public static final Color GRAY_COLOR = new Color(162, 162, 162);
     public static final Color MEDIUM_GRAY_COLOR = new Color(101, 101, 101);
     public static final Color DARK_GRAY_COLOR = new Color(95, 95, 95);
 
@@ -58,8 +59,11 @@ public class StyleConstants {
     public static final String GREEN_ENERGY_STYLE = "greenEnergy";
     public static final String GREEN_ENERGY_INACTIVE_STYLE = "greenEnergyInactive";
     public static final String GREEN_ENERGY_ACTIVE_STYLE = "greenEnergyActive";
+    public static final String GREEN_ENERGY_ON_HOLD_STYLE = "greenEnergyOnHold";
     public static final String MONITORING_STYLE = "monitoring";
     public static final String SERVER_STYLE = "server";
     public static final String SERVER_INACTIVE_STYLE = "serverInactive";
     public static final String SERVER_ACTIVE_STYLE = "serverActive";
+    public static final String SERVER_ACTIVE_BACK_UP_STYLE = "serverActiveBackUp";
+    public static final String SPRITE_DISABLED = "spriteDisabled";
 }

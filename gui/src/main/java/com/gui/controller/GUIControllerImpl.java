@@ -44,7 +44,7 @@ public class GUIControllerImpl implements GUIController {
     private JScrollPane mainPanelScroll;
     private JFrame mainFrame;
     private JFrame adminFrame;
-    private Graph graph;
+    private final Graph graph;
 
     public GUIControllerImpl() {
         System.setProperty("org.graphstream.ui", "swing");
@@ -53,7 +53,7 @@ public class GUIControllerImpl implements GUIController {
         this.informationPanel = new InformationPanel();
         this.detailsPanel = new DetailsPanel();
         this.adminControlPanel = new AdminControlPanel();
-        createGraph();
+        this.graph = createGraph();
         createMainPanel();
         createMainFrame();
         createAdminFrame();
@@ -100,7 +100,7 @@ public class GUIControllerImpl implements GUIController {
 
     @Override
     public void updateClientsCountByValue(int value) {
-        summaryPanel.updateClientsCountByValue(value);
+        summaryPanel.updateClientsCount(value);
         refreshMainFrame();
     }
 
@@ -136,7 +136,7 @@ public class GUIControllerImpl implements GUIController {
                 edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
             }
         };
-        final Timer hideMessageArrowTimer = new Timer(900, hideMessageArrowAction);
+        final Timer hideMessageArrowTimer = new Timer(500, hideMessageArrowAction);
         hideMessageArrowTimer.start();
     }
 
@@ -187,11 +187,12 @@ public class GUIControllerImpl implements GUIController {
         return networkDetailsPanel;
     }
 
-    private void createGraph() {
-        graph = new MultiGraph("Cloud Network");
+    private Graph createGraph() {
+        final Graph graph = new MultiGraph("Cloud Network");
         graph.setAttribute("ui.stylesheet", STYLE_FILE);
         graph.setAttribute("layout.quality", "2");
         graph.setAttribute("ui.antialias");
+        return graph;
     }
 
     private ViewPanel createGraphView() {

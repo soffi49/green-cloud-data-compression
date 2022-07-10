@@ -1,8 +1,8 @@
 package agents.server.behaviour.powershortage.listener.network;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
+import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -61,9 +61,11 @@ public class ListenForJobTransferCancellation extends CyclicBehaviour {
                 if (Objects.nonNull(jobToCancel)) {
                     logger.info("[{}] Cancelling the job with id {}", myServerAgent.getLocalName(), jobToCancel.getJobId());
                     informGreenSourceAboutJobFinish(jobToCancel, Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(jobToCancel.getJobId())));
+                    if(JOB_IN_PROGRESS.contains(myServerAgent.getServerJobs().get(jobToCancel))) {
+                        myServerAgent.manage().incrementFinishedJobs(jobToCancel.getJobId());
+                    }
                     myServerAgent.getServerJobs().remove(jobToCancel);
                     myServerAgent.getGreenSourceForJobMap().remove(jobToCancel.getJobId());
-                    updateServerState(myServerAgent);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

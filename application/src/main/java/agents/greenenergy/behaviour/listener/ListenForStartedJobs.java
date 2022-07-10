@@ -1,6 +1,5 @@
 package agents.greenenergy.behaviour.listener;
 
-import static common.GUIUtils.updateGreenSourceState;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -11,6 +10,8 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;
+import domain.job.JobStatusEnum;
+import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -49,9 +50,12 @@ public class ListenForStartedJobs extends CyclicBehaviour {
             try {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
                 if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
-                    myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
+                    final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+                    if (myGreenEnergyAgent.getPowerJobs().get(powerJob).equals(JobStatusEnum.ACCEPTED)) {
+                        myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
+                    }
                     logger.info("[{}] Started the execution of the job with id {}", guid, jobInstanceId.getJobId());
-                    updateGreenSourceState(myGreenEnergyAgent);
+                    myGreenEnergyAgent.manage().incrementStartedJobs(jobInstanceId.getJobId());
                 }
             } catch (Exception e) {
                 e.printStackTrace();

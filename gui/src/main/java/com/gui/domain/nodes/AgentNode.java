@@ -13,6 +13,7 @@ import org.graphstream.graph.Node;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class represents abstract agent node
@@ -25,7 +26,9 @@ public abstract class AgentNode {
     protected List<Edge> edges;
     protected JPanel informationPanel;
     protected Map<LabelEnum, JLabel> labelsMap;
-    protected AbstractEvent event;
+    protected AtomicReference<AbstractEvent> event;
+    protected boolean isDuringEvent;
+    protected Graph graph;
 
     /**
      * Class constructor
@@ -35,7 +38,8 @@ public abstract class AgentNode {
     public AgentNode(String name) {
         this.name = name;
         this.edges = new ArrayList<>();
-        this.event = null;
+        this.event = new AtomicReference<>(null);
+        this.isDuringEvent = false;
     }
 
     /**
@@ -49,6 +53,7 @@ public abstract class AgentNode {
         newNode.setAttribute("ui.label", newNode.getId());
         newNode.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style)));
         this.node = newNode;
+        this.graph = graph;
         this.updateGraphUI();
         return newNode;
     }
@@ -64,8 +69,7 @@ public abstract class AgentNode {
      * Abstract method which based on the agent status creates the JPanel displaying all data
      */
     public void createInformationPanel() {
-        final JPanel panel = createLabelListPanel(labelsMap);
-        this.informationPanel = panel;
+        this.informationPanel = createLabelListPanel(labelsMap);
     }
 
     /**
@@ -104,8 +108,8 @@ public abstract class AgentNode {
     /**
      * @return gets the current event
      */
-    public synchronized AbstractEvent getEvent() {
-        return event;
+    public AbstractEvent getEvent() {
+        return event.get();
     }
 
     /**
@@ -113,8 +117,23 @@ public abstract class AgentNode {
      *
      * @param event new event
      */
-    public synchronized void setEvent(AbstractEvent event) {
-        this.event = event;
+    public void setEvent(AbstractEvent event) {
+        this.event.set(event);
+    }
+
+    /**
+     * @return boolean flag of having an event
+     */
+    public boolean isDuringEvent() {
+        return isDuringEvent;
+    }
+
+    /**
+     * Setting flag indicating if node has some event going on
+     * @param duringEvent event flag
+     */
+    public void setDuringEvent(boolean duringEvent) {
+        isDuringEvent = duringEvent;
     }
 
     @Override

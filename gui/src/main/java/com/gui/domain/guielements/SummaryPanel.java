@@ -44,9 +44,9 @@ public class SummaryPanel {
     /**
      * Function updates the clients number by given value
      *
-     * @param value value to be added to the clients number
+     * @param value value to be added to client count
      */
-    public void updateClientsCountByValue(final int value) {
+    public void updateClientsCount(final int value) {
         clientsCount.getAndAdd(value);
         labelMap.get(CLIENT_COUNT_LABEL).setText(formatToHTML(formatToHTML(String.valueOf(clientsCount))));
     }

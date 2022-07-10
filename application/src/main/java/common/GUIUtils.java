@@ -19,60 +19,16 @@ import java.util.stream.StreamSupport;
 public class GUIUtils {
 
     /**
-     * Method updates the GUI to indicate that the new job has started in cloud network
-     *
-     * @param agent agent updating the GUI
-     */
-    public static void announceStartedJob(final CloudNetworkAgent agent) {
-        final CloudNetworkAgentNode cloudNetworkAgentNode = (CloudNetworkAgentNode) agent.getAgentNode();
-        agent.getGuiController().updateActiveJobsCountByValue(1);
-        cloudNetworkAgentNode.updateJobsCount(1);
-        cloudNetworkAgentNode.updateClientNumber(1);
-        cloudNetworkAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
-    }
-
-    /**
      * Method updates the GUI to indicate that the job execution has finished
      *
      * @param agent agent updating the GUI
      * @param jobId unique identifier of the GUI
      */
     public static void announceFinishedJob(final CloudNetworkAgent agent, final String jobId) {
-        final CloudNetworkAgentNode cloudNetworkAgentNode = (CloudNetworkAgentNode) agent.getAgentNode();
         final String information = String.format("Execution of the job %s has finished!", jobId);
         agent.getGuiController().updateActiveJobsCountByValue(-1);
         agent.getGuiController().updateAllJobsCountByValue(-1);
         agent.getGuiController().addNewInformation(information);
-        cloudNetworkAgentNode.updateJobsCount(-1);
-        cloudNetworkAgentNode.updateClientNumber(-1);
-        cloudNetworkAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
-    }
-
-    /**
-     * Method updates the GUI with green source current state
-     *
-     * @param agent green energy agent updating the GUI
-     */
-    public static void updateGreenSourceState(final GreenEnergyAgent agent) {
-        final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) agent.getAgentNode();
-        greenEnergyAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
-        greenEnergyAgentNode.updateJobsCount(agent.manage().getJobCount());
-        greenEnergyAgentNode.updateIsActive(agent.manage().getIsActiveState());
-        greenEnergyAgentNode.updateTraffic(agent.manage().getCurrentPowerInUse());
-    }
-
-    /**
-     * Method updates the GUI with server current state
-     *
-     * @param agent server agent updating the GUI
-     */
-    public static void updateServerState(final ServerAgent agent) {
-        final ServerAgentNode serverAgentNode = (ServerAgentNode) agent.getAgentNode();
-        serverAgentNode.updateMaximumCapacity(agent.getMaximumCapacity());
-        serverAgentNode.updateJobsCount(agent.manage().getJobCount());
-        serverAgentNode.updateClientNumber(agent.manage().getJobCount());
-        serverAgentNode.updateIsActive(agent.manage().getIsActiveState());
-        serverAgentNode.updateTraffic(agent.manage().getCurrentPowerInUseForGreenSource());
     }
 
     /**

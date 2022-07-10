@@ -1,6 +1,7 @@
 package agents.monitoring.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.getCurrentTime;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
@@ -13,7 +14,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                                              .cloudCover(10D)
                                              .temperature(50D)
                                              .windSpeed(100D)
-                                             .time(Instant.now())
+                                             .time(getCurrentTime().toInstant())
                                              .build())
                         .build();
                 //var data = monitoringAgent.getForecast(requestData);

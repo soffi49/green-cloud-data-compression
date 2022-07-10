@@ -1,17 +1,19 @@
 package agents.cloudnetwork.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
+import static common.constant.MessageProtocolConstants.*;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
+import static messages.domain.CallForProposalMessageFactory.createCallForProposal;
 import static messages.domain.JobStatusMessageFactory.preparePowerShortageMessageForClient;
+import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.behaviour.powershortage.announcer.AnnounceJobTransferRequest;
+import common.mapper.JobMapper;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import domain.job.PowerShortageTransfer;
@@ -61,15 +63,19 @@ public class ListenForServerPowerShortage extends CyclicBehaviour {
                         .map(job -> myCloudNetworkAgent.manage().getJobById(job.getJobId()))
                         .forEach(job -> {
                             if (Objects.nonNull(job)) {
+                                final OffsetDateTime startTime = job.getStartTime().isAfter(powerShortageTransfer.getStartTime())? job.getStartTime() : powerShortageTransfer.getStartTime();
+                                final Job powerShortageJob = JobMapper.mapToJob(job, startTime);
                                 if (!remainingServers.isEmpty()) {
                                     logger.info("[{}] Sending call for proposal to Server Agents to transfer job with id {}", myAgent.getName(), job.getJobId());
-                                    final ACLMessage cfp = prepareServerCFP(job, powerShortageTransfer.getStartTime(), remainingServers);
+                                    final ACLMessage cfp = createCallForProposal(powerShortageJob, remainingServers, CNA_JOB_CFP_PROTOCOL);
                                     displayMessageArrow(myCloudNetworkAgent, remainingServers);
-                                    myAgent.addBehaviour(new AnnounceJobTransferRequest(myAgent, cfp, powerShortageTransfer.getStartTime(), inform.getSender(), job));
+                                    myAgent.addBehaviour(new AnnounceJobTransferRequest(myAgent, cfp, powerShortageTransfer.getStartTime(), inform.getSender(), powerShortageJob));
                                 } else {
-                                    logger.info("[{}] No servers available. Passing the information to client", myAgent.getName());
-                                    displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
-                                    myCloudNetworkAgent.send(preparePowerShortageMessageForClient(job.getClientIdentifier()));
+                                    logger.info("[{}] No servers available. Passing the information to client and server", myAgent.getName());
+                                    displayMessageArrow(myCloudNetworkAgent, new AID(powerShortageJob.getClientIdentifier(), AID.ISGUID));
+                                    myCloudNetworkAgent.send(preparePowerShortageMessageForClient(powerShortageJob.getClientIdentifier()));
+                                    myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(powerShortageJob, powerShortageTransfer.getStartTime()),
+                                                                                                inform.getSender(), POWER_SHORTAGE_TRANSFER_REFUSAL));
                                 }
                             }
                         });
@@ -79,18 +85,6 @@ public class ListenForServerPowerShortage extends CyclicBehaviour {
         } else {
             block();
         }
-    }
-
-    private ACLMessage prepareServerCFP(final Job job, final OffsetDateTime startPowerShortageTime, final List<AID> remainingServers) {
-        final OffsetDateTime startTime = job.getStartTime().isAfter(startPowerShortageTime)? job.getStartTime() : startPowerShortageTime;
-        final Job newJob = ImmutableJob.builder()
-                .power(job.getPower())
-                .startTime(startTime)
-                .endTime(job.getEndTime())
-                .jobId(job.getJobId())
-                .clientIdentifier(job.getClientIdentifier())
-                .build();
-        return CallForProposalMessageFactory.createCallForProposal(newJob, remainingServers, CNA_JOB_CFP_PROTOCOL);
     }
 
     private List<AID> getRemainingServers(final AID serverSender) {

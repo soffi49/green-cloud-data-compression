@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Panel containing utilities which allow to invoke events in the simulation
@@ -30,6 +31,7 @@ public class AdminControlPanel {
 
     private static final String TITLE_LABEL = "ADMINISTRATOR TOOLS";
     private static final String MAKE_POWER_SHORTAGE_BUTTON = "MAKE POWER SHORTAGE";
+    private static final String POWER_SHORTAGE_RUNNING = "POWER SHORTAGE IS ALREADY RUNNING";
     private static final String MAX_POWER = "MAX POWER";
     private static final String INITIAL_AGENT = "";
 
@@ -102,8 +104,12 @@ public class AdminControlPanel {
             allNetworkAgentNodes.stream()
                     .filter(agentNode -> agentNode.getName().equals(selectedAgent))
                     .forEach(agentNode -> {
-                        final int maxPower = Integer.parseInt(powerShortageInput.getText());
-                        agentNode.setEvent(new PowerShortageEvent(POWER_SHORTAGE, getTimeForEventOccurrence(), maxPower));
+                        if(!agentNode.isDuringEvent()) {
+                            final int maxPower = Integer.parseInt(powerShortageInput.getText());
+                            agentNode.setEvent(new PowerShortageEvent(POWER_SHORTAGE, getTimeForEventOccurrence(), maxPower));
+                            agentNode.setDuringEvent(true);
+                            makeButtonDisabled(powerShortageButton, POWER_SHORTAGE_RUNNING);
+                        }
                     });
         }
     }
@@ -126,5 +132,14 @@ public class AdminControlPanel {
 
     private void changeSelectedNetworkAgent(final String newAgentName) {
         selectedAgent = comboBoxNetwork.getSelectedIndex() == 0 ? INITIAL_AGENT : newAgentName;
+        final AgentNode agentNode = allNetworkAgentNodes.stream()
+                .filter(agent -> agent.getName().equals(selectedAgent))
+                .findFirst()
+                .orElse(null);
+        if(Objects.nonNull(agentNode) && agentNode.isDuringEvent()) {
+            makeButtonDisabled(powerShortageButton, POWER_SHORTAGE_RUNNING);
+        } else {
+            makeButtonEnabled(powerShortageButton, MAKE_POWER_SHORTAGE_BUTTON);
+        }
     }
 }
