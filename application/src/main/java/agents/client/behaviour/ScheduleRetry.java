@@ -37,8 +37,9 @@ public class ScheduleRetry extends WakerBehaviour {
     }
 
     private SequentialBehaviour prepareStartingBehaviour(final Job job) {
-        prepareSimulatedTimes(job.getStartTime().plus(Duration.of(JOB_RETRY_MINUTES_ADJUSTMENT, ChronoUnit.MINUTES)),
-            job.getEndTime().plus(Duration.of(JOB_RETRY_MINUTES_ADJUSTMENT, ChronoUnit.MINUTES)));
+        final long simulationAdjustment = convertToSimulationTime((long) JOB_RETRY_MINUTES_ADJUSTMENT * 60);
+        myClientAgent.setSimulatedJobStart(myClientAgent.getSimulatedJobStart().plus(simulationAdjustment, ChronoUnit.MILLIS));
+        myClientAgent.setSimulatedJobEnd(myClientAgent.getSimulatedJobEnd().plus(simulationAdjustment, ChronoUnit.MILLIS));
 
         var jobForRetry = ImmutableJob.builder()
             .jobId(job.getJobId())
@@ -51,13 +52,5 @@ public class ScheduleRetry extends WakerBehaviour {
         startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
         startingBehaviour.addSubBehaviour(new RequestJobExecution(myAgent, null, jobForRetry));
         return startingBehaviour;
-    }
-
-    private void prepareSimulatedTimes(final OffsetDateTime startTime, final OffsetDateTime endTime) {
-        final OffsetDateTime currentTime = getCurrentTime();
-        final long expectedJobStart = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, startTime));
-        final long expectedJobEnd = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, endTime));
-        myClientAgent.setSimulatedJobStart(currentTime.plus(expectedJobStart, ChronoUnit.MILLIS));
-        myClientAgent.setSimulatedJobEnd(currentTime.plus(expectedJobEnd, ChronoUnit.MILLIS));
     }
 }

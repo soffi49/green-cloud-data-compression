@@ -52,7 +52,7 @@ public class ListenForJobStarStatusRequest extends CyclicBehaviour {
                 logger.info("[{}] Received request to verify job start status {}", myAgent.getName(), jobId);
                 final Map.Entry<Job, JobStatusEnum> jobInstance = myServerAgent.manage().getCurrentJobInstance(jobId);
                 final ACLMessage reply = request.createReply();
-                if(JOB_IN_PROGRESS.contains(jobInstance.getValue())) {
+                if(Objects.nonNull(jobInstance) && JOB_IN_PROGRESS.contains(jobInstance.getValue())) {
                     reply.setContent("JOB STARTED");
                     reply.setPerformative(AGREE);
                 } else {

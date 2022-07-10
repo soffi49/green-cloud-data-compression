@@ -75,11 +75,10 @@ public class StartJobExecution extends WakerBehaviour {
     @Override
     protected void onWake() {
         final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToExecute.getJobId(), jobToExecute.getStartTime());
-        if(Objects.isNull(job)) {
-            logger.info("[{}] Job execution couldn't start: job {} is null", myServerAgent.getLocalName(), jobToExecute.getJobId());
-        }
         if(!myServerAgent.getGreenSourceForJobMap().containsKey(jobToExecute.getJobId())) {
             logger.info("[{}] Job execution couldn't start: there is no green source for the job {}", myServerAgent.getLocalName(), jobToExecute.getJobId());
+        } else if(Objects.isNull(job)) {
+            logger.info("[{}] Job execution couldn't start: job {} is null", myServerAgent.getLocalName(), jobToExecute.getJobId());
         }
         if (Objects.nonNull(job) && myServerAgent.getGreenSourceForJobMap().containsKey(job.getJobId())) {
             if (informCNAStart) {

@@ -146,7 +146,7 @@ public class GreenEnergyAgentNode extends AgentNode {
       onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
     }
     node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicStyle)));
-    updateActiveEdgeStyle(edges, isActive.get(), name, serverAgent);
+    updateActiveEdgeStyle(edges, graph, isActive.get(), name, serverAgent);
   }
 
   @Override
@@ -155,7 +155,7 @@ public class GreenEnergyAgentNode extends AgentNode {
     addAgentBidirectionalEdgeToGraph(graph, edges, name, monitoringAgent);
     addAgentEdgeToGraph(graph, edges, name, monitoringAgent);
     addAgentEdgeToGraph(graph, edges, name, serverAgent);
-    onHoldSprite = createSpriteForNode(graph, node);
+    //onHoldSprite = createSpriteForNode(graph, node);
   }
 
   @Override
