@@ -61,7 +61,7 @@ public class ProposePowerRequest extends ProposeInitiator {
             if(isNull(job)) {
                 job = myGreenEnergyAgent.manage().getJobById(jobWithProtocol.getJobInstanceIdentifier().getJobId());
             }
-            logger.info("[{}] Sending information back to server agent.", guid);
+            logger.info("[{}] Sending information regarding job {} back to server agent.", guid, job.getJobId());
             myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
             myAgent.addBehaviour(new FinishJobManually(myGreenEnergyAgent, calculateExpectedJobEndTime(job), JobMapper.mapToJobInstanceId(job)));
             displayMessageArrow(myGreenEnergyAgent, accept_proposal.getSender());

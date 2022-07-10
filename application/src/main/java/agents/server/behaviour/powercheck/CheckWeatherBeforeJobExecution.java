@@ -2,7 +2,6 @@ package agents.server.behaviour.powercheck;
 
 import static agents.server.domain.ServerAgentConstants.PREEMTIVE_POWER_CHECK_TIME_WINDOW;
 import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
 import static common.mapper.JobMapper.mapJobToPowerJob;
 import static common.mapper.JobMapper.mapPowerJobToCheckedPowerJob;
@@ -81,7 +80,7 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
     }
 
     private static void abortExecution(ServerAgent serverAgent, String jobId) {
-        updateServerState(serverAgent);
+        serverAgent.manage().updateServerGUI();
         logger.error("[{}] Job with id {} must have been moved from the given server in the meantime, won't check weather.",
             serverAgent.getName(), jobId);
     }

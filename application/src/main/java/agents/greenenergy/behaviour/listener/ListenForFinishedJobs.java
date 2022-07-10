@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour.listener;
 
-import static common.GUIUtils.updateGreenSourceState;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -10,6 +10,7 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;
+import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -48,8 +49,11 @@ public class ListenForFinishedJobs extends CyclicBehaviour {
                 final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
                 if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
                     logger.info("[{}] Finish the execution of the job with id {}", guid, jobInstanceId.getJobId());
-                    myGreenEnergyAgent.getPowerJobs().remove(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId));
-                    updateGreenSourceState(myGreenEnergyAgent);
+                    final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+                    myGreenEnergyAgent.getPowerJobs().remove(powerJob);
+                    if(powerJob.getStartTime().isBefore(getCurrentTime())) {
+                        myGreenEnergyAgent.manage().incrementFinishedJobs(jobInstanceId.getJobId());
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();

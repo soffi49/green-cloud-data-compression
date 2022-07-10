@@ -2,6 +2,7 @@ package messages.domain;
 
 import static common.constant.MessageProtocolConstants.*;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -108,6 +109,21 @@ public class JobStatusMessageFactory {
         }
         receivers.forEach(informationMessage::addReceiver);
         return informationMessage;
+    }
+
+    /**
+     * Method prepares the message requesting the job start status from the server
+     *
+     * @param jobId    unique identifier of the kob of interest
+     * @param receiver server which will receive the message
+     * @return inform ACLMessage
+     */
+    public static ACLMessage prepareJobStartStatusRequestMessage(final String jobId, final AID receiver) {
+        final ACLMessage requestMessage = new ACLMessage(REQUEST);
+        requestMessage.setProtocol(JOB_START_STATUS_PROTOCOL);
+        requestMessage.setContent(jobId);
+        requestMessage.addReceiver(receiver);
+        return requestMessage;
     }
 
     /**

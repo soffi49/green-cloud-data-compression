@@ -50,6 +50,7 @@ public class ListenForWeather extends CyclicBehaviour {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
+
             if (message.getPerformative() == INFORM) {
                 logger.info("[{}] Starting job execution!.", myServerAgent.getName());
                 myAgent.addBehaviour(

@@ -9,6 +9,8 @@ import com.gui.domain.types.JobStatusEnum;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Agent node class representing the client
  */
@@ -18,7 +20,7 @@ public class ClientAgentNode extends AgentNode {
     private final String  power;
     private final String startDate;
     private final String endDate;
-    private JobStatusEnum jobStatusEnum;
+    private AtomicReference<JobStatusEnum> jobStatusEnum;
 
     /**
      * Client node constructor
@@ -34,7 +36,7 @@ public class ClientAgentNode extends AgentNode {
         this.power = power;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.jobStatusEnum = CREATED;
+        this.jobStatusEnum = new AtomicReference<>(CREATED);
         this.style = CLIENT_STYLE;
         initializeLabelsMap();
         createInformationPanel();
@@ -45,8 +47,8 @@ public class ClientAgentNode extends AgentNode {
      *
      * @param jobStatusEnum new job status
      */
-    public synchronized void updateJobStatus(final JobStatusEnum jobStatusEnum) {
-        this.jobStatusEnum = jobStatusEnum;
+    public void updateJobStatus(final JobStatusEnum jobStatusEnum) {
+        this.jobStatusEnum.set(jobStatusEnum);
         labelsMap.get(AgentNodeLabelEnum.JOB_STATUS).setText(formatToHTML(jobStatusEnum.getStatus()));
     }
 
@@ -62,6 +64,6 @@ public class ClientAgentNode extends AgentNode {
         labelsMap.put(AgentNodeLabelEnum.JOB_POWER, createListLabel(power));
         labelsMap.put(AgentNodeLabelEnum.JOB_START_LABEL, createListLabel(startDate));
         labelsMap.put(AgentNodeLabelEnum.JOB_END_LABEL, createListLabel(endDate));
-        labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createListLabel(jobStatusEnum.getStatus()));
+        labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createListLabel(jobStatusEnum.get().getStatus()));
     }
 }

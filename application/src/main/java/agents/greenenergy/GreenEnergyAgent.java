@@ -11,6 +11,7 @@ import agents.greenenergy.behaviour.listener.ListenForStartedJobs;
 import agents.greenenergy.behaviour.powercheck.ReceivePowerCheckRequest;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForParentServerPowerShortage;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferCancellation;
+import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferRefusal;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForTransferConfirmation;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenEnergyStateManagement;
@@ -19,9 +20,11 @@ import behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
-import java.util.HashMap;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +57,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
     private void initializeAgent(final Object[] args) {
         if (Objects.nonNull(args) && args.length == 7) {
-            this.powerJobs = new HashMap<>();
+            this.powerJobs = new ConcurrentHashMap<>();
             this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
             this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
             this.stateManagement = new GreenEnergyStateManagement(this);
@@ -71,8 +74,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
                 doDelete();
             }
         } else {
-            logger.info(
-                "Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
+            logger.info("Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
             doDelete();
         }
     }
@@ -80,13 +82,14 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
     private List<Behaviour> behavioursRunAtStart() {
         return List.of(
             new ReceivePowerRequest(this),
-            new ReceivePowerCheckRequest(this),
-            new ListenForStartedJobs(this),
             new ListenForFinishedJobs(this),
+            new ListenForStartedJobs(this),
             new ListenForGreenSourceEvent(this),
             new ListenForPowerTransferCancellation(this),
             new ListenForTransferConfirmation(this),
-            new ListenForParentServerPowerShortage(this)
+            new ListenForParentServerPowerShortage(this),
+            new ListenForPowerTransferRefusal(this),
+            new ReceivePowerCheckRequest(this)
         );
     }
 }

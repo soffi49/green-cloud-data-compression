@@ -1,6 +1,5 @@
 package agents.server.behaviour.powershortage.handler;
 
-import static common.GUIUtils.updateServerState;
 import static common.TimeUtils.getCurrentTime;
 
 import agents.server.ServerAgent;
@@ -62,11 +61,11 @@ public class HandleServerPowerShortage extends WakerBehaviour {
         jobsToExecute.forEach(job -> {
             if (myServerAgent.getServerJobs().containsKey(job)) {
                 logger.info("[{}] Supplying job with id {} using backup power", myServerAgent.getName(), job.getJobId());
+                myServerAgent.manage().updateServerGUI();
             }
         });
         if (Objects.nonNull(newMaximumCapacity)) {
-            myServerAgent.setMaximumCapacity(newMaximumCapacity);
-            updateServerState(myServerAgent);
+            myServerAgent.manage().updateMaximumCapacity(newMaximumCapacity);
         }
     }
 }

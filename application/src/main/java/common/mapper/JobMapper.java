@@ -2,11 +2,14 @@ package common.mapper;
 
 import domain.job.CheckedPowerJob;
 import domain.job.ImmutableCheckedPowerJob;
+import domain.job.ImmutableJob;
 import domain.job.ImmutableJobInstanceIdentifier;
 import domain.job.ImmutablePowerJob;
+import domain.job.ImmutablePowerShortageJob;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.PowerJob;
+import domain.job.PowerShortageJob;
 import java.time.OffsetDateTime;
 
 /**
@@ -29,9 +32,9 @@ public class JobMapper {
 
     /**
      * @param powerJob power job to be mapped to job
-     * @return Job
+     * @return PowerJob
      */
-    public static PowerJob mapPowerJobToPowerJob(final PowerJob powerJob, final OffsetDateTime startTime) {
+    public static PowerJob mapToPowerJob(final PowerJob powerJob, final OffsetDateTime startTime) {
         return ImmutablePowerJob.builder()
                 .jobId(powerJob.getJobId())
                 .power(powerJob.getPower())
@@ -50,6 +53,20 @@ public class JobMapper {
     }
 
     /**
+     * @param job job to be mapped to job
+     * @return Job
+     */
+    public static Job mapToJob(final Job job, final OffsetDateTime startTime) {
+        return ImmutableJob.builder()
+                .clientIdentifier(job.getClientIdentifier())
+                .jobId(job.getJobId())
+                .power(job.getPower())
+                .startTime(startTime)
+                .endTime(job.getEndTime())
+                .build();
+    }
+
+    /**
      * @param powerJob PowerJob object
      * @return JobInstanceIdentifier
      */
@@ -58,12 +75,12 @@ public class JobMapper {
     }
 
     /**
-     * @param jobId     job identifier
-     * @param startTime job start time
-     * @return JobInstanceIdentifier
+     * @param job       job to map
+     * @param startTime power shortage start time
+     * @return PowerShortageJob
      */
-    public static JobInstanceIdentifier mapToJobInstanceId(final String jobId, final OffsetDateTime startTime) {
-        return ImmutableJobInstanceIdentifier.builder().jobId(jobId).startTime(startTime).build();
+    public static PowerShortageJob mapToPowerShortageJob(final Job job, final OffsetDateTime startTime) {
+        return ImmutablePowerShortageJob.builder().jobInstanceId(mapToJobInstanceId(job)).powerShortageStart(startTime).build();
     }
 
     /**

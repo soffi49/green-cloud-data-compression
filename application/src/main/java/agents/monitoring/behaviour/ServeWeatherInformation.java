@@ -2,6 +2,7 @@ package agents.monitoring.behaviour;
 
 import static agents.monitoring.MonitoringAgentConstants.OFFLINE_MODE;
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
@@ -19,7 +20,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.Random;
 import org.slf4j.Logger;
@@ -105,7 +105,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                 .cloudCover(25.0)
                 .temperature(25.0)
                 .windSpeed(10.0)
-                .time(Instant.now())
+                .time(getCurrentTime().toInstant())
                 .build())
             .build();
     }
@@ -116,7 +116,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                 .cloudCover(50.0)
                 .temperature(10.0)
                 .windSpeed(5.0)
-                .time(Instant.now())
+                .time(getCurrentTime().toInstant())
                 .build())
             .build();
     }
