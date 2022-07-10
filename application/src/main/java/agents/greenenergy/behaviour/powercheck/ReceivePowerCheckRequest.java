@@ -20,6 +20,11 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Behaviour responsible for initiating weather request from Monitoring Agent,
+ * is a part of protocol responsible to double-check the weather before starting
+ * the job execution
+ */
 public class ReceivePowerCheckRequest extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceivePowerCheckRequest.class);
@@ -39,6 +44,10 @@ public class ReceivePowerCheckRequest extends CyclicBehaviour {
         this.guid = myGreenEnergyAgent.getName();
     }
 
+    /**
+     * Requests weather data from MonitoringAgent, via {@link RequestWeatherData} and
+     * {@link ReceiveWeatherData} behaviours
+     */
     @Override
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);

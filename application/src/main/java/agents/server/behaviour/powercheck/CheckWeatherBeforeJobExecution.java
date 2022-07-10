@@ -19,6 +19,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Behaviour initiating SERVER_JOB_START_CHECK_PROTOCOL, which checks the weather before job execution
+ */
 public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
 
     private static final Logger logger =
@@ -53,7 +56,7 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
             getCurrentTime().isAfter(jobInstanceId.getStartTime().minusSeconds(PREEMTIVE_POWER_CHECK_TIME_WINDOW))
                 ? getCurrentTime()
                 : jobInstanceId.getStartTime().minusSeconds(PREEMTIVE_POWER_CHECK_TIME_WINDOW);
-        var jobToExecute = serverAgent.manage().getJobById(jobInstanceId.getJobId());
+        var jobToExecute = serverAgent.manage().getJobByIdAndStartDate(jobInstanceId);
         if(isNull(jobToExecute)) {
             abortExecution(serverAgent, jobInstanceId.getJobId());
             return null;
@@ -79,11 +82,6 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
 
     private static void abortExecution(ServerAgent serverAgent, String jobId) {
         updateServerState(serverAgent);
-        var job = serverAgent.manage().getJobById(jobId);
-        if(!isNull(job)) {
-            serverAgent.getServerJobs().remove(serverAgent.manage().getJobById(jobId));
-        }
-        serverAgent.getGreenSourceForJobMap().remove(jobId);
         logger.error("[{}] Job with id {} must have been moved from the given server in the meantime, won't check weather.",
             serverAgent.getName(), jobId);
     }

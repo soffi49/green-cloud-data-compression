@@ -60,7 +60,6 @@ public class ListenForWeather extends CyclicBehaviour {
                         checkedPowerJob.informCNAFinish()));
             } else if (message.getPerformative() == REFUSE) {
                 logger.info("[{}] Aborting job execution!.", myServerAgent.getName());
-                //TODO announce job removal
             }
         } else {
             block();

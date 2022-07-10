@@ -83,7 +83,6 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             logger.info(
                 "[{}] Weather has changed before executing job with id {} - not enough available power. Needed {}, available {}",
                 guid, powerJob.getJobId(), powerJob.getPower(), availablePower);
-            myGreenEnergyAgent.getPowerJobs().remove(powerJob);
             myAgent.send(ReplyMessageFactory.prepareReply(originalMessage.createReply(), checkedPowerJob, REFUSE));
             var currentCapacity = myGreenEnergyAgent.getCapacity(data, getCurrentTime().toInstant());
             myAgent.addBehaviour(
