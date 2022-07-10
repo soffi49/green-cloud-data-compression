@@ -51,6 +51,13 @@ public class ListenForWeather extends CyclicBehaviour {
                 throw new RuntimeException(e);
             }
 
+            var currentAvailableCapacity = myServerAgent.manage().getAvailableCapacity(checkedPowerJob.getPowerJob().getStartTime(),
+                checkedPowerJob.getPowerJob().getEndTime());
+            if (currentAvailableCapacity <= 0) {
+                //TODO separate change-set
+                logger.warn("WTF");
+            }
+
             if (message.getPerformative() == INFORM) {
                 logger.info("[{}] Starting job execution!.", myServerAgent.getName());
                 myAgent.addBehaviour(

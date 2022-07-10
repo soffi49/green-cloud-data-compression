@@ -1,5 +1,6 @@
 package agents.greenenergy.behaviour.powercheck;
 
+import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -10,7 +11,7 @@ import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
 
 import agents.greenenergy.GreenEnergyAgent;
-import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
+import agents.greenenergy.behaviour.powershortage.announcer.AnnounceWeatherPowerShortage;
 import domain.MonitoringData;
 import domain.job.CheckedPowerJob;
 import jade.core.behaviours.CyclicBehaviour;
@@ -83,15 +84,17 @@ public class ReceiveWeatherData extends CyclicBehaviour {
             logger.info(
                 "[{}] Weather has changed before executing job with id {} - not enough available power. Needed {}, available {}",
                 guid, powerJob.getJobId(), powerJob.getPower(), availablePower);
+            displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
             myAgent.send(ReplyMessageFactory.prepareReply(originalMessage.createReply(), checkedPowerJob, REFUSE));
             var currentCapacity = myGreenEnergyAgent.getCapacity(data, getCurrentTime().toInstant());
             myAgent.addBehaviour(
-                new AnnounceSourcePowerShortage(
-                    myGreenEnergyAgent,
+                new AnnounceWeatherPowerShortage(myGreenEnergyAgent,
+                    checkedPowerJob.getPowerJob(),
                     getCurrentTime(),
-                    (int) Math.floor(currentCapacity)));
+                    currentCapacity));
         } else {
             logger.info("[{}] Everything okay - continuing job {} execution!", guid, powerJob.getJobId());
+            displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
             myAgent.send(ReplyMessageFactory.prepareReply(originalMessage.createReply(), checkedPowerJob, INFORM));
         }
     }

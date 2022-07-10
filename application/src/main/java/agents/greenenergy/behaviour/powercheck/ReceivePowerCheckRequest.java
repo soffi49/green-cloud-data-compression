@@ -53,8 +53,10 @@ public class ReceivePowerCheckRequest extends CyclicBehaviour {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
             try {
-                logger.info("[{}] Sending weather request to monitoring agent.", guid);
-                requestMonitoringData(message, readJob(message));
+                var checkedPowerJob = readJob(message);
+                logger.info("[{}] Sending weather request to monitoring agent before job {} execution.", guid,
+                    checkedPowerJob.getPowerJob().getJobId());
+                requestMonitoringData(message, checkedPowerJob);
             } catch (Exception e) {
                 e.printStackTrace();
             }
