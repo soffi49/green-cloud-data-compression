@@ -1,6 +1,7 @@
 package agents.greenenergy.behaviour.listener;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.powershortage.announcer.AnnouncePowerShortageFinish;
 import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
 import com.gui.domain.event.AbstractEvent;
 import com.gui.domain.event.PowerShortageEvent;
@@ -37,6 +38,7 @@ public class ListenForGreenSourceEvent extends TickerBehaviour {
                     final PowerShortageEvent powerShortageEvent = (PowerShortageEvent) event;
                     myGreenEnergyAgent.addBehaviour(new AnnounceSourcePowerShortage(myGreenEnergyAgent, event.getOccurrenceTime(), powerShortageEvent.getNewMaximumPower()));
                 }
+                case POWER_SHORTAGE_FINISH -> myGreenEnergyAgent.addBehaviour(new AnnouncePowerShortageFinish(myGreenEnergyAgent));
             }
             myGreenEnergyAgent.getAgentNode().setEvent(null);
         }

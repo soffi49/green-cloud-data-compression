@@ -6,13 +6,14 @@ import static yellowpages.YellowPagesService.search;
 
 import agents.server.behaviour.ListenForUnfinishedJobInformation;
 import agents.server.behaviour.ReceiveJobRequest;
-import agents.server.behaviour.listener.ListenForJobStarStatusRequest;
+import agents.server.behaviour.listener.ListenForJobStartStatusRequest;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
 import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferRefusal;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
+import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortageFinish;
 import agents.server.behaviour.powershortage.listener.source.ListenForSourceTransferConfirmation;
 import agents.server.domain.ServerStateManagement;
 import behaviours.ReceiveGUIController;
@@ -61,7 +62,8 @@ public class ServerAgent extends AbstractServerAgent {
       this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
       try {
         this.pricePerHour = Double.parseDouble(args[1].toString());
-        this.maximumCapacity = Integer.parseInt(args[2].toString());
+        this.currentMaximumCapacity = Integer.parseInt(args[2].toString());
+        this.initialMaximumCapacity = Integer.parseInt(args[2].toString());
       } catch (final NumberFormatException e) {
         logger.info("The given price is not a number!");
         doDelete();
@@ -83,7 +85,8 @@ public class ServerAgent extends AbstractServerAgent {
         new ListenForSourceTransferConfirmation(),
         new ListenForServerEvent(this),
         new ListenForJobTransferCancellation(this),
-        new ListenForJobStarStatusRequest(),
-        new ListenForJobTransferRefusal(this));
+        new ListenForJobStartStatusRequest(),
+        new ListenForJobTransferRefusal(this),
+        new ListenForSourcePowerShortageFinish());
   }
 }

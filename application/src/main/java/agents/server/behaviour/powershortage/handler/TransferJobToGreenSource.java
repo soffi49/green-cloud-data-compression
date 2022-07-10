@@ -68,15 +68,6 @@ public class TransferJobToGreenSource extends WakerBehaviour {
             logger.info("[{}] Updating the internal state of the server", myServerAgent.getName());
             myServerAgent.getGreenSourceForJobMap().replace(jobToExecute.getJobId(), newGreenSource);
             myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
-            startJobExecutionInNewGreenSource(jobToExecute);
         }
-    }
-
-    private void startJobExecutionInNewGreenSource(final Job jobToExecute) {
-        logger.info("[{}] Start executing the job in the new green source", myServerAgent.getName());
-        final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(), jobToExecute.getStartTime(), List.of(newGreenSource));
-        displayMessageArrow(myServerAgent, newGreenSource);
-        myServerAgent.manage().updateServerGUI();
-        myAgent.send(startedJobMessage);
     }
 }

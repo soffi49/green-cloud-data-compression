@@ -11,6 +11,7 @@ import static messages.domain.ReplyMessageFactory.prepareReply;
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.mapper.JobMapper;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.JobWithProtocol;
 import domain.job.PowerJob;
@@ -76,7 +77,16 @@ public class ProposePowerRequest extends ProposeInitiator {
      */
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
-        logger.info("[{}] Server rejected the job proposal", guid);
+        try {
+            logger.info("[{}] Server rejected the job proposal", guid);
+            final JobInstanceIdentifier jobInstanceId = getMapper().readValue(reject_proposal.getContent(), JobInstanceIdentifier.class);
+            final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+            if(Objects.nonNull(powerJob)) {
+                myGreenEnergyAgent.getPowerJobs().remove(powerJob);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendResponseToServer(final ACLMessage acceptProposal, final JobWithProtocol jobWithProtocol) {

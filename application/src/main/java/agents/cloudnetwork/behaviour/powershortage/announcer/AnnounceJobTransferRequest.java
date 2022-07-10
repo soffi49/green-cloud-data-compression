@@ -101,7 +101,7 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
                 myAgent.send(prepareJobPowerShortageInformation(jobInstanceId, powerShortageTime, affectedServer, POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL));
                 myAgent.addBehaviour(TransferJobToServer.createFor(myCloudNetworkAgent, job.getJobId(), powerShortageTime, chosenServerOffer.getSender()));
                 myAgent.addBehaviour(new ListenForServerTransferCancellation(myAgent, chosenServerOffer.getSender(), affectedServer));
-                rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
+                rejectJobOffers(myCloudNetworkAgent, jobInstanceId, chosenServerOffer, proposals);
             } else {
                 handleInvalidResponses(proposals);
             }
@@ -119,7 +119,7 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 
     private void handleInvalidResponses(final List<ACLMessage> proposals) {
         logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
-        rejectJobOffers(myCloudNetworkAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+        rejectJobOffers(myCloudNetworkAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
         myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
                                                                     affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
     }

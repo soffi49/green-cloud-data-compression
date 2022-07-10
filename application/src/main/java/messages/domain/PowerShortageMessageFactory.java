@@ -2,6 +2,7 @@ package messages.domain;
 
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,6 +33,25 @@ public class PowerShortageMessageFactory {
         }
         message.setProtocol(POWER_SHORTAGE_ALERT_PROTOCOL);
         message.addReceiver(receivers);
+        return message;
+    }
+
+    /**
+     * Method prepares the message informing about the finish of the shortage in power for given agent
+     *
+     * @param jobInstanceId unique identifier of the job instance
+     * @param receiver      message receiver
+     * @return inform ACLMessage
+     */
+    public static ACLMessage preparePowerShortageFinishInformation(final JobInstanceIdentifier jobInstanceId, final AID receiver) {
+        final ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+        try {
+            message.setContent(getMapper().writeValueAsString(jobInstanceId));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        message.setProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL);
+        message.addReceiver(receiver);
         return message;
     }
 

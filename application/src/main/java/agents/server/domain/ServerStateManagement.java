@@ -60,7 +60,7 @@ public class ServerStateManagement {
   public int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate) {
     final int powerInUser =
         getUniqueJobsForTimeStamp(startDate, endDate).stream().mapToInt(Job::getPower).sum();
-    return serverAgent.getMaximumCapacity() - powerInUser;
+    return serverAgent.getCurrentMaximumCapacity() - powerInUser;
   }
 
   /**
@@ -248,9 +248,9 @@ public class ServerStateManagement {
    * @param newMaximumCapacity new maximum capacity value
    */
   public void updateMaximumCapacity(final int newMaximumCapacity) {
-    serverAgent.setMaximumCapacity(newMaximumCapacity);
+    serverAgent.setCurrentMaximumCapacity(newMaximumCapacity);
     ((ServerAgentNode) serverAgent.getAgentNode())
-        .updateMaximumCapacity(serverAgent.getMaximumCapacity());
+        .updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
   }
 
   /**
@@ -284,16 +284,11 @@ public class ServerStateManagement {
           .getServerJobs()
           .put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
       serverAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
-      serverAgent.addBehaviour(
-          StartJobExecution.createFor(
-              serverAgent, JobMapper.mapToJobInstanceId(onBackupEnergyInstance), false, true));
+      serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, onBackupEnergyInstance, false, true));
       if (getCurrentTime().isBefore(finishedPowerJobInstance.getStartTime())) {
-        serverAgent.addBehaviour(
-            StartJobExecution.createFor(
-                serverAgent, JobMapper.mapToJobInstanceId(finishedPowerJobInstance), true, false));
+        serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, finishedPowerJobInstance, true, false));
       } else {
-        serverAgent.addBehaviour(
-            FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
+        serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
       }
     } else {
       serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
@@ -321,7 +316,7 @@ public class ServerStateManagement {
   /** Method updates the information on the server GUI */
   public void updateServerGUI() {
     final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
-    serverAgentNode.updateMaximumCapacity(serverAgent.getMaximumCapacity());
+    serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
     serverAgentNode.updateJobsCount(getJobCount());
     serverAgentNode.updateClientNumber(getClientNumber());
     serverAgentNode.updateIsActive(getIsActiveState(), getIsActiveBackUpState());

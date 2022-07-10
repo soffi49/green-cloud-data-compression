@@ -144,7 +144,7 @@ public class GUIControllerImpl implements GUIController {
         adminFrame = new JFrame("ADMIN PANEL");
         adminFrame.setSize(new Dimension(MAIN_SIZE.width / 2, MAIN_SIZE.height / 2));
         adminFrame.setResizable(false);
-        adminFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        adminFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         adminFrame.add(adminControlPanel.getAdminControlPanel());
         mainFrame.setLocationRelativeTo(null);
     }
@@ -153,7 +153,7 @@ public class GUIControllerImpl implements GUIController {
         mainFrame = new JFrame("CLOUD NETWORK");
         mainFrame.setSize(MAIN_SIZE);
         mainFrame.setResizable(false);
-        mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         mainFrame.getContentPane().add(mainPanelScroll);
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);

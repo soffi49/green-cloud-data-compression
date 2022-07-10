@@ -78,7 +78,7 @@ public class CloudNetworkAgentNode extends AgentNode {
 
   @Override
   public void updateGraphUI() {
-    synchronized (node) {
+    synchronized (graph) {
       if (traffic.get() > 85) {
         node.setAttribute(
             "ui.class", concatenateStyles(List.of(LABEL_STYLE, style, CLOUD_NETWORK_HIGH_STYLE)));

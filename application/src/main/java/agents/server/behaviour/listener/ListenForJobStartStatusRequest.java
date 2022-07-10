@@ -4,11 +4,9 @@ import static common.constant.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.*;
 import static jade.lang.acl.MessageTemplate.*;
-import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
-import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -22,9 +20,9 @@ import java.util.Objects;
 /**
  * Behaviour is responsible for listening for the requests for some job start status
  */
-public class ListenForJobStarStatusRequest extends CyclicBehaviour {
+public class ListenForJobStartStatusRequest extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForJobStarStatusRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ListenForJobStartStatusRequest.class);
 
     private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST), MatchProtocol(JOB_START_STATUS_PROTOCOL));
     private ServerAgent myServerAgent;

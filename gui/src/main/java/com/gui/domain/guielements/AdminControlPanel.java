@@ -1,10 +1,19 @@
 package com.gui.domain.guielements;
 
 import static com.gui.domain.types.EventTypeEnum.POWER_SHORTAGE;
-import static com.gui.utils.GUIUtils.*;
+import static com.gui.domain.types.EventTypeEnum.POWER_SHORTAGE_FINISH;
+import static com.gui.utils.GUIUtils.addPanelHeader;
+import static com.gui.utils.GUIUtils.createBorderPanel;
+import static com.gui.utils.GUIUtils.createButton;
+import static com.gui.utils.GUIUtils.createDefaultComboBox;
+import static com.gui.utils.GUIUtils.createNumericTextField;
+import static com.gui.utils.GUIUtils.createSeparator;
+import static com.gui.utils.GUIUtils.makeButtonDisabled;
+import static com.gui.utils.GUIUtils.makeButtonEnabled;
 import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
 
 import com.gui.domain.event.PowerShortageEvent;
+import com.gui.domain.event.PowerShortageFinishEvent;
 import com.gui.domain.nodes.AgentNode;
 import com.gui.domain.nodes.ClientAgentNode;
 import com.gui.domain.nodes.MonitoringAgentNode;
@@ -12,7 +21,11 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
-import javax.swing.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JPanel;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -31,6 +44,7 @@ public class AdminControlPanel {
 
     private static final String TITLE_LABEL = "ADMINISTRATOR TOOLS";
     private static final String MAKE_POWER_SHORTAGE_BUTTON = "MAKE POWER SHORTAGE";
+    private static final String FINISH_POWER_SHORTAGE_BUTTON = "FINISH POWER SHORTAGE";
     private static final String POWER_SHORTAGE_RUNNING = "POWER SHORTAGE IS ALREADY RUNNING";
     private static final String MAX_POWER = "MAX POWER";
     private static final String INITIAL_AGENT = "";
@@ -104,11 +118,15 @@ public class AdminControlPanel {
             allNetworkAgentNodes.stream()
                     .filter(agentNode -> agentNode.getName().equals(selectedAgent))
                     .forEach(agentNode -> {
-                        if(!agentNode.isDuringEvent()) {
+                        if (!agentNode.isDuringEvent()) {
                             final int maxPower = Integer.parseInt(powerShortageInput.getText());
                             agentNode.setEvent(new PowerShortageEvent(POWER_SHORTAGE, getTimeForEventOccurrence(), maxPower));
                             agentNode.setDuringEvent(true);
-                            makeButtonDisabled(powerShortageButton, POWER_SHORTAGE_RUNNING);
+                            makeButtonEnabled(powerShortageButton, FINISH_POWER_SHORTAGE_BUTTON);
+                        } else {
+                            agentNode.setEvent(new PowerShortageFinishEvent(POWER_SHORTAGE_FINISH, getTimeForEventOccurrence()));
+                            agentNode.setDuringEvent(false);
+                            makeButtonEnabled(powerShortageButton, MAKE_POWER_SHORTAGE_BUTTON);
                         }
                     });
         }
@@ -136,8 +154,8 @@ public class AdminControlPanel {
                 .filter(agent -> agent.getName().equals(selectedAgent))
                 .findFirst()
                 .orElse(null);
-        if(Objects.nonNull(agentNode) && agentNode.isDuringEvent()) {
-            makeButtonDisabled(powerShortageButton, POWER_SHORTAGE_RUNNING);
+        if (Objects.nonNull(agentNode) && agentNode.isDuringEvent()) {
+            makeButtonEnabled(powerShortageButton, FINISH_POWER_SHORTAGE_BUTTON);
         } else {
             makeButtonEnabled(powerShortageButton, MAKE_POWER_SHORTAGE_BUTTON);
         }

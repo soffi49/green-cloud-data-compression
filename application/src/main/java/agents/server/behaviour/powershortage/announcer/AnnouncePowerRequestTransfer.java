@@ -11,16 +11,19 @@ import agents.server.ServerAgent;
 import common.constant.InvalidJobIdConstant;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
+import domain.job.ImmutablePowerShortageTransfer;
 import domain.job.PowerJob;
 import domain.job.PowerShortageTransfer;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
-import java.util.List;
-import java.util.Vector;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Behaviours responsible for sending the transfer call for proposal to remaining green sources and choosing the one which
@@ -31,24 +34,24 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
     private static final Logger logger = LoggerFactory.getLogger(AnnouncePowerRequestTransfer.class);
 
     private final ServerAgent myServerAgent;
-    private final PowerShortageTransfer powerShortageTransfer;
+    private final OffsetDateTime powerShortageStartTime;
     private final PowerJob powerJob;
 
     /**
      * Behaviour constructor
      *
-     * @param agent                 agent which executes the behaviour
-     * @param powerRequest          call for proposal containing the details regarding power needed to execute the job
-     * @param powerJob              affected job
-     * @param powerShortageTransfer power shortage transfer for which the call for proposal is executed
+     * @param agent                  agent which executes the behaviour
+     * @param powerRequest           call for proposal containing the details regarding power needed to execute the job
+     * @param powerJob               affected job
+     * @param powerShortageStartTime time when the power shortage will start
      */
     public AnnouncePowerRequestTransfer(final Agent agent,
                                         final ACLMessage powerRequest,
                                         final PowerJob powerJob,
-                                        final PowerShortageTransfer powerShortageTransfer) {
+                                        final OffsetDateTime powerShortageStartTime) {
         super(agent, powerRequest);
         this.myServerAgent = (ServerAgent) myAgent;
-        this.powerShortageTransfer = powerShortageTransfer;
+        this.powerShortageStartTime = powerShortageStartTime;
         this.powerJob = powerJob;
     }
 
@@ -67,9 +70,13 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", myAgent.getName());
         } else if (proposals.isEmpty()) {
-            logger.info("[{}] No green sources are available for the power transfer. Passing the information to the cloud network", myAgent.getName());
+            logger.info("[{}] No green sources are available for the power transfer of job {}. Passing the information to the cloud network", myAgent.getName(), powerJob.getJobId());
+            final PowerShortageTransfer newTransfer = ImmutablePowerShortageTransfer.builder()
+                    .jobList(List.of(powerJob))
+                    .startTime(powerShortageStartTime)
+                    .build();
             displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
-            myServerAgent.send(preparePowerShortageInformation(powerShortageTransfer, myServerAgent.getOwnerCloudNetworkAgent()));
+            myServerAgent.send(preparePowerShortageInformation(newTransfer, myServerAgent.getOwnerCloudNetworkAgent()));
         } else {
             final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
             if (!validProposals.isEmpty()) {
@@ -81,7 +88,7 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
                 displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getAllReceiver());
 
                 myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(), JobMapper.mapToJobInstanceId(powerJob), POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL));
-                rejectJobOffers(myServerAgent, jobId, chosenGreenSourceOffer, proposals);
+                rejectJobOffers(myServerAgent, JobMapper.mapToJobInstanceId(powerJob), chosenGreenSourceOffer, proposals);
             } else {
                 handleInvalidProposals(proposals);
             }
@@ -90,6 +97,6 @@ public class AnnouncePowerRequestTransfer extends ContractNetInitiator {
 
     private void handleInvalidProposals(final List<ACLMessage> proposals) {
         logger.info("I didn't understand any proposal from Green Energy Agents");
-        rejectJobOffers(myServerAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+        rejectJobOffers(myServerAgent, JobMapper.mapToJobInstanceId(powerJob), null, proposals);
     }
 }
