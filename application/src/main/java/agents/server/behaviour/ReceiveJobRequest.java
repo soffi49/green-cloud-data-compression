@@ -70,7 +70,7 @@ public class ReceiveJobRequest extends CyclicBehaviour {
                 e.printStackTrace();
             }
         } else {
-            block(125);
+            block();
         }
     }
 

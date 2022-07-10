@@ -5,6 +5,7 @@ import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.MessageTemplate.MatchConversationId;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
@@ -46,7 +47,8 @@ public class ReceiveWeatherData extends CyclicBehaviour {
         CheckedPowerJob checkedPowerJob, SequentialBehaviour sequentialBehaviour) {
         this.myGreenEnergyAgent = myGreenAgent;
         this.messageTemplate = and(MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL),
-            or(MatchPerformative(INFORM), MatchPerformative(REFUSE)));
+            and(or(MatchPerformative(INFORM), MatchPerformative(REFUSE)),
+                MatchConversationId(originalMessage.getConversationId())));
         this.guid = myGreenEnergyAgent.getName();
         this.originalMessage = originalMessage;
         this.checkedPowerJob = checkedPowerJob;
