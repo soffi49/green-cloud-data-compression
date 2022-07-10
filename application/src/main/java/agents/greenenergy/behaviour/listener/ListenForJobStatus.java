@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Behaviour which listens for the information that the execution of the given job finishes.
+ * Behaviour which listens for the information that the execution of the given job starts or finishes
  */
 public class ListenForJobStatus extends CyclicBehaviour {
     private static final Logger logger = LoggerFactory.getLogger(ListenForJobStatus.class);
@@ -43,7 +43,7 @@ public class ListenForJobStatus extends CyclicBehaviour {
     }
 
     /**
-     * Method which listens for the information that the job execution has finished. It is responsible
+     * Method which listens for the information that the job execution has started/finished. It is responsible
      * for updating the current green energy source state.
      */
     @Override

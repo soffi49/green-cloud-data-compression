@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 /**
- * Behaviour is responsible for catching the information confirming that the job transfer was successful
+ * Behaviour is responsible for catching the information confirming that the job transfer from either
+ * source or server was successful
  */
 public class ListenForTransferProtocolInform extends CyclicBehaviour {
 
