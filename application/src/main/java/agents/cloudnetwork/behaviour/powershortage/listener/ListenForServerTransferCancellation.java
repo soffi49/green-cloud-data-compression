@@ -2,13 +2,13 @@ package agents.cloudnetwork.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
-import static jade.lang.acl.ACLMessage.REQUEST;
+import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.MatchSender;
 import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
-import static messages.domain.PowerShortageMessageFactory.prepareTransferCancellationRequest;
+import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.PowerShortageJob;
@@ -17,9 +17,10 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * Behaviour listens for messages coming from the affected server which decided to cancel the job transfer
@@ -43,7 +44,7 @@ public class ListenForServerTransferCancellation extends CyclicBehaviour {
         super(myAgent);
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
         this.chosenServerForTransfer = chosenServerForTransfer;
-        this.messageTemplate = and(MatchPerformative(REQUEST), and(MatchProtocol(CANCELLED_TRANSFER_PROTOCOL), MatchSender(affectedServer)));
+        this.messageTemplate = and(MatchPerformative(INFORM), and(MatchProtocol(CANCELLED_TRANSFER_PROTOCOL), MatchSender(affectedServer)));
 
     }
 
@@ -60,7 +61,7 @@ public class ListenForServerTransferCancellation extends CyclicBehaviour {
                 final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(), PowerShortageJob.class);
                 logger.info("[{}] Sending the request for transfer cancellation to {}", myAgent.getName(), chosenServerForTransfer.getLocalName());
                 displayMessageArrow(myCloudNetworkAgent, chosenServerForTransfer);
-                myCloudNetworkAgent.send(prepareTransferCancellationRequest(powerShortageJob, chosenServerForTransfer));
+                myCloudNetworkAgent.send(prepareJobPowerShortageInformation(powerShortageJob, chosenServerForTransfer, CANCELLED_TRANSFER_PROTOCOL));
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -26,25 +26,10 @@ public class JobStatusMessageFactory {
      * @param clientId client global name
      * @return inform ACLMessage
      */
-    public static ACLMessage prepareStartMessageForClient(final String clientId) {
+    public static ACLMessage prepareJobStatusMessageForClient(final String clientId, final String protocol) {
         final ACLMessage informationMessage = new ACLMessage(INFORM);
-        informationMessage.setProtocol(STARTED_JOB_PROTOCOL);
-        informationMessage.setContent(STARTED_JOB_PROTOCOL);
-        informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
-        return informationMessage;
-    }
-
-    /**
-     * Method prepares the information message about the job execution finish which is to be sent
-     * to the client
-     *
-     * @param clientId client global name
-     * @return inform ACLMessage
-     */
-    public static ACLMessage prepareFinishMessageForClient(final String clientId) {
-        final ACLMessage informationMessage = new ACLMessage(INFORM);
-        informationMessage.setProtocol(FINISH_JOB_PROTOCOL);
-        informationMessage.setContent(FINISH_JOB_PROTOCOL);
+        informationMessage.setProtocol(protocol);
+        informationMessage.setContent(protocol);
         informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
         return informationMessage;
     }
@@ -124,35 +109,5 @@ public class JobStatusMessageFactory {
         requestMessage.setContent(jobId);
         requestMessage.addReceiver(receiver);
         return requestMessage;
-    }
-
-    /**
-     * Method prepares the information message about the job execution delay which is to be sent
-     * to the client
-     *
-     * @param clientId client global name
-     * @return inform ACLMessage
-     */
-    public static ACLMessage prepareDelayMessageForClient(final String clientId) {
-        final ACLMessage informationMessage = new ACLMessage(INFORM);
-        informationMessage.setProtocol(DELAYED_JOB_PROTOCOL);
-        informationMessage.setContent(DELAYED_JOB_PROTOCOL);
-        informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
-        return informationMessage;
-    }
-
-    /**
-     * Method prepares the message informing the client that there is a power shortage and that the job will be executed
-     * using the backup power
-     *
-     * @param clientId client global name
-     * @return inform ACLMessage
-     */
-    public static ACLMessage preparePowerShortageMessageForClient(final String clientId) {
-        final ACLMessage informationMessage = new ACLMessage(INFORM);
-        informationMessage.setProtocol(BACK_UP_POWER_JOB_PROTOCOL);
-        informationMessage.setContent(BACK_UP_POWER_JOB_PROTOCOL);
-        informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
-        return informationMessage;
     }
 }

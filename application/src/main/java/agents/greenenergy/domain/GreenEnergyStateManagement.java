@@ -167,7 +167,7 @@ public class GreenEnergyStateManagement {
      * @param powerJob           affected job
      * @param powerShortageStart time when power shortage starts
      */
-    public void divideJobForPowerShortage(
+    public PowerJob divideJobForPowerShortage(
             final PowerJob powerJob, final OffsetDateTime powerShortageStart) {
         if (powerShortageStart.isAfter(powerJob.getStartTime())) {
             final PowerJob onHoldJobInstance =
@@ -198,9 +198,11 @@ public class GreenEnergyStateManagement {
                     new FinishJobManually(
                             greenEnergyAgent, endDate, JobMapper.mapToJobInstanceId(onHoldJobInstance)));
             updateGreenSourceGUI();
+            return onHoldJobInstance;
         } else {
             greenEnergyAgent.getPowerJobs().replace(powerJob, JobStatusEnum.ON_HOLD_TEMPORARY);
             updateGreenSourceGUI();
+            return powerJob;
         }
     }
 
@@ -229,16 +231,16 @@ public class GreenEnergyStateManagement {
      * @return average available power as decimal or empty optional if power not available
      */
     public synchronized Optional<Double> getAverageAvailablePower(
-        final PowerJob powerJob, final MonitoringData weather) {
+            final PowerJob powerJob, final MonitoringData weather) {
         var powerChart = getPowerChart(powerJob, weather);
         var availablePower = powerChart.values().stream().mapToDouble(a -> a).average().getAsDouble();
         logger.info(
-            "[{}] Calculated available {} average power {} between {} and {}",
-            greenEnergyAgent.getName(),
-            greenEnergyAgent.getEnergyType(),
-            String.format("%.2f", availablePower),
-            powerJob.getStartTime(),
-            powerJob.getEndTime());
+                "[{}] Calculated available {} average power {} between {} and {}",
+                greenEnergyAgent.getName(),
+                greenEnergyAgent.getEnergyType(),
+                String.format("%.2f", availablePower),
+                powerJob.getStartTime(),
+                powerJob.getEndTime());
         if (powerChart.values().stream().anyMatch(value -> value <= 0)) {
             return Optional.empty();
         }
@@ -262,46 +264,6 @@ public class GreenEnergyStateManagement {
         return Optional.of(availablePower);
     }
 
-    private boolean isJobUnique(final String jobId) {
-        return greenEnergyAgent.getPowerJobs().keySet().stream()
-                .filter(job -> job.getJobId().equals(jobId))
-                .toList()
-                .size()
-                == 1;
-    }
-
-    private synchronized Map<Instant, Double> getPowerChart(
-        PowerJob powerJob, final MonitoringData weather) {
-        var start = powerJob.getStartTime().toInstant();
-        var end = powerJob.getEndTime().toInstant();
-        var timetable =
-            getJobsTimetable(powerJob).stream()
-                .filter(time -> isWithinTimeStamp(start, end, time))
-                .toList();
-        var powerJobs =
-            greenEnergyAgent.getPowerJobs().keySet().stream()
-                .filter(job -> JOB_IN_PROGRESS.contains(greenEnergyAgent.getPowerJobs().get(job)))
-                .toList();
-
-        if (powerJobs.isEmpty()) {
-            return timetable.stream()
-                .collect(toMap(Function.identity(), time -> greenEnergyAgent.getCapacity(weather, time)));
-        }
-
-        return timetable.stream()
-            .collect(
-                toMap(
-                    Function.identity(),
-                    time ->
-                        powerJobs.stream()
-                            .filter(job -> job.isExecutedAtTime(time))
-                            .map(PowerJob::getPower)
-                            .map(power -> greenEnergyAgent.getCapacity(weather, time) - power)
-                            .mapToDouble(a -> a)
-                            .average()
-                            .orElseGet(() -> 0.0)));
-    }
-
     /**
      * Method updates the information on the green source GUI
      */
@@ -312,6 +274,57 @@ public class GreenEnergyStateManagement {
         serverAgentNode.updateIsActive(getIsActiveState(), getHasJobsOnHold());
         serverAgentNode.updateTraffic(getCurrentPowerInUseForGreenSource());
         serverAgentNode.updateJobsOnHold(getOnHoldJobCount());
+    }
+
+    public void handleRefuse(final ACLMessage message, final PowerJob powerJob) {
+        logger.info("[{}] Weather data not available, sending refuse message to server.", greenEnergyAgent.getName());
+        greenEnergyAgent.getPowerJobs().remove(powerJob);
+        displayMessageArrow(greenEnergyAgent, message.getAllReceiver());
+        greenEnergyAgent.send(ReplyMessageFactory.prepareRefuseReply(message.createReply()));
+    }
+
+    public MonitoringData readMonitoringData(ACLMessage message, ACLMessage originalMessage) {
+        try {
+            return getMapper().readValue(message.getContent(), MonitoringData.class);
+        } catch (JsonProcessingException e) {
+            logger.info("[{}] I didn't understand the response with the weather data, sending refuse message to server",
+                        greenEnergyAgent.getName());
+            greenEnergyAgent.send(ReplyMessageFactory.prepareRefuseReply(originalMessage.createReply()));
+        }
+        return null;
+    }
+
+    private boolean isJobUnique(final String jobId) {
+        return greenEnergyAgent.getPowerJobs().keySet().stream()
+                .filter(job -> job.getJobId().equals(jobId))
+                .toList()
+                .size()
+                == 1;
+    }
+
+    private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather) {
+        var start = powerJob.getStartTime().toInstant();
+        var end = powerJob.getEndTime().toInstant();
+        var timetable = getJobsTimetable(powerJob).stream()
+                .filter(time -> isWithinTimeStamp(start, end, time))
+                .toList();
+        var powerJobs = greenEnergyAgent.getPowerJobs().keySet().stream()
+                .filter(job -> JOB_IN_PROGRESS.contains(greenEnergyAgent.getPowerJobs().get(job)))
+                .toList();
+
+        if (powerJobs.isEmpty()) {
+            return timetable.stream().collect(toMap(Function.identity(), time -> greenEnergyAgent.getCapacity(weather, time)));
+        }
+
+        return timetable.stream()
+                .collect(toMap(Function.identity(), time ->
+                        powerJobs.stream()
+                                .filter(job -> job.isExecutedAtTime(time))
+                                .map(PowerJob::getPower)
+                                .map(power -> greenEnergyAgent.getCapacity(weather, time) - power)
+                                .mapToDouble(a -> a)
+                                .average()
+                                .orElseGet(() -> 0.0)));
     }
 
     private int getCurrentPowerInUseForGreenSource() {
@@ -349,33 +362,5 @@ public class GreenEnergyStateManagement {
 
     private boolean getHasJobsOnHold() {
         return getOnHoldJobCount() > 0;
-    }
-
-    private List<PowerJob> getUniquePowerJobsForTimeStamp(final OffsetDateTime startDate,
-                                                          final OffsetDateTime endDate) {
-        return greenEnergyAgent.getPowerJobs().keySet().stream()
-                .filter(job -> job.getStartTime().isBefore(endDate) && job.getEndTime().isAfter(startDate))
-                .map(PowerJob::getJobId)
-                .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
-                .values().stream().toList();
-    }
-
-
-    public void handleRefuse(final ACLMessage message, final PowerJob powerJob) {
-        logger.info("[{}] Weather data not available, sending refuse message to server.", greenEnergyAgent.getName());
-        greenEnergyAgent.getPowerJobs().remove(powerJob);
-        displayMessageArrow(greenEnergyAgent, message.getAllReceiver());
-        greenEnergyAgent.send(ReplyMessageFactory.prepareRefuseReply(message.createReply()));
-    }
-
-    public MonitoringData readMonitoringData(ACLMessage message, ACLMessage originalMessage) {
-        try {
-            return getMapper().readValue(message.getContent(), MonitoringData.class);
-        } catch (JsonProcessingException e) {
-            logger.info("[{}] I didn't understand the response with the weather data, sending refuse message to server",
-                        greenEnergyAgent.getName());
-            greenEnergyAgent.send(ReplyMessageFactory.prepareRefuseReply(originalMessage.createReply()));
-        }
-        return null;
     }
 }

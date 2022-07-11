@@ -27,6 +27,7 @@ public class MessageProtocolConstants {
      * JOB_START_STATUS_PROTOCOL   - protocol used in messages with request of the update regarding the job start status
      * DELAYED_JOB_PROTOCOL        - protocol used in messages informing that the job execution started with the delay
      * BACK_UP_POWER_JOB_PROTOCOL  - protocol used in messages informing that the job is executed using the back-up power
+     * GREEN_POWER_JOB_PROTOCOL    - protocol used in messages informing the client that the job is executed using green power
      */
     public static final String FINISH_JOB_PROTOCOL = "FINISH";
     public static final String MANUAL_JOB_FINISH_PROTOCOL = "MANUAL_FINISH";
@@ -34,6 +35,7 @@ public class MessageProtocolConstants {
     public static final String JOB_START_STATUS_PROTOCOL = "START_STATUS_PROTOCOL";
     public static final String DELAYED_JOB_PROTOCOL = "DELAYED";
     public static final String BACK_UP_POWER_JOB_PROTOCOL = "BACK_UP_POWER_JOB_PROTOCOL";
+    public static final String GREEN_POWER_JOB_PROTOCOL = "GREEN_POWER_JOB_PROTOCOL";
 
 
     /**
@@ -51,9 +53,9 @@ public class MessageProtocolConstants {
      */
     public static final String POWER_SHORTAGE_ALERT_PROTOCOL = "POWER_SHORTAGE_ALERT_PROTOCOL";
     public static final String POWER_SHORTAGE_FINISH_ALERT_PROTOCOL = "POWER_SHORTAGE_FINISH_ALERT_PROTOCOL";
-    public static final String POWER_SHORTAGE_TRANSFER_REFUSAL = "POWER_SHORTAGE_TRANSFER_REFUSAL";
-    public static final String POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL = "POWER_SHORTAGE_TRANSFER_PROTOCOL";
-    public static final String POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL";
+    public static final String SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL = "SERVER_POWER_SHORTAGE_ON_HOLD";
+    public static final String POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL = "POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL";
+    public static final String SERVER_POWER_SHORTAGE_ALERT_PROTOCOL = "SERVER_POWER_SHORTAGE_ALERT_PROTOCOL";
     public static final String POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL = "POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL";
     public static final String CANCELLED_TRANSFER_PROTOCOL = "CANCELLED_TRANSFER_PROTOCOL";
 

@@ -1,9 +1,9 @@
-package agents.server.behaviour.powershortage.listener.network;
+package agents.server.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
-import static jade.lang.acl.ACLMessage.REQUEST;
+import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.MatchSender;
@@ -43,7 +43,7 @@ public class ListenForJobTransferCancellation extends CyclicBehaviour {
     public ListenForJobTransferCancellation(final Agent myAgent) {
         super(myAgent);
         this.myServerAgent = (ServerAgent) myAgent;
-        this.messageTemplate = and(MatchPerformative(REQUEST), and(MatchProtocol(CANCELLED_TRANSFER_PROTOCOL), MatchSender(myServerAgent.getOwnerCloudNetworkAgent())));
+        this.messageTemplate = and(MatchPerformative(INFORM), and(MatchProtocol(CANCELLED_TRANSFER_PROTOCOL), MatchSender(myServerAgent.getOwnerCloudNetworkAgent())));
     }
 
     /**

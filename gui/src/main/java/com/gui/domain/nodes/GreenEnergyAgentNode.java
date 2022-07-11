@@ -77,13 +77,8 @@ public class GreenEnergyAgentNode extends AgentNode {
      * @param powerInUse current power in use
      */
     public void updateTraffic(final double powerInUse) {
-        this.traffic.set(
-                currentMaximumCapacity.get() != 0
-                        ? ((powerInUse / currentMaximumCapacity.get()) * 100)
-                        : 0);
-        labelsMap
-                .get(AgentNodeLabelEnum.TRAFFIC_LABEL)
-                .setText(formatToHTML(String.format("%.2f%%", traffic.get())));
+        this.traffic.set(currentMaximumCapacity.get() != 0 ? ((powerInUse / currentMaximumCapacity.get()) * 100) : 0);
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
 
@@ -94,9 +89,7 @@ public class GreenEnergyAgentNode extends AgentNode {
      */
     public void updateJobsOnHold(final int value) {
         jobsOnHold.set(value);
-        labelsMap
-                .get(AgentNodeLabelEnum.JOBS_ON_HOLD_LABEL)
-                .setText(formatToHTML(String.valueOf(jobsOnHold)));
+        labelsMap.get(AgentNodeLabelEnum.JOBS_ON_HOLD_LABEL).setText(formatToHTML(String.valueOf(jobsOnHold)));
         updateGraphUI();
     }
 
@@ -107,9 +100,7 @@ public class GreenEnergyAgentNode extends AgentNode {
      */
     public void updateJobsCount(final int value) {
         this.numberOfExecutedJobs.set(value);
-        labelsMap
-                .get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL)
-                .setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
+        labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
     }
 
     /**
@@ -121,9 +112,7 @@ public class GreenEnergyAgentNode extends AgentNode {
     public void updateIsActive(final boolean isActive, final boolean hasJobsOnHold) {
         this.hasJobsOnHold.set(hasJobsOnHold);
         this.isActive.set(isActive);
-        labelsMap
-                .get(AgentNodeLabelEnum.IS_ACTIVE_LABEL)
-                .setText(formatToHTML(isActive ? "ACTIVE" : "INACTIVE"));
+        labelsMap.get(AgentNodeLabelEnum.IS_ACTIVE_LABEL).setText(formatToHTML(isActive ? "ACTIVE" : "INACTIVE"));
         updateGraphUI();
     }
 
@@ -135,26 +124,21 @@ public class GreenEnergyAgentNode extends AgentNode {
     public void updateMaximumCapacity(final int maxCapacity) {
         this.currentMaximumCapacity.set((double) maxCapacity);
         this.traffic.set(currentMaximumCapacity.get() != 0 ? ((traffic.get() / maxCapacity) * 100) : 0);
-        labelsMap
-                .get(CURRENT_MAXIMUM_CAPACITY_LABEL)
-                .setText(formatToHTML(String.valueOf(maxCapacity)));
-        labelsMap
-                .get(AgentNodeLabelEnum.TRAFFIC_LABEL)
-                .setText(formatToHTML(String.format("%.2f%%", traffic.get())));
+        labelsMap.get(CURRENT_MAXIMUM_CAPACITY_LABEL).setText(formatToHTML(String.valueOf(maxCapacity)));
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
 
     @Override
-    public synchronized void updateGraphUI() {
-        final String dynamicStyle =
-                hasJobsOnHold.get()
-                        ? GREEN_ENERGY_ON_HOLD_STYLE
-                        : (isActive.get() ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE);
+    public void updateGraphUI() {
+        final String dynamicStyle = hasJobsOnHold.get() ? GREEN_ENERGY_ON_HOLD_STYLE : (isActive.get() ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE);
         if (Objects.nonNull(onHoldSprite)) {
             //final String dynamicSpriteStyle = hasJobsOnHold.get() ? GREEN_ENERGY_ON_HOLD_STYLE : SPRITE_DISABLED;
             //onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
         }
-        node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicStyle)));
+        synchronized (graph) {
+            node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicStyle)));
+        }
         updateActiveEdgeStyle(edges, graph, isActive.get(), name, serverAgent);
     }
 

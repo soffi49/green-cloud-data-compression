@@ -12,12 +12,9 @@ import agents.server.behaviour.listener.ListenForJobStartStatusRequest;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.listener.ListenForWeather;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferConfirmation;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferRefusal;
-import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
-import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortageFinish;
-import agents.server.behaviour.powershortage.listener.source.ListenForSourceTransferConfirmation;
+import agents.server.behaviour.powershortage.listener.ListenForJobTransferCancellation;
+import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortage;
+import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.domain.ServerStateManagement;
 import behaviours.ReceiveGUIController;
 import jade.core.AID;
@@ -83,13 +80,10 @@ public class ServerAgent extends AbstractServerAgent {
         new ReceiveJobRequest(),
         new ListenForPowerConfirmation(),
         new ListenForUnfinishedJobInformation(),
-        new ListenForJobTransferConfirmation(this),
         new ListenForSourcePowerShortage(),
-        new ListenForSourceTransferConfirmation(),
         new ListenForServerEvent(this),
         new ListenForJobTransferCancellation(this),
         new ListenForJobStartStatusRequest(),
-        new ListenForJobTransferRefusal(this),
         new ListenForSourcePowerShortageFinish(),
         new ListenForWeather(this));
   }

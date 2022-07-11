@@ -8,9 +8,7 @@ import agents.greenenergy.behaviour.ReceivePowerRequest;
 import agents.greenenergy.behaviour.listener.ListenForJobStatus;
 import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
 import agents.greenenergy.behaviour.powercheck.ReceivePowerCheckRequest;
-import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferCancellation;
-import agents.greenenergy.behaviour.powershortage.listener.ListenForPowerTransferRefusal;
-import agents.greenenergy.behaviour.powershortage.listener.ListenForTransferProtocolInform;
+import agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenEnergyStateManagement;
 import agents.greenenergy.domain.GreenPower;
@@ -80,9 +78,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
             new ReceivePowerRequest(this),
             new ListenForJobStatus(this),
             new ListenForGreenSourceEvent(this),
-            new ListenForPowerTransferCancellation(this),
-            new ListenForTransferProtocolInform(this),
-            new ListenForPowerTransferRefusal(this),
+            new ListenForServerPowerInformation(this),
             new ReceivePowerCheckRequest(this)
         );
     }

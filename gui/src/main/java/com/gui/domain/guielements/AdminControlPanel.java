@@ -26,6 +26,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
+import javax.swing.Timer;
+import java.awt.event.ActionListener;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -45,7 +47,7 @@ public class AdminControlPanel {
     private static final String TITLE_LABEL = "ADMINISTRATOR TOOLS";
     private static final String MAKE_POWER_SHORTAGE_BUTTON = "MAKE POWER SHORTAGE";
     private static final String FINISH_POWER_SHORTAGE_BUTTON = "FINISH POWER SHORTAGE";
-    private static final String POWER_SHORTAGE_RUNNING = "POWER SHORTAGE IS ALREADY RUNNING";
+    private static final String DISABLED_BUTTON = "WAIT UNTIL NEXT EVENT INVOKE";
     private static final String MAX_POWER = "MAX POWER";
     private static final String INITIAL_AGENT = "";
 
@@ -118,15 +120,22 @@ public class AdminControlPanel {
             allNetworkAgentNodes.stream()
                     .filter(agentNode -> agentNode.getName().equals(selectedAgent))
                     .forEach(agentNode -> {
-                        if (!agentNode.isDuringEvent()) {
-                            final int maxPower = Integer.parseInt(powerShortageInput.getText());
-                            agentNode.setEvent(new PowerShortageEvent(POWER_SHORTAGE, getTimeForEventOccurrence(), maxPower));
-                            agentNode.setDuringEvent(true);
-                            makeButtonEnabled(powerShortageButton, FINISH_POWER_SHORTAGE_BUTTON);
-                        } else {
-                            agentNode.setEvent(new PowerShortageFinishEvent(POWER_SHORTAGE_FINISH, getTimeForEventOccurrence()));
-                            agentNode.setDuringEvent(false);
-                            makeButtonEnabled(powerShortageButton, MAKE_POWER_SHORTAGE_BUTTON);
+                        final ActionListener enableAction = (e) -> {
+                            agentNode.setManualEventEnabled(true);
+                            changeSelectedNetworkAgent((String) comboBoxNetwork.getSelectedItem());
+                        };
+                        if (agentNode.isManualEventEnabled()) {
+                            if (!agentNode.isDuringEvent()) {
+                                final int maxPower = Integer.parseInt(powerShortageInput.getText());
+                                agentNode.setEvent(new PowerShortageEvent(POWER_SHORTAGE, getTimeForEventOccurrence(), maxPower));
+                                agentNode.setDuringEvent(true);
+                            } else {
+                                agentNode.setEvent(new PowerShortageFinishEvent(POWER_SHORTAGE_FINISH, getTimeForEventOccurrence()));
+                                agentNode.setDuringEvent(false);
+                            }
+                            agentNode.setManualEventEnabled(false);
+                            new Timer(2000, enableAction).start();
+                            changeSelectedNetworkAgent((String) comboBoxNetwork.getSelectedItem());
                         }
                     });
         }
@@ -154,7 +163,9 @@ public class AdminControlPanel {
                 .filter(agent -> agent.getName().equals(selectedAgent))
                 .findFirst()
                 .orElse(null);
-        if (Objects.nonNull(agentNode) && agentNode.isDuringEvent()) {
+        if (Objects.nonNull(agentNode) && !agentNode.isManualEventEnabled()) {
+            makeButtonDisabled(powerShortageButton, DISABLED_BUTTON);
+        } else if (agentNode.isDuringEvent()) {
             makeButtonEnabled(powerShortageButton, FINISH_POWER_SHORTAGE_BUTTON);
         } else {
             makeButtonEnabled(powerShortageButton, MAKE_POWER_SHORTAGE_BUTTON);

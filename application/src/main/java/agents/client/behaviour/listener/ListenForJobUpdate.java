@@ -5,6 +5,7 @@ import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -18,11 +19,12 @@ import com.gui.domain.types.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which handles the information that the job status is updated
@@ -30,9 +32,10 @@ import org.slf4j.LoggerFactory;
 public class ListenForJobUpdate extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenForJobUpdate.class);
-    private static final MessageTemplate messageTemplate = and(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
-                                                                  or(MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL))),
-                                                                  MatchPerformative(INFORM));
+    private static final MessageTemplate messageTemplate = and(or(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
+                                                                     or(MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL))),
+                                                                  MatchProtocol(GREEN_POWER_JOB_PROTOCOL)),
+                                                               MatchPerformative(INFORM));
 
     private final ClientAgent myClientAgent;
 
@@ -53,7 +56,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message)) {
-            switch (message.getProtocol()){
+            switch (message.getProtocol()) {
                 case STARTED_JOB_PROTOCOL -> {
                     checkIfJobStartedOnTime();
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
@@ -63,13 +66,17 @@ public class ListenForJobUpdate extends CyclicBehaviour {
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.FINISHED);
                     myClientAgent.getGuiController().updateClientsCountByValue(-1);
                 }
-                case DELAYED_JOB_PROTOCOL ->  {
+                case DELAYED_JOB_PROTOCOL -> {
                     logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.DELAYED);
                 }
                 case BACK_UP_POWER_JOB_PROTOCOL -> {
                     logger.info("[{}] My job is being executed using the back up power!", myAgent.getName());
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.ON_BACK_UP);
+                }
+                case GREEN_POWER_JOB_PROTOCOL -> {
+                    logger.info("[{}] My job is again being executed using the green power!", myAgent.getName());
+                    ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
                 }
             }
         } else {

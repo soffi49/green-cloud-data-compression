@@ -13,7 +13,6 @@ import static com.gui.utils.domain.StyleConstants.SERVER_ACTIVE_BACK_UP_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_ACTIVE_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_INACTIVE_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_STYLE;
-import static com.gui.utils.domain.StyleConstants.SPRITE_DISABLED;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
 import org.graphstream.graph.Graph;
@@ -80,9 +79,7 @@ public class ServerAgentNode extends AgentNode {
     public void updateIsActive(final boolean isActive, final boolean isActiveBackUp) {
         this.isActiveBackUp.set(isActiveBackUp);
         this.isActive.set(isActive);
-        labelsMap
-                .get(AgentNodeLabelEnum.IS_ACTIVE_LABEL)
-                .setText(formatToHTML(isActive ? "ACTIVE" : "INACTIVE"));
+        labelsMap.get(AgentNodeLabelEnum.IS_ACTIVE_LABEL).setText(formatToHTML(isActive ? "ACTIVE" : "INACTIVE"));
         updateGraphUI();
     }
 
@@ -93,9 +90,7 @@ public class ServerAgentNode extends AgentNode {
      */
     public void updateClientNumber(final int value) {
         this.totalNumberOfClients.set(value);
-        labelsMap
-                .get(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL)
-                .setText(formatToHTML(String.valueOf(totalNumberOfClients)));
+        labelsMap.get(AgentNodeLabelEnum.TOTAL_NUMBER_OF_CLIENTS_LABEL).setText(formatToHTML(String.valueOf(totalNumberOfClients)));
     }
 
     /**
@@ -104,13 +99,8 @@ public class ServerAgentNode extends AgentNode {
      * @param powerInUse current power in use
      */
     public void updateTraffic(final double powerInUse) {
-        this.traffic.set(
-                currentMaximumCapacity.get() != 0
-                        ? ((powerInUse / currentMaximumCapacity.get()) * 100)
-                        : 0);
-        labelsMap
-                .get(AgentNodeLabelEnum.TRAFFIC_LABEL)
-                .setText(formatToHTML(String.format("%.2f%%", traffic.get())));
+        this.traffic.set(currentMaximumCapacity.get() != 0 ? ((powerInUse / currentMaximumCapacity.get()) * 100) : 0);
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
 
@@ -120,11 +110,8 @@ public class ServerAgentNode extends AgentNode {
      * @param backUpPowerInUse current power in use coming from back-up energy
      */
     public void updateBackUpTraffic(final double backUpPowerInUse) {
-        this.backUpTraffic.set(
-                initialMaximumCapacity != 0 ? ((backUpPowerInUse / initialMaximumCapacity) * 100) : 0);
-        labelsMap
-                .get(AgentNodeLabelEnum.BACK_UP_TRAFFIC_LABEL)
-                .setText(formatToHTML(String.format("%.2f%%", backUpTraffic.get())));
+        this.backUpTraffic.set(initialMaximumCapacity != 0 ? ((backUpPowerInUse / initialMaximumCapacity) * 100) : 0);
+        labelsMap.get(AgentNodeLabelEnum.BACK_UP_TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", backUpTraffic.get())));
         updateGraphUI();
     }
 
@@ -135,9 +122,7 @@ public class ServerAgentNode extends AgentNode {
      */
     public void updateJobsCount(final int value) {
         this.numberOfExecutedJobs.set(value);
-        labelsMap
-                .get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL)
-                .setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
+        labelsMap.get(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL).setText(formatToHTML(String.valueOf(numberOfExecutedJobs)));
     }
 
     /**
@@ -148,26 +133,21 @@ public class ServerAgentNode extends AgentNode {
     public void updateMaximumCapacity(final int maxCapacity) {
         this.currentMaximumCapacity.set((double) maxCapacity);
         this.traffic.set(currentMaximumCapacity.get() != 0 ? ((traffic.get() / maxCapacity) * 100) : 0);
-        labelsMap
-                .get(CURRENT_MAXIMUM_CAPACITY_LABEL)
-                .setText(formatToHTML(String.valueOf(maxCapacity)));
-        labelsMap
-                .get(AgentNodeLabelEnum.TRAFFIC_LABEL)
-                .setText(formatToHTML(String.format("%.2f%%", traffic.get())));
+        labelsMap.get(CURRENT_MAXIMUM_CAPACITY_LABEL).setText(formatToHTML(String.valueOf(maxCapacity)));
+        labelsMap.get(AgentNodeLabelEnum.TRAFFIC_LABEL).setText(formatToHTML(String.format("%.2f%%", traffic.get())));
         updateGraphUI();
     }
 
     @Override
     public synchronized void updateGraphUI() {
-        final String dynamicNodeStyle =
-                isActiveBackUp.get()
-                        ? SERVER_ACTIVE_BACK_UP_STYLE
-                        : (isActive.get() ? SERVER_ACTIVE_STYLE : SERVER_INACTIVE_STYLE);
+        final String dynamicNodeStyle = isActiveBackUp.get() ? SERVER_ACTIVE_BACK_UP_STYLE : (isActive.get() ? SERVER_ACTIVE_STYLE : SERVER_INACTIVE_STYLE);
         if (Objects.nonNull(warningSprite)) {
             //final String dynamicSpriteStyle = isActiveBackUp.get() ? SERVER_ACTIVE_BACK_UP_STYLE : SPRITE_DISABLED;
             //warningSprite.setAttribute("ui.class", dynamicSpriteStyle);
         }
-        node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicNodeStyle)));
+        synchronized (graph) {
+            node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicNodeStyle)));
+        }
         updateActiveEdgeStyle(edges, graph, isActive.get(), name, cloudNetworkAgent);
     }
 

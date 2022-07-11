@@ -1,35 +1,32 @@
 package agents.cloudnetwork.behaviour.powershortage.announcer;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.*;
+import static common.constant.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
-import static messages.domain.JobStatusMessageFactory.preparePowerShortageMessageForClient;
-import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
+import static messages.domain.JobStatusMessageFactory.prepareJobStatusMessageForClient;
+import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.behaviour.powershortage.handler.TransferJobToServer;
 import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerTransferCancellation;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import common.constant.InvalidJobIdConstant;
-import common.mapper.JobMapper;
 import domain.ServerData;
-import domain.job.Job;
-import domain.job.JobInstanceIdentifier;
+import domain.job.PowerShortageJob;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Vector;
 import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Behaviour which is responsible for sending call for proposal to remaining server agents asking for job transfer
@@ -39,30 +36,30 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 
     private final CloudNetworkAgent myCloudNetworkAgent;
     private final String guid;
-    private final OffsetDateTime powerShortageTime;
-    private final AID affectedServer;
-    private final Job job;
+    private final ACLMessage serverRequest;
+    private final PowerShortageJob jobTransfer;
+    private final AID jobClient;
 
     /**
      * Behaviour constructor.
      *
-     * @param agent              agent which is executing the behaviour
-     * @param cfp                call for proposal message containing job requriements sent to the servers
-     * @param powerShortageStart time when the power shortage will begin
-     * @param affectedServer     server which suffers from the power shortage
-     * @param job                job that is being transferred
+     * @param agent         agent which is executing the behaviour
+     * @param cfp           call for proposal message containing job requriements sent to the servers
+     * @param serverRequest transfer request message coming from the server
+     * @param jobTransfer   job for which the transfer is being performed
+     * @param jobClient     client which should be informed about job status updates
      */
     public AnnounceJobTransferRequest(final Agent agent,
                                       final ACLMessage cfp,
-                                      final OffsetDateTime powerShortageStart,
-                                      final AID affectedServer,
-                                      final Job job) {
+                                      final ACLMessage serverRequest,
+                                      final PowerShortageJob jobTransfer,
+                                      final String jobClient) {
         super(agent, cfp);
         this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
         this.guid = agent.getName();
-        this.powerShortageTime = powerShortageStart;
-        this.affectedServer = affectedServer;
-        this.job = job;
+        this.jobTransfer = jobTransfer;
+        this.serverRequest = serverRequest;
+        this.jobClient = new AID(jobClient, AID.ISGUID);
     }
 
     /**
@@ -78,34 +75,37 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 
         if (responses.isEmpty()) {
             logger.info("[{}] No responses were retrieved", guid);
-            myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
-                                                                        affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
+            myCloudNetworkAgent.send(prepareReply(serverRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.FAILURE));
         } else if (proposals.isEmpty()) {
             logger.info("[{}] No Servers available - sending message to client and server that the job must be executed from backup power", guid);
-            displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
-            myCloudNetworkAgent.send(preparePowerShortageMessageForClient(job.getClientIdentifier()));
-            myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
-                                                                        affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
+            displayMessageArrow(myCloudNetworkAgent, jobClient);
+            myCloudNetworkAgent.send(prepareJobStatusMessageForClient(jobClient.getName(), BACK_UP_POWER_JOB_PROTOCOL));
+            myCloudNetworkAgent.send(prepareReply(serverRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.FAILURE));
         } else {
             final List<ACLMessage> validProposals = retrieveValidMessages(proposals, ServerData.class);
             if (!validProposals.isEmpty()) {
                 final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
                 final ServerData chosenServerData = readMessage(chosenServerOffer);
                 logger.info("[{}] Chosen Server for the job {} transfer: {}", guid, chosenServerData.getJobId(), chosenServerOffer.getSender().getName());
-                final JobInstanceIdentifier jobInstanceId = JobMapper.mapToJobInstanceId(job);
 
                 displayMessageArrow(myCloudNetworkAgent, chosenServerOffer.getSender());
-                displayMessageArrow(myCloudNetworkAgent, affectedServer);
+                displayMessageArrow(myCloudNetworkAgent, serverRequest.getSender());
 
-                myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenServerOffer.createReply(), jobInstanceId, POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL));
-                myAgent.send(prepareJobPowerShortageInformation(jobInstanceId, powerShortageTime, affectedServer, POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL));
-                myAgent.addBehaviour(TransferJobToServer.createFor(myCloudNetworkAgent, job.getJobId(), powerShortageTime, chosenServerOffer.getSender()));
-                myAgent.addBehaviour(new ListenForServerTransferCancellation(myAgent, chosenServerOffer.getSender(), affectedServer));
-                rejectJobOffers(myCloudNetworkAgent, jobInstanceId, chosenServerOffer, proposals);
+                myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenServerOffer.createReply(), jobTransfer.getJobInstanceId(), POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL));
+                myCloudNetworkAgent.send(prepareReply(serverRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.INFORM));
+                preparePowerShortageHandling(chosenServerOffer.getSender());
+                rejectJobOffers(myCloudNetworkAgent, jobTransfer.getJobInstanceId(), chosenServerOffer, proposals);
             } else {
                 handleInvalidResponses(proposals);
             }
         }
+    }
+
+    private void preparePowerShortageHandling(final AID chosenServer) {
+        final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
+        parallelBehaviour.addSubBehaviour(TransferJobToServer.createFor(myCloudNetworkAgent, jobTransfer, chosenServer));
+        parallelBehaviour.addSubBehaviour(new ListenForServerTransferCancellation(myAgent, chosenServer, serverRequest.getSender()));
+        myCloudNetworkAgent.addBehaviour(parallelBehaviour);
     }
 
     private ServerData readMessage(final ACLMessage message) {
@@ -119,9 +119,8 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 
     private void handleInvalidResponses(final List<ACLMessage> proposals) {
         logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
-        rejectJobOffers(myCloudNetworkAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
-        myCloudNetworkAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, powerShortageTime),
-                                                                    affectedServer, POWER_SHORTAGE_TRANSFER_REFUSAL));
+        rejectJobOffers(myCloudNetworkAgent, jobTransfer.getJobInstanceId(), null, proposals);
+        myCloudNetworkAgent.send(prepareReply(serverRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.FAILURE));
     }
 
     private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {

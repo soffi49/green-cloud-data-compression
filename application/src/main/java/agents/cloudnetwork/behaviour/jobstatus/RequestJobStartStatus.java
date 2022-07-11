@@ -1,8 +1,9 @@
 package agents.cloudnetwork.behaviour.jobstatus;
 
+import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
-import static messages.domain.JobStatusMessageFactory.prepareDelayMessageForClient;
-import static messages.domain.JobStatusMessageFactory.prepareStartMessageForClient;
+import static messages.domain.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;
@@ -51,7 +52,7 @@ public class RequestJobStartStatus extends AchieveREInitiator {
             logger.info("[{}] Received job started confirmation. Sending information that the job {} execution has started", myAgent.getName(), jobId);
             myCloudNetwork.getNetworkJobs().replace(myCloudNetwork.manage().getJobById(jobId), IN_PROGRESS);
             myCloudNetwork.manage().incrementStartedJobs(jobId);
-            myAgent.send(prepareStartMessageForClient(myCloudNetwork.manage().getJobById(jobId).getClientIdentifier()));
+            myAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), STARTED_JOB_PROTOCOL));
         }
     }
 
@@ -66,7 +67,7 @@ public class RequestJobStartStatus extends AchieveREInitiator {
         final Job job = myCloudNetwork.manage().getJobById(jobId);
         if (Objects.nonNull(job) && !myCloudNetwork.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
             logger.error("[{}] The job {} execution hasn't started yet. Sending delay information to client", myAgent.getName(), jobId);
-            myAgent.send(prepareDelayMessageForClient(myCloudNetwork.manage().getJobById(jobId).getClientIdentifier()));
+            myAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), DELAYED_JOB_PROTOCOL));
         }
     }
 }

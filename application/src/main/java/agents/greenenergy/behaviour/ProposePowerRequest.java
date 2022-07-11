@@ -18,12 +18,13 @@ import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -59,7 +60,7 @@ public class ProposePowerRequest extends ProposeInitiator {
         final JobWithProtocol jobWithProtocol = readMessage(accept_proposal);
         if (Objects.nonNull(jobWithProtocol)) {
             PowerJob job = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobWithProtocol.getJobInstanceIdentifier());
-            if(isNull(job)) {
+            if (isNull(job)) {
                 job = myGreenEnergyAgent.manage().getJobById(jobWithProtocol.getJobInstanceIdentifier().getJobId());
             }
             logger.info("[{}] Sending information regarding job {} back to server agent.", guid, job.getJobId());
@@ -81,7 +82,7 @@ public class ProposePowerRequest extends ProposeInitiator {
             logger.info("[{}] Server rejected the job proposal", guid);
             final JobInstanceIdentifier jobInstanceId = getMapper().readValue(reject_proposal.getContent(), JobInstanceIdentifier.class);
             final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
-            if(Objects.nonNull(powerJob)) {
+            if (Objects.nonNull(powerJob)) {
                 myGreenEnergyAgent.getPowerJobs().remove(powerJob);
             }
         } catch (Exception e) {

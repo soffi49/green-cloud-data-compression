@@ -2,19 +2,23 @@ package agents.greenenergy.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
-import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
+import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powershortage.handler.SchedulePowerShortage;
+import agents.greenenergy.behaviour.powershortage.transfer.RequestPowerJobTransfer;
+import common.mapper.JobMapper;
 import domain.job.ImmutablePowerShortageTransfer;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.job.PowerShortageTransfer;
 import jade.core.behaviours.OneShotBehaviour;
-import java.time.OffsetDateTime;
-import java.util.List;
+import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Behaviour sends the information to the server that the green source will have unexpected power shortage
@@ -58,19 +62,21 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
             logger.info("[{}] Sending power shortage information", myGreenAgent.getName());
             final List<PowerJob> jobsToKeep = findJobsWithinPower(affectedJobs, maxAvailablePower, PowerJob.class);
             final List<PowerJob> jobsToTransfer = affectedJobs.stream().filter(job -> !jobsToKeep.contains(job)).toList();
-            final PowerShortageTransfer powerShortageTransfer = ImmutablePowerShortageTransfer.builder()
-                    .jobList(jobsToTransfer)
-                    .startTime(shortageStartTime)
-                    .build();
-            createNewJobInstances(jobsToTransfer);
-            displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
-            myGreenAgent.send(preparePowerShortageInformation(powerShortageTransfer, myGreenAgent.getOwnerServer()));
-            myGreenAgent.addBehaviour(SchedulePowerShortage.createFor(powerShortageTransfer, maxAvailablePower, myGreenAgent));
+            jobsToTransfer.forEach(powerJob -> {
+                final PowerJob jobToTransfer = myGreenAgent.manage().divideJobForPowerShortage(powerJob, shortageStartTime);
+                final ACLMessage transferMessage = preparePowerShortageTransferRequest(JobMapper.mapToPowerShortageJob(powerJob, shortageStartTime), myGreenAgent.getOwnerServer());
+                displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
+                myGreenAgent.addBehaviour(new RequestPowerJobTransfer(myGreenAgent, transferMessage, jobToTransfer, shortageStartTime));
+            });
+            myGreenAgent.addBehaviour(SchedulePowerShortage.createFor(preparePowerShortageTransfer(jobsToTransfer), maxAvailablePower, myGreenAgent));
         }
     }
 
-    private void createNewJobInstances(final List<PowerJob> affectedJobs) {
-        affectedJobs.forEach(powerJob -> myGreenAgent.manage().divideJobForPowerShortage(powerJob, shortageStartTime));
+    private PowerShortageTransfer preparePowerShortageTransfer(final List<PowerJob> powerJobs) {
+        return ImmutablePowerShortageTransfer.builder()
+                .jobList(powerJobs)
+                .startTime(shortageStartTime)
+                .build();
     }
 
     private List<PowerJob> getAffectedPowerJobs() {

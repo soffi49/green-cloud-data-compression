@@ -86,7 +86,11 @@ public class ServerStateManagement {
             serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
         }
         incrementFinishedJobs(jobToFinish.getJobId());
-        displayMessageArrow(serverAgent, receivers);
+        try {
+            displayMessageArrow(serverAgent, receivers);
+        } catch (NullPointerException e) {
+            System.out.println("xd");
+        }
         serverAgent.send(finishJobMessage);
     }
 
@@ -261,7 +265,7 @@ public class ServerStateManagement {
    * @param job affected job
    * @param powerShortageStart time when power shortage starts
    */
-  public void divideJobForPowerShortage(final Job job, final OffsetDateTime powerShortageStart) {
+  public Job divideJobForPowerShortage(final Job job, final OffsetDateTime powerShortageStart) {
     if (powerShortageStart.isAfter(job.getStartTime())
         && !powerShortageStart.equals(job.getStartTime())) {
       final Job onBackupEnergyInstance =
@@ -282,9 +286,7 @@ public class ServerStateManagement {
               .build();
       final JobStatusEnum currentJobStatus = serverAgent.getServerJobs().get(job);
       serverAgent.getServerJobs().remove(job);
-      serverAgent
-          .getServerJobs()
-          .put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
+      serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
       serverAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
       serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, onBackupEnergyInstance, false, true));
       if (getCurrentTime().isBefore(finishedPowerJobInstance.getStartTime())) {
@@ -292,9 +294,11 @@ public class ServerStateManagement {
       } else {
         serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, finishedPowerJobInstance, false));
       }
+      return onBackupEnergyInstance;
     } else {
       serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
       updateServerGUI();
+      return job;
     }
   }
 
