@@ -5,6 +5,7 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -85,6 +86,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                response.setPerformative(REFUSE);
             }
             response.setConversationId(message.getConversationId());
             logger.info("[{}] Sending message with the weather data for conversation id {}", monitoringAgent.getName(),
