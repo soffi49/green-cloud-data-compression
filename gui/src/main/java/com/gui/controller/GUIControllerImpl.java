@@ -71,7 +71,7 @@ public class GUIControllerImpl implements GUIController {
 		createMainFrame();
 		createAdminFrame();
 
-		executorService.scheduleAtFixedRate(() -> action(actions), 0, 1, TimeUnit.MILLISECONDS);
+		executorService.scheduleAtFixedRate(() -> action(actions), 0, 5, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
