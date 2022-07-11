@@ -7,7 +7,7 @@ import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
 import agents.server.behaviour.ReceiveJobRequest;
-import agents.server.behaviour.listener.ListenForJobStarStatusRequest;
+import agents.server.behaviour.listener.ListenForJobStatusOrManualFinish;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.listener.ListenForWeather;
@@ -81,7 +81,7 @@ public class ServerAgent extends AbstractServerAgent {
         new ListenForSourceTransferConfirmation(),
         new ListenForServerEvent(this),
         new ListenForJobTransferCancellation(this),
-        new ListenForJobStarStatusRequest(),
+        new ListenForJobStatusOrManualFinish(),
         new ListenForJobTransferStatus(this),
         new ListenForWeather(this)
     );

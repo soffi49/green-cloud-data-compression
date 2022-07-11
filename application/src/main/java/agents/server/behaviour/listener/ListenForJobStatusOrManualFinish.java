@@ -27,11 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Behaviour is responsible for listening for the requests for some job start status
+ * Behaviour is responsible for listening for the requests for some job start status or manual finish inform
  */
-public class ListenForJobStarStatusRequest extends CyclicBehaviour {
+public class ListenForJobStatusOrManualFinish extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForJobStarStatusRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ListenForJobStatusOrManualFinish.class);
 
     private static final MessageTemplate messageTemplate = or(
         and(MatchPerformative(REQUEST), MatchProtocol(JOB_START_STATUS_PROTOCOL)),
@@ -49,9 +49,11 @@ public class ListenForJobStarStatusRequest extends CyclicBehaviour {
     }
 
     /**
-     * Method listens for the requests coming from the Cloud Network. Then it verifies the status of the requested job
-     * and sends back that information.
-     */
+     * Method listens for the messages.
+     * - coming from the Cloud Network, it verifies the status of the requested job and sends back that information,
+     * - coming from the Green Cloud Network, informing that the job had to be finished manually because the time
+     *   after which the information about job being finished has passed
+     **/
     @Override
     public void action() {
         final ACLMessage request = myAgent.receive(messageTemplate);
