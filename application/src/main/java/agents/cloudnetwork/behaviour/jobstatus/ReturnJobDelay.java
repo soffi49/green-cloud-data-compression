@@ -48,6 +48,7 @@ public class ReturnJobDelay extends WakerBehaviour {
             final AID server = myCloudNetworkAgent.getServerForJobMap().get(job.getJobId());
             logger.error("[{}] There is no message regarding the job start. Sending request to the server", myAgent.getName());
             myAgent.addBehaviour(new RequestJobStartStatus(myCloudNetworkAgent, prepareJobStartStatusRequestMessage(jobId, server), jobId));
+            myAgent.removeBehaviour(this);
         }
     }
 }

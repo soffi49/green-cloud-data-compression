@@ -23,5 +23,6 @@ public class ScheduleReceiveJobRequestRetry extends WakerBehaviour {
     protected void onWake() {
         myAgent.send(originalMessage);
         logger.info("Retrying to process a job with id {}", jobId);
+        myAgent.removeBehaviour(this);
     }
 }

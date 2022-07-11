@@ -20,21 +20,21 @@ import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.lang.acl.ACLMessage;
-import messages.domain.ReplyMessageFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import messages.domain.ReplyMessageFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Set of utilities used to manage the internal state of the green energy agent
@@ -213,14 +213,18 @@ public class GreenEnergyStateManagement {
      * @return list of all start and end times
      */
     public List<Instant> getJobsTimetable(PowerJob candidateJob) {
+        var validJobs = greenEnergyAgent.getPowerJobs().entrySet().stream()
+            .filter(entry -> !JOB_IN_PROGRESS.contains(entry.getValue()))
+            .map(Entry::getKey)
+            .toList();
         return Stream.concat(
-                        Stream.of(candidateJob.getStartTime(), candidateJob.getEndTime()),
-                        Stream.concat(
-                                greenEnergyAgent.getPowerJobs().keySet().stream().map(PowerJob::getStartTime),
-                                greenEnergyAgent.getPowerJobs().keySet().stream().map(PowerJob::getEndTime)))
-                .map(OffsetDateTime::toInstant)
-                .distinct()
-                .toList();
+                Stream.of(candidateJob.getStartTime(), candidateJob.getEndTime()),
+                Stream.concat(
+                    validJobs.stream().map(PowerJob::getStartTime),
+                    validJobs.stream().map(PowerJob::getEndTime)))
+            .map(OffsetDateTime::toInstant)
+            .distinct()
+            .toList();
     }
 
     /**
@@ -293,6 +297,43 @@ public class GreenEnergyStateManagement {
         }
         return null;
     }
+
+  /**
+   * Computes available power available in the given moment
+   *
+   * @param time    time of the check
+   * @param weather monitoring data with weather for requested timetable
+   * @return average available power as decimal or empty optional if power not available
+   */
+  public synchronized Optional<Double> getAvailablePower(final OffsetDateTime time, final MonitoringData weather) {
+    var availablePower = getPower(time.toInstant(), weather);
+    logger.info(
+        "[{}] Calculated available {} power {} at {}",
+        greenEnergyAgent.getName(),
+        greenEnergyAgent.getEnergyType(),
+        String.format("%.2f", availablePower),
+        time);
+    return Optional.of(availablePower).filter(power -> power >= 0.0);
+  }
+
+
+  private synchronized Double getPower(Instant start, MonitoringData weather) {
+    var powerJobs = greenEnergyAgent.getPowerJobs().keySet().stream()
+        .filter(job -> JOB_IN_PROGRESS.contains(greenEnergyAgent.getPowerJobs().get(job)))
+        .toList();
+
+    if (powerJobs.isEmpty()) {
+      return greenEnergyAgent.getCapacity(weather, start);
+    }
+
+    return powerJobs.stream()
+        .filter(job -> job.isExecutedAtTime(start))
+        .map(PowerJob::getPower)
+        .map(power -> greenEnergyAgent.getCapacity(weather, start) - power)
+        .mapToDouble(Double::doubleValue)
+        .average()
+        .orElseGet(() -> 0.0);
+  }
 
     private boolean isJobUnique(final String jobId) {
         return greenEnergyAgent.getPowerJobs().keySet().stream()

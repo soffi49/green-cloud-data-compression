@@ -53,5 +53,6 @@ public class FinishJobManually extends WakerBehaviour {
             displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
             myAgent.send(prepareManualFinishMessageForServer(jobInstanceId, myGreenEnergyAgent.getOwnerServer()));
         }
+        myAgent.removeBehaviour(this);
     }
 }

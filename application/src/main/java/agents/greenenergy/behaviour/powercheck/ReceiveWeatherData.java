@@ -44,12 +44,11 @@ public class ReceiveWeatherData extends CyclicBehaviour {
      * @param myGreenAgent agent which is executing the behaviour
      */
     public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, ACLMessage originalMessage,
-        CheckedPowerJob checkedPowerJob,
-        SequentialBehaviour sequentialBehaviour) {
+        CheckedPowerJob checkedPowerJob, SequentialBehaviour sequentialBehaviour) {
         this.myGreenEnergyAgent = myGreenAgent;
         this.messageTemplate = and(MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL),
-            and(MatchConversationId(originalMessage.getConversationId()),
-                or(MatchPerformative(INFORM), MatchPerformative(REFUSE))));
+            and(or(MatchPerformative(INFORM), MatchPerformative(REFUSE)),
+                MatchConversationId(originalMessage.getConversationId())));
         this.guid = myGreenEnergyAgent.getName();
         this.originalMessage = originalMessage;
         this.checkedPowerJob = checkedPowerJob;

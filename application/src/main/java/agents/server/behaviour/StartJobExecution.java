@@ -94,6 +94,7 @@ public class StartJobExecution extends WakerBehaviour {
             myServerAgent.manage().incrementStartedJobs(jobToExecute.getJobId());
             myAgent.send(startedJobMessage);
             myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, jobToExecute, informCNAFinish));
+            myAgent.removeBehaviour(this);
         }
     }
 }

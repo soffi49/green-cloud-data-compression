@@ -64,5 +64,6 @@ public class TransferJobToServer extends WakerBehaviour {
             logger.info("[{}] Updating the internal state of the cloud network", myCloudNetworkAgent.getName());
             myCloudNetworkAgent.getServerForJobMap().replace(jobId, newServer);
         }
+        myAgent.removeBehaviour(this);
     }
 }

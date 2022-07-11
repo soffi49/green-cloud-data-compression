@@ -1,6 +1,5 @@
 package agents.server.behaviour.powershortage.transfer;
 
-import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 
 import agents.server.ServerAgent;
@@ -65,6 +64,7 @@ public class PerformSourceJobTransfer extends WakerBehaviour {
             logger.info("[{}] Updating the internal state of the server", myServerAgent.getName());
             myServerAgent.getGreenSourceForJobMap().replace(jobToExecute.getJobId(), newGreenSource);
             myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
+            myAgent.removeBehaviour(this);
         }
     }
 }

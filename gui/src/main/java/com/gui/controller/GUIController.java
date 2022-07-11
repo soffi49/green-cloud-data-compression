@@ -7,12 +7,12 @@ import java.util.List;
 /**
  * Controller for GUI
  */
-public interface GUIController {
+public interface GUIController extends Runnable {
 
     /**
      * Method creates the GUI
      */
-    void createGUI();
+    void run();
 
     /**
      * Method adds next agent node to the graph
