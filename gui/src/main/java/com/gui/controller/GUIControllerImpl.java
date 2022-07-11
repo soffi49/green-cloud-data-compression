@@ -60,7 +60,7 @@ public class GUIControllerImpl implements GUIController {
     }
 
     @Override
-    public void createGUI() {
+    public void run() {
         mainFrame.setVisible(true);
         SwingUtilities.invokeLater(() -> adminFrame.setVisible(true));
     }

@@ -9,6 +9,8 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import runner.service.ScenarioService;
 
 /**
@@ -16,6 +18,7 @@ import runner.service.ScenarioService;
  */
 public class EngineRunner {
     public static void main(String[] args) {
+        final ExecutorService executorService = Executors.newFixedThreadPool(2);
         final Runtime runtime = instance();
         final Profile profile = new ProfileImpl();
         final GUIControllerImpl guiController = new GUIControllerImpl();
@@ -25,10 +28,10 @@ public class EngineRunner {
         profile.setParameter(Profile.MAIN_PORT, "6996");
 
         final ContainerController container = runtime.createMainContainer(profile);
-        final ScenarioService scenarioService = new ScenarioService(container, guiController);
         runRMAAgent(container);
-        guiController.createGUI();
-        scenarioService.createAgentsFromScenarioFile("complicatedScenarioNoWeatherChanging");
+        executorService.execute(guiController);
+        executorService.execute(
+            new ScenarioService(container, guiController, "complicatedScenarioNoWeatherChanging"));
     }
 
     /**

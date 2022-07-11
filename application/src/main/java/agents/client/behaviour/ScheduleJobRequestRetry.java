@@ -2,7 +2,6 @@ package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.JOB_RETRY_MINUTES_ADJUSTMENT;
 import static common.TimeUtils.convertToSimulationTime;
-import static common.TimeUtils.getCurrentTime;
 
 import agents.client.ClientAgent;
 import agents.client.behaviour.df.FindCloudNetworkAgents;
@@ -11,8 +10,6 @@ import domain.job.Job;
 import jade.core.Agent;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.WakerBehaviour;
-import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +31,7 @@ public class ScheduleJobRequestRetry extends WakerBehaviour {
     protected void onWake() {
         myAgent.addBehaviour(prepareStartingBehaviour(job));
         logger.info("Retrying to request job execution with id {}", job.getJobId());
+        myAgent.removeBehaviour(this);
     }
 
     private SequentialBehaviour prepareStartingBehaviour(final Job job) {

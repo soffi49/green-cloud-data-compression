@@ -118,6 +118,7 @@ public class SchedulePowerShortage extends WakerBehaviour {
         if(newMaximumCapacity >= 0) {
             myGreenEnergyAgent.manage().updateMaximumCapacity(newMaximumCapacity);
         }
+        myAgent.removeBehaviour(this);
     }
 
     private static OffsetDateTime getShortageTime(OffsetDateTime powerShortageTime) {
