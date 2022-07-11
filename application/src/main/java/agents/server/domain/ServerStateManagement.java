@@ -60,8 +60,8 @@ public class ServerStateManagement {
      */
     public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate) {
         var usedPower = serverAgent.getServerJobs().keySet().stream()
-            .filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
-                || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate))
+            //.filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
+            //   || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate))
             .map(Job::getPower)
             .mapToInt(Integer::intValue)
             .sum();

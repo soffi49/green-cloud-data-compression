@@ -77,11 +77,11 @@ public class GreenPower {
     private double getSolarPower(WeatherData weather, ZonedDateTime dateTime, Location location) {
         var sunTimes = getSunTimes(dateTime, location);
         var dayTime = dateTime.toLocalTime();
-        if (dayTime.isBefore(sunTimes.getRise().toLocalTime()) || dayTime.isAfter(sunTimes.getSet().toLocalTime())) {
-            logger.debug("SOLAR farm is shutdown at {}, sunrise at {} & sunset at {}", dateTime, sunTimes.getRise(),
-                sunTimes.getSet());
-            return 0;
-        }
+//        if (dayTime.isBefore(sunTimes.getRise().toLocalTime()) || dayTime.isAfter(sunTimes.getSet().toLocalTime())) {
+//            logger.debug("SOLAR farm is shutdown at {}, sunrise at {} & sunset at {}", dateTime, sunTimes.getRise(),
+//                sunTimes.getSet());
+//            return 0;
+//        }
 
         return currentMaximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
     }

@@ -11,6 +11,7 @@ import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
+import static java.util.Objects.isNull;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
@@ -85,7 +86,11 @@ public class ListenForJobStatusOrManualFinish extends CyclicBehaviour {
                     final JobInstanceIdentifier identifier = getMapper().readValue(request.getContent(), JobInstanceIdentifier.class);
                     job = myServerAgent.manage().getJobByIdAndStartDate(identifier);
                 }
-                if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+                if(isNull(job)) {
+                    return;
+                }
+                var value = myServerAgent.getServerJobs().getOrDefault(job, null);
+                if (!isNull(value) && value.equals(JobStatusEnum.IN_PROGRESS)) {
                     logger.debug("[{}] Information about finishing job with id {} does not reach the green source", myAgent.getName(), job.getClientIdentifier());
                     logger.info("[{}] Finished executing the job for {}", myAgent.getName(), job.getClientIdentifier());
                     myServerAgent.manage().finishJobExecution(job, true);

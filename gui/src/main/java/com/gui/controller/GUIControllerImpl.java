@@ -27,7 +27,12 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class GUIControllerImpl implements GUIController {
 
@@ -41,6 +46,8 @@ public class GUIControllerImpl implements GUIController {
     private final DetailsPanel detailsPanel;
     private final AdminControlPanel adminControlPanel;
     private final List<AgentNode> graphNodes;
+    private final ConcurrentLinkedQueue<List<Edge>> actions;
+    private final ScheduledExecutorService executorService;
     private JScrollPane mainPanelScroll;
     private JFrame mainFrame;
     private JFrame adminFrame;
@@ -53,10 +60,14 @@ public class GUIControllerImpl implements GUIController {
         this.informationPanel = new InformationPanel();
         this.detailsPanel = new DetailsPanel();
         this.adminControlPanel = new AdminControlPanel();
+        this.actions = new ConcurrentLinkedQueue<>();
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
         this.graph = createGraph();
         createMainPanel();
         createMainFrame();
         createAdminFrame();
+
+        executorService.schedule(() -> action(graph, actions), 5, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -127,17 +138,7 @@ public class GUIControllerImpl implements GUIController {
         final List<Edge> edgesToDisplay = senderAgent.getEdges().stream()
                 .filter(edge -> edge.isDirected() && receiversNames.contains(edge.getTargetNode().getId()))
                 .toList();
-        synchronized (graph) {
-            edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_MESSAGE_STYLE));
-        }
-
-        final ActionListener hideMessageArrowAction = e -> {
-            synchronized (graph) {
-                edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
-            }
-        };
-        final Timer hideMessageArrowTimer = new Timer(500, hideMessageArrowAction);
-        hideMessageArrowTimer.start();
+        this.actions.add(edgesToDisplay);
     }
 
     private void createAdminFrame() {
@@ -209,6 +210,23 @@ public class GUIControllerImpl implements GUIController {
             mainFrame.repaint();
             adminFrame.revalidate();
             adminFrame.repaint();
+        }
+    }
+
+    private void action(Graph graph, ConcurrentLinkedQueue<List<Edge>> actions) {
+        if(!actions.isEmpty()) {
+            var edgesToDisplay = actions.remove();
+            synchronized (graph) {
+                edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_MESSAGE_STYLE));
+            }
+
+            final ActionListener hideMessageArrowAction = e -> {
+                synchronized (graph) {
+                    edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
+                }
+            };
+            final Timer hideMessageArrowTimer = new Timer(500, hideMessageArrowAction);
+            hideMessageArrowTimer.start();
         }
     }
 }

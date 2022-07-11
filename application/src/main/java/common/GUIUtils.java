@@ -28,7 +28,7 @@ public class GUIUtils {
         final String information = String.format("Execution of the job %s has finished!", jobId);
         agent.getGuiController().updateActiveJobsCountByValue(-1);
         agent.getGuiController().updateAllJobsCountByValue(-1);
-        agent.getGuiController().addNewInformation(information);
+        //agent.getGuiController().addNewInformation(information);
     }
 
     /**
@@ -49,7 +49,7 @@ public class GUIUtils {
     public static void announceNewClient(final AbstractAgent agent) {
         final String information = "New client in Cloud Network!";
         agent.getGuiController().updateClientsCountByValue(1);
-        agent.getGuiController().addNewInformation(information);
+        //agent.getGuiController().addNewInformation(information);
     }
 
     /**

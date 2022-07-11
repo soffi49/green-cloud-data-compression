@@ -122,7 +122,7 @@ public class ScenarioService implements Runnable {
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
                 agentController.start();
                 agentController.activate();
-                TimeUnit.MILLISECONDS.sleep(125);
+                TimeUnit.MILLISECONDS.sleep(250);
             } catch (StaleProxyException | InterruptedException  e) {
                 e.printStackTrace();
             }
