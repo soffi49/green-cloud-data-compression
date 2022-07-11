@@ -62,7 +62,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                     .readValue(message.getContent(), GreenSourceWeatherData.class);
                 if(OFFLINE_MODE) {
                     // TODO remove Random - use GUI button
-                    if( new Random().nextInt(100) <= 3) {
+                    if(new Random().nextInt(100) < 0) {
                         logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
                         response.setContent(getMapper().writeValueAsString(
                             useBadStubData())
@@ -73,7 +73,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
                         );
                     }
                 } else {
-                    if( new Random().nextInt(100) <= 3) {
+                    if(new Random().nextInt(100) < 0) {
                         logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
                         response.setContent(getMapper().writeValueAsString(
                             useBadStubData())

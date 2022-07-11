@@ -1,5 +1,6 @@
 package agents.server;
 
+import static agents.server.domain.ServerAgentConstants.JOB_PROCESSING_LIMIT;
 import static mapper.JsonMapper.getMapper;
 
 import agents.AbstractAgent;
@@ -10,12 +11,14 @@ import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Abstract agent class storing data of the Server Agent
@@ -26,7 +29,8 @@ public abstract class AbstractServerAgent extends AbstractAgent {
     protected transient ServerStateManagement stateManagement;
     protected double pricePerHour;
     protected int currentMaximumCapacity;
-    protected Map<Job, JobStatusEnum> serverJobs;
+    protected volatile AtomicLong currentlyProcessing;
+    protected volatile ConcurrentMap<Job, JobStatusEnum> serverJobs;
     protected Map<String, AID> greenSourceForJobMap;
     protected List<AID> ownedGreenSources;
     protected AID ownerCloudNetworkAgent;
@@ -34,10 +38,11 @@ public abstract class AbstractServerAgent extends AbstractAgent {
     AbstractServerAgent() {
         super.setup();
 
+        serverJobs = new ConcurrentHashMap<>();
         initialMaximumCapacity = 0;
-        serverJobs = new HashMap<>();
         ownedGreenSources = new ArrayList<>();
         greenSourceForJobMap = new HashMap<>();
+        currentlyProcessing = new AtomicLong(0);
     }
 
     /**
@@ -77,43 +82,35 @@ public abstract class AbstractServerAgent extends AbstractAgent {
         return ownerCloudNetworkAgent;
     }
 
-    public void setOwnerCloudNetworkAgent(AID ownerCloudNetworkAgent) {
-        this.ownerCloudNetworkAgent = ownerCloudNetworkAgent;
-    }
-
     public double getPricePerHour() {
         return pricePerHour;
-    }
-
-    public void setPricePerHour(double pricePerHour) {
-        this.pricePerHour = pricePerHour;
     }
 
     public Map<Job, JobStatusEnum> getServerJobs() {
         return serverJobs;
     }
 
-    public void setServerJobs(Map<Job, JobStatusEnum> serverJobs) {
-        this.serverJobs = serverJobs;
-    }
-
     public List<AID> getOwnedGreenSources() {
         return ownedGreenSources;
-    }
-
-    public void setOwnedGreenSources(List<AID> ownedGreenSources) {
-        this.ownedGreenSources = ownedGreenSources;
     }
 
     public Map<String, AID> getGreenSourceForJobMap() {
         return greenSourceForJobMap;
     }
 
-    public void setGreenSourceForJobMap(Map<String, AID> greenSourceForJobMap) {
-        this.greenSourceForJobMap = greenSourceForJobMap;
-    }
-
     public ServerStateManagement manage() {
         return stateManagement;
+    }
+
+    public void tookJobIntoProcessing() {
+        currentlyProcessing.incrementAndGet();
+    }
+
+    public void stoppedJobProcessing() {
+        currentlyProcessing.decrementAndGet();
+    }
+
+    public boolean canTakeIntoProcessing() {
+        return currentlyProcessing.get() < JOB_PROCESSING_LIMIT;
     }
 }

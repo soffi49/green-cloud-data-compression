@@ -7,6 +7,7 @@ import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
+import static java.lang.Math.abs;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.isMessageContentValid;
 
@@ -54,9 +55,9 @@ public class ListenForWeather extends CyclicBehaviour {
 
             var currentAvailableCapacity = myServerAgent.manage().getAvailableCapacity(checkedPowerJob.getPowerJob().getStartTime(),
                                                                                        checkedPowerJob.getPowerJob().getEndTime());
-            if (currentAvailableCapacity <= 0) {
-                //TODO separate change-set
-                logger.warn("WTF");
+            if (currentAvailableCapacity < 0) {
+                logger.error("[{}] Exceeded available capacity by {}!",
+                    myServerAgent.getName(), abs(currentAvailableCapacity));
             }
 
             if (message.getPerformative() == INFORM) {

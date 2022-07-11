@@ -77,8 +77,22 @@ public class TimeUtils {
     public static boolean isWithinTimeStamp(final OffsetDateTime timeStampStart,
                                             final OffsetDateTime timeStampEnd,
                                             final OffsetDateTime timeToCheck) {
-        return (timeToCheck.isAfter(timeStampStart) && timeToCheck.isBefore(timeStampEnd))
-                || timeToCheck.isEqual(timeStampStart) || timeToCheck.isEqual(timeStampEnd);
+        return !timeToCheck.isBefore(timeStampStart) && timeToCheck.isBefore(timeStampEnd);
+    }
+
+    /**
+     * Method checks if the given time is with a 25-seconds buffer given timestamp
+     *
+     * @param timeStampStart start of the time stamp
+     * @param timeStampEnd   end of the time stamp
+     * @param timeToCheck    time which has to be checked
+     * @return true or false value
+     */
+    public static boolean isWithinTimeStampWithBuffer(final OffsetDateTime timeStampStart,
+        final OffsetDateTime timeStampEnd,
+        final OffsetDateTime timeToCheck) {
+        return !timeToCheck.isBefore(timeStampStart.minusSeconds(30)) &&
+            timeToCheck.isBefore(timeStampEnd.plusSeconds(30));
     }
 
     /**
@@ -92,7 +106,6 @@ public class TimeUtils {
     public static boolean isWithinTimeStamp(final Instant timeStampStart,
                                             final Instant timeStampEnd,
                                             final Instant timeToCheck) {
-        return (timeToCheck.isAfter(timeStampStart) && timeToCheck.isBefore(timeStampEnd))
-                || timeToCheck.equals(timeStampStart) || timeToCheck.equals(timeStampEnd);
+        return !timeToCheck.isBefore(timeStampStart) && timeToCheck.isBefore(timeStampEnd);
     }
 }

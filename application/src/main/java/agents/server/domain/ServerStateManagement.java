@@ -20,9 +20,6 @@ import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Set of utilities used to manage the internal state of the server agent
@@ -59,9 +58,14 @@ public class ServerStateManagement {
      * @param endDate   end date
      * @return available power
      */
-    public int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate) {
-        final int powerInUser = getUniqueJobsForTimeStamp(startDate, endDate).stream().mapToInt(Job::getPower).sum();
-        return serverAgent.getCurrentMaximumCapacity() - powerInUser;
+    public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate) {
+        var usedPower = serverAgent.getServerJobs().keySet().stream()
+            .filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
+                || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate))
+            .map(Job::getPower)
+            .mapToInt(Integer::intValue)
+            .sum();
+        return serverAgent.getCurrentMaximumCapacity() - usedPower;
     }
 
     /**
@@ -297,18 +301,6 @@ public class ServerStateManagement {
         }
     }
 
-    private List<Job> getUniqueJobsForTimeStamp(final OffsetDateTime startDate, final OffsetDateTime endDate) {
-        return serverAgent.getServerJobs().keySet().stream()
-                .filter(job -> JOB_IN_PROGRESS.contains(serverAgent.getServerJobs().get(job)))
-                .filter(job -> TimeUtils.isWithinTimeStamp(startDate, endDate, job.getStartTime())
-                        || TimeUtils.isWithinTimeStamp(startDate, endDate, job.getEndTime()))
-                .map(Job::getJobId)
-                .collect(Collectors.toSet()).stream()
-                .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
-                .values().stream()
-                .toList();
-    }
-
     /**
      * Method updates the information on the server GUI
      */
@@ -348,9 +340,8 @@ public class ServerStateManagement {
 
     private int getCurrentPowerInUseForServer() {
         return serverAgent.getServerJobs().entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS)
-                        && isWithinTimeStamp(
-                        job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .filter(job -> JOB_IN_PROGRESS.contains(job.getValue())
+                        && isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .mapToInt(job -> job.getKey().getPower())
                 .sum();
     }

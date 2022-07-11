@@ -11,14 +11,12 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StartJobExecution extends WakerBehaviour {
 
@@ -84,17 +82,20 @@ public class StartJobExecution extends WakerBehaviour {
             } else {
                 logger.info("[{}] Start executing the job for {} without informing CNA", myAgent.getName(), jobToExecute.getClientIdentifier());
             }
-            if (myServerAgent.getServerJobs().get(jobToExecute).equals(JobStatusEnum.ACCEPTED)) {
-                myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
+            if (myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.ACCEPTED, JobStatusEnum.IN_PROGRESS)) {
+                final List<AID> receivers = informCNAStart
+                    ? List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()),
+                        myServerAgent.getOwnerCloudNetworkAgent())
+                    : Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()));
+                final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(),
+                    jobToExecute.getStartTime(), receivers);
+                displayMessageArrow(myServerAgent, receivers);
+                myServerAgent.manage().incrementStartedJobs(jobToExecute.getJobId());
+                myAgent.send(startedJobMessage);
+                myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, jobToExecute, informCNAFinish));
             }
-            final List<AID> receivers = informCNAStart ? List.of(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()), myServerAgent.getOwnerCloudNetworkAgent()) :
-                    Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()));
-            final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(), jobToExecute.getStartTime(), receivers);
-            displayMessageArrow(myServerAgent, receivers);
-            myServerAgent.manage().incrementStartedJobs(jobToExecute.getJobId());
-            myAgent.send(startedJobMessage);
-            myAgent.addBehaviour(FinishJobExecution.createFor(myServerAgent, jobToExecute, informCNAFinish));
             myAgent.removeBehaviour(this);
+
         }
     }
 }
