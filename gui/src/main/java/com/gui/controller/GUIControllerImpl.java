@@ -71,7 +71,7 @@ public class GUIControllerImpl implements GUIController {
 		createMainFrame();
 		createAdminFrame();
 
-		executorService.scheduleAtFixedRate(() -> action(actions), 0, 5, TimeUnit.MILLISECONDS);
+		executorService.scheduleAtFixedRate(() -> action(actions), 0, 10, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -224,10 +224,12 @@ public class GUIControllerImpl implements GUIController {
 		if (!actions.isEmpty()) {
 			var edgesToDisplay = actions.remove();
 			edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_MESSAGE_STYLE));
-			final ActionListener hideMessageArrowAction = e ->
-				edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
-			final Timer hideMessageArrowTimer = new Timer(500, hideMessageArrowAction);
-			hideMessageArrowTimer.start();
+			try {
+				TimeUnit.MILLISECONDS.sleep(5);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			edgesToDisplay.forEach(edge -> edge.setAttribute("ui.class", EDGE_HIDDEN_MESSAGE_STYLE));
 		}
 	}
 }
