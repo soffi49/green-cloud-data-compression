@@ -6,8 +6,7 @@ import static yellowpages.YellowPagesService.register;
 
 import agents.cloudnetwork.behaviour.ReceiveJobRequests;
 import agents.cloudnetwork.behaviour.df.FindServerAgents;
-import agents.cloudnetwork.behaviour.jobstatus.ReturnCompletedJob;
-import agents.cloudnetwork.behaviour.jobstatus.ReturnStartedJob;
+import agents.cloudnetwork.behaviour.jobstatus.ReturnJobStatusUpdate;
 import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerPowerShortage;
 import agents.cloudnetwork.domain.CloudNetworkStateManagement;
 import behaviours.ReceiveGUIController;
@@ -47,9 +46,8 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
     private List<Behaviour> prepareBehaviours() {
         final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
         parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
-        parallelBehaviour.addSubBehaviour(new ReturnCompletedJob());
+        parallelBehaviour.addSubBehaviour(new ReturnJobStatusUpdate());
         parallelBehaviour.addSubBehaviour(new ListenForServerPowerShortage());
-        parallelBehaviour.addSubBehaviour(new ReturnStartedJob());
         return Collections.singletonList(parallelBehaviour);
     }
 

@@ -4,14 +4,16 @@ import static common.TimeUtils.getCurrentTime;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;
+import domain.job.PowerShortageJob;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour is responsible for updating internal cloud network state according to the job transfer
@@ -43,14 +45,13 @@ public class TransferJobToServer extends WakerBehaviour {
      * Method creates the behaviour based on the passed arguments
      *
      * @param cloudNetworkAgent cloud network executing the behaviour
-     * @param jobId             unique job identifier
-     * @param shortageStartTime time when the power shortage starts
+     * @param powerShortageJob  job to be transferred
      * @param newServer         server which will take over the job execution
      * @return behaviour which transfer the jobs between servers
      */
-    public static TransferJobToServer createFor(final CloudNetworkAgent cloudNetworkAgent, final String jobId, final OffsetDateTime shortageStartTime, AID newServer) {
-        final OffsetDateTime transferTime = getCurrentTime().isAfter(shortageStartTime) ? getCurrentTime() : shortageStartTime;
-        return new TransferJobToServer(cloudNetworkAgent, Date.from(transferTime.toInstant()), jobId, newServer);
+    public static TransferJobToServer createFor(final CloudNetworkAgent cloudNetworkAgent, final PowerShortageJob powerShortageJob, AID newServer) {
+        final OffsetDateTime transferTime = getCurrentTime().isAfter(powerShortageJob.getPowerShortageStart()) ? getCurrentTime() : powerShortageJob.getPowerShortageStart();
+        return new TransferJobToServer(cloudNetworkAgent, Date.from(transferTime.toInstant()), powerShortageJob.getJobInstanceId().getJobId(), newServer);
     }
 
     /**

@@ -139,7 +139,6 @@ public class DetailsPanel {
                     .findFirst()
                     .map(AgentNode::getInformationPanel)
                     .orElse(DEFAULT_INFO_PANEL);
-            agentDetailsPanel.setPreferredSize(new Dimension(100, 50));
             refreshDetailsPanel();
             comboBoxNetwork.setSelectedIndex(0);
         }

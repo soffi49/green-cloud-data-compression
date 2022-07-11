@@ -2,31 +2,33 @@ package agents.server.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL;
+import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
+import static common.constant.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
 import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
-import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
+import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
+import agents.server.behaviour.powershortage.transfer.RequestJobTransferInCloudNetwork;
 import common.mapper.JobMapper;
-import domain.job.ImmutablePowerShortageTransfer;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
-import domain.job.PowerShortageTransfer;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
-import java.time.OffsetDateTime;
-import java.util.List;
+import jade.lang.acl.ACLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Behaviour sends the information to the cloud network that there is some power shortage and the
  * job cannot be executed by the server
  */
-public class AnnouncePowerShortage extends OneShotBehaviour {
+public class AnnounceServerPowerShortage extends OneShotBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnnouncePowerShortage.class);
+    private static final Logger logger = LoggerFactory.getLogger(AnnounceServerPowerShortage.class);
 
     private final OffsetDateTime shortageStartTime;
     private final int recalculatedAvailablePower;
@@ -39,7 +41,7 @@ public class AnnouncePowerShortage extends OneShotBehaviour {
      * @param shortageStartTime          start time when the power shortage will happen
      * @param recalculatedAvailablePower power available during the power shortage
      */
-    public AnnouncePowerShortage(ServerAgent myAgent, OffsetDateTime shortageStartTime, int recalculatedAvailablePower) {
+    public AnnounceServerPowerShortage(ServerAgent myAgent, OffsetDateTime shortageStartTime, int recalculatedAvailablePower) {
         super(myAgent);
         this.shortageStartTime = shortageStartTime;
         this.recalculatedAvailablePower = recalculatedAvailablePower;
@@ -61,24 +63,22 @@ public class AnnouncePowerShortage extends OneShotBehaviour {
             logger.info("[{}] Sending power shortage information to cloud network", myServerAgent.getName());
             final List<Job> jobsToKeep = findJobsWithinPower(affectedJobs, recalculatedAvailablePower, Job.class);
             final List<Job> jobsToDivide = affectedJobs.stream().filter(job -> !jobsToKeep.contains(job)).toList();
-            final PowerShortageTransfer powerShortageTransfer = ImmutablePowerShortageTransfer.builder()
-                    .jobList(jobsToDivide.stream().map(JobMapper::mapJobToPowerJob).toList())
-                    .startTime(shortageStartTime)
-                    .build();
-            createNewJobInstances(jobsToDivide, shortageStartTime);
-            displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
-            myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(jobsToDivide, powerShortageTransfer.getStartTime(), myServerAgent, recalculatedAvailablePower));
-            myServerAgent.send(preparePowerShortageInformation(powerShortageTransfer, myServerAgent.getOwnerCloudNetworkAgent()));
+            jobsToDivide.forEach(job -> {
+                logger.info("[{}] Requesting job {} transfer in cloud network", myServerAgent.getName(), job.getJobId());
+                final Job jobToTransfer = myServerAgent.manage().divideJobForPowerShortage(job, shortageStartTime);
+                final ACLMessage transferMessage = preparePowerShortageTransferRequest(JobMapper.mapToPowerShortageJob(job, shortageStartTime), myServerAgent.getOwnerCloudNetworkAgent());
+                displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
+                myServerAgent.addBehaviour(new RequestJobTransferInCloudNetwork(myServerAgent, transferMessage, null, JobMapper.mapToPowerShortageJob(jobToTransfer, shortageStartTime), true));
+                informGreenSourceAboutPowerShortage(job, shortageStartTime);
+            });
+            myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(jobsToDivide, shortageStartTime, myServerAgent, recalculatedAvailablePower));
         }
     }
 
-    private void createNewJobInstances(final List<Job> jobList, final OffsetDateTime shortageTime) {
-        jobList.forEach(job -> {
-            final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
-            myServerAgent.manage().divideJobForPowerShortage(job, shortageTime);
-            displayMessageArrow(myServerAgent, greenSource);
-            myServerAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToJobInstanceId(job), shortageTime, greenSource, POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL));
-        });
+    private void informGreenSourceAboutPowerShortage(final Job job, final OffsetDateTime shortageTime) {
+        final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
+        displayMessageArrow(myServerAgent, greenSource);
+        myServerAgent.send(prepareJobPowerShortageInformation(JobMapper.mapToPowerShortageJob(job, shortageTime), greenSource, SERVER_POWER_SHORTAGE_ALERT_PROTOCOL));
     }
 
     private List<Job> getAffectedPowerJobs() {

@@ -34,7 +34,7 @@ public class JobMapper {
      * @param powerJob power job to be mapped to job
      * @return PowerJob
      */
-    public static PowerJob mapToPowerJob(final PowerJob powerJob, final OffsetDateTime startTime) {
+    public static PowerJob mapToPowerJob(final Job powerJob, final OffsetDateTime startTime) {
         return ImmutablePowerJob.builder()
                 .jobId(powerJob.getJobId())
                 .power(powerJob.getPower())
@@ -80,6 +80,15 @@ public class JobMapper {
      * @return PowerShortageJob
      */
     public static PowerShortageJob mapToPowerShortageJob(final Job job, final OffsetDateTime startTime) {
+        return ImmutablePowerShortageJob.builder().jobInstanceId(mapToJobInstanceId(job)).powerShortageStart(startTime).build();
+    }
+
+    /**
+     * @param job       power job to map
+     * @param startTime power shortage start time
+     * @return PowerShortageJob
+     */
+    public static PowerShortageJob mapToPowerShortageJob(final PowerJob job, final OffsetDateTime startTime) {
         return ImmutablePowerShortageJob.builder().jobInstanceId(mapToJobInstanceId(job)).powerShortageStart(startTime).build();
     }
 

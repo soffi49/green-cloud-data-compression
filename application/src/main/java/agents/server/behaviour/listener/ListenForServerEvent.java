@@ -1,10 +1,12 @@
 package agents.server.behaviour.listener;
 
 import agents.server.ServerAgent;
-import agents.server.behaviour.powershortage.announcer.AnnouncePowerShortage;
+import agents.server.behaviour.powershortage.announcer.AnnounceServerPowerShortageFinish;
+import agents.server.behaviour.powershortage.announcer.AnnounceServerPowerShortage;
 import com.gui.domain.event.AbstractEvent;
 import com.gui.domain.event.PowerShortageEvent;
 import jade.core.behaviours.TickerBehaviour;
+
 import java.util.Objects;
 
 /**
@@ -35,8 +37,11 @@ public class ListenForServerEvent extends TickerBehaviour {
             switch (event.getEventTypeEnum()) {
                 case POWER_SHORTAGE -> {
                     final PowerShortageEvent powerShortageEvent = (PowerShortageEvent) event;
-                    myServerAgent.addBehaviour(new AnnouncePowerShortage(myServerAgent, event.getOccurrenceTime(), powerShortageEvent.getNewMaximumPower()));
+                    myServerAgent.addBehaviour(new AnnounceServerPowerShortage(myServerAgent, event.getOccurrenceTime(), powerShortageEvent.getNewMaximumPower()));
                 }
+                case POWER_SHORTAGE_FINISH ->
+                        myServerAgent.addBehaviour(new AnnounceServerPowerShortageFinish(myServerAgent));
+
             }
             myServerAgent.getAgentNode().setEvent(null);
         }

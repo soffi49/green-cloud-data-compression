@@ -11,10 +11,9 @@ import agents.server.behaviour.listener.ListenForJobStatusOrManualFinish;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.listener.ListenForWeather;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferCancellation;
-import agents.server.behaviour.powershortage.listener.network.ListenForJobTransferStatus;
-import agents.server.behaviour.powershortage.listener.source.ListenForSourcePowerShortage;
-import agents.server.behaviour.powershortage.listener.source.ListenForSourceTransferConfirmation;
+import agents.server.behaviour.powershortage.listener.ListenForJobTransferCancellation;
+import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortage;
+import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.domain.ServerStateManagement;
 import behaviours.ReceiveGUIController;
 import jade.core.AID;
@@ -24,66 +23,68 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Agent representing the Server Agent which executes the clients' jobs */
+/**
+ * Agent representing the Server Agent which executes the clients' jobs
+ */
 public class ServerAgent extends AbstractServerAgent {
 
-  private static final Logger logger = LoggerFactory.getLogger(ServerAgent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerAgent.class);
 
-  /**
-   * Method run at the agent's start. In initialize the Server Agent based on the given by the user
-   * arguments, registers it in the DF and then runs the starting behaviours - listening for the job
-   * requests
-   */
-  @Override
-  protected void setup() {
-    super.setup();
-    final Object[] args = getArguments();
-    initializeAgent(args);
-    register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
-    addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
-  }
-
-  @Override
-  protected void takeDown() {
-    logger.info("I'm finished. Bye!");
-    getGuiController().removeAgentNodeFromGraph(getAgentNode());
-    super.takeDown();
-  }
-
-  private void initializeAgent(final Object[] args) {
-    if (Objects.nonNull(args) && args.length == 3) {
-      this.stateManagement = new ServerStateManagement(this);
-      this.ownedGreenSources = search(this, GS_SERVICE_TYPE, getName());
-      if (ownedGreenSources.isEmpty()) {
-        logger.info("I have no corresponding green sources!");
-        doDelete();
-      }
-      this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-      try {
-        this.pricePerHour = Double.parseDouble(args[1].toString());
-        this.maximumCapacity = Integer.parseInt(args[2].toString());
-      } catch (final NumberFormatException e) {
-        logger.info("The given price is not a number!");
-        doDelete();
-      }
-    } else {
-      logger.info(
-              "Incorrect arguments: some parameters for server agent are missing - check the parameters in the documentation");
-      doDelete();
+    /**
+     * Method run at the agent's start. In initialize the Server Agent based on the given by the user arguments,
+     * registers it in the DF and then runs the starting behaviours - listening for the job requests
+     */
+    @Override
+    protected void setup() {
+        super.setup();
+        final Object[] args = getArguments();
+        initializeAgent(args);
+        register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
+        addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
     }
-  }
 
-  private List<Behaviour> behavioursRunAtStart() {
-    return List.of(
-        new ReceiveJobRequest(),
-        new ListenForPowerConfirmation(),
-        new ListenForSourcePowerShortage(),
-        new ListenForSourceTransferConfirmation(),
-        new ListenForServerEvent(this),
-        new ListenForJobTransferCancellation(this),
-        new ListenForJobStatusOrManualFinish(),
-        new ListenForJobTransferStatus(this),
-        new ListenForWeather(this)
-    );
-  }
+    @Override
+    protected void takeDown() {
+        logger.info("I'm finished. Bye!");
+        getGuiController().removeAgentNodeFromGraph(getAgentNode());
+        super.takeDown();
+    }
+
+    private void initializeAgent(final Object[] args) {
+        if (Objects.nonNull(args) && args.length == 3) {
+            this.stateManagement = new ServerStateManagement(this);
+            this.ownedGreenSources = search(this, GS_SERVICE_TYPE, getName());
+            if (ownedGreenSources.isEmpty()) {
+                logger.info("I have no corresponding green sources!");
+                doDelete();
+            }
+            this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+            try {
+                this.pricePerHour = Double.parseDouble(args[1].toString());
+                this.currentMaximumCapacity = Integer.parseInt(args[2].toString());
+                this.initialMaximumCapacity = Integer.parseInt(args[2].toString());
+            } catch (final NumberFormatException e) {
+                logger.info("The given price is not a number!");
+                doDelete();
+            }
+        } else {
+            logger.info(
+                "Incorrect arguments: some parameters for server agent are missing - check the parameters in the documentation");
+            doDelete();
+        }
+    }
+
+    private List<Behaviour> behavioursRunAtStart() {
+        return List.of(
+            new ReceiveJobRequest(),
+            new ListenForPowerConfirmation(),
+            new ListenForSourcePowerShortage(),
+            new ListenForServerEvent(this),
+            new ListenForJobTransferCancellation(this),
+            new ListenForJobStatusOrManualFinish(),
+            new ListenForWeather(this),
+            new ListenForSourcePowerShortageFinish(),
+            new ListenForWeather(this)
+        );
+    }
 }

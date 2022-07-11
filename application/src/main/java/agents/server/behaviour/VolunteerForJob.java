@@ -17,7 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Behaviours responsible for sending volunteering offer to Cloud Network Agent and handling recieved responses.
+ * Behaviours responsible for sending volunteering offer to Cloud Network Agent and handling
+ * recieved responses.
  */
 public class VolunteerForJob extends ProposeInitiator {
 
@@ -31,7 +32,8 @@ public class VolunteerForJob extends ProposeInitiator {
      *
      * @param agent        agent executing the behaviour
      * @param msg          proposal message that has to be sent to Cloud Network
-     * @param replyMessage reply message sent to green source after retreiving the cloud network response
+     * @param replyMessage reply message sent to green source after retreiving the cloud network
+     *                     response
      */
     public VolunteerForJob(final Agent agent, final ACLMessage msg, final ACLMessage replyMessage) {
         super(agent, msg);
@@ -40,8 +42,9 @@ public class VolunteerForJob extends ProposeInitiator {
     }
 
     /**
-     * Method handles the accept proposal response received from the Cloud Network Agents. It starts the job execution
-     * behaviour, updates the network data and forwards the accept proposal to the chosen Green Source Agent
+     * Method handles the accept proposal response received from the Cloud Network Agents. It starts
+     * the job execution behaviour, updates the network data and forwards the accept proposal to the
+     * chosen Green Source Agent
      *
      * @param accept_proposal accept proposal message retrieved from the Cloud Network
      */
@@ -50,25 +53,25 @@ public class VolunteerForJob extends ProposeInitiator {
         try {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
             final JobWithProtocol jobWithProtocol =
-                getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
+                    getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
             final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
             myServerAgent
-                .getServerJobs()
-                .replace(
-                    myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
+                    .getServerJobs()
+                    .replace(
+                            myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
             myServerAgent.manage().updateClientNumber();
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
             myAgent.send(
-                ReplyMessageFactory.prepareAcceptReplyWithProtocol(
-                    replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
+                    ReplyMessageFactory.prepareAcceptReplyWithProtocol(
+                            replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Method handles the reject proposal response received from the Cloud Network Agents. It forwards the reject
-     * proposal to the Green Source Agent
+     * Method handles the reject proposal response received from the Cloud Network Agents. It forwards
+     * the reject proposal to the Green Source Agent
      *
      * @param reject_proposal reject proposal message retrieved from the Cloud Network
      */
@@ -76,16 +79,15 @@ public class VolunteerForJob extends ProposeInitiator {
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         try {
             logger.info(
-                "[{}] Cloud Network {} rejected the job volunteering offer",
-                myAgent.getName(),
-                reject_proposal.getSender().getLocalName());
-            final String jobId = reject_proposal.getContent();
-            final Job job = myServerAgent.manage().getJobById(jobId);
-            myServerAgent.getGreenSourceForJobMap().remove(jobId);
+                    "[{}] Cloud Network {} rejected the job volunteering offer",
+                    myAgent.getName(),
+                    reject_proposal.getSender().getLocalName());
+            final JobInstanceIdentifier jobInstanceId = getMapper().readValue(reject_proposal.getContent(), JobInstanceIdentifier.class);
+            final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+            myServerAgent.getGreenSourceForJobMap().remove(jobInstanceId.getJobId());
             myServerAgent.getServerJobs().remove(job);
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-            myServerAgent.send(
-                ReplyMessageFactory.prepareStringReply(replyMessage, jobId, REJECT_PROPOSAL));
+            myServerAgent.send(ReplyMessageFactory.prepareReply(replyMessage, jobInstanceId, REJECT_PROPOSAL));
         } catch (final Exception e) {
             e.printStackTrace();
         }

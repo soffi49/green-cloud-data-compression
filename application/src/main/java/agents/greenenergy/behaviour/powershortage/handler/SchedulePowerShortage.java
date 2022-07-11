@@ -90,20 +90,6 @@ public class SchedulePowerShortage extends WakerBehaviour {
             Collections.emptyList(), newMaximumCapacity);
     }
 
-
-    /**
-     * Method creates the behaviour based on the passed parameters
-     *
-     * @param powerShortageTime  time when the power shortage should happen
-     * @param greenEnergyAgent   agent executing the behaviour
-     * @return behaviour scheduling the power shortage handling
-     */
-    public static SchedulePowerShortage createFor(final OffsetDateTime powerShortageTime,
-            final GreenEnergyAgent greenEnergyAgent) {
-        final OffsetDateTime shortageTime = getShortageTime(powerShortageTime);
-        return new SchedulePowerShortage(greenEnergyAgent, Date.from(shortageTime.toInstant()), Collections.emptyList());
-    }
-
     /**
      * Method updates the internal state of the green source when the power shortage happens. It changes the value of the maximum
      * capacity as well as prints the information for (if there are some) jobs which will cause the power overflow that they are on hold

@@ -1,7 +1,6 @@
 package agents.server.behaviour.listener;
 
 import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
-import static common.mapper.JobMapper.mapToJobInstanceId;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -15,19 +14,21 @@ import agents.server.ServerAgent;
 import agents.server.behaviour.StartJobExecution;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.job.CheckedPowerJob;
+import domain.job.Job;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 public class ListenForWeather extends CyclicBehaviour {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenForWeather.class);
     private static final MessageTemplate messageTemplate = and(or(MatchPerformative(INFORM), MatchPerformative(REFUSE)),
-        MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL));
+                                                               MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL));
 
     private final ServerAgent myServerAgent;
 
@@ -44,7 +45,7 @@ public class ListenForWeather extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myAgent.receive(messageTemplate);
         if (Objects.nonNull(message) && isMessageContentValid(message, CheckedPowerJob.class)) {
-            CheckedPowerJob checkedPowerJob = null;
+            CheckedPowerJob checkedPowerJob;
             try {
                 checkedPowerJob = getMapper().readValue(message.getContent(), CheckedPowerJob.class);
             } catch (JsonProcessingException e) {
@@ -52,20 +53,21 @@ public class ListenForWeather extends CyclicBehaviour {
             }
 
             var currentAvailableCapacity = myServerAgent.manage().getAvailableCapacity(checkedPowerJob.getPowerJob().getStartTime(),
-                checkedPowerJob.getPowerJob().getEndTime());
+                                                                                       checkedPowerJob.getPowerJob().getEndTime());
             if (currentAvailableCapacity <= 0) {
                 //TODO separate change-set
                 logger.warn("WTF");
             }
 
             if (message.getPerformative() == INFORM) {
-                logger.info("[{}] Starting job execution!.", myServerAgent.getName());
-                myAgent.addBehaviour(
-                    StartJobExecution.createFor(
-                        myServerAgent,
-                        mapToJobInstanceId(checkedPowerJob.getPowerJob()),
-                        checkedPowerJob.informCNAStart(),
-                        checkedPowerJob.informCNAFinish()));
+                final Job job = myServerAgent.manage().getJobByIdAndStartDate(checkedPowerJob.getPowerJob().getJobId(),
+                                                                              checkedPowerJob.getPowerJob().getStartTime());
+                if(Objects.nonNull(job)) {
+                    logger.info("[{}] Starting job execution!", myServerAgent.getName());
+                    myAgent.addBehaviour(StartJobExecution.createFor(myServerAgent, job, checkedPowerJob.informCNAStart(), checkedPowerJob.informCNAFinish()));
+                } else {
+                    logger.info("[{}] Job {} must have been finished or transferred before its execution!", myServerAgent.getName(), checkedPowerJob.getPowerJob().getJobId());
+                }
             } else if (message.getPerformative() == REFUSE) {
                 logger.info("[{}] Aborting job execution!.", myServerAgent.getName());
             }

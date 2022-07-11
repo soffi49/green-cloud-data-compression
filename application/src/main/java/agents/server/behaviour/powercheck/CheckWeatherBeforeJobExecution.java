@@ -1,6 +1,6 @@
 package agents.server.behaviour.powercheck;
 
-import static agents.server.domain.ServerAgentConstants.PREEMTIVE_POWER_CHECK_TIME_WINDOW;
+import static agents.server.domain.ServerAgentConstants.PREEMPTIVE_POWER_CHECK_TIME_WINDOW;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.mapper.JobMapper.mapJobToPowerJob;
@@ -52,9 +52,9 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
     public static CheckWeatherBeforeJobExecution createFor(ServerAgent serverAgent, JobInstanceIdentifier jobInstanceId,
         boolean informCNAStart, boolean informCNAFinish) {
         var startDate =
-            getCurrentTime().isAfter(jobInstanceId.getStartTime().minusSeconds(PREEMTIVE_POWER_CHECK_TIME_WINDOW))
+            getCurrentTime().isAfter(jobInstanceId.getStartTime().minusSeconds(PREEMPTIVE_POWER_CHECK_TIME_WINDOW))
                 ? getCurrentTime()
-                : jobInstanceId.getStartTime().minusSeconds(PREEMTIVE_POWER_CHECK_TIME_WINDOW);
+                : jobInstanceId.getStartTime().minusSeconds(PREEMPTIVE_POWER_CHECK_TIME_WINDOW);
         var jobToExecute = serverAgent.manage().getJobByIdAndStartDate(jobInstanceId);
         if(isNull(jobToExecute)) {
             abortExecution(serverAgent, jobInstanceId.getJobId());

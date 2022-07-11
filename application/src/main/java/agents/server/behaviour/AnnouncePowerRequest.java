@@ -9,6 +9,7 @@ import static messages.domain.JobOfferMessageFactory.makeServerJobOffer;
 import agents.server.ServerAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
+import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
@@ -80,7 +81,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 
                 logger.info("[{}] Sending job volunteering offer to Cloud Network Agent", myAgent.getName());
                 myServerAgent.addBehaviour(new VolunteerForJob(myAgent, proposalMessage, chosenGreenSourceOffer.createReply()));
-                rejectJobOffers(myServerAgent, jobId, chosenGreenSourceOffer, proposals);
+                rejectJobOffers(myServerAgent, JobMapper.mapToJobInstanceId(job), chosenGreenSourceOffer, proposals);
             } else {
                 handleInvalidProposals(proposals);
             }
@@ -89,7 +90,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 
     private void handleInvalidProposals(final List<ACLMessage> proposals) {
         logger.info("I didn't understand any proposal from Green Energy Agents");
-        rejectJobOffers(myServerAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+        rejectJobOffers(myServerAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
     }
 

@@ -10,6 +10,7 @@ import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,9 +22,10 @@ import java.util.Map;
  */
 public abstract class AbstractServerAgent extends AbstractAgent {
 
+    protected int initialMaximumCapacity;
     protected transient ServerStateManagement stateManagement;
     protected double pricePerHour;
-    protected int maximumCapacity;
+    protected int currentMaximumCapacity;
     protected Map<Job, JobStatusEnum> serverJobs;
     protected Map<String, AID> greenSourceForJobMap;
     protected List<AID> ownedGreenSources;
@@ -32,34 +34,10 @@ public abstract class AbstractServerAgent extends AbstractAgent {
     AbstractServerAgent() {
         super.setup();
 
+        initialMaximumCapacity = 0;
         serverJobs = new HashMap<>();
         ownedGreenSources = new ArrayList<>();
         greenSourceForJobMap = new HashMap<>();
-    }
-
-    /**
-     * Abstract Server Agent constructor.
-     *
-     * @param pricePerHour           price for 1-hour server service
-     * @param maximumCapacity        maximum available server power capacity
-     * @param serverJobs             list of jobs together with their status that are being processed
-     *                               by the server
-     * @param greenSourceForJobMap   map storing jobs and corresponding job's executor addresses
-     * @param ownedGreenSources      list of addresses of owned green sources
-     * @param ownerCloudNetworkAgent address of the owner cloud network agent
-     */
-    AbstractServerAgent(double pricePerHour,
-                        int maximumCapacity,
-                        Map<Job, JobStatusEnum> serverJobs,
-                        Map<String, AID> greenSourceForJobMap,
-                        List<AID> ownedGreenSources,
-                        AID ownerCloudNetworkAgent) {
-        this.pricePerHour = pricePerHour;
-        this.maximumCapacity = maximumCapacity;
-        this.serverJobs = serverJobs;
-        this.greenSourceForJobMap = greenSourceForJobMap;
-        this.ownedGreenSources = ownedGreenSources;
-        this.ownerCloudNetworkAgent = ownerCloudNetworkAgent;
     }
 
     /**
@@ -70,22 +48,29 @@ public abstract class AbstractServerAgent extends AbstractAgent {
      */
     public ACLMessage chooseGreenSourceToExecuteJob(final List<ACLMessage> greenSourceOffers) {
         final Comparator<ACLMessage> compareGreenSources =
-                Comparator.comparingDouble(greenSource -> {
-                    try {
-                        return getMapper().readValue(greenSource.getContent(), GreenSourceData.class).getAvailablePowerInTime();
-                    } catch (final JsonProcessingException e) {
-                        return Double.MAX_VALUE;
-                    }
-                });
+                Comparator.comparingDouble(
+                        greenSource -> {
+                            try {
+                                return getMapper()
+                                        .readValue(greenSource.getContent(), GreenSourceData.class)
+                                        .getAvailablePowerInTime();
+                            } catch (final JsonProcessingException e) {
+                                return Double.MAX_VALUE;
+                            }
+                        });
         return greenSourceOffers.stream().min(compareGreenSources).orElseThrow();
     }
 
-    public int getMaximumCapacity() {
-        return maximumCapacity;
+    public int getInitialMaximumCapacity() {
+        return initialMaximumCapacity;
     }
 
-    public void setMaximumCapacity(int maximumCapacity) {
-        this.maximumCapacity = maximumCapacity;
+    public int getCurrentMaximumCapacity() {
+        return currentMaximumCapacity;
+    }
+
+    public void setCurrentMaximumCapacity(int currentMaximumCapacity) {
+        this.currentMaximumCapacity = currentMaximumCapacity;
     }
 
     public AID getOwnerCloudNetworkAgent() {

@@ -6,6 +6,7 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.AbstractAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.job.JobInstanceIdentifier;
 import jade.lang.acl.ACLMessage;
 import messages.domain.ReplyMessageFactory;
 
@@ -27,6 +28,24 @@ public class MessagingUtils {
         return ((Vector<ACLMessage>) responses).stream()
                 .filter(response -> response.getPerformative() == ACLMessage.PROPOSE)
                 .toList();
+    }
+
+    /**
+     * Method sends the reject proposal messages to all agents which sent the offers except the one
+     * which was chosen
+     *
+     * @param agent          agent which is sent the reject proposal messages
+     * @param jobInstanceId  unique identifier of the job instance
+     * @param chosenOffer    chosen offer message
+     * @param receivedOffers all retrieved offer messages
+     */
+    public static void rejectJobOffers(final AbstractAgent agent, final JobInstanceIdentifier jobInstanceId, final ACLMessage chosenOffer, final List<ACLMessage> receivedOffers) {
+        receivedOffers.stream()
+                .filter(offer -> !offer.equals(chosenOffer))
+                .forEach(offer -> {
+                    displayMessageArrow(agent, offer.getSender());
+                    agent.send(ReplyMessageFactory.prepareReply(offer.createReply(), jobInstanceId, REJECT_PROPOSAL));
+                });
     }
 
     /**

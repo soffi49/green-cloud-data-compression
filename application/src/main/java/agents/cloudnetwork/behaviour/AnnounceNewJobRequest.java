@@ -12,7 +12,9 @@ import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
 import agents.cloudnetwork.CloudNetworkAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import common.constant.InvalidJobIdConstant;
+import common.mapper.JobMapper;
 import domain.ServerData;
+import domain.job.Job;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
@@ -82,16 +84,16 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
             if (!validProposals.isEmpty()) {
                 final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
                 final ServerData chosenServerData = readMessage(chosenServerOffer);
+                final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
                 logger.info("[{}] Chosen Server for the job {}: {}", guid, jobId, chosenServerOffer.getSender().getName());
                 final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
                 logger.info("[{}] Sending job execution offer to Client", guid);
                 myCloudNetworkAgent.getServerForJobMap().put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-                myCloudNetworkAgent.addBehaviour(
-                    new ProposeJobOffer(myCloudNetworkAgent,
+                myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent,
                         makeJobOfferForClient(chosenServerData,
                             myCloudNetworkAgent.manage().getCurrentPowerInUse(),
                             replyMessage), serverReplyMessage));
-                rejectJobOffers(myCloudNetworkAgent, chosenServerData.getJobId(), chosenServerOffer, proposals);
+                rejectJobOffers(myCloudNetworkAgent, JobMapper.mapToJobInstanceId(job), chosenServerOffer, proposals);
             } else {
                 handleInvalidResponses(proposals);
             }
@@ -109,7 +111,8 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 
     private void handleInvalidResponses(final List<ACLMessage> proposals) {
         logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
-        rejectJobOffers(myCloudNetworkAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+        final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
+        rejectJobOffers(myCloudNetworkAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
         myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
     }
 

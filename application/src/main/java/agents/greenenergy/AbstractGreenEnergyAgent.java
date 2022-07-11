@@ -64,13 +64,16 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
     }
 
     public int getMaximumCapacity() {
-        return this.greenPower.getMaximumCapacity();
+        return this.greenPower.getCurrentMaximumCapacity();
     }
 
     public void setMaximumCapacity(int maximumCapacity) {
-        this.greenPower.setMaximumCapacity(maximumCapacity);
+        this.greenPower.setCurrentMaximumCapacity(maximumCapacity);
     }
 
+    public int getInitialMaximumCapacity() {
+        return this.greenPower.getInitialMaximumCapacity();
+    }
     public Map<PowerJob, JobStatusEnum> getPowerJobs() {
         return powerJobs;
     }

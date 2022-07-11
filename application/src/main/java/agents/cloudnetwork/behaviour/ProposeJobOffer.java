@@ -72,10 +72,11 @@ public class ProposeJobOffer extends ProposeInitiator {
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
         logger.info("[{}] Client {} rejected the job proposal", guid, reject_proposal.getSender().getName());
         final String jobId = reject_proposal.getContent();
+        final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
         myCloudNetworkAgent.getServerForJobMap().remove(jobId);
         myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.manage().getJobById(jobId));
         displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
-        myCloudNetworkAgent.send(ReplyMessageFactory.prepareStringReply(replyMessage, jobId, REJECT_PROPOSAL));
+        myCloudNetworkAgent.send(ReplyMessageFactory.prepareReply(replyMessage, JobMapper.mapToJobInstanceId(job), REJECT_PROPOSAL));
     }
 
     private Date calculateExpectedJobStart(final Job job) {

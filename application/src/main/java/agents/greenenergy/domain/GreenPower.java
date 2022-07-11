@@ -28,22 +28,29 @@ public class GreenPower {
     private static final int TEST_MULTIPLIER = 1;
 
     private GreenEnergyAgent greenEnergyAgent;
-    private int maximumCapacity;
+    private int currentMaximumCapacity;
+    private final int initialMaximumCapacity;
 
     public GreenPower() {
+        this.initialMaximumCapacity = 0;
     }
 
     public GreenPower(int maximumCapacity, GreenEnergyAgent greenEnergyAgent) {
-        this.maximumCapacity = maximumCapacity;
+        this.currentMaximumCapacity = maximumCapacity;
+        this.initialMaximumCapacity = maximumCapacity;
         this.greenEnergyAgent = greenEnergyAgent;
     }
 
-    public void setMaximumCapacity(int maximumCapacity) {
-        this.maximumCapacity = maximumCapacity;
+    public void setCurrentMaximumCapacity(int currentMaximumCapacity) {
+        this.currentMaximumCapacity = currentMaximumCapacity;
     }
 
-    public int getMaximumCapacity() {
-        return maximumCapacity;
+    public int getInitialMaximumCapacity() {
+        return initialMaximumCapacity;
+    }
+
+    public int getCurrentMaximumCapacity() {
+        return currentMaximumCapacity;
     }
 
     public double getAvailablePower(WeatherData weather, ZonedDateTime dateTime, Location location) {
@@ -76,7 +83,7 @@ public class GreenPower {
             return 0;
         }
 
-        return maximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 0.1) * TEST_MULTIPLIER;
+        return currentMaximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
     }
 
     /**
@@ -86,7 +93,7 @@ public class GreenPower {
      * @return available wind speed
      */
     private double getWindPower(WeatherData weather) {
-        return maximumCapacity * pow(
+        return currentMaximumCapacity * pow(
             (weather.getWindSpeed() + 5 - CUT_ON_WIND_SPEED) / (RATED_WIND_SPEED - CUT_ON_WIND_SPEED), 2) * TEST_MULTIPLIER;
     }
 

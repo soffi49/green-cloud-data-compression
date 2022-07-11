@@ -2,21 +2,25 @@ package agents.greenenergy.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
-import static messages.domain.PowerShortageMessageFactory.preparePowerShortageInformation;
+import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powershortage.handler.SchedulePowerShortage;
+import agents.greenenergy.behaviour.powershortage.transfer.RequestPowerJobTransfer;
+import common.mapper.JobMapper;
 import domain.job.ImmutablePowerShortageTransfer;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.job.PowerShortageTransfer;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.lang.acl.ACLMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
 
@@ -36,7 +40,7 @@ public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
      * @param availablePower    power available during the power shortage
      */
     public AnnounceWeatherPowerShortage(GreenEnergyAgent myAgent, PowerJob causingPowerJob,
-        OffsetDateTime shortageStartTime, Double availablePower) {
+                                        OffsetDateTime shortageStartTime, Double availablePower) {
         super(myAgent);
         this.shortageStartTime = shortageStartTime;
         this.causingPowerJob = causingPowerJob;
@@ -56,28 +60,30 @@ public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
         logger.info("[{}] Sending weather-caused power shortage information", myGreenAgent.getName());
         final List<PowerJob> jobsToKeep = findJobsWithinPower(affectedJobs, availablePower, PowerJob.class);
         final List<PowerJob> jobsToTransfer = affectedJobs.stream()
-            .filter(job -> !jobsToKeep.contains(job))
-            .collect(Collectors.toCollection(ArrayList::new));
+                .filter(job -> !jobsToKeep.contains(job))
+                .collect(Collectors.toCollection(ArrayList::new));
         jobsToTransfer.add(causingPowerJob);
-        final PowerShortageTransfer powerShortageTransfer = ImmutablePowerShortageTransfer.builder()
-            .jobList(jobsToTransfer)
-            .startTime(shortageStartTime)
-            .build();
-        createNewJobInstances(jobsToTransfer);
-        displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
-        myGreenAgent.send(preparePowerShortageInformation(powerShortageTransfer, myGreenAgent.getOwnerServer()));
-        myGreenAgent.addBehaviour(SchedulePowerShortage.createFor(powerShortageTransfer, myGreenAgent));
+        jobsToTransfer.forEach(powerJob -> {
+            final PowerJob jobToTransfer = myGreenAgent.manage().divideJobForPowerShortage(powerJob, shortageStartTime);
+            final ACLMessage transferMessage = preparePowerShortageTransferRequest(JobMapper.mapToPowerShortageJob(powerJob, shortageStartTime), myGreenAgent.getOwnerServer());
+            displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
+            myGreenAgent.addBehaviour(new RequestPowerJobTransfer(myGreenAgent, transferMessage, jobToTransfer, shortageStartTime));
+        });
+        myGreenAgent.addBehaviour(SchedulePowerShortage.createFor(preparePowerShortageTransfer(jobsToTransfer), myGreenAgent));
     }
 
-    private void createNewJobInstances(final List<PowerJob> affectedJobs) {
-        affectedJobs.forEach(powerJob -> myGreenAgent.manage().divideJobForPowerShortage(powerJob, shortageStartTime));
+    private PowerShortageTransfer preparePowerShortageTransfer(final List<PowerJob> powerJobs) {
+        return ImmutablePowerShortageTransfer.builder()
+                .jobList(powerJobs)
+                .startTime(shortageStartTime)
+                .build();
     }
 
     private List<PowerJob> getAffectedPowerJobs() {
         return myGreenAgent.getPowerJobs().keySet().stream()
-            .filter(job -> !job.equals(causingPowerJob))
-            .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myGreenAgent.getPowerJobs().get(job).equals(
-                JobStatusEnum.PROCESSING))
-            .toList();
+                .filter(job -> !job.equals(causingPowerJob))
+                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myGreenAgent.getPowerJobs().get(job).equals(
+                        JobStatusEnum.PROCESSING))
+                .toList();
     }
 }
