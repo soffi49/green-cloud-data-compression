@@ -75,7 +75,7 @@ public class ReceiveJobRequests extends CyclicBehaviour {
                 e.printStackTrace();
             }
         } else {
-            block();
+            block(75);
         }
     }
 }

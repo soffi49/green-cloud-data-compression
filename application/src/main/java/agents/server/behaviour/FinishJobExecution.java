@@ -63,5 +63,6 @@ public class FinishJobExecution extends WakerBehaviour {
             logger.info("[{}] Finished executing the job {} at {}", myAgent.getName(), jobToExecute.getJobId(), jobToExecute.getEndTime());
             myServerAgent.manage().finishJobExecution(jobToExecute, informCNA);
         }
+        myAgent.removeBehaviour(this);
     }
 }

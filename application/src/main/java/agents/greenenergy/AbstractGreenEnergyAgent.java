@@ -55,11 +55,11 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
         this.pricePerPowerUnit = pricePerPowerUnit;
     }
 
-    public double getCapacity(WeatherData weather, ZonedDateTime startTime) {
+    public Double getCapacity(WeatherData weather, ZonedDateTime startTime) {
         return greenPower.getAvailablePower(weather, startTime, location);
     }
 
-    public double getCapacity(MonitoringData weather, Instant startTime) {
+    public Double getCapacity(MonitoringData weather, Instant startTime) {
         return greenPower.getAvailablePower(weather, startTime, location);
     }
 

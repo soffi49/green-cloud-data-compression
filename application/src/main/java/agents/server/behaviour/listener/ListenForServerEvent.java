@@ -40,6 +40,5 @@ public class ListenForServerEvent extends TickerBehaviour {
             }
             myServerAgent.getAgentNode().setEvent(null);
         }
-
     }
 }
