@@ -10,6 +10,7 @@ public enum JobStatusEnum {
     IN_PROGRESS("IN PROGRESS"),
     DELAYED("DELAYED"),
     FINISHED("FINISHED"),
+    ON_BACK_UP("ON BACK UP"),
     REJECTED("REJECTED");
 
     private final String status;

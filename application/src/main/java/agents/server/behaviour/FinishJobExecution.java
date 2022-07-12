@@ -1,17 +1,17 @@
 package agents.server.behaviour;
 
-import static common.TimeUtils.convertToSimulationTime;
+import static common.TimeUtils.getCurrentTime;
+import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
-import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 /**
  * Behaviour responsible for returning to the CNA and GreenSource the information that the job execution has finished
@@ -21,18 +21,21 @@ public class FinishJobExecution extends WakerBehaviour {
     private static final Logger logger = LoggerFactory.getLogger(FinishJobExecution.class);
     private final Job jobToExecute;
     private final ServerAgent myServerAgent;
+    private final boolean informCNA;
 
     /**
      * Behaviour constructor.
      *
-     * @param agent   agent that is executing the behaviour
-     * @param timeOut time during which the job is being executed
-     * @param job     job that is being executed
+     * @param agent     agent that is executing the behaviour
+     * @param endTime   time when the behaviour should be executed
+     * @param job       job that is being executed
+     * @param informCNA flag indicating whether cloud network should be informed about the job finish
      */
-    private FinishJobExecution(Agent agent, long timeOut, final Job job) {
-        super(agent, timeOut);
+    private FinishJobExecution(Agent agent, Date endTime, final Job job, final boolean informCNA) {
+        super(agent, endTime);
         this.jobToExecute = job;
-        myServerAgent = (ServerAgent) agent;
+        this.myServerAgent = (ServerAgent) agent;
+        this.informCNA = informCNA;
     }
 
     /**
@@ -41,11 +44,12 @@ public class FinishJobExecution extends WakerBehaviour {
      *
      * @param serverAgent  agent that will execute the behaviour
      * @param jobToExecute job that will be executed
+     * @param informCNA    flag indicating whether cloud network should be informed about the job finish
      * @return behaviour to be run
      */
-    public static FinishJobExecution createFor(final ServerAgent serverAgent, final Job jobToExecute) {
-        final long timeOut = convertToSimulationTime(ChronoUnit.SECONDS.between(jobToExecute.getStartTime(), jobToExecute.getEndTime()));
-        return new FinishJobExecution(serverAgent, timeOut, jobToExecute);
+    public static FinishJobExecution createFor(final ServerAgent serverAgent, final Job jobToExecute, final boolean informCNA) {
+        final OffsetDateTime endTime = getCurrentTime().isAfter(jobToExecute.getEndTime()) ? getCurrentTime() : jobToExecute.getEndTime();
+        return new FinishJobExecution(serverAgent, Date.from(endTime.toInstant()), jobToExecute, informCNA);
     }
 
     /**
@@ -55,9 +59,10 @@ public class FinishJobExecution extends WakerBehaviour {
      */
     @Override
     protected void onWake() {
-        if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && myServerAgent.getServerJobs().get(jobToExecute).equals(JobStatusEnum.IN_PROGRESS)) {
-            logger.info("[{}] Finished executing the job for {}", myAgent.getName(), jobToExecute.getClientIdentifier());
-            myServerAgent.finishJobExecution(jobToExecute);
+        if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && JOB_IN_PROGRESS.contains(myServerAgent.getServerJobs().get(jobToExecute))) {
+            logger.info("[{}] Finished executing the job {} at {}", myAgent.getName(), jobToExecute.getJobId(), jobToExecute.getEndTime());
+            myServerAgent.manage().finishJobExecution(jobToExecute, informCNA);
         }
+        myAgent.removeBehaviour(this);
     }
 }

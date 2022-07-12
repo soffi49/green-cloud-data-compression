@@ -2,23 +2,29 @@ package agents.greenenergy.behaviour;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
 import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.convertToSimulationTime;
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static messages.domain.ReplyMessageFactory.prepareStringReply;
+import static java.util.Objects.isNull;
+import static mapper.JsonMapper.getMapper;
+import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.greenenergy.GreenEnergyAgent;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import common.mapper.JobMapper;
+import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
+import domain.job.JobWithProtocol;
 import domain.job.PowerJob;
 import jade.core.Agent;
-import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -44,21 +50,25 @@ public class ProposePowerRequest extends ProposeInitiator {
 
     /**
      * Method handles the accept proposal response from server. It updates the state of the job in
-     * green source data and sends the information that the execution of the given job can be started.
+     * green source data and replies with the message containing correct protocol and the information
+     * that the execution of the given job can be started.
      *
      * @param accept_proposal accept proposal response retrieved from the Server Agent
      */
     @Override
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
-        final String jobId = accept_proposal.getContent();
-        final PowerJob job = myGreenEnergyAgent.getJobById(jobId);
-        logger.info("[{}] Sending information back to server agent.", guid);
-        myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
-        var response = prepareStringReply(accept_proposal.createReply(), jobId, INFORM);
-        response.setProtocol(SERVER_JOB_CFP_PROTOCOL);
-        myAgent.addBehaviour(createJobListeningBehaviours(job));
-        displayMessageArrow(myGreenEnergyAgent, accept_proposal.getSender());
-        myAgent.send(response);
+        final JobWithProtocol jobWithProtocol = readMessage(accept_proposal);
+        if (Objects.nonNull(jobWithProtocol)) {
+            PowerJob job = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobWithProtocol.getJobInstanceIdentifier());
+            if (isNull(job)) {
+                job = myGreenEnergyAgent.manage().getJobById(jobWithProtocol.getJobInstanceIdentifier().getJobId());
+            }
+            logger.info("[{}] Sending information regarding job {} back to server agent.", guid, job.getJobId());
+            myGreenEnergyAgent.getPowerJobs().replace(job, JobStatusEnum.ACCEPTED);
+            myAgent.addBehaviour(new FinishJobManually(myGreenEnergyAgent, calculateExpectedJobEndTime(job), JobMapper.mapToJobInstanceId(job)));
+            displayMessageArrow(myGreenEnergyAgent, accept_proposal.getSender());
+            sendResponseToServer(accept_proposal, jobWithProtocol);
+        }
     }
 
     /**
@@ -68,20 +78,35 @@ public class ProposePowerRequest extends ProposeInitiator {
      */
     @Override
     protected void handleRejectProposal(final ACLMessage reject_proposal) {
-        logger.info("[{}] Server rejected the job proposal", guid);
+        try {
+            logger.info("[{}] Server rejected the job proposal", guid);
+            final JobInstanceIdentifier jobInstanceId = getMapper().readValue(reject_proposal.getContent(), JobInstanceIdentifier.class);
+            final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+            if (Objects.nonNull(powerJob)) {
+                myGreenEnergyAgent.getPowerJobs().remove(powerJob);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private ParallelBehaviour createJobListeningBehaviours(final PowerJob job) {
-        final ParallelBehaviour behaviour = new ParallelBehaviour();
-        behaviour.addSubBehaviour(new ListenForUnfinishedJobs(myGreenEnergyAgent, calculateJobStartTimeout(job), job.getJobId()));
-        behaviour.addSubBehaviour(new ListenForStartedJobs(myGreenEnergyAgent));
-        behaviour.addSubBehaviour(new ListenForFinishedJobs(myGreenEnergyAgent));
-        return behaviour;
+    private void sendResponseToServer(final ACLMessage acceptProposal, final JobWithProtocol jobWithProtocol) {
+        final ACLMessage response = prepareReply(acceptProposal.createReply(), jobWithProtocol.getJobInstanceIdentifier(), INFORM);
+        response.setProtocol(jobWithProtocol.getReplyProtocol());
+        myAgent.send(response);
     }
 
-    private Long calculateJobStartTimeout(final PowerJob job) {
-        final long hourDifferenceStart = ChronoUnit.SECONDS.between(getCurrentTime(), job.getStartTime());
-        final long hourDifferenceExecution = ChronoUnit.SECONDS.between(job.getStartTime(), job.getEndTime());
-        return convertToSimulationTime((hourDifferenceStart < 0 ? 0 : hourDifferenceStart) + hourDifferenceExecution) + MAX_ERROR_IN_JOB_FINISH;
+    private JobWithProtocol readMessage(ACLMessage message) {
+        try {
+            return getMapper().readValue(message.getContent(), JobWithProtocol.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Date calculateExpectedJobEndTime(final PowerJob job) {
+        final OffsetDateTime endDate = getCurrentTime().isAfter(job.getEndTime()) ? getCurrentTime() : job.getEndTime();
+        return Date.from(endDate.plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
     }
 }

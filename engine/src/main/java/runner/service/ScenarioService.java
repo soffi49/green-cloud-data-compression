@@ -29,30 +29,32 @@ import java.util.stream.IntStream;
 /**
  * Service used in running the scenarios
  */
-public class ScenarioService {
+public class ScenarioService implements Runnable {
 
     private static final XmlMapper XML_MAPPER = new XmlMapper();
-    final List<AgentController> agentsToRun = new ArrayList<>();
+    private static final List<AgentController> AGENTS_TO_RUN = new ArrayList<>();
+    private static final Random RANDOM = new Random();
+
     private final AgentControllerFactory factory;
     private final GUIControllerImpl guiController;
-
+    private final String fileName;
 
     /**
      * Service constructor
      *
      * @param containerController container controller in which agents' controllers are to be created
      */
-    public ScenarioService(ContainerController containerController, GUIControllerImpl guiController) {
+    public ScenarioService(ContainerController containerController, GUIControllerImpl guiController, String fileName) {
         this.factory = new AgentControllerFactoryImpl(containerController);
         this.guiController = guiController;
+        this.fileName = fileName;
     }
 
     /**
      * Method creates the agent controllers that are to be run from the xml file
-     *
-     * @param fileName XML file containing the scenario description
      */
-    public void createAgentsFromScenarioFile(final String fileName) {
+    @Override
+    public void run() {
         final File scenarioFile = getFileFromResourceFileName(fileName);
         try {
             final ScenarioArgs scenario = XML_MAPPER.readValue(scenarioFile, ScenarioArgs.class);
@@ -66,10 +68,10 @@ public class ScenarioService {
             guiController.createEdges();
             // next line is added on purpose! It waits for the graph to fully initialize
             TimeUnit.SECONDS.sleep(7);
-            for (AgentController agentController : agentsToRun) {
+            for (AgentController agentController : AGENTS_TO_RUN) {
                 agentController.start();
                 agentController.activate();
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(100);
             }
             createClientAgents(CLIENT_NUMBER, scenario);
 
@@ -87,7 +89,7 @@ public class ScenarioService {
                 guiController.addAgentNodeToGraph(agentNode);
                 agentController.putO2AObject(guiController, AgentController.ASYNC);
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
-                agentsToRun.add(agentController);
+                AGENTS_TO_RUN.add(agentController);
             } catch (StaleProxyException e) {
                 e.printStackTrace();
             }
@@ -96,10 +98,9 @@ public class ScenarioService {
 
     private void createClientAgents(final int agentsNumber, final ScenarioArgs scenario) {
         IntStream.rangeClosed(1, agentsNumber).forEach(idx -> {
-            final Random random = new Random();
-            final int randomPower = MIN_JOB_POWER + random.nextInt(MAX_JOB_POWER);
-            final int randomStart = START_TIME_MIN + random.nextInt(START_TIME_MAX);
-            final int randomEnd = randomStart + 1 + random.nextInt(END_TIME_MAX);
+            final int randomPower = MIN_JOB_POWER + RANDOM.nextInt(MAX_JOB_POWER);
+            final int randomStart = START_TIME_MIN + RANDOM.nextInt(START_TIME_MAX);
+            final int randomEnd = randomStart + 1 + RANDOM.nextInt(END_TIME_MAX);
             final ClientAgentArgs clientAgentArgs =
                     ImmutableClientAgentArgs.builder()
                             .name(String.format("Client%d", idx))
@@ -116,7 +117,8 @@ public class ScenarioService {
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
                 agentController.start();
                 agentController.activate();
-            } catch (StaleProxyException  e) {
+                TimeUnit.MILLISECONDS.sleep(25);
+            } catch (StaleProxyException | InterruptedException  e) {
                 e.printStackTrace();
             }
         });

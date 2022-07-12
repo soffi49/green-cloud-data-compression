@@ -60,7 +60,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
             final String startDate = formatToDate(clientArgs.getStart());
             final String endDate = formatToDate(clientArgs.getEnd());
 
-            return new ClientAgentNode(clientArgs.getName(), clientArgs.getJobId(), startDate, endDate);
+            return new ClientAgentNode(clientArgs.getName(), clientArgs.getJobId(), startDate, endDate, clientArgs.getPower());
         }
         if (agentArgs instanceof CloudNetworkArgs cloudNetworkArgs) {
             final List<ImmutableServerAgentArgs> ownedServers = scenarioArgs.getServerAgentsArgs().stream()

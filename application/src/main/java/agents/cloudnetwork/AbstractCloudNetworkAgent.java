@@ -1,22 +1,26 @@
 package agents.cloudnetwork;
 
 import agents.AbstractAgent;
+import agents.cloudnetwork.domain.CloudNetworkStateManagement;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
-import jade.core.Agent;
-
-import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Abstract agent class storing the data regarding Cloud Network Agent
  */
 public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
+    protected transient CloudNetworkStateManagement stateManagement;
     protected Map<Job, JobStatusEnum> networkJobs;
     protected Map<String, AID> serverForJobMap;
+    protected Map<String, Integer> jobRequestRetries;
+    protected AtomicLong completedJobs;
+    protected List<AID> ownedServers;
 
     AbstractCloudNetworkAgent() {
         super.setup();
@@ -28,10 +32,12 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
      * @param networkJobs     list of the jobs together with their statuses
      *                        that are being processed in the network
      * @param serverForJobMap map storing jobs and corresponding job's executor addresses
+     * @param ownedServers    list of addresses of the owned servers
      */
-    AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap) {
+    AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap, List<AID> ownedServers) {
         this.serverForJobMap = serverForJobMap;
         this.networkJobs = networkJobs;
+        this.ownedServers = ownedServers;
     }
 
     /**
@@ -43,42 +49,35 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
         serverForJobMap = new HashMap<>();
         networkJobs = new HashMap<>();
-    }
-
-    /**
-     * Method calculates the power in use at the given moment
-     *
-     * @return current power in use
-     */
-    public int getCurrentPowerInUse() {
-        return networkJobs.entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
-    }
-
-    /**
-     * Method retrieves the job by the job id from job map
-     *
-     * @param jobId job identifier
-     * @return job
-     */
-    public Job getJobById(final String jobId) {
-        return networkJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
+        jobRequestRetries = new HashMap<>();
+        completedJobs = new AtomicLong(0L);
     }
 
     public Map<String, AID> getServerForJobMap() {
         return serverForJobMap;
     }
 
-    public void setServerForJobMap(Map<String, AID> serverForJobMap) {
-        this.serverForJobMap = serverForJobMap;
-    }
-
     public Map<Job, JobStatusEnum> getNetworkJobs() {
         return networkJobs;
     }
 
-    public void setNetworkJobs(Map<Job, JobStatusEnum> networkJobs) {
-        this.networkJobs = networkJobs;
+    public Map<String, Integer> getJobRequestRetries() {
+        return jobRequestRetries;
+    }
+
+    public Long completedJob() {
+        return completedJobs.incrementAndGet();
+    }
+
+    public List<AID> getOwnedServers() {
+        return ownedServers;
+    }
+
+    public void setOwnedServers(List<AID> ownedServers) {
+        this.ownedServers = ownedServers;
+    }
+
+    public CloudNetworkStateManagement manage() {
+        return stateManagement;
     }
 }

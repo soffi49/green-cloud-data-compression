@@ -6,6 +6,7 @@ import com.gui.domain.nodes.AgentNode;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,9 @@ public class ReceiveGUIController extends CyclicBehaviour {
             }
             if(objectCounter == 1) {
                 logger.info("[{}] Agent connected with the controller", myAgent.getName());
-                initialBehaviours.forEach(abstractAgent::addBehaviour);
+                ParallelBehaviour behaviour = new ParallelBehaviour();
+                initialBehaviours.forEach(behaviour::addSubBehaviour);
+                abstractAgent.addBehaviour(behaviour);
             }
             objectCounter++;
         } else {

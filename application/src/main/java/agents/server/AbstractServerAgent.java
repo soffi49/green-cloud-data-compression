@@ -1,17 +1,18 @@
 package agents.server;
 
-import static common.GUIUtils.displayMessageArrow;
-import static common.GUIUtils.updateServerState;
-import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
+import static mapper.JsonMapper.getMapper;
 
 import agents.AbstractAgent;
+import agents.server.domain.ServerStateManagement;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +22,10 @@ import java.util.Map;
  */
 public abstract class AbstractServerAgent extends AbstractAgent {
 
+    protected int initialMaximumCapacity;
+    protected transient ServerStateManagement stateManagement;
     protected double pricePerHour;
-    protected int maximumCapacity;
+    protected int currentMaximumCapacity;
     protected Map<Job, JobStatusEnum> serverJobs;
     protected Map<String, AID> greenSourceForJobMap;
     protected List<AID> ownedGreenSources;
@@ -31,98 +34,43 @@ public abstract class AbstractServerAgent extends AbstractAgent {
     AbstractServerAgent() {
         super.setup();
 
+        initialMaximumCapacity = 0;
         serverJobs = new HashMap<>();
         ownedGreenSources = new ArrayList<>();
         greenSourceForJobMap = new HashMap<>();
     }
 
     /**
-     * Abstract Server Agent constructor.
+     * Method chooses the green source for job execution
      *
-     * @param pricePerHour           price for 1-hour server service
-     * @param maximumCapacity        maximum available server power capacity
-     * @param serverJobs             list of jobs together with their status that are being processed
-     *                               by the server
-     * @param greenSourceForJobMap   map storing jobs and corresponding job's executor addresses
-     * @param ownedGreenSources      list of addresses of owned green sources
-     * @param ownerCloudNetworkAgent address of the owner cloud network agent
+     * @param greenSourceOffers offers from green sources
+     * @return chosen offer
      */
-    AbstractServerAgent(double pricePerHour,
-                        int maximumCapacity,
-                        Map<Job, JobStatusEnum> serverJobs,
-                        Map<String, AID> greenSourceForJobMap,
-                        List<AID> ownedGreenSources,
-                        AID ownerCloudNetworkAgent) {
-        this.pricePerHour = pricePerHour;
-        this.maximumCapacity = maximumCapacity;
-        this.serverJobs = serverJobs;
-        this.greenSourceForJobMap = greenSourceForJobMap;
-        this.ownedGreenSources = ownedGreenSources;
-        this.ownerCloudNetworkAgent = ownerCloudNetworkAgent;
+    public ACLMessage chooseGreenSourceToExecuteJob(final List<ACLMessage> greenSourceOffers) {
+        final Comparator<ACLMessage> compareGreenSources =
+                Comparator.comparingDouble(
+                        greenSource -> {
+                            try {
+                                return getMapper()
+                                        .readValue(greenSource.getContent(), GreenSourceData.class)
+                                        .getAvailablePowerInTime();
+                            } catch (final JsonProcessingException e) {
+                                return Double.MAX_VALUE;
+                            }
+                        });
+        return greenSourceOffers.stream().min(compareGreenSources).orElseThrow();
     }
 
-    /**
-     * Method calculates the power in use at the given moment for the server
-     *
-     * @return current power in use
-     */
-    public int getCurrentPowerInUse() {
-        return serverJobs.entrySet().stream()
-                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-                .mapToInt(job -> job.getKey().getPower()).sum();
+    public int getInitialMaximumCapacity() {
+        return initialMaximumCapacity;
     }
 
-    /**
-     * Method retrieves if the given server is currently active or idle
-     *
-     * @return green source state
-     */
-    public boolean getIsActiveState() {
-        return !serverJobs.entrySet().stream().filter(entry -> entry.getValue().equals(JobStatusEnum.IN_PROGRESS)).toList().isEmpty();
+    public int getCurrentMaximumCapacity() {
+        return currentMaximumCapacity;
     }
 
-    /**
-     * Method computes the available power for given time frame
-     *
-     * @param startDate starting date
-     * @param endDate   end date
-     * @return available power
-     */
-    public int getAvailableCapacity(final OffsetDateTime startDate,
-                                    final OffsetDateTime endDate) {
-        final int powerInUser =
-                serverJobs.keySet().stream()
-                        .filter(job -> job.getStartTime().isBefore(endDate) &&
-                                job.getEndTime().isAfter(startDate))
-                        .mapToInt(Job::getPower).sum();
-        return maximumCapacity - powerInUser;
-    }
-
-    /**
-     * Method performs default behaviour when the job is finished
-     *
-     * @param jobToFinish job to be finished
-     */
-    public void finishJobExecution(final Job jobToFinish) {
-        final List<AID> receivers = List.of(greenSourceForJobMap.get(jobToFinish.getJobId()), ownerCloudNetworkAgent);
-        final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), receivers);
-        serverJobs.remove(jobToFinish);
-        greenSourceForJobMap.remove(jobToFinish.getJobId());
-        updateServerState((ServerAgent) this, true);
-        displayMessageArrow(this, receivers);
-        this.send(finishJobMessage);
-    }
-
-    public Job getJobById(final String jobId) {
-        return serverJobs.keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst().orElse(null);
-    }
-
-    public int getMaximumCapacity() {
-        return maximumCapacity;
-    }
-
-    public void setMaximumCapacity(int maximumCapacity) {
-        this.maximumCapacity = maximumCapacity;
+    public void setCurrentMaximumCapacity(int currentMaximumCapacity) {
+        this.currentMaximumCapacity = currentMaximumCapacity;
     }
 
     public AID getOwnerCloudNetworkAgent() {
@@ -163,5 +111,9 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 
     public void setGreenSourceForJobMap(Map<String, AID> greenSourceForJobMap) {
         this.greenSourceForJobMap = greenSourceForJobMap;
+    }
+
+    public ServerStateManagement manage() {
+        return stateManagement;
     }
 }

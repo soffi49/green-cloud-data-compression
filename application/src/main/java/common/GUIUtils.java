@@ -9,9 +9,7 @@ import com.gui.domain.nodes.GreenEnergyAgentNode;
 import com.gui.domain.nodes.ServerAgentNode;
 import jade.core.AID;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -21,60 +19,16 @@ import java.util.stream.StreamSupport;
 public class GUIUtils {
 
     /**
-     * Method updates the GUI to indicate that the new job has started in cloud network
-     *
-     * @param agent agent updating the GUI
-     */
-    public static void announceStartedJob(final CloudNetworkAgent agent) {
-        final CloudNetworkAgentNode cloudNetworkAgentNode = (CloudNetworkAgentNode) agent.getAgentNode();
-        agent.getGuiController().updateActiveJobsCountByValue(1);
-        cloudNetworkAgentNode.updateJobsCount(1);
-        cloudNetworkAgentNode.updateClientNumber(1);
-        cloudNetworkAgentNode.updateTraffic(agent.getCurrentPowerInUse());
-    }
-
-    /**
      * Method updates the GUI to indicate that the job execution has finished
      *
      * @param agent agent updating the GUI
      * @param jobId unique identifier of the GUI
      */
     public static void announceFinishedJob(final CloudNetworkAgent agent, final String jobId) {
-        final CloudNetworkAgentNode cloudNetworkAgentNode = (CloudNetworkAgentNode) agent.getAgentNode();
         final String information = String.format("Execution of the job %s has finished!", jobId);
         agent.getGuiController().updateActiveJobsCountByValue(-1);
         agent.getGuiController().updateAllJobsCountByValue(-1);
         agent.getGuiController().addNewInformation(information);
-        cloudNetworkAgentNode.updateJobsCount(-1);
-        cloudNetworkAgentNode.updateClientNumber(-1);
-        cloudNetworkAgentNode.updateTraffic(agent.getCurrentPowerInUse());
-    }
-
-    /**
-     * Method updates the GUI when the green source changes the state (finishes the job or starts the job)
-     *
-     * @param agent         agent updating the GUI
-     * @param isJobFinished flag indicating if the state update is caused by finished or started job
-     */
-    public static void updateGreenSourceState(final GreenEnergyAgent agent, final boolean isJobFinished) {
-        final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) agent.getAgentNode();
-        greenEnergyAgentNode.updateJobsCount(isJobFinished? -1 : 1);
-        greenEnergyAgentNode.updateIsActive(agent.getIsActiveState());
-        greenEnergyAgentNode.updateTraffic(agent.getCurrentPowerInUse());
-    }
-
-    /**
-     * Method updates the GUI when the server changes the state (finishes the job or starts the job)
-     *
-     * @param agent         agent updating the GUI
-     * @param isJobFinished flag indicating if the state update is caused by finished or started job
-     */
-    public static void updateServerState(final ServerAgent agent, final boolean isJobFinished) {
-        final ServerAgentNode serverAgentNode = (ServerAgentNode) agent.getAgentNode();
-        serverAgentNode.updateJobsCount(isJobFinished? -1 : 1);
-        serverAgentNode.updateClientNumber(isJobFinished? -1 : 1);
-        serverAgentNode.updateIsActive(agent.getIsActiveState());
-        serverAgentNode.updateTraffic(agent.getCurrentPowerInUse());
     }
 
     /**
