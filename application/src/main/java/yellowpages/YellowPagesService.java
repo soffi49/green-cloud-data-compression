@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.AlreadyRegistered;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
@@ -32,10 +33,12 @@ public class YellowPagesService {
      * @param serviceName name of the service to be registered
      * @param ownership   name of the owner to be registered
      */
-    public static void register(Agent agent, String serviceType, String serviceName, String ownership) {
+    public static void register(Agent agent, String serviceType, String serviceName, String ownership){
         try {
             DFService.register(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
-        } catch (FIPAException e) {
+            DFService.keepRegistered(agent, agent.getDefaultDF(), prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership), null);
+        }
+        catch (FIPAException e) {
             logger.info("Couldn't register {} in the directory facilitator", agent);
         }
     }

@@ -1,5 +1,10 @@
 package agents.greenenergy;
 
+import static common.TimeUtils.isWithinTimeStamp;
+import static common.constant.DFServiceConstants.*;
+import static domain.job.JobStatusEnum.ACCEPTED;
+import static domain.job.JobStatusEnum.IN_PROGRESS;
+import static java.util.stream.Collectors.toMap;
 import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
@@ -19,6 +24,9 @@ import jade.core.behaviours.Behaviour;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
