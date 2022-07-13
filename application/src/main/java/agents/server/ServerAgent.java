@@ -15,7 +15,7 @@ import agents.server.behaviour.powershortage.listener.ListenForJobTransferCancel
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortage;
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.domain.ServerStateManagement;
-import behaviours.ReceiveGUIController;
+import common.behaviours.ReceiveGUIController;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 import java.util.List;

@@ -6,7 +6,7 @@ import static java.util.Comparator.comparingLong;
 import agents.AbstractAgent;
 import agents.monitoring.behaviour.ServeForecastInformation;
 import agents.monitoring.behaviour.ServeWeatherInformation;
-import behaviours.ReceiveGUIController;
+import common.behaviours.ReceiveGUIController;
 import domain.GreenSourceForecastData;
 import domain.GreenSourceWeatherData;
 import domain.ImmutableMonitoringData;

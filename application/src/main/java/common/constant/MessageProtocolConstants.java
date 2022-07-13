@@ -66,7 +66,9 @@ public class MessageProtocolConstants {
      *                                        accepting the job
      * ON_HOLD_JOB_CHECK_PROTOCOL           - protocol used in messages that check the weather before putting the job which was on hold back
      *                                        to in progress
+     * PERIODIC_WEATHER_CHECK_PROTOCOL      - protocol used in messages that check periodically the current weather
      */
     public static final String SERVER_JOB_START_CHECK_PROTOCOL = "SERVER_JOB_START_CHECK_PROTOCOL";
     public static final String ON_HOLD_JOB_CHECK_PROTOCOL = "ON_HOLD_JOB_CHECK_PROTOCOL";
+    public static final String PERIODIC_WEATHER_CHECK_PROTOCOL = "PERIODIC_WEATHER_CHECK_PROTOCOL";
 }

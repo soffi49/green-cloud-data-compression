@@ -1,4 +1,4 @@
-package behaviours;
+package common.behaviours;
 
 import agents.AbstractAgent;
 import com.gui.controller.GUIController;

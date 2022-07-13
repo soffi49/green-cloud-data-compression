@@ -6,7 +6,7 @@ import static common.TimeUtils.getCurrentTime;
 import agents.client.behaviour.RequestJobExecution;
 import agents.client.behaviour.df.FindCloudNetworkAgents;
 import agents.client.behaviour.listener.ListenForJobUpdate;
-import behaviours.ReceiveGUIController;
+import common.behaviours.ReceiveGUIController;
 import common.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;

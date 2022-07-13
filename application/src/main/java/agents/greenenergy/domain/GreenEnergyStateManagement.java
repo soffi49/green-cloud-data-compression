@@ -380,11 +380,10 @@ public class GreenEnergyStateManagement {
                                 .orElseGet(() -> 0.0)));
     }
 
-    private int getCurrentPowerInUseForGreenSource() {
+    public int getCurrentPowerInUseForGreenSource() {
         return greenEnergyAgent.getPowerJobs().entrySet().stream()
                 .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS)
-                        && isWithinTimeStamp(
-                        job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                        && isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .mapToInt(job -> job.getKey().getPower())
                 .sum();
     }

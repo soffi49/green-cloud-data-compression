@@ -8,6 +8,7 @@ import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.powercheck.RequestWeatherData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.job.CheckedPowerJob;
 import jade.core.Agent;
@@ -45,7 +46,7 @@ public class ReceiveJobStartPowerRequest extends CyclicBehaviour {
     }
 
     /**
-     * Requests weather data from MonitoringAgent, via {@link RequestWeatherDataForJobStart} and
+     * Requests weather data from MonitoringAgent, via {@link RequestWeatherData} and
      * {@link ReceiveWeatherDataForJobStart} behaviours
      */
     @Override
@@ -76,7 +77,7 @@ public class ReceiveJobStartPowerRequest extends CyclicBehaviour {
     private void requestMonitoringData(final ACLMessage message, final CheckedPowerJob job) {
         var sequentialBehaviour = new SequentialBehaviour();
         sequentialBehaviour.addSubBehaviour(
-            new RequestWeatherDataForJobStart(myGreenEnergyAgent, message));
+            new RequestWeatherData(myGreenEnergyAgent, message));
         sequentialBehaviour.addSubBehaviour(
             new ReceiveWeatherDataForJobStart(myGreenEnergyAgent, message, job, sequentialBehaviour));
         myAgent.addBehaviour(sequentialBehaviour);
