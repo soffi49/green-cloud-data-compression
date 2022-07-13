@@ -72,6 +72,7 @@ public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
             final ACLMessage transferMessage = preparePowerShortageTransferRequest(JobMapper.mapToPowerShortageJob(powerJob, shortageStartTime), myGreenAgent.getOwnerServer());
             displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
             myGreenAgent.addBehaviour(new RequestPowerJobTransfer(myGreenAgent, transferMessage, jobToTransfer, shortageStartTime));
+            myGreenAgent.manage().updateGreenSourceGUI();
         });
         myGreenAgent.addBehaviour(SchedulePowerShortage.createFor(preparePowerShortageTransfer(jobsToTransfer), myGreenAgent));
     }
