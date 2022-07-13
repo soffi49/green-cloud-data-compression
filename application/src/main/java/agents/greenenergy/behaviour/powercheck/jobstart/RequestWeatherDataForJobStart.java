@@ -1,4 +1,4 @@
-package agents.greenenergy.behaviour.powercheck;
+package agents.greenenergy.behaviour.powercheck.jobstart;
 
 import static common.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
@@ -12,7 +12,7 @@ import jade.lang.acl.ACLMessage;
 /**
  * Behaviour responsible for requesting weather data from monitoring agent
  */
-public class RequestWeatherData extends OneShotBehaviour {
+public class RequestWeatherDataForJobStart extends OneShotBehaviour {
 
     private final GreenEnergyAgent myGreenEnergyAgent;
     private final ACLMessage message;
@@ -23,7 +23,7 @@ public class RequestWeatherData extends OneShotBehaviour {
      * @param greenEnergyAgent agent which is executing the behaviour
      * @param message          request message that was sent to green energy agent
      */
-    public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, ACLMessage message) {
+    public RequestWeatherDataForJobStart(GreenEnergyAgent greenEnergyAgent, ACLMessage message) {
         myGreenEnergyAgent = greenEnergyAgent;
         this.message = message;
     }

@@ -3,8 +3,12 @@ package agents.server.domain;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.TimeUtils.isWithinTimeStamp;
-import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
-import static domain.job.JobStatusEnum.JOB_ON_BACK_UP;
+import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
+import static domain.job.JobStatusEnum.GREEN_POWER_SERVER_JOB_STATUSES;
+import static domain.job.JobStatusEnum.IN_PROGRESS;
+import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static domain.job.JobStatusEnum.JOB_ON_HOLD;
+import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 
@@ -13,6 +17,7 @@ import agents.server.behaviour.FinishJobExecution;
 import agents.server.behaviour.StartJobExecution;
 import com.gui.domain.nodes.ServerAgentNode;
 import common.TimeUtils;
+import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.ImmutableJob;
 import domain.job.Job;
@@ -20,6 +25,9 @@ import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Set of utilities used to manage the internal state of the server agent
@@ -60,11 +66,49 @@ public class ServerStateManagement {
      */
     public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate) {
         var usedPower = serverAgent.getServerJobs().keySet().stream()
-            //.filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
-            //   || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate))
-            .map(Job::getPower)
-            .mapToInt(Integer::intValue)
-            .sum();
+                .filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
+                        || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate))
+                .map(Job::getPower)
+                .mapToInt(Integer::intValue)
+                .sum();
+        return serverAgent.getCurrentMaximumCapacity() - usedPower;
+    }
+
+    /**
+     * Method computes the available back-up power for given time frame and active jobs
+     *
+     * @param startDate    starting date
+     * @param endDate      end date
+     * @param jobToExclude job to exclude from set
+     * @return available power
+     */
+    public synchronized int getBackUpAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate, final JobInstanceIdentifier jobToExclude) {
+        var usedPower = serverAgent.getServerJobs().keySet().stream()
+                .filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
+                        || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate) &&
+                        serverAgent.getServerJobs().get(job).equals(IN_PROGRESS_BACKUP_ENERGY) && !JobMapper.mapToJobInstanceId(job).equals(jobToExclude))
+                .map(Job::getPower)
+                .mapToInt(Integer::intValue)
+                .sum();
+        return serverAgent.getInitialMaximumCapacity() - usedPower;
+    }
+
+    /**
+     * Method computes the available power for given time frame and active jobs
+     *
+     * @param startDate    starting date
+     * @param endDate      end date
+     * @param jobToExclude job to exclude from set
+     * @return available power
+     */
+    public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate, final JobInstanceIdentifier jobToExclude) {
+        var usedPower = serverAgent.getServerJobs().keySet().stream()
+                .filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
+                        || TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate) &&
+                        GREEN_POWER_SERVER_JOB_STATUSES.contains(serverAgent.getServerJobs().get(job)) && !JobMapper.mapToJobInstanceId(job).equals(jobToExclude))
+                .map(Job::getPower)
+                .mapToInt(Integer::intValue)
+                .sum();
         return serverAgent.getCurrentMaximumCapacity() - usedPower;
     }
 
@@ -75,6 +119,7 @@ public class ServerStateManagement {
      * @param informCNA   flag indicating whether cloud network should be informed about the job finish
      */
     public void finishJobExecution(final Job jobToFinish, final boolean informCNA) {
+        final JobStatusEnum jobStatusEnum = serverAgent.getServerJobs().get(jobToFinish);
         final List<AID> receivers =
                 informCNA
                         ? List.of(
@@ -82,11 +127,23 @@ public class ServerStateManagement {
                         serverAgent.getOwnerCloudNetworkAgent())
                         : Collections.singletonList(
                         serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()));
-        final ACLMessage finishJobMessage =
-                prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(), receivers);
+        final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(), receivers);
         serverAgent.getServerJobs().remove(jobToFinish);
         if (Objects.isNull(serverAgent.manage().getJobById(jobToFinish.getJobId()))) {
             serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
+        }
+        if(jobStatusEnum.equals(IN_PROGRESS_BACKUP_ENERGY)) {
+            serverAgent.getServerJobs().entrySet()
+                    .stream()
+                    .filter(job -> isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()) &&
+                            job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE) && job.getKey().getPower() <= jobToFinish.getPower())
+                    .forEach(job -> {
+                        if(getBackUpAvailableCapacity(job.getKey().getStartTime(), job.getKey().getEndTime(), JobMapper.mapToJobInstanceId(job.getKey())) >= job.getKey().getPower() ) {
+                            logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(), job.getKey().getJobId());
+                            job.setValue(IN_PROGRESS_BACKUP_ENERGY);
+                            updateServerGUI();
+                        }
+                    });
         }
         incrementFinishedJobs(jobToFinish.getJobId());
         displayMessageArrow(serverAgent, receivers);
@@ -285,7 +342,7 @@ public class ServerStateManagement {
                             .build();
             final JobStatusEnum currentJobStatus = serverAgent.getServerJobs().get(job);
             serverAgent.getServerJobs().remove(job);
-            serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
+            serverAgent.getServerJobs().put(onBackupEnergyInstance, JobStatusEnum.ON_HOLD_TRANSFER);
             serverAgent.getServerJobs().put(finishedPowerJobInstance, currentJobStatus);
             serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, onBackupEnergyInstance, false, true));
             if (getCurrentTime().isBefore(finishedPowerJobInstance.getStartTime())) {
@@ -295,10 +352,22 @@ public class ServerStateManagement {
             }
             return onBackupEnergyInstance;
         } else {
-            serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_TEMPORARY);
+            serverAgent.getServerJobs().replace(job, JobStatusEnum.ON_HOLD_TRANSFER);
             updateServerGUI();
             return job;
         }
+    }
+
+    private List<Job> getUniqueJobsForTimeStamp(final OffsetDateTime startDate, final OffsetDateTime endDate) {
+        return serverAgent.getServerJobs().keySet().stream()
+                .filter(job -> ACCEPTED_JOB_STATUSES.contains(serverAgent.getServerJobs().get(job)))
+                .filter(job -> TimeUtils.isWithinTimeStamp(startDate, endDate, job.getStartTime())
+                        || TimeUtils.isWithinTimeStamp(startDate, endDate, job.getEndTime()))
+                .map(Job::getJobId)
+                .collect(Collectors.toSet()).stream()
+                .collect(Collectors.toMap(jobId -> jobId, this::getJobById))
+                .values().stream()
+                .toList();
     }
 
     /**
@@ -312,6 +381,7 @@ public class ServerStateManagement {
         serverAgentNode.updateIsActive(getIsActiveState(), getIsActiveBackUpState());
         serverAgentNode.updateTraffic(getCurrentPowerInUseForServer());
         serverAgentNode.updateBackUpTraffic(getCurrentBackUpPowerInUseForServer());
+        serverAgentNode.updateOnHoldJobsCount(getOnHoldJobsCount());
     }
 
     /**
@@ -323,11 +393,8 @@ public class ServerStateManagement {
 
     private int getJobCount() {
         return serverAgent.getServerJobs().entrySet().stream()
-                .filter(
-                        job ->
-                                JOB_IN_PROGRESS.contains(job.getValue())
-                                        && isWithinTimeStamp(
-                                        job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .filter(job -> ACCEPTED_JOB_STATUSES.contains(job.getValue())
+                        && isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .map(Map.Entry::getKey)
                 .map(Job::getJobId)
                 .collect(Collectors.toSet())
@@ -340,7 +407,7 @@ public class ServerStateManagement {
 
     private int getCurrentPowerInUseForServer() {
         return serverAgent.getServerJobs().entrySet().stream()
-                .filter(job -> JOB_IN_PROGRESS.contains(job.getValue())
+                .filter(job -> job.getValue().equals(IN_PROGRESS)
                         && isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .mapToInt(job -> job.getKey().getPower())
                 .sum();
@@ -348,11 +415,17 @@ public class ServerStateManagement {
 
     private int getCurrentBackUpPowerInUseForServer() {
         return serverAgent.getServerJobs().entrySet().stream()
-                .filter(job -> JOB_ON_BACK_UP.contains(job.getValue())
-                        && isWithinTimeStamp(
-                        job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .filter(job -> job.getValue().equals(IN_PROGRESS_BACKUP_ENERGY)
+                        && isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
                 .mapToInt(job -> job.getKey().getPower())
                 .sum();
+    }
+
+    private int getOnHoldJobsCount() {
+        return serverAgent.getServerJobs().entrySet().stream()
+                .filter(job -> JOB_ON_HOLD.contains(job.getValue()) && isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
+                .toList()
+                .size();
     }
 
     private boolean getIsActiveState() {

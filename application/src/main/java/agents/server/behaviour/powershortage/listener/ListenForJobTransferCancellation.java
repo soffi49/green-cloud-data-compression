@@ -1,8 +1,8 @@
 package agents.server.behaviour.powershortage.listener;
 
 import static common.GUIUtils.displayMessageArrow;
+import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
-import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -19,11 +19,12 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour listens for messages coming from the cloud network agent that the job transfer is to be cancelled
@@ -61,10 +62,10 @@ public class ListenForJobTransferCancellation extends CyclicBehaviour {
                 if (Objects.nonNull(jobToCancel)) {
                     logger.info("[{}] Cancelling the job with id {}", myServerAgent.getLocalName(), jobToCancel.getJobId());
                     informGreenSourceAboutJobFinish(jobToCancel, Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(jobToCancel.getJobId())));
-                    if(JOB_IN_PROGRESS.contains(myServerAgent.getServerJobs().get(jobToCancel))) {
+                    myServerAgent.getServerJobs().remove(jobToCancel);
+                    if (jobToCancel.getStartTime().isBefore(getCurrentTime())) {
                         myServerAgent.manage().incrementFinishedJobs(jobToCancel.getJobId());
                     }
-                    myServerAgent.getServerJobs().remove(jobToCancel);
                     myServerAgent.getGreenSourceForJobMap().remove(jobToCancel.getJobId());
                 }
             } catch (Exception e) {

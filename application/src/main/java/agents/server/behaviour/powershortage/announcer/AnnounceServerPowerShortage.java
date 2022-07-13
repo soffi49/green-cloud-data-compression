@@ -2,8 +2,8 @@ package agents.server.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
+import static domain.job.JobStatusEnum.ACTIVE_JOB_STATUSES;
 import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 
@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -83,7 +84,7 @@ public class AnnounceServerPowerShortage extends OneShotBehaviour {
 
     private List<Job> getAffectedPowerJobs() {
         return myServerAgent.getServerJobs().keySet().stream()
-                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.PROCESSING))
+                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && ACTIVE_JOB_STATUSES.contains(myServerAgent.getServerJobs().get(job)))
                 .toList();
     }
 }

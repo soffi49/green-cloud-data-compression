@@ -28,7 +28,7 @@ public class EngineRunner {
         profile.setParameter(Profile.MAIN_PORT, "6996");
 
         final ContainerController container = runtime.createMainContainer(profile);
-        executorService.execute(() -> runRMAAgent(container));
+        //executorService.execute(() -> runRMAAgent(container));
         executorService.execute(guiController);
         executorService.execute(
             new ScenarioService(container, guiController, "complicatedScenarioNoWeatherChanging"));

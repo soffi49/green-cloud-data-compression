@@ -1,4 +1,4 @@
-package agents.greenenergy.behaviour;
+package agents.greenenergy.behaviour.powercheck.cfp;
 
 import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
@@ -8,6 +8,7 @@ import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.powercheck.RequestForecastData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
@@ -24,9 +25,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Behaviour responsible for handling servers' call for proposals for power that is necessary to execute the given job
  */
-public class ReceivePowerRequest extends CyclicBehaviour {
+public class ReceiveNewJobPowerRequest extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceivePowerRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiveNewJobPowerRequest.class);
     private static final MessageTemplate messageTemplate = and(MatchPerformative(CFP), MatchProtocol(SERVER_JOB_CFP_PROTOCOL));
 
     private final GreenEnergyAgent myGreenEnergyAgent;
@@ -37,7 +38,7 @@ public class ReceivePowerRequest extends CyclicBehaviour {
      *
      * @param myAgent agent which is executing the behaviour
      */
-    public ReceivePowerRequest(Agent myAgent) {
+    public ReceiveNewJobPowerRequest(Agent myAgent) {
         this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
         this.guid = myGreenEnergyAgent.getName();
     }
@@ -75,8 +76,8 @@ public class ReceivePowerRequest extends CyclicBehaviour {
 
     private void requestMonitoringData(final ACLMessage cfp, final PowerJob job) {
         var sequentialBehaviour = new SequentialBehaviour();
-        sequentialBehaviour.addSubBehaviour(new RequestForecastData(myGreenEnergyAgent, cfp.getConversationId(), job));
-        sequentialBehaviour.addSubBehaviour(new ReceiveForecastData(myGreenEnergyAgent, cfp, job, sequentialBehaviour));
+        sequentialBehaviour.addSubBehaviour(new RequestForecastData(myGreenEnergyAgent, cfp.getConversationId(), cfp.getProtocol(), job));
+        sequentialBehaviour.addSubBehaviour(new ReceiveWeatherDataForNewJob(myGreenEnergyAgent, cfp, job, sequentialBehaviour));
         myAgent.addBehaviour(sequentialBehaviour);
     }
 }

@@ -1,4 +1,4 @@
-package agents.greenenergy.behaviour;
+package agents.greenenergy.behaviour.powercheck.cfp;
 
 import static common.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.PROPOSE;
@@ -9,6 +9,7 @@ import static java.util.Objects.nonNull;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.ProposePowerRequest;
 import domain.GreenSourceData;
 import domain.ImmutableGreenSourceData;
 import domain.MonitoringData;
@@ -25,9 +26,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Behaviour which is responsible for listening for the Monitoring Agent's response with forecast data.
  */
-public class ReceiveForecastData extends CyclicBehaviour {
+public class ReceiveWeatherDataForNewJob extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceiveForecastData.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiveWeatherDataForNewJob.class);
 
     private final GreenEnergyAgent myGreenEnergyAgent;
     private final MessageTemplate template;
@@ -43,7 +44,7 @@ public class ReceiveForecastData extends CyclicBehaviour {
      * @param cfp          call for proposal sent by the server to which the Green Source has to reply
      * @param powerJob     job that is being processed
      */
-    public ReceiveForecastData(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob powerJob, final
+    public ReceiveWeatherDataForNewJob(GreenEnergyAgent myGreenAgent, final ACLMessage cfp, final PowerJob powerJob, final
             SequentialBehaviour parentBehaviour) {
         this.myGreenEnergyAgent = myGreenAgent;
         this.template = and(MatchSender(myGreenAgent.getMonitoringAgent()),

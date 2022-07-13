@@ -52,18 +52,12 @@ public class VolunteerForJob extends ProposeInitiator {
     protected void handleAcceptProposal(final ACLMessage accept_proposal) {
         try {
             logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
-            final JobWithProtocol jobWithProtocol =
-                    getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
+            final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(), JobWithProtocol.class);
             final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
-            myServerAgent
-                    .getServerJobs()
-                    .replace(
-                            myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
+            myServerAgent.getServerJobs().replace(myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
             myServerAgent.manage().updateClientNumber();
             displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-            myAgent.send(
-                    ReplyMessageFactory.prepareAcceptReplyWithProtocol(
-                            replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
+            myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
         } catch (Exception e) {
             e.printStackTrace();
         }

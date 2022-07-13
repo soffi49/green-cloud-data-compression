@@ -65,6 +65,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
                     checkIfJobFinishedOnTime();
                     ((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.FINISHED);
                     myClientAgent.getGuiController().updateClientsCountByValue(-1);
+                    myClientAgent.doDelete();
                 }
                 case DELAYED_JOB_PROTOCOL -> {
                     logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());

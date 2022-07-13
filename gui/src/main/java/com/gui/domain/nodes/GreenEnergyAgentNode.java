@@ -6,12 +6,15 @@ import static com.gui.utils.GUIUtils.createListLabel;
 import static com.gui.utils.GUIUtils.formatToHTML;
 import static com.gui.utils.GraphUtils.addAgentBidirectionalEdgeToGraph;
 import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
+import static com.gui.utils.GraphUtils.createSpriteForNode;
 import static com.gui.utils.GraphUtils.updateActiveEdgeStyle;
 import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_ACTIVE_STYLE;
 import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_INACTIVE_STYLE;
 import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_ON_HOLD_STYLE;
 import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_STYLE;
 import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
+import static com.gui.utils.domain.StyleConstants.ON_HOLD_SPRITE_SMALL_STYLE;
+import static com.gui.utils.domain.StyleConstants.SPRITE_DISABLED;
 
 import com.gui.domain.Location;
 import com.gui.domain.types.AgentNodeLabelEnum;
@@ -133,7 +136,7 @@ public class GreenEnergyAgentNode extends AgentNode {
     public void updateGraphUI() {
         final String dynamicStyle = hasJobsOnHold.get() ? GREEN_ENERGY_ON_HOLD_STYLE : (isActive.get() ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE);
         if (Objects.nonNull(onHoldSprite)) {
-            //final String dynamicSpriteStyle = hasJobsOnHold.get() ? GREEN_ENERGY_ON_HOLD_STYLE : SPRITE_DISABLED;
+            //final String dynamicSpriteStyle = hasJobsOnHold.get() ? ON_HOLD_SPRITE_SMALL_STYLE : SPRITE_DISABLED;
             //onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
         }
         synchronized (graph) {
@@ -148,7 +151,7 @@ public class GreenEnergyAgentNode extends AgentNode {
         addAgentBidirectionalEdgeToGraph(graph, edges, name, monitoringAgent);
         addAgentEdgeToGraph(graph, edges, name, monitoringAgent);
         addAgentEdgeToGraph(graph, edges, name, serverAgent);
-        //onHoldSprite = createSpriteForNode(graph, node);
+        onHoldSprite = createSpriteForNode(graph, node);
     }
 
     @Override

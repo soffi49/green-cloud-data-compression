@@ -21,6 +21,7 @@ import jade.lang.acl.MessageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.EnumSet;
 import java.util.Objects;
 
 /**
@@ -58,7 +59,8 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
                 logger.info("[{}] Received the information that the power shortage is finished. Using green energy to power up the job", myAgent.getName());
                 final JobInstanceIdentifier jobInstanceIdentifier = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
                 final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceIdentifier);
-                if (Objects.nonNull(job) && myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY)) {
+                final EnumSet<JobStatusEnum> powerShortageStatuses = EnumSet.of(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY, JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE);
+                if (Objects.nonNull(job) && powerShortageStatuses.contains(myServerAgent.getServerJobs().get(job))) {
                     logger.info("[{}] Supplying job {} with green energy", myAgent.getName(), job.getJobId());
                     final JobStatusEnum newStatus = job.getStartTime().isAfter(getCurrentTime()) ? JobStatusEnum.ACCEPTED : JobStatusEnum.IN_PROGRESS;
                     myServerAgent.getServerJobs().replace(job, newStatus);

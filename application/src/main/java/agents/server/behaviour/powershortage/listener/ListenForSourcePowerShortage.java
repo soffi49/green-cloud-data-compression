@@ -16,7 +16,6 @@ import agents.server.behaviour.powershortage.announcer.AnnounceSourceJobTransfer
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import agents.server.behaviour.powershortage.transfer.RequestJobTransferInCloudNetwork;
 import common.mapper.JobMapper;
-import domain.job.ImmutablePowerShortageJob;
 import domain.job.Job;
 import domain.job.PowerJob;
 import domain.job.PowerShortageJob;
@@ -72,7 +71,7 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
                     logger.info("[{}] Sending call for proposal to Green Source Agents to transfer job with id {}", myAgent.getName(), jobId);
                     final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(powerJob, remainingGreenSources, SERVER_JOB_CFP_PROTOCOL);
                     displayMessageArrow(myServerAgent, remainingGreenSources);
-                    myAgent.addBehaviour(new AnnounceSourceJobTransfer(myAgent, cfp, transferRequest, jobToTransfer));
+                    myAgent.addBehaviour(new AnnounceSourceJobTransfer(myAgent, cfp, transferRequest, powerJob, oldJobInstance.getPowerShortageStart()));
                 } else {
                     logger.info("[{}] No green sources available. Sending transfer request to cloud network", myAgent.getName());
                     final ACLMessage transferMessage = preparePowerShortageTransferRequest(oldJobInstance, myServerAgent.getOwnerCloudNetworkAgent());

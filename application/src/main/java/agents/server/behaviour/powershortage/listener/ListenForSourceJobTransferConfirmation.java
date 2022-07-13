@@ -10,7 +10,6 @@ import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
-import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.server.ServerAgent;
@@ -57,6 +56,16 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
         this.messageTemplate = createListenerTemplate(jobInstanceId);
     }
 
+    private static MessageTemplate createListenerTemplate(final JobInstanceIdentifier jobInstanceId) {
+        try {
+            final String expectedContent = getMapper().writeValueAsString(jobInstanceId);
+            return and(MatchContent(expectedContent), and(MatchPerformative(INFORM), MatchProtocol(POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL)));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Method listens for the confirmation message coming from Green Energy Source. When the confirmation is received,
      * it schedules the transfer execution and sends the response to another green source which requested the transfer.
@@ -86,16 +95,6 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
         } else {
             block();
         }
-    }
-
-    private static MessageTemplate createListenerTemplate(final JobInstanceIdentifier jobInstanceId) {
-        try {
-            final String expectedContent = getMapper().writeValueAsString(jobInstanceId);
-            return and(MatchContent(expectedContent), and(MatchPerformative(INFORM), MatchProtocol(POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL)));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private ParallelBehaviour prepareBehaviour(final JobInstanceIdentifier jobInstanceId, final AID newGreenSource, final AID previousGreenSource) {

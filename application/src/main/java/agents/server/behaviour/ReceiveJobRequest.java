@@ -55,8 +55,7 @@ public class ReceiveJobRequest extends CyclicBehaviour {
         if (Objects.nonNull(message)) {
             try {
                 final Job job = getMapper().readValue(message.getContent(), Job.class);
-                final Integer availableCapacity = myServerAgent.manage()
-                    .getAvailableCapacity(job.getStartTime(), job.getEndTime());
+                final Integer availableCapacity = myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime());
                 if (job.getPower() <= availableCapacity && !myServerAgent.getServerJobs().containsKey(job)
                         && myServerAgent.canTakeIntoProcessing()) {
                     myServerAgent.getServerJobs().putIfAbsent(job, JobStatusEnum.PROCESSING);

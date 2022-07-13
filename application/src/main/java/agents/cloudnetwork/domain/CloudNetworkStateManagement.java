@@ -1,7 +1,7 @@
 package agents.cloudnetwork.domain;
 
 import static common.GUIUtils.announceFinishedJob;
-import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
+import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.PROCESSING;
 
 import agents.cloudnetwork.CloudNetworkAgent;
@@ -11,6 +11,7 @@ import domain.job.JobStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -37,9 +38,9 @@ public class CloudNetworkStateManagement {
      */
     public int getCurrentPowerInUse() {
         return cloudNetworkAgent.getNetworkJobs().entrySet().stream()
-            .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
-            .mapToInt(job -> job.getKey().getPower())
-            .sum();
+                .filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS))
+                .mapToInt(job -> job.getKey().getPower())
+                .sum();
     }
 
     /**
@@ -50,9 +51,9 @@ public class CloudNetworkStateManagement {
      */
     public Job getJobById(final String jobId) {
         return cloudNetworkAgent.getNetworkJobs().keySet().stream()
-            .filter(job -> job.getJobId().equals(jobId))
-            .findFirst()
-            .orElse(null);
+                .filter(job -> job.getJobId().equals(jobId))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -87,8 +88,9 @@ public class CloudNetworkStateManagement {
     }
 
     private int getJobInProgressCount() {
+        final EnumSet<JobStatusEnum> jobStatusesToExclude = EnumSet.of(ACCEPTED, PROCESSING);
         return cloudNetworkAgent.getNetworkJobs().entrySet().stream()
-                .filter(job -> JOB_IN_PROGRESS.contains(job.getValue()))
+                .filter(job -> !jobStatusesToExclude.contains(job.getValue()))
                 .toList()
                 .size();
     }

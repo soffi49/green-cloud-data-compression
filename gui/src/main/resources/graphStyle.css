@@ -117,19 +117,19 @@ edge.messageFlowHidden {
 
 /* Sprite styles */
 
-sprite.serverActiveBackUp {
-    size: 0.03%;
-    shape: box;
-    fill-mode: image-scaled;
-    fill-image: url('icons/warningIcon.png');
-}
-
 sprite.spriteDisabled {
     visibility-mode: hidden;
 }
 
-sprite.greenEnergyOnHold {
+sprite.onHoldSmallSprite {
     size: 0.025%;
+    shape: box;
+    fill-mode: image-scaled;
+    fill-image: url('icons/pauseIcon.png');
+}
+
+sprite.onHoldBigSprite {
+    size: 0.045%;
     shape: box;
     fill-mode: image-scaled;
     fill-image: url('icons/pauseIcon.png');

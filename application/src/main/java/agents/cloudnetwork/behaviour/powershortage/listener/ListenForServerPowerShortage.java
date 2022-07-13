@@ -4,7 +4,6 @@ import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
-import static common.constant.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -12,7 +11,6 @@ import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.CallForProposalMessageFactory.createCallForProposal;
 import static messages.domain.JobStatusMessageFactory.prepareJobStatusMessageForClient;
-import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
 import agents.cloudnetwork.CloudNetworkAgent;

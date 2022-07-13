@@ -2,6 +2,7 @@ package agents.greenenergy.behaviour.powershortage.announcer;
 
 import static common.AlgorithmUtils.findJobsWithinPower;
 import static common.GUIUtils.displayMessageArrow;
+import static domain.job.JobStatusEnum.JOB_ON_HOLD;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 
 import agents.greenenergy.GreenEnergyAgent;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -80,8 +82,10 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
     }
 
     private List<PowerJob> getAffectedPowerJobs() {
+        final EnumSet<JobStatusEnum> notAffectedJobs =  EnumSet.copyOf(JOB_ON_HOLD);
+        notAffectedJobs.add(JobStatusEnum.PROCESSING);
         return myGreenAgent.getPowerJobs().keySet().stream()
-                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myGreenAgent.getPowerJobs().get(job).equals(JobStatusEnum.PROCESSING))
+                .filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !notAffectedJobs.contains(myGreenAgent.getPowerJobs().get(job)))
                 .toList();
     }
 }

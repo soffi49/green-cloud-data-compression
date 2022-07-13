@@ -45,7 +45,7 @@ public class MessageProtocolConstants {
      * POWER_SHORTAGE_TRANSFER_REFUSAL              - protocol used in messages informing that the power transfer was unsuccessful
      * POWER_SHORTAGE_SOURCE_TRANSFER_PROTOCOL      - protocol used in messages informing the agent that the transfer of the job between green
      *                                                sources caused by the power shortage was established
-     * POWER_SHORTAGE_SERVER_TRANSFER_PROTOCOL      - protocol used in messages informing the agent that the transfer of the job between servers
+     * SERVER_POWER_SHORTAGE_ALERT_PROTOCOL         - protocol used in messages informing the agent that the transfer of the job between servers
      *                                                caused by the power shortage was established
      * POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL       - protocol used in power confirmation messages sent by the green sources indicating that the power
      *                                                is sent to supply the jobs coming from transfer
@@ -64,6 +64,9 @@ public class MessageProtocolConstants {
      *
      * SERVER_JOB_START_CHECK_PROTOCOL      - protocol used in messages to check whether the weather haven't has changed since
      *                                        accepting the job
+     * ON_HOLD_JOB_CHECK_PROTOCOL           - protocol used in messages that check the weather before putting the job which was on hold back
+     *                                        to in progress
      */
     public static final String SERVER_JOB_START_CHECK_PROTOCOL = "SERVER_JOB_START_CHECK_PROTOCOL";
+    public static final String ON_HOLD_JOB_CHECK_PROTOCOL = "ON_HOLD_JOB_CHECK_PROTOCOL";
 }

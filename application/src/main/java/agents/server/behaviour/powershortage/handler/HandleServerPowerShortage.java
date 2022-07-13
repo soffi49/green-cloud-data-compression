@@ -4,6 +4,7 @@ import static common.TimeUtils.getCurrentTime;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
+import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 import java.time.OffsetDateTime;
@@ -60,7 +61,11 @@ public class HandleServerPowerShortage extends WakerBehaviour {
     protected void onWake() {
         jobsToExecute.forEach(job -> {
             if (myServerAgent.getServerJobs().containsKey(job)) {
-                logger.info("[{}] Supplying job with id {} using backup power", myServerAgent.getName(), job.getJobId());
+                if(myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY)) {
+                    logger.info("[{}] Supplying job with id {} using backup power", myServerAgent.getName(), job.getJobId());
+                } else {
+                    logger.info("[{}] Putting job with id {} on hold", myServerAgent.getName(), job.getJobId());
+                }
                 myServerAgent.manage().updateServerGUI();
             }
         });

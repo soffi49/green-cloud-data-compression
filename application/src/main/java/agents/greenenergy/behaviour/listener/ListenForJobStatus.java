@@ -3,6 +3,7 @@ package agents.greenenergy.behaviour.listener;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -13,7 +14,6 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class ListenForJobStatus extends CyclicBehaviour {
     private static final Logger logger = LoggerFactory.getLogger(ListenForJobStatus.class);
     private static final MessageTemplate messageTemplate = MessageTemplate.and(MatchPerformative(INFORM),
-        or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL)));
+                                                                               or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL)));
 
     private final GreenEnergyAgent myGreenEnergyAgent;
     private final String guid;
@@ -50,14 +50,14 @@ public class ListenForJobStatus extends CyclicBehaviour {
     public void action() {
         final ACLMessage message = myGreenEnergyAgent.receive(messageTemplate);
         if (nonNull(message)) {
-            if(message.getProtocol().equals(FINISH_JOB_PROTOCOL)) {
+            if (message.getProtocol().equals(FINISH_JOB_PROTOCOL)) {
                 try {
                     final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
                     if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
                         logger.info("[{}] Finish the execution of the job with id {}", guid, jobInstanceId.getJobId());
                         final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
                         myGreenEnergyAgent.getPowerJobs().remove(powerJob);
-                        if(powerJob.getStartTime().isBefore(getCurrentTime())) {
+                        if (powerJob.getStartTime().isBefore(getCurrentTime())) {
                             myGreenEnergyAgent.manage().incrementFinishedJobs(jobInstanceId.getJobId());
                         }
                     }
@@ -69,9 +69,7 @@ public class ListenForJobStatus extends CyclicBehaviour {
                     final JobInstanceIdentifier jobInstanceId = getMapper().readValue(message.getContent(), JobInstanceIdentifier.class);
                     if (nonNull(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId))) {
                         final PowerJob powerJob = myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId);
-                        if (myGreenEnergyAgent.getPowerJobs().get(powerJob).equals(JobStatusEnum.ACCEPTED)) {
-                            myGreenEnergyAgent.getPowerJobs().replace(myGreenEnergyAgent.manage().getJobByIdAndStartDate(jobInstanceId), IN_PROGRESS);
-                        }
+                        myGreenEnergyAgent.getPowerJobs().replace(powerJob, ACCEPTED, IN_PROGRESS);
                         logger.info("[{}] Started the execution of the job with id {}", guid, jobInstanceId.getJobId());
                         myGreenEnergyAgent.manage().incrementStartedJobs(jobInstanceId.getJobId());
                     }

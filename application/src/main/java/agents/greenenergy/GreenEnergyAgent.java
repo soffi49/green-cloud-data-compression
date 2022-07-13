@@ -4,10 +4,10 @@ import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.greenenergy.behaviour.ReceivePowerRequest;
+import agents.greenenergy.behaviour.powercheck.cfp.ReceiveNewJobPowerRequest;
 import agents.greenenergy.behaviour.listener.ListenForJobStatus;
 import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
-import agents.greenenergy.behaviour.powercheck.ReceivePowerCheckRequest;
+import agents.greenenergy.behaviour.powercheck.jobstart.ReceiveJobStartPowerRequest;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import agents.greenenergy.domain.EnergyTypeEnum;
 import agents.greenenergy.domain.GreenEnergyStateManagement;
@@ -75,11 +75,11 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
     private List<Behaviour> behavioursRunAtStart() {
         return List.of(
-            new ReceivePowerRequest(this),
+            new ReceiveNewJobPowerRequest(this),
             new ListenForJobStatus(this),
             new ListenForGreenSourceEvent(this),
             new ListenForServerPowerInformation(this),
-            new ReceivePowerCheckRequest(this)
+            new ReceiveJobStartPowerRequest(this)
         );
     }
 }
