@@ -85,7 +85,7 @@ public class ReceiveWeatherDataForNewJob extends CyclicBehaviour {
         if (averageAvailablePower.isEmpty()) {
             logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid, jobId);
             myGreenEnergyAgent.getPowerJobs().remove(powerJob);
-            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
+            displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
             myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
         } else if (powerJob.getPower() > averageAvailablePower.get()) {
             logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid, jobId, powerJob.getPower(), averageAvailablePower.get());
@@ -99,7 +99,7 @@ public class ReceiveWeatherDataForNewJob extends CyclicBehaviour {
                     .availablePowerInTime(averageAvailablePower.get())
                     .jobId(jobId)
                     .build();
-            displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
+            displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
             myAgent.addBehaviour(new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
         }
     }

@@ -2,14 +2,11 @@ package common;
 
 import agents.AbstractAgent;
 import agents.cloudnetwork.CloudNetworkAgent;
-import agents.greenenergy.GreenEnergyAgent;
-import agents.server.ServerAgent;
-import com.gui.domain.nodes.CloudNetworkAgentNode;
-import com.gui.domain.nodes.GreenEnergyAgentNode;
-import com.gui.domain.nodes.ServerAgentNode;
 import jade.core.AID;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 

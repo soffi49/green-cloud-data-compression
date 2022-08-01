@@ -10,7 +10,7 @@ import static com.gui.utils.GUIUtils.createNumericTextField;
 import static com.gui.utils.GUIUtils.createSeparator;
 import static com.gui.utils.GUIUtils.makeButtonDisabled;
 import static com.gui.utils.GUIUtils.makeButtonEnabled;
-import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
+import static com.gui.utils.domain.StyleConstants.GRAY_2_COLOR;
 
 import com.gui.domain.event.PowerShortageEvent;
 import com.gui.domain.event.PowerShortageFinishEvent;
@@ -98,7 +98,7 @@ public class AdminControlPanel {
     private void initializePanelTop(final JPanel panel) {
         addPanelHeader(TITLE_LABEL, panel);
         panel.add(comboBoxNetwork, new CC().height("30px").growX().spanX());
-        panel.add(createSeparator(LIGHT_GRAY_COLOR), new CC().spanX().growX());
+        panel.add(createSeparator(GRAY_2_COLOR), new CC().spanX().growX());
     }
 
     /**
@@ -112,7 +112,7 @@ public class AdminControlPanel {
     private void addOptionRow(final JPanel panel, final JButton button, final JFormattedTextField input) {
         panel.add(input, new CC().height("20px").growY().width("30%").alignY("center").gapX("10px", "20px"));
         panel.add(button, new CC().height("20px").grow().width("70%").alignY("center").gapX("0", "15px"));
-        panel.add(createSeparator(LIGHT_GRAY_COLOR), new CC().spanX().growX());
+        panel.add(createSeparator(GRAY_2_COLOR), new CC().spanX().growX());
     }
 
     private void causePowerShortage() {

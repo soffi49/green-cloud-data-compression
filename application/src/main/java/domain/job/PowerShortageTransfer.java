@@ -15,6 +15,7 @@ import java.util.List;
 @Value.Immutable
 public interface PowerShortageTransfer {
 
+    //TODO make it smaller!!!!
     /**
      * @return jobs that need to be transferred
      */

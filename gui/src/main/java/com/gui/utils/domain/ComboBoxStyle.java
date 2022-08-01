@@ -21,8 +21,8 @@ public class ComboBoxStyle extends BasicComboBoxUI {
 
     @Override
     protected JButton createArrowButton() {
-        final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, DARK_GRAY_COLOR, DARK_GRAY_COLOR, WHITE_COLOR, DARK_GRAY_COLOR);
-        button.setBorder(BorderFactory.createLineBorder(DARK_GRAY_COLOR, 2));
+        final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, GRAY_5_COLOR, GRAY_5_COLOR, WHITE_COLOR, GRAY_5_COLOR);
+        button.setBorder(BorderFactory.createLineBorder(GRAY_5_COLOR, 2));
         return button;
     }
 

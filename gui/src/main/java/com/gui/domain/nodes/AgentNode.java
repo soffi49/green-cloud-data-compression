@@ -1,14 +1,11 @@
 package com.gui.domain.nodes;
 
-import static com.gui.utils.GUIUtils.concatenateStyles;
 import static com.gui.utils.GUIUtils.createLabelListPanel;
-import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
 
 import com.gui.domain.event.AbstractEvent;
 import com.gui.domain.types.LabelEnum;
-import org.graphstream.graph.Edge;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
+import com.gui.graph.GraphService;
+import com.mxgraph.model.mxCell;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,15 +22,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class AgentNode {
 
     protected String name;
-    protected String style;
-    protected Node node;
-    protected List<Edge> edges;
     protected JPanel informationPanel;
     protected Map<LabelEnum, JLabel> labelsMap;
     protected AtomicReference<AbstractEvent> event;
     protected boolean isDuringEvent;
     protected boolean isManualEventEnabled;
-    protected Graph graph;
+    protected GraphService graphService;
 
     /**
      * Class constructor
@@ -42,7 +36,6 @@ public abstract class AgentNode {
      */
     public AgentNode(String name) {
         this.name = name;
-        this.edges = new ArrayList<>();
         this.event = new AtomicReference<>(null);
         this.isDuringEvent = false;
         this.isManualEventEnabled = true;
@@ -50,26 +43,17 @@ public abstract class AgentNode {
 
     /**
      * Abstract method responsible for adding the node to the graph
-     *
-     * @param graph graph to which the node is to be added
-     * @return added node
      */
-    public Node addToGraph(final Graph graph) {
-        final Node newNode = graph.addNode(name);
-        newNode.setAttribute("ui.label", newNode.getId());
-        newNode.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style)));
-        this.node = newNode;
-        this.graph = graph;
+    public void addToGraph(final GraphService graphService) {
+        this.graphService = graphService;
+        graphService.createAndAddNodeToGraph(this);
         this.updateGraphUI();
-        return newNode;
     }
 
     /**
      * Abstract method responsible for creating edges for given node
-     *
-     * @param graph graph for which the edges are to be created
      */
-    public void createEdges(final Graph graph) {
+    public void createEdges() {
     }
 
     /**
@@ -97,13 +81,6 @@ public abstract class AgentNode {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * @return list of node edges
-     */
-    public List<Edge> getEdges() {
-        return edges;
     }
 
     /**

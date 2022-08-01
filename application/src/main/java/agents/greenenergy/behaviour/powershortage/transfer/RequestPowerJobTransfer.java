@@ -1,15 +1,12 @@
 package agents.greenenergy.behaviour.powershortage.transfer;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.POWER_JOB_RETRY_TIMEOUT;
-import static agents.server.domain.ServerAgentConstants.JOB_TRANSFER_RETRY_TIMEOUT;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 
 import agents.greenenergy.GreenEnergyAgent;
-import agents.server.behaviour.powershortage.transfer.RequestJobTransferInCloudNetwork;
-import agents.server.behaviour.powershortage.transfer.RetryJobTransferRequestInCloudNetwork;
 import common.mapper.JobMapper;
 import domain.job.ImmutablePowerShortageJob;
 import domain.job.JobStatusEnum;
@@ -60,6 +57,17 @@ public class RequestPowerJobTransfer extends AchieveREInitiator {
     protected void handleAgree(ACLMessage agree) {
         logger.info("[{}] Server {} is working on the job {} transfer",
                     guid, myGreenAgent.getOwnerServer().getLocalName(), jobToTransfer.getJobId());
+    }
+
+    @Override
+    protected void handleRefuse(ACLMessage refuse) {
+        logger.info("[{}] The job {} does not exist anymore. Finishing the job", guid, jobToTransfer.getJobId());
+        if (myGreenAgent.getPowerJobs().containsKey(jobToTransfer)) {
+            myGreenAgent.getPowerJobs().remove(jobToTransfer);
+            if (jobToTransfer.getStartTime().isBefore(getCurrentTime())) {
+                myGreenAgent.manage().incrementFinishedJobs(jobToTransfer.getJobId());
+            }
+        }
     }
 
     @Override

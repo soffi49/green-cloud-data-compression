@@ -1,18 +1,13 @@
 package com.gui.domain.nodes;
 
-import static com.gui.utils.GUIUtils.concatenateStyles;
+import static com.gui.graph.domain.GraphStyleConstants.CLOUD_NETWORK_HIGH_TRAFFIC_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.CLOUD_NETWORK_LOW_TRAFFIC_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.CLOUD_NETWORK_MEDIUM_TRAFFIC_STYLE;
 import static com.gui.utils.GUIUtils.createListLabel;
 import static com.gui.utils.GUIUtils.formatToHTML;
-import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
-import static com.gui.utils.domain.StyleConstants.CLOUD_NETWORK_HIGH_STYLE;
-import static com.gui.utils.domain.StyleConstants.CLOUD_NETWORK_INACTIVE_STYLE;
-import static com.gui.utils.domain.StyleConstants.CLOUD_NETWORK_LOW_STYLE;
-import static com.gui.utils.domain.StyleConstants.CLOUD_NETWORK_MEDIUM_STYLE;
-import static com.gui.utils.domain.StyleConstants.CLOUD_NETWORK_STYLE;
-import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
-import org.graphstream.graph.Graph;
+import com.gui.graph.domain.GraphStyleConstants;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +35,6 @@ public class CloudNetworkAgentNode extends AgentNode {
         super(name);
         this.maximumCapacity = new AtomicReference<>(maximumCapacity);
         this.serverAgents = serverAgents;
-        this.style = CLOUD_NETWORK_STYLE;
         this.traffic = new AtomicReference<>(0D);
         this.totalNumberOfClients = new AtomicInteger(0);
         this.numberOfExecutedJobs = new AtomicInteger(0);
@@ -81,22 +75,20 @@ public class CloudNetworkAgentNode extends AgentNode {
 
     @Override
     public void updateGraphUI() {
-        synchronized (graph) {
-            if (traffic.get() > 85) {
-                node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, CLOUD_NETWORK_HIGH_STYLE)));
-            } else if (traffic.get() > 50) {
-                node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, CLOUD_NETWORK_MEDIUM_STYLE)));
-            } else if (traffic.get() > 0) {
-                node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, CLOUD_NETWORK_LOW_STYLE)));
-            } else {
-                node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, CLOUD_NETWORK_INACTIVE_STYLE)));
-            }
+        if (traffic.get() > 85) {
+            graphService.updateNodeStyle(name, CLOUD_NETWORK_HIGH_TRAFFIC_STYLE);
+        } else if (traffic.get() > 50) {
+            graphService.updateNodeStyle(name, CLOUD_NETWORK_MEDIUM_TRAFFIC_STYLE);
+        } else if (traffic.get() > 0) {
+            graphService.updateNodeStyle(name, CLOUD_NETWORK_LOW_TRAFFIC_STYLE);
+        } else {
+            graphService.updateNodeStyle(name, GraphStyleConstants.CLOUD_NETWORK_INACTIVE_STYLE);
         }
     }
 
     @Override
-    public void createEdges(Graph graph) {
-        serverAgents.forEach(serverName -> addAgentEdgeToGraph(graph, edges, name, serverName));
+    public void createEdges() {
+        serverAgents.forEach(serverName ->graphService.createAndAddEdgeToGraph(name, serverName, true));
     }
 
     @Override

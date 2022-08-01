@@ -36,31 +36,21 @@
       <groupId>com.tilab.jade</groupId>
       <artifactId>jade-misc</artifactId>
     </dependency>
-    <!-- GraphStream -->
+    <!--- mxGraph library -->
     <dependency>
       <groupId>org.swinglabs</groupId>
       <artifactId>swingx</artifactId>
       <version>1.6.1</version>
     </dependency>
     <dependency>
+      <groupId>com.github.vlsi.mxgraph</groupId>
+      <artifactId>jgraphx</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+    <dependency>
       <groupId>com.miglayout</groupId>
       <artifactId>miglayout-swing</artifactId>
       <version>11.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graphstream</groupId>
-      <artifactId>gs-core</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graphstream</groupId>
-      <artifactId>gs-algo</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graphstream</groupId>
-      <artifactId>gs-ui-swing</artifactId>
-      <version>2.0</version>
     </dependency>
     <!-- Testing -->
     <dependency>
@@ -87,6 +77,12 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
+    </dependency>
+    <!-- Apache commons -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
     </dependency>
   </dependencies>
 

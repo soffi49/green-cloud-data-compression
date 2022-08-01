@@ -1,7 +1,7 @@
 package com.gui.domain.guielements;
 
 import static com.gui.utils.GUIUtils.*;
-import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
+import static com.gui.utils.domain.StyleConstants.GRAY_2_COLOR;
 
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -100,7 +100,7 @@ public class InformationPanel {
               idx -> {
                 final Pair<String, String> information = informationList.get(lastIdx - 1 - idx);
                 informationBoxPanel.add(
-                    createSeparator(LIGHT_GRAY_COLOR), new CC().spanX().growX());
+                        createSeparator(GRAY_2_COLOR), new CC().spanX().growX());
                 informationBoxPanel.add(
                     createInformationLabel(Optional.ofNullable(information)), ROW_ATTRIBUTES);
               });

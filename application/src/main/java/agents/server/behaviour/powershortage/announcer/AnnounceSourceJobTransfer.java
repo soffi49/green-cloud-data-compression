@@ -96,7 +96,7 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
                 logger.info("[{}] Chosen Green Source for the job {} transfer: {}", myAgent.getName(), jobId, chosenGreenSourceOffer.getSender().getLocalName());
 
                 displayMessageArrow(myServerAgent, myServerAgent.getGreenSourceForJobMap().get(jobId));
-                displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getAllReceiver());
+                displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getSender());
 
                 myServerAgent.addBehaviour(new ListenForSourceJobTransferConfirmation(myServerAgent, jobTransferInstance, greenSourceRequest));
                 myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(), jobTransferInstance, POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));

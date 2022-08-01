@@ -78,7 +78,7 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
                     displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
                     myServerAgent.addBehaviour(new RequestJobTransferInCloudNetwork(myServerAgent, transferMessage, transferRequest, jobToTransfer, false));
                 }
-                schedulePowerShortageHandling(oldJobInstance);
+                schedulePowerShortageHandling(oldJobInstance, transferRequest);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -87,11 +87,15 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
         }
     }
 
-    private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer) {
+    private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer, final ACLMessage transferRequest) {
         logger.info("[{}] Scheduling power shortage handling", myAgent.getName());
-        final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
-        myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
-        myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(Collections.singletonList(job), jobTransfer.getPowerShortageStart(), myServerAgent, null));
+        if (Objects.nonNull(myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId()))) {
+            final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
+            myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
+            myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(Collections.singletonList(job), jobTransfer.getPowerShortageStart(), myServerAgent, null));
+        } else {
+            myAgent.send(prepareReply(transferRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.REFUSE));
+        }
     }
 
     private PowerJob createPowerJobTransferInstance(final PowerShortageJob jobTransfer) {

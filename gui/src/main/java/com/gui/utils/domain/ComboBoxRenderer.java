@@ -16,9 +16,9 @@ public class ComboBoxRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel c = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         c.setBackground(WHITE_COLOR);
-        c.setForeground(DARK_GRAY_COLOR);
+        c.setForeground(GRAY_5_COLOR);
         c.setBorder(BorderFactory.createEmptyBorder(MARGIN, MARGIN, MARGIN, MARGIN));
-        c.setFont(LIST_VALUE_FONT);
+        c.setFont(LABEL_FONT);
         return c;
     }
 
