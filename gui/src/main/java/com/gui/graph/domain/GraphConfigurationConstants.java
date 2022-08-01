@@ -7,7 +7,7 @@ public class GraphConfigurationConstants {
 
     // Layout algorithm properties
     public static final int LAYOUT_MAX_ITERATIONS = 10000;
-    public static final double LAYOUT_EDGE_LENGTH_PARAMETER = 0.03;
+    public static final double LAYOUT_EDGE_LENGTH_PARAMETER = 0.05;
     public static final int LAYOUT_NODE_AREA = 0;
 
     // Timer properties

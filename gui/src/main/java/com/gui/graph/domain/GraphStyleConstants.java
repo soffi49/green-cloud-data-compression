@@ -1,5 +1,8 @@
 package com.gui.graph.domain;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
 /**
  * Class storing all graph style constants
  */
@@ -8,10 +11,12 @@ public class GraphStyleConstants {
     /**
      * Node sizes
      */
-    public static final int CLOUD_NETWORK_NODE_SIZE = 50;
-    public static final int SERVER_NODE_SIZE = 30;
-    public static final int GREEN_ENERGY_NODE_SIZE = 25;
-    public static final int MONITORING_NODE_SIZE = 15;
+    private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+    private static final int NODE_SIZE_PROPORTION = 40;
+    public static final int CLOUD_NETWORK_NODE_SIZE = (int) SCREEN_SIZE.getWidth() / NODE_SIZE_PROPORTION;
+    public static final int SERVER_NODE_SIZE =  (int) SCREEN_SIZE.getWidth() / (NODE_SIZE_PROPORTION + 20);
+    public static final int GREEN_ENERGY_NODE_SIZE = (int) SCREEN_SIZE.getWidth() / (NODE_SIZE_PROPORTION + 40);
+    public static final int MONITORING_NODE_SIZE = (int) SCREEN_SIZE.getWidth() / (NODE_SIZE_PROPORTION + 65);
 
     /**
      * Node style names

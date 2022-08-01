@@ -199,6 +199,7 @@ public class GraphServiceImpl implements GraphService {
         graphLayout.setOptimizeEdgeCrossing(true);
         graphLayout.setOptimizeBorderLine(true);
         graphLayout.setOptimizeEdgeLength(true);
+        graphLayout.setFineTuning(true);
         graphLayout.setMaxIterations(LAYOUT_MAX_ITERATIONS);
         graphLayout.setEdgeLengthCostFactor(LAYOUT_EDGE_LENGTH_PARAMETER);
     }

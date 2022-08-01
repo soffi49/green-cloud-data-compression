@@ -36,7 +36,7 @@ public class StyleConstants {
     /**
      * Font size constants
      */
-    public static final int TITLE_FONT_SIZE_PROPORTION = 70;
+    private static final int TITLE_FONT_SIZE_PROPORTION = 70;
     public static final int FONT_SIZE_1 = (int) SCREEN_SIZE.getWidth() / TITLE_FONT_SIZE_PROPORTION;
     public static final int FONT_SIZE_2 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 35);
     public static final int FONT_SIZE_3 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 45);
