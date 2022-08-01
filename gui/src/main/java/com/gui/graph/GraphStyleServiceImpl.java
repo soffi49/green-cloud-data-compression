@@ -49,10 +49,10 @@ public class GraphStyleServiceImpl implements GraphStyleService {
     }
 
     @Override
-    public void changeGraphElementStylesheet(final Object node, final mxGraph graph, String newStyle) {
+    public void changeGraphElementStylesheet(final Object element, final mxGraph graph, String newStyle) {
         graph.getModel().beginUpdate();
         try {
-            graph.setCellStyle(newStyle, new Object[]{node});
+            graph.setCellStyle(newStyle, new Object[]{element});
         } finally {
             graph.getModel().endUpdate();
         }
