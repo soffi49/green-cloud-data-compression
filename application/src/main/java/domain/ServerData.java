@@ -2,6 +2,7 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -12,18 +13,18 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface ServerData {
 
-    /**
-     * @return price for executing the given job
-     */
-    double getServicePrice();
+	/**
+	 * @return price for executing the given job
+	 */
+	double getServicePrice();
 
-    /**
-     * @return power available in the server
-     */
-    int getAvailablePower();
+	/**
+	 * @return power available in the server
+	 */
+	int getAvailablePower();
 
-    /**
-     * @return unique identifier of the given job of interest
-     */
-    String getJobId();
+	/**
+	 * @return unique identifier of the given job of interest
+	 */
+	String getJobId();
 }

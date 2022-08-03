@@ -7,8 +7,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.time.Instant;
 import java.util.List;
+
 import org.immutables.value.Value.Immutable;
 
 @JsonSerialize(as = ImmutableCurrentWeather.class)
@@ -18,18 +20,18 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface CurrentWeather extends AbstractWeather {
 
-    Coord getCoord();
+	Coord getCoord();
 
-    List<Weather> getWeather();
+	List<Weather> getWeather();
 
-    Double getVisibility();
+	Double getVisibility();
 
-    Long getTimezone();
+	Long getTimezone();
 
-    /**
-     * @return {@link Instant} timestamp for when the weather is valid
-     */
-    @JsonProperty("dt")
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER, pattern = "s")
-    Instant getTimestamp();
+	/**
+	 * @return {@link Instant} timestamp for when the weather is valid
+	 */
+	@JsonProperty("dt")
+	@JsonFormat(shape = JsonFormat.Shape.NUMBER, pattern = "s")
+	Instant getTimestamp();
 }

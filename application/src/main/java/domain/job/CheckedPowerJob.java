@@ -2,6 +2,7 @@ package domain.job;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 
 @JsonSerialize(as = ImmutableCheckedPowerJob.class)
@@ -9,9 +10,9 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface CheckedPowerJob {
 
-    public PowerJob getPowerJob();
+	public PowerJob getPowerJob();
 
-    public Boolean informCNAStart();
+	public Boolean informCNAStart();
 
-    public Boolean informCNAFinish();
+	public Boolean informCNAFinish();
 }

@@ -25,6 +25,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import messages.domain.CallForProposalMessageFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,70 +39,85 @@ import java.util.Objects;
  */
 public class ListenForSourcePowerShortage extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForSourcePowerShortage.class);
-    private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST), MatchProtocol(POWER_SHORTAGE_ALERT_PROTOCOL));
+	private static final Logger logger = LoggerFactory.getLogger(ListenForSourcePowerShortage.class);
+	private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST),
+			MatchProtocol(POWER_SHORTAGE_ALERT_PROTOCOL));
 
-    private ServerAgent myServerAgent;
+	private ServerAgent myServerAgent;
 
-    /**
-     * Method runs at the start of the behaviour. It casts the abstract agent to agent of type Server Agent
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-        myServerAgent = (ServerAgent) myAgent;
-    }
+	/**
+	 * Method runs at the start of the behaviour. It casts the abstract agent to agent of type Server Agent
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		myServerAgent = (ServerAgent) myAgent;
+	}
 
-    /**
-     * Method listens for the messages coming from the Green Source informing about the detected power shortage.
-     * Then, it sends the call for proposal for the job that needs to be transferred to all other green sources. If there are no
-     * available green sources, it passes the transfer request to the parent cloud network
-     */
-    @Override
-    public void action() {
-        final ACLMessage transferRequest = myAgent.receive(messageTemplate);
-        if (Objects.nonNull(transferRequest)) {
-            try {
-                final PowerShortageJob oldJobInstance = getMapper().readValue(transferRequest.getContent(), PowerShortageJob.class);
-                final String jobId = oldJobInstance.getJobInstanceId().getJobId();
-                final PowerJob powerJob = createPowerJobTransferInstance(oldJobInstance);
-                final PowerShortageJob jobToTransfer = JobMapper.mapToPowerShortageJob(powerJob, oldJobInstance.getPowerShortageStart());
-                final List<AID> remainingGreenSources = getRemainingGreenSources(transferRequest.getSender());
-                myAgent.send(prepareReply(transferRequest.createReply(), oldJobInstance.getJobInstanceId(), ACLMessage.AGREE));
-                if (!remainingGreenSources.isEmpty()) {
-                    logger.info("[{}] Sending call for proposal to Green Source Agents to transfer job with id {}", myAgent.getName(), jobId);
-                    final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(powerJob, remainingGreenSources, SERVER_JOB_CFP_PROTOCOL);
-                    displayMessageArrow(myServerAgent, remainingGreenSources);
-                    myAgent.addBehaviour(new AnnounceSourceJobTransfer(myAgent, cfp, transferRequest, jobToTransfer));
-                } else {
-                    logger.info("[{}] No green sources available. Sending transfer request to cloud network", myAgent.getName());
-                    final ACLMessage transferMessage = preparePowerShortageTransferRequest(oldJobInstance, myServerAgent.getOwnerCloudNetworkAgent());
-                    displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
-                    myServerAgent.addBehaviour(new RequestJobTransferInCloudNetwork(myServerAgent, transferMessage, transferRequest, jobToTransfer, false));
-                }
-                schedulePowerShortageHandling(oldJobInstance);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            block();
-        }
-    }
+	/**
+	 * Method listens for the messages coming from the Green Source informing about the detected power shortage.
+	 * Then, it sends the call for proposal for the job that needs to be transferred to all other green sources. If there are no
+	 * available green sources, it passes the transfer request to the parent cloud network
+	 */
+	@Override
+	public void action() {
+		final ACLMessage transferRequest = myAgent.receive(messageTemplate);
+		if (Objects.nonNull(transferRequest)) {
+			try {
+				final PowerShortageJob oldJobInstance = getMapper().readValue(transferRequest.getContent(),
+						PowerShortageJob.class);
+				final String jobId = oldJobInstance.getJobInstanceId().getJobId();
+				final PowerJob powerJob = createPowerJobTransferInstance(oldJobInstance);
+				final PowerShortageJob jobToTransfer = JobMapper.mapToPowerShortageJob(powerJob,
+						oldJobInstance.getPowerShortageStart());
+				final List<AID> remainingGreenSources = getRemainingGreenSources(transferRequest.getSender());
+				myAgent.send(prepareReply(transferRequest.createReply(), oldJobInstance.getJobInstanceId(),
+						ACLMessage.AGREE));
+				if (!remainingGreenSources.isEmpty()) {
+					logger.info("[{}] Sending call for proposal to Green Source Agents to transfer job with id {}",
+							myAgent.getName(), jobId);
+					final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(powerJob,
+							remainingGreenSources, SERVER_JOB_CFP_PROTOCOL);
+					displayMessageArrow(myServerAgent, remainingGreenSources);
+					myAgent.addBehaviour(new AnnounceSourceJobTransfer(myAgent, cfp, transferRequest, jobToTransfer));
+				} else {
+					logger.info("[{}] No green sources available. Sending transfer request to cloud network",
+							myAgent.getName());
+					final ACLMessage transferMessage = preparePowerShortageTransferRequest(oldJobInstance,
+							myServerAgent.getOwnerCloudNetworkAgent());
+					displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
+					myServerAgent.addBehaviour(
+							new RequestJobTransferInCloudNetwork(myServerAgent, transferMessage, transferRequest,
+									jobToTransfer, false));
+				}
+				schedulePowerShortageHandling(oldJobInstance);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			block();
+		}
+	}
 
-    private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer) {
-        logger.info("[{}] Scheduling power shortage handling", myAgent.getName());
-        final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
-        myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
-        myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(Collections.singletonList(job), jobTransfer.getPowerShortageStart(), myServerAgent, null));
-    }
+	private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer) {
+		logger.info("[{}] Scheduling power shortage handling", myAgent.getName());
+		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
+		myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
+		myServerAgent.addBehaviour(
+				HandleServerPowerShortage.createFor(Collections.singletonList(job), jobTransfer.getPowerShortageStart(),
+						myServerAgent, null));
+	}
 
-    private PowerJob createPowerJobTransferInstance(final PowerShortageJob jobTransfer) {
-        final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
-        final OffsetDateTime startTime = job.getStartTime().isAfter(jobTransfer.getPowerShortageStart()) ? job.getStartTime() : jobTransfer.getPowerShortageStart();
-        return JobMapper.mapToPowerJob(job, startTime);
-    }
+	private PowerJob createPowerJobTransferInstance(final PowerShortageJob jobTransfer) {
+		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
+		final OffsetDateTime startTime = job.getStartTime().isAfter(jobTransfer.getPowerShortageStart()) ?
+				job.getStartTime() :
+				jobTransfer.getPowerShortageStart();
+		return JobMapper.mapToPowerJob(job, startTime);
+	}
 
-    private List<AID> getRemainingGreenSources(final AID greenSourceSender) {
-        return myServerAgent.getOwnedGreenSources().stream().filter(greenSource -> !greenSource.equals(greenSourceSender)).toList();
-    }
+	private List<AID> getRemainingGreenSources(final AID greenSourceSender) {
+		return myServerAgent.getOwnedGreenSources().stream()
+				.filter(greenSource -> !greenSource.equals(greenSourceSender)).toList();
+	}
 }

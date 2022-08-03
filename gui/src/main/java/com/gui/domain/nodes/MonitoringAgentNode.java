@@ -10,23 +10,23 @@ import org.graphstream.graph.Graph;
  */
 public class MonitoringAgentNode extends AgentNode {
 
-    private final String greenEnergyAgent;
+	private final String greenEnergyAgent;
 
-    /**
-     * Monitoring node constructor
-     *
-     * @param name             node name
-     * @param greenEnergyAgent owner green energy agent
-     */
-    public MonitoringAgentNode(String name, String greenEnergyAgent) {
-        super(name);
-        this.style = MONITORING_STYLE;
-        this.greenEnergyAgent = greenEnergyAgent;
-    }
+	/**
+	 * Monitoring node constructor
+	 *
+	 * @param name             node name
+	 * @param greenEnergyAgent owner green energy agent
+	 */
+	public MonitoringAgentNode(String name, String greenEnergyAgent) {
+		super(name);
+		this.style = MONITORING_STYLE;
+		this.greenEnergyAgent = greenEnergyAgent;
+	}
 
-    @Override
-    public void createEdges(Graph graph) {
-        addAgentEdgeToGraph(graph, edges, name, greenEnergyAgent);
-    }
+	@Override
+	public void createEdges(Graph graph) {
+		addAgentEdgeToGraph(graph, edges, name, greenEnergyAgent);
+	}
 
 }

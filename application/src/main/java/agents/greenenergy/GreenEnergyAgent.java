@@ -21,6 +21,7 @@ import behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,59 +36,60 @@ import org.slf4j.LoggerFactory;
  */
 public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
-    private static final Logger logger = LoggerFactory.getLogger(GreenEnergyAgent.class);
+	private static final Logger logger = LoggerFactory.getLogger(GreenEnergyAgent.class);
 
-    /**
-     * Method run at the agent's start. In initialize the Green Source Agent based on the given by the user arguments,
-     * registers it in the DF and then runs the starting behaviours - listening for the power requests and listening for
-     * the finish power request information.
-     */
-    @Override
-    protected void setup() {
-        super.setup();
-        final Object[] args = getArguments();
-        initializeAgent(args);
-        register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
-        addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
-    }
+	/**
+	 * Method run at the agent's start. In initialize the Green Source Agent based on the given by the user arguments,
+	 * registers it in the DF and then runs the starting behaviours - listening for the power requests and listening for
+	 * the finish power request information.
+	 */
+	@Override
+	protected void setup() {
+		super.setup();
+		final Object[] args = getArguments();
+		initializeAgent(args);
+		register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
+		addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
+	}
 
-    @Override
-    protected void takeDown() {
-        getGuiController().removeAgentNodeFromGraph(getAgentNode());
-        super.takeDown();
-    }
+	@Override
+	protected void takeDown() {
+		getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		super.takeDown();
+	}
 
-    private void initializeAgent(final Object[] args) {
-        if (Objects.nonNull(args) && args.length == 7) {
-            this.powerJobs = new ConcurrentHashMap<>();
-            this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-            this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
-            this.stateManagement = new GreenEnergyStateManagement(this);
-            try {
-                this.greenPower = new GreenPower(Integer.parseInt(args[2].toString()), this);
-                this.pricePerPowerUnit = Double.parseDouble(args[3].toString());
-                this.location = ImmutableLocation.builder()
-                    .latitude(Double.parseDouble(args[4].toString()))
-                    .longitude(Double.parseDouble(args[5].toString()))
-                    .build();
-                this.energyType = (EnergyTypeEnum) args[6];
-            } catch (NumberFormatException e) {
-                logger.info("Incorrect argument: please check arguments in the documentation");
-                doDelete();
-            }
-        } else {
-            logger.info("Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
-            doDelete();
-        }
-    }
+	private void initializeAgent(final Object[] args) {
+		if (Objects.nonNull(args) && args.length == 7) {
+			this.powerJobs = new ConcurrentHashMap<>();
+			this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
+			this.stateManagement = new GreenEnergyStateManagement(this);
+			try {
+				this.greenPower = new GreenPower(Integer.parseInt(args[2].toString()), this);
+				this.pricePerPowerUnit = Double.parseDouble(args[3].toString());
+				this.location = ImmutableLocation.builder()
+						.latitude(Double.parseDouble(args[4].toString()))
+						.longitude(Double.parseDouble(args[5].toString()))
+						.build();
+				this.energyType = (EnergyTypeEnum) args[6];
+			} catch (NumberFormatException e) {
+				logger.info("Incorrect argument: please check arguments in the documentation");
+				doDelete();
+			}
+		} else {
+			logger.info(
+					"Incorrect arguments: some parameters for green source agent are missing - check the parameters in the documentation");
+			doDelete();
+		}
+	}
 
-    private List<Behaviour> behavioursRunAtStart() {
-        return List.of(
-            new ReceivePowerRequest(this),
-            new ListenForJobStatus(this),
-            new ListenForGreenSourceEvent(this),
-            new ListenForServerPowerInformation(this),
-            new ReceivePowerCheckRequest(this)
-        );
-    }
+	private List<Behaviour> behavioursRunAtStart() {
+		return List.of(
+				new ReceivePowerRequest(this),
+				new ListenForJobStatus(this),
+				new ListenForGreenSourceEvent(this),
+				new ListenForServerPowerInformation(this),
+				new ReceivePowerCheckRequest(this)
+		);
+	}
 }

@@ -2,6 +2,7 @@ package domain.job;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value;
 
 /**
@@ -13,13 +14,13 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface JobWithProtocol {
 
-    /**
-     * @return unique job instance id
-     */
-    JobInstanceIdentifier getJobInstanceIdentifier();
+	/**
+	 * @return unique job instance id
+	 */
+	JobInstanceIdentifier getJobInstanceIdentifier();
 
-    /**
-     * @return reply protocol
-     */
-    String getReplyProtocol();
+	/**
+	 * @return reply protocol
+	 */
+	String getReplyProtocol();
 }

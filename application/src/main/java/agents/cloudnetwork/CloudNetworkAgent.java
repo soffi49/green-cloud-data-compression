@@ -13,6 +13,7 @@ import behaviours.ReceiveGUIController;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -21,40 +22,40 @@ import java.util.List;
  */
 public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
-    /**
-     * Method run at the agent's start. In initialize the Cloud Network Agent based on the given by the user arguments and
-     * runs the starting behaviours - looking up the corresponding servers and listening for the job requests.
-     */
-    @Override
-    protected void setup() {
-        super.setup();
-        initializeAgent();
-        addBehaviour(new ReceiveGUIController(this, prepareBehaviours()));
-    }
+	/**
+	 * Method run at the agent's start. In initialize the Cloud Network Agent based on the given by the user arguments and
+	 * runs the starting behaviours - looking up the corresponding servers and listening for the job requests.
+	 */
+	@Override
+	protected void setup() {
+		super.setup();
+		initializeAgent();
+		addBehaviour(new ReceiveGUIController(this, prepareBehaviours()));
+	}
 
-    @Override
-    protected void takeDown() {
-        getGuiController().removeAgentNodeFromGraph(getAgentNode());
-        super.takeDown();
-    }
+	@Override
+	protected void takeDown() {
+		getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		super.takeDown();
+	}
 
-    private void initializeAgent() {
-        register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
-        this.stateManagement = new CloudNetworkStateManagement(this);
-    }
+	private void initializeAgent() {
+		register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
+		this.stateManagement = new CloudNetworkStateManagement(this);
+	}
 
-    private List<Behaviour> prepareBehaviours() {
-        final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
-        parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
-        parallelBehaviour.addSubBehaviour(new ReturnJobStatusUpdate());
-        parallelBehaviour.addSubBehaviour(new ListenForServerPowerShortage());
-        return Collections.singletonList(parallelBehaviour);
-    }
+	private List<Behaviour> prepareBehaviours() {
+		final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
+		parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
+		parallelBehaviour.addSubBehaviour(new ReturnJobStatusUpdate());
+		parallelBehaviour.addSubBehaviour(new ListenForServerPowerShortage());
+		return Collections.singletonList(parallelBehaviour);
+	}
 
-    private SequentialBehaviour prepareStartingBehaviour() {
-        var startingBehaviour = new SequentialBehaviour(this);
-        startingBehaviour.addSubBehaviour(new FindServerAgents());
-        startingBehaviour.addSubBehaviour(new ReceiveJobRequests());
-        return startingBehaviour;
-    }
+	private SequentialBehaviour prepareStartingBehaviour() {
+		var startingBehaviour = new SequentialBehaviour(this);
+		startingBehaviour.addSubBehaviour(new FindServerAgents());
+		startingBehaviour.addSubBehaviour(new ReceiveJobRequests());
+		return startingBehaviour;
+	}
 }

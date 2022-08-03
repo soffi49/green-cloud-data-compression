@@ -2,6 +2,7 @@ package domain.job;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value;
 
 import java.time.OffsetDateTime;
@@ -15,13 +16,13 @@ import java.util.List;
 @Value.Immutable
 public interface PowerShortageTransfer {
 
-    /**
-     * @return jobs that need to be transferred
-     */
-    List<PowerJob> getJobList();
+	/**
+	 * @return jobs that need to be transferred
+	 */
+	List<PowerJob> getJobList();
 
-    /**
-     * @return time when the transfer should happen
-     */
-    OffsetDateTime getStartTime();
+	/**
+	 * @return time when the transfer should happen
+	 */
+	OffsetDateTime getStartTime();
 }

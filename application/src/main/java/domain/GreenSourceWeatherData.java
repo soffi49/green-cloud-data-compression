@@ -2,7 +2,9 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import domain.location.Location;
+
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -13,8 +15,8 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface GreenSourceWeatherData {
 
-    /**
-     * @return location for which the weather is to be retrieved
-     */
-    Location getLocation();
+	/**
+	 * @return location for which the weather is to be retrieved
+	 */
+	Location getLocation();
 }
