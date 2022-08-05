@@ -1,17 +1,19 @@
 package com.gui.gui.panels;
 
 import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_ATTRIBUTES;
+import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_CLIENT_AGENTS_TYPE_LABEL;
 import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_COMBO_BOX_ATTRIBUTES;
 import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_DEFAULT_PANEL_LAYOUT;
 import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_INFORMATION_PANEL_IDX;
+import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_NETWORK_AGENTS_TYPE_LABEL;
 import static com.gui.gui.panels.domain.PanelConstants.DETAILS_PANEL_TITLE;
 import static com.gui.gui.panels.domain.PanelConstants.IS_NETWORK_AGENT;
 import static com.gui.gui.utils.GUIComponentUtils.createDefaultAgentComboBox;
 import static com.gui.gui.utils.GUIComponentUtils.createDefaultAgentComboBoxModel;
 import static com.gui.gui.utils.GUILabelUtils.addPanelHeader;
-import static com.gui.gui.utils.GUIPanelUtils.createBorderPanel;
-import static com.gui.gui.utils.GUIPanelUtils.createDefaultEmptyPanel;
-import static com.gui.gui.utils.GUIPanelUtils.createVerticallyScrolledPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createBorderPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createDefaultEmptyPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createVerticallyScrolledPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +21,8 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
-import com.gui.agents.domain.AgentNode;
-import com.gui.domain.nodes.ClientAgentNode;
+import com.gui.agents.AbstractAgentNode;
+import com.gui.agents.ClientAgentNode;
 
 /**
  * Panel displaying detailed data regarding agents
@@ -32,8 +34,8 @@ public class DetailsPanel {
 	private final JPanel mainPanel;
 	private final JComboBox comboBoxNetworkAgents;
 	private final JComboBox comboBoxClientAgents;
-	private List<AgentNode> allNetworkAgentNodes;
-	private List<AgentNode> allClientAgentNodes;
+	private List<AbstractAgentNode> allNetworkAgentNodes;
+	private List<AbstractAgentNode> allClientAgentNodes;
 	private JPanel currentAgentPanel;
 
 	/**
@@ -43,8 +45,10 @@ public class DetailsPanel {
 		this.allNetworkAgentNodes = new ArrayList<>();
 		this.allClientAgentNodes = new ArrayList<>();
 		this.currentAgentPanel = DEFAULT_AGENT_PANEL;
-		this.comboBoxNetworkAgents = createDefaultAgentComboBox(allNetworkAgentNodes, e -> changeSelectedAgent(false));
-		this.comboBoxClientAgents = createDefaultAgentComboBox(allClientAgentNodes, e -> changeSelectedAgent(true));
+		this.comboBoxNetworkAgents = createDefaultAgentComboBox(allNetworkAgentNodes, e -> changeSelectedAgent(false),
+				DETAILS_PANEL_NETWORK_AGENTS_TYPE_LABEL);
+		this.comboBoxClientAgents = createDefaultAgentComboBox(allClientAgentNodes, e -> changeSelectedAgent(true),
+				DETAILS_PANEL_CLIENT_AGENTS_TYPE_LABEL);
 		this.mainPanel = createDetailsPanel();
 	}
 
@@ -68,13 +72,15 @@ public class DetailsPanel {
 	 * @param agentNodes     list of node that has changed in combo box
 	 * @param isClientUpdate flag indicating if the change was announced because of client agent
 	 */
-	public void revalidateComboBoxModel(final List<AgentNode> agentNodes, final boolean isClientUpdate) {
+	public void revalidateComboBoxModel(final List<AbstractAgentNode> agentNodes, final boolean isClientUpdate) {
 		if (!isClientUpdate) {
 			allNetworkAgentNodes = agentNodes.stream().filter(IS_NETWORK_AGENT).toList();
-			createDefaultAgentComboBoxModel(allNetworkAgentNodes, comboBoxNetworkAgents);
+			createDefaultAgentComboBoxModel(allNetworkAgentNodes, comboBoxNetworkAgents,
+					DETAILS_PANEL_NETWORK_AGENTS_TYPE_LABEL);
 		} else {
 			allClientAgentNodes = agentNodes.stream().filter(ClientAgentNode.class::isInstance).toList();
-			createDefaultAgentComboBoxModel(allClientAgentNodes, comboBoxClientAgents);
+			createDefaultAgentComboBoxModel(allClientAgentNodes, comboBoxClientAgents,
+					DETAILS_PANEL_CLIENT_AGENTS_TYPE_LABEL);
 		}
 	}
 
@@ -91,17 +97,18 @@ public class DetailsPanel {
 				!(comboBoxClientAgents.getSelectedIndex() != 0 && comboBoxNetworkAgents.getSelectedIndex() == 0);
 
 		if (isValid) {
-			final List<AgentNode> agentNodesToTraverse = isClientComboBox ? allClientAgentNodes : allNetworkAgentNodes;
+			final List<AbstractAgentNode> agentNodesToTraverse = isClientComboBox ?
+					allClientAgentNodes :
+					allNetworkAgentNodes;
 			final JComboBox comboBoxToUpdate = isClientComboBox ? comboBoxClientAgents : comboBoxNetworkAgents;
 			final String newAgentName = (String) comboBoxToUpdate.getSelectedItem();
 
 			currentAgentPanel = agentNodesToTraverse.stream()
 					.filter(agent -> agent.getAgentName().equals(newAgentName))
 					.findFirst()
-					.map(AgentNode::getAgentDetailsPanel)
+					.map(AbstractAgentNode::getAgentDetailsPanel)
 					.orElse(DEFAULT_AGENT_PANEL);
 			refreshDetailsPanel();
-			comboBoxToUpdate.setSelectedIndex(0);
 		}
 	}
 

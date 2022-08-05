@@ -1,6 +1,6 @@
 package com.gui.agents;
 
-import static com.gui.gui.utils.GUIPanelUtils.createLabelListPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createLabelListPanel;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;

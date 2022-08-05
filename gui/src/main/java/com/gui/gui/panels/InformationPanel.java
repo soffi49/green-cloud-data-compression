@@ -8,8 +8,8 @@ import static com.gui.gui.panels.domain.PanelConstants.INFORMATION_PANEL_TITLE;
 import static com.gui.gui.utils.GUIComponentUtils.createSeparator;
 import static com.gui.gui.utils.GUILabelUtils.addPanelHeader;
 import static com.gui.gui.utils.GUILabelUtils.createParagraphLabel;
-import static com.gui.gui.utils.GUIPanelUtils.createBorderPanel;
-import static com.gui.gui.utils.GUIPanelUtils.createDefaultScrollPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createBorderPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createDefaultScrollPanel;
 import static com.gui.gui.utils.domain.GUIStyleConstants.GRAY_2_COLOR;
 
 import java.awt.Color;

@@ -3,7 +3,7 @@ package com.gui.event;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 
-import com.gui.agents.domain.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 
 /**
  * Service which provides the methods connected which events handling
@@ -17,7 +17,7 @@ public interface EventService {
 	 * @param agentNode         affected by the power shortage agent
 	 * @param eventButton       button that was pressed
 	 */
-	void causePowerShortage(final JFormattedTextField maximumPowerInput, final AgentNode agentNode,
+	void causePowerShortage(final JFormattedTextField maximumPowerInput, final AbstractAgentNode agentNode,
 			final JButton eventButton);
 
 }

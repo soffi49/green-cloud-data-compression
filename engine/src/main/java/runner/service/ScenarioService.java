@@ -10,7 +10,7 @@ import static runner.service.domain.ScenarioConstants.START_TIME_MIN;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gui.controller.GUIControllerImpl;
-import com.gui.domain.nodes.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
@@ -90,7 +90,7 @@ public class ScenarioService implements Runnable {
             var args = (AgentArgs) agentArgs;
             try {
                 final AgentController agentController = factory.createAgentController(args);
-                final AgentNode agentNode = factory.createAgentNode(args, scenario);
+                final AbstractAgentNode agentNode = factory.createAgentNode(args, scenario);
                 guiController.addAgentNodeToGraph(agentNode);
                 agentController.putO2AObject(guiController, AgentController.ASYNC);
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);
@@ -116,7 +116,7 @@ public class ScenarioService implements Runnable {
                             .build();
             try {
                 final AgentController agentController = factory.createAgentController(clientAgentArgs);
-                final AgentNode agentNode = factory.createAgentNode(clientAgentArgs, scenario);
+                final AbstractAgentNode agentNode = factory.createAgentNode(clientAgentArgs, scenario);
                 guiController.addAgentNodeToGraph(agentNode);
                 agentController.putO2AObject(guiController, AgentController.ASYNC);
                 agentController.putO2AObject(agentNode, AgentController.ASYNC);

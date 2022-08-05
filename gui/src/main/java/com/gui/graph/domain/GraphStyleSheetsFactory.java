@@ -2,8 +2,8 @@ package com.gui.graph.domain;
 
 import static com.gui.graph.domain.GraphStyleConstants.GREEN_ENERGY_NODE_SIZE;
 import static com.gui.graph.domain.GraphStyleConstants.SERVER_NODE_SIZE;
-import static com.gui.utils.domain.StyleConstants.GRAY_6_COLOR;
-import static com.gui.utils.domain.StyleConstants.WHITE_COLOR;
+import static com.gui.gui.utils.domain.GUIStyleConstants.GRAY_6_COLOR;
+import static com.gui.gui.utils.domain.GUIStyleConstants.WHITE_COLOR;
 
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxUtils;
@@ -12,9 +12,9 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * Class defines all available style sheets
+ * Factory creates all available style sheets
  */
-public class GraphStyleSheets {
+public class GraphStyleSheetsFactory {
 
     // General stylesheets
 
