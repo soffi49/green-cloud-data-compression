@@ -1,7 +1,7 @@
 package agents;
 
 import com.gui.controller.GUIController;
-import com.gui.domain.nodes.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 import jade.core.Agent;
 
 /**
@@ -9,7 +9,7 @@ import jade.core.Agent;
  */
 public abstract class AbstractAgent extends Agent {
     private GUIController guiController;
-    private AgentNode agentNode;
+    private AbstractAgentNode agentNode;
 
     public AbstractAgent() {
     }
@@ -28,10 +28,10 @@ public abstract class AbstractAgent extends Agent {
         setEnabledO2ACommunication(true, 2);
     }
 
-    public AgentNode getAgentNode() {
+    public AbstractAgentNode getAgentNode() {
         return agentNode;
     }
-    public void setAgentNode(AgentNode agentNode) {
+    public void setAgentNode(AbstractAgentNode agentNode) {
         this.agentNode = agentNode;
     }
     public GUIController getGuiController() {

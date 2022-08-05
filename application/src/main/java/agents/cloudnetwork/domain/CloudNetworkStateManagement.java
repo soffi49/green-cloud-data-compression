@@ -5,7 +5,7 @@ import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.PROCESSING;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import com.gui.domain.nodes.CloudNetworkAgentNode;
+import com.gui.agents.CloudNetworkAgentNode;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import org.slf4j.Logger;
