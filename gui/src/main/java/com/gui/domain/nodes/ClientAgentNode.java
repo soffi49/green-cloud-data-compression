@@ -1,8 +1,8 @@
 package com.gui.domain.nodes;
 
 import static com.gui.domain.types.JobStatusEnum.CREATED;
-import static com.gui.utils.GUIUtils.createListLabel;
-import static com.gui.utils.GUIUtils.formatToHTML;
+import static com.gui.utils.GUIUtils.*;
+import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
 import com.gui.domain.types.JobStatusEnum;
@@ -15,53 +15,53 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ClientAgentNode extends AgentNode {
 
-    private final String jobId;
-    private final String power;
-    private final String startDate;
-    private final String endDate;
-    private AtomicReference<JobStatusEnum> jobStatusEnum;
+	private final String jobId;
+	private final String power;
+	private final String startDate;
+	private final String endDate;
+	private AtomicReference<JobStatusEnum> jobStatusEnum;
 
-    /**
-     * Client node constructor
-     *
-     * @param name      name of the node
-     * @param jobId     job identifier
-     * @param startDate start date of job execution
-     * @param endDate   end date of job execution
-     */
-    public ClientAgentNode(String name, String jobId, String startDate, String endDate, String power) {
-        super(name);
-        this.jobId = jobId;
-        this.power = power;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.jobStatusEnum = new AtomicReference<>(CREATED);
-        initializeLabelsMap();
-        createInformationPanel();
-    }
+	/**
+	 * Client node constructor
+	 *
+	 * @param name      name of the node
+	 * @param jobId     job identifier
+	 * @param startDate start date of job execution
+	 * @param endDate   end date of job execution
+	 */
+	public ClientAgentNode(String name, String jobId, String startDate, String endDate, String power) {
+		super(name);
+		this.jobId = jobId;
+		this.power = power;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.jobStatusEnum = new AtomicReference<>(CREATED);
+		initializeLabelsMap();
+		createInformationPanel();
+	}
 
-    /**
-     * Function overrides the job status
-     *
-     * @param jobStatusEnum new job status
-     */
-    public void updateJobStatus(final JobStatusEnum jobStatusEnum) {
-        this.jobStatusEnum.set(jobStatusEnum);
-        labelsMap.get(AgentNodeLabelEnum.JOB_STATUS).setText(formatToHTML(jobStatusEnum.getStatus()));
-    }
+	/**
+	 * Function overrides the job status
+	 *
+	 * @param jobStatusEnum new job status
+	 */
+	public void updateJobStatus(final JobStatusEnum jobStatusEnum) {
+		this.jobStatusEnum.set(jobStatusEnum);
+		labelsMap.get(AgentNodeLabelEnum.JOB_STATUS).setText(formatToHTML(jobStatusEnum.getStatus()));
+	}
 
-    @Override
-    public void addToGraph(GraphService testGraph) {
+	@Override
+	public void addToGraph(GraphService testGraph) {
 
-    }
+	}
 
-    @Override
-    protected void initializeLabelsMap() {
-        super.initializeLabelsMap();
-        labelsMap.put(AgentNodeLabelEnum.JOB_ID_LABEL, createListLabel(jobId));
-        labelsMap.put(AgentNodeLabelEnum.JOB_POWER, createListLabel(power));
-        labelsMap.put(AgentNodeLabelEnum.JOB_START_LABEL, createListLabel(startDate));
-        labelsMap.put(AgentNodeLabelEnum.JOB_END_LABEL, createListLabel(endDate));
-        labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createListLabel(jobStatusEnum.get().getStatus()));
-    }
+	@Override
+	protected void initializeLabelsMap() {
+		super.initializeLabelsMap();
+		labelsMap.put(AgentNodeLabelEnum.JOB_ID_LABEL, createListLabel(jobId));
+		labelsMap.put(AgentNodeLabelEnum.JOB_POWER, createListLabel(power));
+		labelsMap.put(AgentNodeLabelEnum.JOB_START_LABEL, createListLabel(startDate));
+		labelsMap.put(AgentNodeLabelEnum.JOB_END_LABEL, createListLabel(endDate));
+		labelsMap.put(AgentNodeLabelEnum.JOB_STATUS, createListLabel(jobStatusEnum.get().getStatus()));
+	}
 }

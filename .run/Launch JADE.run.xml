@@ -1,26 +1,26 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Launch JADE" type="Application" factoryName="Application">
-    <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
-    <option name="MAIN_CLASS_NAME" value="jade.Boot" />
-    <module name="engine" />
-    <option name="PROGRAM_PARAMETERS" value="-gui" />
-    <option name="VM_PARAMETERS" value="-cp $Classpath$;application\src" />
-    <extension name="coverage">
-      <pattern>
-        <option name="PATTERN" value="boot.*" />
-        <option name="ENABLED" value="true" />
-      </pattern>
-      <pattern>
-        <option name="PATTERN" value="agents.client.*" />
-        <option name="ENABLED" value="true" />
-      </pattern>
-      <pattern>
-        <option name="PATTERN" value="ontology.*" />
-        <option name="ENABLED" value="true" />
-      </pattern>
-    </extension>
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
-  </configuration>
+	<configuration default="false" name="Launch JADE" type="Application" factoryName="Application">
+		<option name="INCLUDE_PROVIDED_SCOPE" value="true" />
+		<option name="MAIN_CLASS_NAME" value="jade.Boot" />
+		<module name="engine" />
+		<option name="PROGRAM_PARAMETERS" value="-gui" />
+		<option name="VM_PARAMETERS" value="-cp $Classpath$;application\src" />
+		<extension name="coverage">
+			<pattern>
+				<option name="PATTERN" value="boot.*" />
+				<option name="ENABLED" value="true" />
+			</pattern>
+			<pattern>
+				<option name="PATTERN" value="agents.client.*" />
+				<option name="ENABLED" value="true" />
+			</pattern>
+			<pattern>
+				<option name="PATTERN" value="ontology.*" />
+				<option name="ENABLED" value="true" />
+			</pattern>
+		</extension>
+		<method v="2">
+			<option name="Make" enabled="true" />
+		</method>
+	</configuration>
 </component>

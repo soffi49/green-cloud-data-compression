@@ -13,23 +13,24 @@ import java.util.List;
  */
 public class CallForProposalMessageFactory {
 
-    /**
-     * Method creates the call for proposal message that is to be sent to multiple receivers
-     *
-     * @param content      content that is to be sent in call for proposal
-     * @param receiverList list of the message receivers
-     * @param protocol     protocol of the call for proposal message
-     * @return call for proposal ACLMessage
-     */
-    public static ACLMessage createCallForProposal(final Object content, final List<AID> receiverList, final String protocol) {
-        final ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
-        proposal.setProtocol(protocol);
-        try {
-            proposal.setContent(getMapper().writeValueAsString(content));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        receiverList.forEach(proposal::addReceiver);
-        return proposal;
-    }
+	/**
+	 * Method creates the call for proposal message that is to be sent to multiple receivers
+	 *
+	 * @param content      content that is to be sent in call for proposal
+	 * @param receiverList list of the message receivers
+	 * @param protocol     protocol of the call for proposal message
+	 * @return call for proposal ACLMessage
+	 */
+	public static ACLMessage createCallForProposal(final Object content, final List<AID> receiverList,
+			final String protocol) {
+		final ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
+		proposal.setProtocol(protocol);
+		try {
+			proposal.setContent(getMapper().writeValueAsString(content));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		receiverList.forEach(proposal::addReceiver);
+		return proposal;
+	}
 }
