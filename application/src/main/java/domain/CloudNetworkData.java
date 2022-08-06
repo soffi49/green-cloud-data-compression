@@ -2,6 +2,7 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -12,14 +13,14 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface CloudNetworkData {
 
-    /**
-     * @return power used by the Cloud Network
-     */
-    int getInUsePower();
+	/**
+	 * @return power used by the Cloud Network
+	 */
+	int getInUsePower();
 
-    /**
-     * @return number of currently running jobs
-     */
-    int getJobsCount();
+	/**
+	 * @return number of currently running jobs
+	 */
+	int getJobsCount();
 
 }
