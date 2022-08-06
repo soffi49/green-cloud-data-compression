@@ -1,6 +1,6 @@
 package runner.factory;
 
-import com.gui.domain.nodes.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
@@ -26,6 +26,6 @@ public interface AgentControllerFactory {
 	 * @param agentArgs    current agent arguments
 	 * @param scenarioArgs scenario arguments
 	 */
-	AgentNode createAgentNode(AgentArgs agentArgs, ScenarioArgs scenarioArgs);
+	AbstractAgentNode createAgentNode(AgentArgs agentArgs, ScenarioArgs scenarioArgs);
 
 }

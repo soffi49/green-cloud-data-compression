@@ -9,9 +9,12 @@ import static com.gui.gui.utils.domain.GUIStyleConstants.GRAY_4_COLOR;
 import static com.gui.gui.utils.domain.GUIStyleConstants.GREEN_2_COLOR;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.util.Map;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -29,9 +32,9 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Class provides set of utilities connected GUI panel objects
+ * Class provides set of utilities connected GUI container objects
  */
-public class GUIPanelUtils {
+public class GUIContainerUtils {
 
 	/**
 	 * Method creates the shadow to be added to some JPanel
@@ -82,7 +85,7 @@ public class GUIPanelUtils {
 	 * @return styled JPanel
 	 */
 	public static JPanel createDefaultEmptyPanel() {
-		final JPanel jPanel = new JPanel(new MigLayout(new LC().fillX()));
+		final JPanel jPanel = new JPanel(new MigLayout(new LC().fill()));
 		jPanel.setBackground(GRAY_1_COLOR);
 		return jPanel;
 	}
@@ -139,5 +142,23 @@ public class GUIPanelUtils {
 			panel.add(valuePanel, new CC().spanX(2).grow().wrap());
 		});
 		return panel;
+	}
+
+	/**
+	 * Method creates a default frame based on given by the user parameters
+	 *
+	 * @param title     title of the frame
+	 * @param dimension size of the frame
+	 * @param content   the main content of the frame
+	 * @return JFrame
+	 */
+	public static JFrame createDefaultFrame(final String title, final Dimension dimension, final Component content) {
+		final JFrame jFrame = new JFrame(title);
+		jFrame.setSize(dimension);
+		jFrame.setResizable(false);
+		jFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		jFrame.getContentPane().add(content);
+		jFrame.setLocationRelativeTo(null);
+		return jFrame;
 	}
 }

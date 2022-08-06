@@ -15,13 +15,13 @@ import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.Timer;
 
-import com.gui.agents.domain.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 
 public class EventServiceImpl implements EventService {
 
 	@Override
-	public void causePowerShortage(final JFormattedTextField maximumPowerInput, final AgentNode agentNode,
+	public void causePowerShortage(final JFormattedTextField maximumPowerInput, final AbstractAgentNode agentNode,
 			final JButton eventButton) {
 		if (!maximumPowerInput.equals("")) {
 			if (Objects.nonNull(agentNode) && agentNode.getAgentEvents().containsKey(POWER_SHORTAGE)) {

@@ -19,10 +19,10 @@ import static com.gui.graph.domain.GraphStyleConstants.MONITORING_STYLE;
 import static com.gui.graph.domain.GraphStyleConstants.SERVER_INACTIVE_STYLE;
 import static com.gui.graph.domain.GraphStyleConstants.SERVER_NODE_SIZE;
 
-import com.gui.domain.nodes.AgentNode;
-import com.gui.domain.nodes.CloudNetworkAgentNode;
-import com.gui.domain.nodes.GreenEnergyAgentNode;
-import com.gui.domain.nodes.ServerAgentNode;
+import com.gui.agents.AbstractAgentNode;
+import com.gui.agents.CloudNetworkAgentNode;
+import com.gui.agents.GreenEnergyAgentNode;
+import com.gui.agents.ServerAgentNode;
 import com.mxgraph.layout.mxOrganicLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGraphModel;
@@ -68,11 +68,11 @@ public class GraphServiceImpl implements GraphService {
     }
 
     @Override
-    public void createAndAddNodeToGraph(final AgentNode node) {
+    public void createAndAddNodeToGraph(final AbstractAgentNode node) {
         final Pair<Integer, String> vertexProperties = getVertexPropertiesForAgentNode(node);
         final Integer vertexSize = vertexProperties.getKey();
         final String vertexStyle = vertexProperties.getValue();
-        final String vertexValue = node.getName();
+        final String vertexValue = node.getAgentName();
 
         graph.getModel().beginUpdate();
         try {
@@ -83,8 +83,8 @@ public class GraphServiceImpl implements GraphService {
     }
 
     @Override
-    public void removeNodeFromGraph(final AgentNode node) {
-        final Object vertexToRemove = ((mxGraphModel) graph.getModel()).getCell(node.getName());
+    public void removeNodeFromGraph(final AbstractAgentNode node) {
+        final Object vertexToRemove = ((mxGraphModel) graph.getModel()).getCell(node.getAgentName());
 
         if (Objects.nonNull(vertexToRemove)) {
             graph.getModel().beginUpdate();
@@ -204,7 +204,7 @@ public class GraphServiceImpl implements GraphService {
         graphLayout.setEdgeLengthCostFactor(LAYOUT_EDGE_LENGTH_PARAMETER);
     }
 
-    private Pair<Integer, String> getVertexPropertiesForAgentNode(final AgentNode node) {
+    private Pair<Integer, String> getVertexPropertiesForAgentNode(final AbstractAgentNode node) {
         if (node instanceof CloudNetworkAgentNode) {
             return Pair.create(CLOUD_NETWORK_NODE_SIZE, CLOUD_NETWORK_INACTIVE_STYLE);
         } else if (node instanceof ServerAgentNode) {

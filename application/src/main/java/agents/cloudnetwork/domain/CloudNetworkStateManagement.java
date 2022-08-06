@@ -6,8 +6,6 @@ import static domain.job.JobStatusEnum.PROCESSING;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 
-import com.gui.domain.nodes.CloudNetworkAgentNode;
-
 import com.gui.agents.CloudNetworkAgentNode;
 
 import domain.job.Job;

@@ -2,7 +2,7 @@ package com.gui.event;
 
 import java.awt.Component;
 
-import com.gui.agents.domain.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 
 /**
  * Service responsible for incorporating the event handling functionalities into GUI
@@ -15,5 +15,5 @@ public interface EventGUIService {
 	 * @param agentNode agent for which the event panel is generated
 	 * @return JPanel being an event panel
 	 */
-	Component createEventPanelForAgent(final AgentNode agentNode);
+	Component createEventPanelForAgent(final AbstractAgentNode agentNode);
 }

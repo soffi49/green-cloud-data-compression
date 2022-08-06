@@ -27,7 +27,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 
-import com.gui.agents.domain.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 import com.gui.gui.utils.domain.customrenderer.ComboBoxRenderer;
 import com.gui.gui.utils.domain.customui.ComboBoxUI;
 import com.gui.gui.utils.domain.customui.ScrollBarUI;
@@ -83,12 +83,13 @@ public class GUIComponentUtils {
 	 *
 	 * @param agents         agents to be put in the combobox
 	 * @param actionListener action computed on value selection
+	 * @param type           type of agents to select from
 	 * @return JComboBox
 	 */
-	public static JComboBox createDefaultAgentComboBox(final List<AgentNode> agents,
-			final ActionListener actionListener) {
+	public static JComboBox createDefaultAgentComboBox(final List<AbstractAgentNode> agents,
+			final ActionListener actionListener, final String type) {
 		final JComboBox jComboBox = createDefaultComboBox(new String[] {}, actionListener);
-		createDefaultAgentComboBoxModel(agents, jComboBox);
+		createDefaultAgentComboBoxModel(agents, jComboBox,type);
 		return jComboBox;
 	}
 
@@ -97,11 +98,13 @@ public class GUIComponentUtils {
 	 *
 	 * @param agents   agents to be included in the model
 	 * @param comboBox combo box for which the model is assigned
+	 * @param type     type of agents to select from
 	 */
-	public static void createDefaultAgentComboBoxModel(final List<AgentNode> agents, final JComboBox comboBox) {
+	public static void createDefaultAgentComboBoxModel(final List<AbstractAgentNode> agents, final JComboBox comboBox,
+			final String type) {
 		final List<String> agentNames = new java.util.ArrayList<>(
-				agents.stream().map(AgentNode::getAgentName).toList());
-		agentNames.add(0, "Please select the client");
+				agents.stream().map(AbstractAgentNode::getAgentName).toList());
+		agentNames.add(0, String.format("Please select the %s", type));
 		comboBox.setModel(new DefaultComboBoxModel(agentNames.toArray(new String[0])));
 	}
 

@@ -11,8 +11,8 @@ import static com.gui.gui.utils.GUIComponentUtils.createSeparator;
 import static com.gui.gui.utils.GUILabelUtils.createJLabel;
 import static com.gui.gui.utils.GUILayoutUtils.addComponentToGridWithHorizontalProportion;
 import static com.gui.gui.utils.GUILayoutUtils.addHeaderComponentsToGrid;
-import static com.gui.gui.utils.GUIPanelUtils.createShadowPanel;
-import static com.gui.gui.utils.GUIPanelUtils.createVerticallyScrolledPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createShadowPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createVerticallyScrolledPanel;
 import static com.gui.gui.utils.domain.GUIStyleConstants.GRAY_4_COLOR;
 import static com.gui.gui.utils.domain.GUIStyleConstants.SECOND_HEADER_FONT;
 
@@ -27,7 +27,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.gui.agents.domain.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.EventTypeEnum;
 
 public class EventGUIServiceImpl implements EventGUIService {
@@ -39,7 +39,7 @@ public class EventGUIServiceImpl implements EventGUIService {
 	}
 
 	@Override
-	public Component createEventPanelForAgent(AgentNode agentNode) {
+	public Component createEventPanelForAgent(AbstractAgentNode agentNode) {
 		final JPanel eventPanel = new JPanel();
 		final BoxLayout eventPanelLayout = new BoxLayout(eventPanel, BoxLayout.PAGE_AXIS);
 		eventPanel.setLayout(eventPanelLayout);
@@ -52,7 +52,7 @@ public class EventGUIServiceImpl implements EventGUIService {
 		return eventScrollPane;
 	}
 
-	private Optional<JPanel> mapEventTypeToPanelRow(final AgentNode agentNode, final EventTypeEnum eventType) {
+	private Optional<JPanel> mapEventTypeToPanelRow(final AbstractAgentNode agentNode, final EventTypeEnum eventType) {
 		switch (eventType) {
 			case POWER_SHORTAGE:
 				return Optional.of(createPowerShortageEventRow(agentNode));
@@ -61,7 +61,7 @@ public class EventGUIServiceImpl implements EventGUIService {
 		}
 	}
 
-	private JPanel createPowerShortageEventRow(final AgentNode agentNode) {
+	private JPanel createPowerShortageEventRow(final AbstractAgentNode agentNode) {
 		final JFormattedTextField powerShortageInput = createNumericTextField(MAX_POWER_INPUT_LABEL);
 		final JButton powerShortageButton = createButton(POWER_SHORTAGE.getEventLabelStart(),
 				e -> eventService.causePowerShortage(powerShortageInput, agentNode, (JButton) e.getSource()));

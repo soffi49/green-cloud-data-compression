@@ -8,8 +8,8 @@ import static com.gui.gui.panels.domain.listlabels.SummaryPanelListLabelEnum.CLI
 import static com.gui.gui.utils.GUILabelUtils.addPanelHeader;
 import static com.gui.gui.utils.GUILabelUtils.createListLabel;
 import static com.gui.gui.utils.GUILabelUtils.formatToHTML;
-import static com.gui.gui.utils.GUIPanelUtils.createBorderPanel;
-import static com.gui.gui.utils.GUIPanelUtils.createLabelListPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createBorderPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createLabelListPanel;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
