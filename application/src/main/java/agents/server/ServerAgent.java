@@ -39,8 +39,8 @@ public class ServerAgent extends AbstractServerAgent {
         super.setup();
         final Object[] args = getArguments();
         initializeAgent(args);
-        register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, ownerCloudNetworkAgent.getName());
-        addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
+        register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
+        addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart());
     }
 
     @Override
