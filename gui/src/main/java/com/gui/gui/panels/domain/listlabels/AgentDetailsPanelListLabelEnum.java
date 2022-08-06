@@ -1,13 +1,15 @@
-package com.gui.domain.types;
+package com.gui.gui.panels.domain.listlabels;
 
-import static com.gui.utils.GUIUtils.formatToHTML;
+import static com.gui.gui.utils.GUILabelUtils.formatToHTML;
 
 /**
  * Enum storing all possible labels describing the agent node
  */
-public enum AgentNodeLabelEnum implements LabelEnum {
+public enum AgentDetailsPanelListLabelEnum implements ListLabelEnum {
 
-	// Common for job executors labels:
+	/**
+	 * Common for job executors labels:
+	 */
 	IS_ACTIVE_LABEL("CURRENT STATE:"),
 	INITIAL_MAXIMUM_CAPACITY_LABEL("MAXIMUM CAPACITY:"),
 	CURRENT_MAXIMUM_CAPACITY_LABEL("CURRENT MAXIMUM CAPACITY:"),
@@ -16,18 +18,26 @@ public enum AgentNodeLabelEnum implements LabelEnum {
 	NUMBER_OF_EXECUTED_JOBS_LABEL("NUMBER OF CURRENTLY EXECUTED JOBS:"),
 	JOBS_ON_HOLD_LABEL("NUMBER OF JOBS ON HOLD:"),
 
-	// Cloud network labels:
+	/**
+	 * Cloud network labels:
+	 */
 	SERVERS_NUMBER_LABEL("NUMBER OF CONNECTED SERVERS:"),
 
-	//Server labels:
+	/**
+	 * Server labels:
+	 */
 	BACK_UP_TRAFFIC_LABEL("CURRENT BACK UP TRAFFIC:"),
 
-	// Green source labels:
+	/**
+	 * Green source labels:
+	 */
 	GREEN_SOURCE_NUMBER_LABEL("NUMBER OF CONNECTED SERVERS:"),
 	LOCATION_LATITUDE_LABEL("LOCATION LATITUDE:"),
 	LOCATION_LONGITUDE_LABEL("LOCATION LONGITUDE:"),
 
-	// Clients labels
+	/**
+	 * Clients labels:
+	 */
 	JOB_POWER("JOB POWER:"),
 	JOB_ID_LABEL("JOB IDENTIFIER:"),
 	JOB_START_LABEL("EXECUTION START DATE:"),
@@ -36,7 +46,7 @@ public enum AgentNodeLabelEnum implements LabelEnum {
 
 	private final String label;
 
-	AgentNodeLabelEnum(String label) {
+	AgentDetailsPanelListLabelEnum(String label) {
 		this.label = label;
 	}
 

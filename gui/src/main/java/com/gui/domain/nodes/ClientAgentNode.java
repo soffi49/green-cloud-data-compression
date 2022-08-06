@@ -1,8 +1,8 @@
 package com.gui.domain.nodes;
 
 import static com.gui.domain.types.JobStatusEnum.CREATED;
-import static com.gui.utils.GUIUtils.createListLabel;
-import static com.gui.utils.GUIUtils.formatToHTML;
+import static com.gui.utils.GUIUtils.*;
+import static com.gui.utils.domain.StyleConstants.*;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
 import com.gui.domain.types.JobStatusEnum;

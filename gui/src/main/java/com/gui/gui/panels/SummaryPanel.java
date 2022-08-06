@@ -1,32 +1,34 @@
-package com.gui.domain.guielements;
+package com.gui.gui.panels;
 
-import static com.gui.domain.types.SummaryPanelLabelEnum.*;
-import static com.gui.utils.GUIUtils.*;
-
-import com.gui.domain.types.LabelEnum;
-
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.*;
+import static com.gui.gui.panels.domain.PanelConstants.SUMMARY_PANEL_MAIN_LAYOUT;
+import static com.gui.gui.panels.domain.PanelConstants.SUMMARY_PANEL_TITLE;
+import static com.gui.gui.panels.domain.listlabels.SummaryPanelListLabelEnum.ACTIVE_JOBS_LABEL;
+import static com.gui.gui.panels.domain.listlabels.SummaryPanelListLabelEnum.ALL_JOBS_COUNT;
+import static com.gui.gui.panels.domain.listlabels.SummaryPanelListLabelEnum.CLIENT_COUNT_LABEL;
+import static com.gui.gui.utils.GUILabelUtils.addPanelHeader;
+import static com.gui.gui.utils.GUILabelUtils.createListLabel;
+import static com.gui.gui.utils.GUILabelUtils.formatToHTML;
+import static com.gui.gui.utils.GUIPanelUtils.createBorderPanel;
+import static com.gui.gui.utils.GUIPanelUtils.createLabelListPanel;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import com.gui.gui.panels.domain.listlabels.ListLabelEnum;
+
+import net.miginfocom.layout.CC;
+
 /**
- * Class represents the summary panel of the GUI
- * <p>
- * {@value TITLE_LABEL}         title of the summary panel
+ * Panel displaying summarized data about entire cloud network
  */
 public class SummaryPanel {
 
-	private static final String TITLE_LABEL = "NETWORK STATISTICS";
-
 	private final JPanel mainPanel;
-	private final Map<LabelEnum, JLabel> labelMap;
-
+	private final Map<ListLabelEnum, JLabel> labelMap;
 	private final AtomicInteger clientsCount;
 	private final AtomicInteger activeJobsCount;
 	private final AtomicInteger allJobsCount;
@@ -80,15 +82,14 @@ public class SummaryPanel {
 	}
 
 	public JPanel initializeSummaryPanel() {
-		final MigLayout panelLayout = new MigLayout(new LC().fillX().gridGapX("15px"));
-		final JPanel summaryPanel = createBorderPanel(panelLayout);
-		addPanelHeader(TITLE_LABEL, summaryPanel);
-		summaryPanel.add(createLabelListPanel(labelMap), new CC().grow());
-		return summaryPanel;
+		final JPanel panel = createBorderPanel(SUMMARY_PANEL_MAIN_LAYOUT);
+		addPanelHeader(SUMMARY_PANEL_TITLE, panel);
+		panel.add(createLabelListPanel(labelMap), new CC().grow());
+		return panel;
 	}
 
-	private Map<LabelEnum, JLabel> initializeLabels() {
-		final Map<LabelEnum, JLabel> jLabelMap = new LinkedHashMap<>();
+	private Map<ListLabelEnum, JLabel> initializeLabels() {
+		final Map<ListLabelEnum, JLabel> jLabelMap = new LinkedHashMap<>();
 		jLabelMap.put(CLIENT_COUNT_LABEL, createListLabel(String.valueOf(clientsCount)));
 		jLabelMap.put(ACTIVE_JOBS_LABEL, createListLabel(String.valueOf(activeJobsCount)));
 		jLabelMap.put(ALL_JOBS_COUNT, createListLabel(String.valueOf(allJobsCount)));

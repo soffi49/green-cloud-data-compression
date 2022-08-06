@@ -1,11 +1,11 @@
-package com.gui.domain.types;
+package com.gui.gui.panels.domain.listlabels;
 
-import static com.gui.utils.GUIUtils.formatToHTML;
+import static com.gui.gui.utils.GUILabelUtils.formatToHTML;
 
 /**
  * Enum storing all available summary panel label types
  */
-public enum SummaryPanelLabelEnum implements LabelEnum {
+public enum SummaryPanelListLabelEnum implements ListLabelEnum {
 
 	CLIENT_COUNT_LABEL("NUMBER OF CLIENTS:"),
 	ACTIVE_JOBS_LABEL("NUMBER OF CURRENTLY RUNNING JOBS:"),
@@ -13,7 +13,7 @@ public enum SummaryPanelLabelEnum implements LabelEnum {
 
 	private final String label;
 
-	SummaryPanelLabelEnum(String label) {
+	SummaryPanelListLabelEnum(String label) {
 		this.label = label;
 	}
 

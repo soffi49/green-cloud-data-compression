@@ -1,11 +1,14 @@
-package com.gui.utils.domain;
+package com.gui.gui.utils.domain;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 
 /**
  * Class stores constants used in styling the objects
  */
-public class StyleConstants {
+public class GUIStyleConstants {
 
 	/**
 	 * Frame constants
@@ -38,20 +41,19 @@ public class StyleConstants {
 	 */
 	private static final int TITLE_FONT_SIZE_PROPORTION = 70;
 	public static final int FONT_SIZE_1 = (int) SCREEN_SIZE.getWidth() / TITLE_FONT_SIZE_PROPORTION;
-	public static final int FONT_SIZE_2 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 35);
-	public static final int FONT_SIZE_3 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 45);
-	public static final int FONT_SIZE_4 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 55);
-	public static final int FONT_SIZE_5 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 60);
-	public static final int FONT_SIZE_6 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 80);
-
 	/**
 	 * Font type constants
 	 */
 	public static final Font TITLE_FONT = new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_1);
+	public static final int FONT_SIZE_2 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 35);
 	public static final Font FIRST_HEADER_FONT = new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_2);
+	public static final int FONT_SIZE_3 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 45);
 	public static final Font SECOND_HEADER_FONT = new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_3);
+	public static final int FONT_SIZE_4 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 55);
 	public static final Font LABEL_FONT = new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_4);
+	public static final int FONT_SIZE_5 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 60);
 	public static final Font DESCRIPTION_FONT = new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_5);
+	public static final int FONT_SIZE_6 = (int) SCREEN_SIZE.getWidth() / (TITLE_FONT_SIZE_PROPORTION + 80);
 	public static final Font DEFAULT_FONT = new Font(FONT_FAMILY, Font.PLAIN, FONT_SIZE_6);
 
 }
