@@ -18,6 +18,7 @@ import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,48 +29,55 @@ import java.util.Objects;
  */
 public class ListenForPowerConfirmation extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForPowerConfirmation.class);
+	private static final Logger logger = LoggerFactory.getLogger(ListenForPowerConfirmation.class);
 
-    private MessageTemplate messageTemplate;
-    private ServerAgent myServerAgent;
+	private MessageTemplate messageTemplate;
+	private ServerAgent myServerAgent;
 
-    /**
-     * Method runs at the start of the behaviour. It casts the abstract agent to agent of type Server Agent
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-        this.myServerAgent = (ServerAgent) myAgent;
-        this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL),
-                                                                 MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
-    }
+	/**
+	 * Method runs at the start of the behaviour. It casts the abstract agent to agent of type Server Agent
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		this.myServerAgent = (ServerAgent) myAgent;
+		this.messageTemplate = and(MatchPerformative(INFORM), or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL),
+				MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL)));
+	}
 
-    /**
-     * Method listens for the confirmation message coming from Green Energy Source. When the confirmation is received,
-     * it schedules the start of job execution
-     */
-    @Override
-    public void action() {
-        final ACLMessage inform = myAgent.receive(messageTemplate);
+	/**
+	 * Method listens for the confirmation message coming from Green Energy Source. When the confirmation is received,
+	 * it schedules the start of job execution
+	 */
+	@Override
+	public void action() {
+		final ACLMessage inform = myAgent.receive(messageTemplate);
 
-        if (Objects.nonNull(inform)) {
-            try {
-                final JobInstanceIdentifier jobInstanceId = getMapper().readValue(inform.getContent(), JobInstanceIdentifier.class);
-                final boolean informCNAStart = inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL) || jobInstanceId.getStartTime().isAfter(getCurrentTime());
-                if (inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL)) {
-                    logger.info("[{}] Announcing job {} in network!", myServerAgent.getLocalName(), jobInstanceId.getJobId());
-                    announceBookedJob(myServerAgent, jobInstanceId.getJobId());
-                }
-                logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
-                final Behaviour weatherCheck = CheckWeatherBeforeJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true);
-                if (Objects.nonNull(weatherCheck)) {
-                    myAgent.addBehaviour(CheckWeatherBeforeJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart, true));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            block();
-        }
-    }
+		if (Objects.nonNull(inform)) {
+			try {
+				final JobInstanceIdentifier jobInstanceId = getMapper().readValue(inform.getContent(),
+						JobInstanceIdentifier.class);
+				final boolean informCNAStart =
+						inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL) || jobInstanceId.getStartTime()
+								.isAfter(getCurrentTime());
+				if (inform.getProtocol().equals(SERVER_JOB_CFP_PROTOCOL)) {
+					logger.info("[{}] Announcing job {} in network!", myServerAgent.getLocalName(),
+							jobInstanceId.getJobId());
+					announceBookedJob(myServerAgent, jobInstanceId.getJobId());
+				}
+				logger.info("[{}] Scheduling the execution of the job {}", myAgent.getName(), jobInstanceId.getJobId());
+				final Behaviour weatherCheck = CheckWeatherBeforeJobExecution.createFor(myServerAgent, jobInstanceId,
+						informCNAStart, true);
+				if (Objects.nonNull(weatherCheck)) {
+					myAgent.addBehaviour(
+							CheckWeatherBeforeJobExecution.createFor(myServerAgent, jobInstanceId, informCNAStart,
+									true));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			block();
+		}
+	}
 }

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.List;
+
 import org.immutables.value.Value.Immutable;
 
 @JsonSerialize(as = ImmutableForecast.class)
@@ -15,13 +17,13 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface Forecast {
 
-    /**
-     * @return A number of timestamps returned in the API response of 5 day 3-hour forecast.
-     */
-    Integer getCnt();
+	/**
+	 * @return A number of timestamps returned in the API response of 5 day 3-hour forecast.
+	 */
+	Integer getCnt();
 
-    /**
-     * @return List of {@link FutureWeather} with 3-hour interval.
-     */
-    List<FutureWeather> getList();
+	/**
+	 * @return List of {@link FutureWeather} with 3-hour interval.
+	 */
+	List<FutureWeather> getList();
 }

@@ -8,8 +8,10 @@ import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
+
 import java.util.Date;
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,37 +20,40 @@ import org.slf4j.LoggerFactory;
  */
 public class ReturnJobDelay extends WakerBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReturnJobDelay.class);
+	private static final Logger logger = LoggerFactory.getLogger(ReturnJobDelay.class);
 
-    private final String jobId;
-    private final CloudNetworkAgent myCloudNetworkAgent;
+	private final String jobId;
+	private final CloudNetworkAgent myCloudNetworkAgent;
 
-    /**
-     * Behaviour constructor.
-     *
-     * @param agent     agent which is executing the behaviour
-     * @param startTime time when the behaviour execution should start
-     * @param jobId     unique job identifier
-     */
-    public ReturnJobDelay(Agent agent, Date startTime, String jobId) {
-        super(agent, startTime);
-        this.myCloudNetworkAgent = (CloudNetworkAgent) agent;
-        this.jobId = jobId;
-    }
+	/**
+	 * Behaviour constructor.
+	 *
+	 * @param agent     agent which is executing the behaviour
+	 * @param startTime time when the behaviour execution should start
+	 * @param jobId     unique job identifier
+	 */
+	public ReturnJobDelay(Agent agent, Date startTime, String jobId) {
+		super(agent, startTime);
+		this.myCloudNetworkAgent = (CloudNetworkAgent) agent;
+		this.jobId = jobId;
+	}
 
-    /**
-     * Method verifies if the job execution has started at the correct time. If there is some delay - it sends the request
-     * to the server to provide information about the job start
-     */
-    @Override
-    protected void onWake() {
-        final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
-        if (Objects.nonNull(job) && !myCloudNetworkAgent.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS) &&
-                myCloudNetworkAgent.getServerForJobMap().containsKey(jobId)) {
-            final AID server = myCloudNetworkAgent.getServerForJobMap().get(job.getJobId());
-            logger.error("[{}] There is no message regarding the job start. Sending request to the server", myAgent.getName());
-            myAgent.addBehaviour(new RequestJobStartStatus(myCloudNetworkAgent, prepareJobStartStatusRequestMessage(jobId, server), jobId));
-            myAgent.removeBehaviour(this);
-        }
-    }
+	/**
+	 * Method verifies if the job execution has started at the correct time. If there is some delay - it sends the request
+	 * to the server to provide information about the job start
+	 */
+	@Override
+	protected void onWake() {
+		final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
+		if (Objects.nonNull(job) && !myCloudNetworkAgent.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS) &&
+				myCloudNetworkAgent.getServerForJobMap().containsKey(jobId)) {
+			final AID server = myCloudNetworkAgent.getServerForJobMap().get(job.getJobId());
+			logger.error("[{}] There is no message regarding the job start. Sending request to the server",
+					myAgent.getName());
+			myAgent.addBehaviour(
+					new RequestJobStartStatus(myCloudNetworkAgent, prepareJobStartStatusRequestMessage(jobId, server),
+							jobId));
+			myAgent.removeBehaviour(this);
+		}
+	}
 }

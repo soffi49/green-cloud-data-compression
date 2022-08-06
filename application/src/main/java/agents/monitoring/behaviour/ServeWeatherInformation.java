@@ -20,9 +20,11 @@ import domain.MonitoringData;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,96 +33,96 @@ import org.slf4j.LoggerFactory;
  */
 public class ServeWeatherInformation extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServeWeatherInformation.class);
-    private static final MessageTemplate template = and(MatchPerformative(REQUEST),
-        MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL));
+	private static final Logger logger = LoggerFactory.getLogger(ServeWeatherInformation.class);
+	private static final MessageTemplate template = and(MatchPerformative(REQUEST),
+			MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL));
 
-    private final MonitoringAgent monitoringAgent;
+	private final MonitoringAgent monitoringAgent;
 
-    /**
-     * Behaviour constructor.
-     *
-     * @param monitoringAgent agent which is executing the behaviour
-     */
-    public ServeWeatherInformation(MonitoringAgent monitoringAgent) {
-        this.monitoringAgent = monitoringAgent;
-    }
+	/**
+	 * Behaviour constructor.
+	 *
+	 * @param monitoringAgent agent which is executing the behaviour
+	 */
+	public ServeWeatherInformation(MonitoringAgent monitoringAgent) {
+		this.monitoringAgent = monitoringAgent;
+	}
 
-    /**
-     * Method which listens for the request for weather data coming from the Green Source Agents. It retrieves the
-     * weather information for the given location and forwards it as a reply to the sender.
-     */
-    @Override
-    public void action() {
-        final ACLMessage message = monitoringAgent.receive(template);
+	/**
+	 * Method which listens for the request for weather data coming from the Green Source Agents. It retrieves the
+	 * weather information for the given location and forwards it as a reply to the sender.
+	 */
+	@Override
+	public void action() {
+		final ACLMessage message = monitoringAgent.receive(template);
 
-        if (Objects.nonNull(message)) {
-            final ACLMessage response = message.createReply();
-            response.setPerformative(INFORM);
-            try {
-                var requestData = getMapper()
-                    .readValue(message.getContent(), GreenSourceWeatherData.class);
-                if(OFFLINE_MODE) {
-                    // TODO remove Random - use GUI button
-                    if(new Random().nextInt(100) < 0) {
-                        logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
-                        response.setContent(getMapper().writeValueAsString(
-                            useBadStubData())
-                        );
-                    } else {
-                        response.setContent(getMapper().writeValueAsString(
-                            useStubData())
-                        );
-                    }
-                } else {
-                    if(new Random().nextInt(100) < 0) {
-                        logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
-                        response.setContent(getMapper().writeValueAsString(
-                            useBadStubData())
-                        );
-                    } else {
-                        response.setContent(getMapper().writeValueAsString(
-                            useApi(requestData))
-                        );
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                response.setPerformative(REFUSE);
-            }
-            response.setConversationId(message.getConversationId());
-            logger.info("[{}] Sending message with the weather data for conversation id {}", monitoringAgent.getName(),
-                message.getConversationId());
-            displayMessageArrow(monitoringAgent, message.getSender());
-            monitoringAgent.send(response);
-        } else {
-            block();
-        }
-    }
+		if (Objects.nonNull(message)) {
+			final ACLMessage response = message.createReply();
+			response.setPerformative(INFORM);
+			try {
+				var requestData = getMapper()
+						.readValue(message.getContent(), GreenSourceWeatherData.class);
+				if (OFFLINE_MODE) {
+					// TODO remove Random - use GUI button
+					if (new Random().nextInt(100) < 0) {
+						logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
+						response.setContent(getMapper().writeValueAsString(
+								useBadStubData())
+						);
+					} else {
+						response.setContent(getMapper().writeValueAsString(
+								useStubData())
+						);
+					}
+				} else {
+					if (new Random().nextInt(100) < 0) {
+						logger.warn("[{}] Stubbing bad weather!", myAgent.getName());
+						response.setContent(getMapper().writeValueAsString(
+								useBadStubData())
+						);
+					} else {
+						response.setContent(getMapper().writeValueAsString(
+								useApi(requestData))
+						);
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				response.setPerformative(REFUSE);
+			}
+			response.setConversationId(message.getConversationId());
+			logger.info("[{}] Sending message with the weather data for conversation id {}", monitoringAgent.getName(),
+					message.getConversationId());
+			displayMessageArrow(monitoringAgent, message.getSender());
+			monitoringAgent.send(response);
+		} else {
+			block();
+		}
+	}
 
-    private MonitoringData useApi(GreenSourceWeatherData requestData) {
-        return monitoringAgent.getWeather(requestData);
-    }
+	private MonitoringData useApi(GreenSourceWeatherData requestData) {
+		return monitoringAgent.getWeather(requestData);
+	}
 
-    private MonitoringData useStubData() {
-        return ImmutableMonitoringData.builder()
-            .addWeatherData(ImmutableWeatherData.builder()
-                .cloudCover(25.0)
-                .temperature(25.0)
-                .windSpeed(10.0)
-                .time(getCurrentTime().toInstant())
-                .build())
-            .build();
-    }
+	private MonitoringData useStubData() {
+		return ImmutableMonitoringData.builder()
+				.addWeatherData(ImmutableWeatherData.builder()
+						.cloudCover(25.0)
+						.temperature(25.0)
+						.windSpeed(10.0)
+						.time(getCurrentTime().toInstant())
+						.build())
+				.build();
+	}
 
-    private MonitoringData useBadStubData() {
-        return ImmutableMonitoringData.builder()
-            .addWeatherData(ImmutableWeatherData.builder()
-                .cloudCover(50.0)
-                .temperature(10.0)
-                .windSpeed(5.0)
-                .time(getCurrentTime().toInstant())
-                .build())
-            .build();
-    }
+	private MonitoringData useBadStubData() {
+		return ImmutableMonitoringData.builder()
+				.addWeatherData(ImmutableWeatherData.builder()
+						.cloudCover(50.0)
+						.temperature(10.0)
+						.windSpeed(5.0)
+						.time(getCurrentTime().toInstant())
+						.build())
+				.build();
+	}
 }
