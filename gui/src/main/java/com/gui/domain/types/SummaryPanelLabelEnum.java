@@ -7,17 +7,17 @@ import static com.gui.utils.GUIUtils.formatToHTML;
  */
 public enum SummaryPanelLabelEnum implements LabelEnum {
 
-    CLIENT_COUNT_LABEL("NUMBER OF CLIENTS:"),
-    ACTIVE_JOBS_LABEL("NUMBER OF CURRENTLY RUNNING JOBS:"),
-    ALL_JOBS_COUNT("NUMBER OF ALL PLANNED JOBS:");
+	CLIENT_COUNT_LABEL("NUMBER OF CLIENTS:"),
+	ACTIVE_JOBS_LABEL("NUMBER OF CURRENTLY RUNNING JOBS:"),
+	ALL_JOBS_COUNT("NUMBER OF ALL PLANNED JOBS:");
 
-    private final String label;
+	private final String label;
 
-    SummaryPanelLabelEnum(String label) {
-        this.label = label;
-    }
+	SummaryPanelLabelEnum(String label) {
+		this.label = label;
+	}
 
-    public String getLabel() {
-        return formatToHTML(label);
-    }
+	public String getLabel() {
+		return formatToHTML(label);
+	}
 }

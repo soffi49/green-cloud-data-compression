@@ -2,6 +2,7 @@ package domain.location;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value;
 
 /**
@@ -12,13 +13,13 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface Location {
 
-    /**
-     * @return location latitude
-     */
-    double getLatitude();
+	/**
+	 * @return location latitude
+	 */
+	double getLatitude();
 
-    /**
-     * @return location longitude
-     */
-    double getLongitude();
+	/**
+	 * @return location longitude
+	 */
+	double getLongitude();
 }

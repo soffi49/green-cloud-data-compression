@@ -12,10 +12,10 @@ import java.time.temporal.ValueRange;
  * neglected in Cloud Network selection
  */
 public class ClientAgentConstants {
-    public static final ValueRange MAX_TRAFFIC_DIFFERENCE = ValueRange.of(-2, 2);
-    public static final ValueRange MAX_TIME_DIFFERENCE = ValueRange.of(-1500, 1500);
-    public static final String CLOUD_NETWORK_AGENTS = "CLOUD_NETWORK_AGENTS_LIST";
-    public static final Integer MAX_RETRIES = 10;
-    public static final Long RETRY_PAUSE_MILLISECONDS = 1500L;
-    public static final Integer JOB_RETRY_MINUTES_ADJUSTMENT = 120;
+	public static final ValueRange MAX_TRAFFIC_DIFFERENCE = ValueRange.of(-2, 2);
+	public static final ValueRange MAX_TIME_DIFFERENCE = ValueRange.of(-1500, 1500);
+	public static final String CLOUD_NETWORK_AGENTS = "CLOUD_NETWORK_AGENTS_LIST";
+	public static final Integer MAX_RETRIES = 10;
+	public static final Long RETRY_PAUSE_MILLISECONDS = 1500L;
+	public static final Integer JOB_RETRY_MINUTES_ADJUSTMENT = 120;
 }

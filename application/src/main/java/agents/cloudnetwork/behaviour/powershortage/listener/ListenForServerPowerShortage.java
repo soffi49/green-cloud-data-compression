@@ -22,6 +22,7 @@ import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,61 +35,80 @@ import java.util.Objects;
  */
 public class ListenForServerPowerShortage extends CyclicBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenForServerPowerShortage.class);
-    private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST), MatchProtocol(POWER_SHORTAGE_ALERT_PROTOCOL));
+	private static final Logger logger = LoggerFactory.getLogger(ListenForServerPowerShortage.class);
+	private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST),
+			MatchProtocol(POWER_SHORTAGE_ALERT_PROTOCOL));
 
-    private CloudNetworkAgent myCloudNetworkAgent;
+	private CloudNetworkAgent myCloudNetworkAgent;
 
-    /**
-     * Method runs at the start of the behaviour. It casts the abstract agent to agent of type Cloud Network Agent
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-        myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
-    }
+	/**
+	 * Method runs at the start of the behaviour. It casts the abstract agent to agent of type Cloud Network Agent
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
+	}
 
-    /**
-     * Method listens for the messages coming from the Server informing that it has some power shortage at the given time.
-     * It handles the information by announcing the job transfer request in network and looking for another server which may execute the job
-     */
-    @Override
-    public void action() {
-        final ACLMessage transferRequest = myAgent.receive(messageTemplate);
-        if (Objects.nonNull(transferRequest)) {
-            try {
-                final PowerShortageJob powerShortageJob = getMapper().readValue(transferRequest.getContent(), PowerShortageJob.class);
-                final List<AID> remainingServers = getRemainingServers(transferRequest.getSender());
-                final Job job = myCloudNetworkAgent.manage().getJobById(powerShortageJob.getJobInstanceId().getJobId());
-                myCloudNetworkAgent.send(prepareReply(transferRequest.createReply(), powerShortageJob.getJobInstanceId(), ACLMessage.AGREE));
-                if (Objects.nonNull(job)) {
-                    final OffsetDateTime startTime = job.getStartTime().isAfter(powerShortageJob.getPowerShortageStart()) ? job.getStartTime() : powerShortageJob.getPowerShortageStart();
-                    final Job jobToTransfer = JobMapper.mapToJob(job, startTime);
-                    final PowerShortageJob newPowerShortageJob = JobMapper.mapToPowerShortageJob(jobToTransfer, powerShortageJob.getPowerShortageStart());
-                    if (!remainingServers.isEmpty()) {
-                        logger.info("[{}] Sending call for proposal to Server Agents to transfer job with id {}", myAgent.getName(), job.getJobId());
-                        final ACLMessage cfp = createCallForProposal(jobToTransfer, remainingServers, CNA_JOB_CFP_PROTOCOL);
-                        displayMessageArrow(myCloudNetworkAgent, remainingServers);
-                        myAgent.addBehaviour(new AnnounceJobTransferRequest(myAgent, cfp, transferRequest, newPowerShortageJob, job.getClientIdentifier()));
-                    } else {
-                        logger.info("[{}] No servers available. Passing the information to client and server", myAgent.getName());
-                        displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
-                        myCloudNetworkAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), BACK_UP_POWER_JOB_PROTOCOL));
-                        myCloudNetworkAgent.send(prepareReply(transferRequest.createReply(), newPowerShortageJob.getJobInstanceId(), ACLMessage.FAILURE));
-                    }
-                } else {
-                    logger.info("[{}] Job {} for transfer was not found in cloud network", myAgent.getName(), powerShortageJob.getJobInstanceId().getJobId());
-                    myCloudNetworkAgent.send(prepareReply(transferRequest.createReply(), powerShortageJob.getJobInstanceId(), ACLMessage.FAILURE));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            block();
-        }
-    }
+	/**
+	 * Method listens for the messages coming from the Server informing that it has some power shortage at the given time.
+	 * It handles the information by announcing the job transfer request in network and looking for another server which may execute the job
+	 */
+	@Override
+	public void action() {
+		final ACLMessage transferRequest = myAgent.receive(messageTemplate);
+		if (Objects.nonNull(transferRequest)) {
+			try {
+				final PowerShortageJob powerShortageJob = getMapper().readValue(transferRequest.getContent(),
+						PowerShortageJob.class);
+				final List<AID> remainingServers = getRemainingServers(transferRequest.getSender());
+				final Job job = myCloudNetworkAgent.manage().getJobById(powerShortageJob.getJobInstanceId().getJobId());
+				myCloudNetworkAgent.send(
+						prepareReply(transferRequest.createReply(), powerShortageJob.getJobInstanceId(),
+								ACLMessage.AGREE));
+				if (Objects.nonNull(job)) {
+					final OffsetDateTime startTime = job.getStartTime()
+							.isAfter(powerShortageJob.getPowerShortageStart()) ?
+							job.getStartTime() :
+							powerShortageJob.getPowerShortageStart();
+					final Job jobToTransfer = JobMapper.mapToJob(job, startTime);
+					final PowerShortageJob newPowerShortageJob = JobMapper.mapToPowerShortageJob(jobToTransfer,
+							powerShortageJob.getPowerShortageStart());
+					if (!remainingServers.isEmpty()) {
+						logger.info("[{}] Sending call for proposal to Server Agents to transfer job with id {}",
+								myAgent.getName(), job.getJobId());
+						final ACLMessage cfp = createCallForProposal(jobToTransfer, remainingServers,
+								CNA_JOB_CFP_PROTOCOL);
+						displayMessageArrow(myCloudNetworkAgent, remainingServers);
+						myAgent.addBehaviour(
+								new AnnounceJobTransferRequest(myAgent, cfp, transferRequest, newPowerShortageJob,
+										job.getClientIdentifier()));
+					} else {
+						logger.info("[{}] No servers available. Passing the information to client and server",
+								myAgent.getName());
+						displayMessageArrow(myCloudNetworkAgent, new AID(job.getClientIdentifier(), AID.ISGUID));
+						myCloudNetworkAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(),
+								BACK_UP_POWER_JOB_PROTOCOL));
+						myCloudNetworkAgent.send(
+								prepareReply(transferRequest.createReply(), newPowerShortageJob.getJobInstanceId(),
+										ACLMessage.FAILURE));
+					}
+				} else {
+					logger.info("[{}] Job {} for transfer was not found in cloud network", myAgent.getName(),
+							powerShortageJob.getJobInstanceId().getJobId());
+					myCloudNetworkAgent.send(
+							prepareReply(transferRequest.createReply(), powerShortageJob.getJobInstanceId(),
+									ACLMessage.FAILURE));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			block();
+		}
+	}
 
-    private List<AID> getRemainingServers(final AID serverSender) {
-        return myCloudNetworkAgent.getOwnedServers().stream().filter(server -> !server.equals(serverSender)).toList();
-    }
+	private List<AID> getRemainingServers(final AID serverSender) {
+		return myCloudNetworkAgent.getOwnedServers().stream().filter(server -> !server.equals(serverSender)).toList();
+	}
 }
