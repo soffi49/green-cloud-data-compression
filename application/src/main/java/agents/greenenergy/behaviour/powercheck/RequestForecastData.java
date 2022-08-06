@@ -1,4 +1,4 @@
-package agents.greenenergy.behaviour;
+package agents.greenenergy.behaviour.powercheck;
 
 import static common.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
@@ -26,6 +26,7 @@ public class RequestForecastData extends OneShotBehaviour {
 
 	private final String conversationId;
 	private final PowerJob powerJob;
+	private final String protocol;
 
 	/**
 	 * Behaviour constructor.
@@ -34,10 +35,12 @@ public class RequestForecastData extends OneShotBehaviour {
 	 * @param conversationId   conversation identifier for given job processing
 	 * @param job              power job for which the weather is requested
 	 */
-	public RequestForecastData(GreenEnergyAgent greenEnergyAgent, String conversationId, PowerJob job) {
+	public RequestForecastData(GreenEnergyAgent greenEnergyAgent, String conversationId, String protocol,
+			PowerJob job) {
 		myGreenEnergyAgent = greenEnergyAgent;
 		this.conversationId = conversationId;
 		this.powerJob = job;
+		this.protocol = protocol;
 	}
 
 	/**
@@ -48,6 +51,7 @@ public class RequestForecastData extends OneShotBehaviour {
 		ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 		request.addReceiver(myGreenEnergyAgent.getMonitoringAgent());
 		request.setConversationId(conversationId);
+		request.setProtocol(protocol);
 		var requestData = ImmutableGreenSourceForecastData.builder()
 				.location(myGreenEnergyAgent.getLocation())
 				.timetable(myGreenEnergyAgent.manage().getJobsTimetable(powerJob))

@@ -3,6 +3,7 @@ package agents.server.behaviour.powercheck;
 import static agents.server.domain.ServerAgentConstants.PREEMPTIVE_POWER_CHECK_TIME_WINDOW;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
+import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static common.mapper.JobMapper.mapJobToPowerJob;
 import static common.mapper.JobMapper.mapPowerJobToCheckedPowerJob;
 import static java.util.Objects.isNull;
@@ -78,7 +79,9 @@ public class CheckWeatherBeforeJobExecution extends WakerBehaviour {
 			return;
 		}
 		displayMessageArrow(myServerAgent, List.of(greenSource));
-		myAgent.send(preparePowerCheckMessage(checkedPowerJob, greenSource.getName(), myServerAgent.getName()));
+		final String conversationId = greenSource.getName() + myServerAgent.getName();
+		myAgent.send(preparePowerCheckMessage(checkedPowerJob, conversationId, SERVER_JOB_START_CHECK_PROTOCOL,
+				greenSource));
 		myAgent.removeBehaviour(this);
 	}
 

@@ -20,7 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
@@ -63,7 +65,9 @@ public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
 		final List<PowerJob> jobsToTransfer = affectedJobs.stream()
 				.filter(job -> !jobsToKeep.contains(job))
 				.collect(Collectors.toCollection(ArrayList::new));
-		jobsToTransfer.add(causingPowerJob);
+		if (Objects.nonNull(causingPowerJob)) {
+			jobsToTransfer.add(causingPowerJob);
+		}
 		jobsToTransfer.forEach(powerJob -> {
 			final PowerJob jobToTransfer = myGreenAgent.manage().divideJobForPowerShortage(powerJob, shortageStartTime);
 			final ACLMessage transferMessage = preparePowerShortageTransferRequest(
@@ -71,6 +75,7 @@ public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
 			displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
 			myGreenAgent.addBehaviour(
 					new RequestPowerJobTransfer(myGreenAgent, transferMessage, jobToTransfer, shortageStartTime));
+			myGreenAgent.manage().updateGreenSourceGUI();
 		});
 		myGreenAgent.addBehaviour(
 				SchedulePowerShortage.createFor(preparePowerShortageTransfer(jobsToTransfer), myGreenAgent));
@@ -84,11 +89,12 @@ public class AnnounceWeatherPowerShortage extends OneShotBehaviour {
 	}
 
 	private List<PowerJob> getAffectedPowerJobs() {
+		final EnumSet<JobStatusEnum> notAffectedJobs = EnumSet.of(JobStatusEnum.PROCESSING, JobStatusEnum.ON_HOLD,
+				JobStatusEnum.ON_HOLD_TRANSFER);
 		return myGreenAgent.getPowerJobs().keySet().stream()
-				.filter(job -> !job.equals(causingPowerJob))
-				.filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !myGreenAgent.getPowerJobs().get(job)
-						.equals(
-								JobStatusEnum.PROCESSING))
+				.filter(job -> Objects.isNull(causingPowerJob) || !job.equals(causingPowerJob))
+				.filter(job -> shortageStartTime.isBefore(job.getEndTime()) && !notAffectedJobs.contains(
+						myGreenAgent.getPowerJobs().get(job)))
 				.toList();
 	}
 }

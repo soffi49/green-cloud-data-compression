@@ -1,6 +1,5 @@
 package messages.domain;
 
-import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
 
@@ -13,24 +12,25 @@ import jade.lang.acl.ACLMessage;
 public class PowerCheckMessageFactory {
 
 	/**
-	 * Method prepares the message to initiate the power checking processes before the job execution
+	 * Method prepares the message to initiate the power checking
 	 *
-	 * @param job           job for which available power have to be verified before the actual job execution
-	 * @param greenSourceId green source global name originally assigned to provide power for the given job
-	 * @param serverId      server which is requesting the additional power check
+	 * @param job            job for which available power have to be verified before the actual job execution
+	 * @param conversationId conversation id of the message
+	 * @param protocol       protocol for the message
+	 * @param receiver       receiver of the message
 	 * @return {@link ACLMessage} with REQUEST performative
 	 */
-	public static ACLMessage preparePowerCheckMessage(final CheckedPowerJob job, final String greenSourceId,
-			String serverId) {
+	public static ACLMessage preparePowerCheckMessage(final CheckedPowerJob job, final String conversationId,
+			String protocol, AID receiver) {
 		final ACLMessage request = new ACLMessage(REQUEST);
-		request.setProtocol(SERVER_JOB_START_CHECK_PROTOCOL);
-		request.setConversationId(greenSourceId + serverId);
+		request.setProtocol(protocol);
+		request.setConversationId(conversationId);
 		try {
 			request.setContent(getMapper().writeValueAsString(job));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
-		request.addReceiver(new AID(greenSourceId, AID.ISGUID));
+		request.addReceiver(receiver);
 		return request;
 	}
 }

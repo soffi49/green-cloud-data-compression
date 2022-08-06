@@ -4,6 +4,7 @@ import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
+import static common.constant.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -35,7 +36,8 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 	private static final MessageTemplate messageTemplate = and(MatchPerformative(INFORM),
 			or(or(MatchProtocol(CANCELLED_TRANSFER_PROTOCOL),
 							MatchProtocol(SERVER_POWER_SHORTAGE_ALERT_PROTOCOL)),
-					MatchProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL)));
+					or(MatchProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL),
+							MatchProtocol(SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL))));
 
 	private final GreenEnergyAgent myGreenEnergyAgent;
 
@@ -62,9 +64,31 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 				case CANCELLED_TRANSFER_PROTOCOL -> handleCancelledPowerTransfer(inform);
 				case SERVER_POWER_SHORTAGE_ALERT_PROTOCOL -> handleServerPowerShortage(inform);
 				case POWER_SHORTAGE_FINISH_ALERT_PROTOCOL -> handleFinishedPowerShortage(inform);
+				case SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL -> handleServerJobTransferFailure(inform);
 			}
 		} else {
 			block();
+		}
+	}
+
+	private void handleServerJobTransferFailure(final ACLMessage inform) {
+		try {
+			final PowerShortageJob powerShortageJob = getMapper().readValue(inform.getContent(),
+					PowerShortageJob.class);
+			if (Objects.nonNull(
+					myGreenEnergyAgent.manage().getJobByIdAndStartDate(powerShortageJob.getJobInstanceId()))) {
+				logger.info("[{}] Received information about job {} transfer failure. Putting job on hold",
+						myGreenEnergyAgent.getLocalName(), powerShortageJob.getJobInstanceId().getJobId());
+				final PowerJob jobToPutOnHold = myGreenEnergyAgent.manage()
+						.getJobByIdAndStartDate(powerShortageJob.getJobInstanceId());
+				myGreenEnergyAgent.getPowerJobs().replace(jobToPutOnHold, JobStatusEnum.ON_HOLD);
+				myGreenEnergyAgent.manage().updateGreenSourceGUI();
+			} else {
+				logger.info("[{}] Job {} to put on hold was not found", myGreenEnergyAgent.getLocalName(),
+						powerShortageJob.getJobInstanceId().getJobId());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -105,8 +129,8 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 				myGreenEnergyAgent.manage()
 						.divideJobForPowerShortage(jobToDivide, powerShortageJob.getPowerShortageStart());
 			} else {
-				logger.info("[{}] Job {} divide due to power shortage was not found", myGreenEnergyAgent.getLocalName(),
-						powerShortageJob.getJobInstanceId().getJobId());
+				logger.info("[{}] Job {} to divide due to power shortage was not found",
+						myGreenEnergyAgent.getLocalName(), powerShortageJob.getJobInstanceId().getJobId());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -2,7 +2,8 @@ package agents.server.behaviour.listener;
 
 import static common.constant.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
 import static common.constant.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
-import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
+import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
+import static domain.job.JobStatusEnum.RUNNING_JOB_STATUSES;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
@@ -11,6 +12,7 @@ import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
+import static java.util.Objects.isNull;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
@@ -68,7 +70,7 @@ public class ListenForJobStatusOrManualFinish extends CyclicBehaviour {
 				logger.info("[{}] Received request to verify job start status {}", myAgent.getName(), jobId);
 				final Map.Entry<Job, JobStatusEnum> jobInstance = myServerAgent.manage().getCurrentJobInstance(jobId);
 				final ACLMessage reply = request.createReply();
-				if (Objects.nonNull(jobInstance) && JOB_IN_PROGRESS.contains(jobInstance.getValue())) {
+				if (Objects.nonNull(jobInstance) && RUNNING_JOB_STATUSES.contains(jobInstance.getValue())) {
 					reply.setContent("JOB STARTED");
 					reply.setPerformative(AGREE);
 				} else {
@@ -81,7 +83,7 @@ public class ListenForJobStatusOrManualFinish extends CyclicBehaviour {
 			}
 		} else if (Objects.nonNull(request) && request.getProtocol().equals(MANUAL_JOB_FINISH_PROTOCOL)) {
 			try {
-				Job job = null;
+				Job job;
 				try {
 					final String jobId = getMapper().readValue(request.getContent(), String.class);
 					job = myServerAgent.manage().getJobById(jobId);
@@ -90,8 +92,11 @@ public class ListenForJobStatusOrManualFinish extends CyclicBehaviour {
 							JobInstanceIdentifier.class);
 					job = myServerAgent.manage().getJobByIdAndStartDate(identifier);
 				}
-				if (Objects.nonNull(myServerAgent.getServerJobs().get(job)) && myServerAgent.getServerJobs().get(job)
-						.equals(JobStatusEnum.IN_PROGRESS)) {
+				if (isNull(job)) {
+					return;
+				}
+				var value = myServerAgent.getServerJobs().getOrDefault(job, null);
+				if (!isNull(value) && value.equals(JobStatusEnum.IN_PROGRESS)) {
 					logger.debug("[{}] Information about finishing job with id {} does not reach the green source",
 							myAgent.getName(), job.getClientIdentifier());
 					logger.info("[{}] Finished executing the job for {}", myAgent.getName(), job.getClientIdentifier());

@@ -10,7 +10,6 @@ import agents.server.ServerAgent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import common.constant.InvalidJobIdConstant;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
@@ -64,20 +63,24 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 	protected void handleAllResponses(Vector responses, Vector acceptances) {
 		final List<ACLMessage> proposals = retrieveProposals(responses);
 
+		myServerAgent.stoppedJobProcessing();
 		if (responses.isEmpty()) {
 			logger.info("[{}] No responses were retrieved", myAgent.getName());
+			myServerAgent.getServerJobs().remove(job);
 		} else if (proposals.isEmpty()) {
 			logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
+			myServerAgent.getServerJobs().remove(job);
 			myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
 		} else if (myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime())
 				<= job.getPower()) {
 			logger.info("[{}] No enough capacity - sending refuse message to Cloud Network Agent", myAgent);
+			myServerAgent.getServerJobs().remove(job);
 			myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
 		} else {
 			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
-			if (!validProposals.isEmpty()) {
-				myServerAgent.getServerJobs()
-						.replace(myServerAgent.manage().getJobById(job.getJobId()), JobStatusEnum.ACCEPTED);
+			if (!validProposals.isEmpty() && myServerAgent.getServerJobs()
+					.replace(myServerAgent.manage().getJobById(job.getJobId()),
+							JobStatusEnum.PROCESSING, JobStatusEnum.ACCEPTED)) {
 				final ACLMessage chosenGreenSourceOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
 				final GreenSourceData chosenGreenSourceData = readMessageContent(chosenGreenSourceOffer);
 				final String jobId = chosenGreenSourceData.getJobId();
@@ -96,6 +99,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 				handleInvalidProposals(proposals);
 			}
 		}
+		myServerAgent.removeBehaviour(this);
 	}
 
 	private void handleInvalidProposals(final List<ACLMessage> proposals) {

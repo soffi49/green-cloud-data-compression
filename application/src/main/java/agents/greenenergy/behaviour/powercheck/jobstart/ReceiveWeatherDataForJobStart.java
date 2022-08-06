@@ -1,4 +1,4 @@
-package agents.greenenergy.behaviour.powercheck;
+package agents.greenenergy.behaviour.powercheck.jobstart;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Behaviour which is responsible for listening for the Monitoring Agent's response with weather data.
  */
-public class ReceiveWeatherData extends CyclicBehaviour {
+public class ReceiveWeatherDataForJobStart extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ReceiveWeatherData.class);
+	private static final Logger logger = LoggerFactory.getLogger(ReceiveWeatherDataForJobStart.class);
 
 	private final String guid;
 	private final MessageTemplate messageTemplate;
@@ -44,7 +44,7 @@ public class ReceiveWeatherData extends CyclicBehaviour {
 	 *
 	 * @param myGreenAgent agent which is executing the behaviour
 	 */
-	public ReceiveWeatherData(GreenEnergyAgent myGreenAgent, ACLMessage originalMessage,
+	public ReceiveWeatherDataForJobStart(GreenEnergyAgent myGreenAgent, ACLMessage originalMessage,
 			CheckedPowerJob checkedPowerJob, SequentialBehaviour sequentialBehaviour) {
 		this.myGreenEnergyAgent = myGreenAgent;
 		this.messageTemplate = and(MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL),

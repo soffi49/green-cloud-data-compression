@@ -15,7 +15,7 @@ import agents.server.behaviour.powershortage.listener.ListenForJobTransferCancel
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortage;
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.domain.ServerStateManagement;
-import behaviours.ReceiveGUIController;
+import common.behaviours.ReceiveGUIController;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 
@@ -42,7 +42,7 @@ public class ServerAgent extends AbstractServerAgent {
 		final Object[] args = getArguments();
 		initializeAgent(args);
 		register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
-		addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart());
+		addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
 	}
 
 	@Override

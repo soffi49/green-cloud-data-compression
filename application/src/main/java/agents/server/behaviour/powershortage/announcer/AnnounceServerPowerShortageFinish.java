@@ -44,6 +44,7 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 		logger.info("[{}] !!!!! Power shortage has finished! Supplying jobs with green power ",
 				myServerAgent.getName());
 		final List<Job> jobsOnHold = getJobsOnHold();
+		myServerAgent.setCurrentMaximumCapacity(myServerAgent.getInitialMaximumCapacity());
 		if (jobsOnHold.isEmpty()) {
 			logger.info("[{}] There are no jobs supplied using back up power. Updating the maximum power",
 					myServerAgent.getName());
@@ -53,26 +54,43 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 			jobsOnHold.forEach(job -> {
 				if (myServerAgent.getServerJobs().containsKey(job) && myServerAgent.getGreenSourceForJobMap()
 						.containsKey(job.getJobId())) {
-					logger.info("[{}] Changing the status of the job {}", myServerAgent.getLocalName(), job.getJobId());
-					final JobStatusEnum newStatus = job.getStartTime().isAfter(getCurrentTime()) ?
-							JobStatusEnum.ACCEPTED :
-							JobStatusEnum.IN_PROGRESS;
-					final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
-					myServerAgent.getServerJobs().replace(job, newStatus);
-					myServerAgent.manage().updateServerGUI();
-					myServerAgent.send(preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job),
-							myServerAgent.getOwnerCloudNetworkAgent()));
-					myServerAgent.send(
-							preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job), greenSource));
+					if (myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime(),
+							JobMapper.mapToJobInstanceId(job)) < job.getPower()) {
+						logger.info(
+								"[{}] There is not enough available power to bring job to in progress! Checking for back up power",
+								myServerAgent.getLocalName());
+						if (myServerAgent.manage().getBackUpAvailableCapacity(job.getStartTime(), job.getEndTime(),
+								JobMapper.mapToJobInstanceId(job)) < job.getPower()) {
+							logger.info(
+									"[{}] There is not enough available power to supply job with back up power! Leaving job on hold",
+									myServerAgent.getLocalName());
+						} else {
+							logger.info("[{}] Supporting job with back-up power!", myServerAgent.getLocalName());
+							myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+							myServerAgent.manage().updateServerGUI();
+						}
+					} else {
+						logger.info("[{}] Changing the status of the job {}", myServerAgent.getLocalName(),
+								job.getJobId());
+						final JobStatusEnum newStatus = job.getStartTime().isAfter(getCurrentTime()) ?
+								JobStatusEnum.ACCEPTED :
+								JobStatusEnum.IN_PROGRESS;
+						final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
+						myServerAgent.getServerJobs().replace(job, newStatus);
+						myServerAgent.manage().updateServerGUI();
+						myServerAgent.send(preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job),
+								myServerAgent.getOwnerCloudNetworkAgent()));
+						myServerAgent.send(
+								preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job), greenSource));
+					}
 				}
 			});
 		}
-		myServerAgent.setCurrentMaximumCapacity(myServerAgent.getInitialMaximumCapacity());
 	}
 
 	private List<Job> getJobsOnHold() {
 		return myServerAgent.getServerJobs().entrySet().stream()
-				.filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY)
+				.filter(job -> job.getValue().equals(JobStatusEnum.ON_HOLD)
 						&& job.getKey().getEndTime().isAfter(getCurrentTime()))
 				.map(Map.Entry::getKey)
 				.toList();

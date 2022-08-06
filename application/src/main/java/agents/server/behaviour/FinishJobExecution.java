@@ -1,7 +1,7 @@
 package agents.server.behaviour;
 
 import static common.TimeUtils.getCurrentTime;
-import static domain.job.JobStatusEnum.JOB_IN_PROGRESS;
+import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 
 import agents.server.ServerAgent;
 import domain.job.Job;
@@ -64,7 +64,7 @@ public class FinishJobExecution extends WakerBehaviour {
 	 */
 	@Override
 	protected void onWake() {
-		if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && JOB_IN_PROGRESS.contains(
+		if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && ACCEPTED_JOB_STATUSES.contains(
 				myServerAgent.getServerJobs().get(jobToExecute))) {
 			logger.info("[{}] Finished executing the job {} at {}", myAgent.getName(), jobToExecute.getJobId(),
 					jobToExecute.getEndTime());

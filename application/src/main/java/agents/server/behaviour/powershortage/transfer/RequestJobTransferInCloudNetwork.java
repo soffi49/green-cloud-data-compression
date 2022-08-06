@@ -1,10 +1,13 @@
 package agents.server.behaviour.powershortage.transfer;
 
+import static agents.server.domain.ServerAgentConstants.JOB_TRANSFER_RETRY_TIMEOUT;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static common.constant.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static domain.job.JobStatusEnum.ON_HOLD;
+import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static java.util.Objects.nonNull;
 import static messages.domain.JobStatusMessageFactory.prepareFinishMessage;
 import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
@@ -14,12 +17,15 @@ import agents.server.ServerAgent;
 import domain.job.Job;
 import domain.job.PowerShortageJob;
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +40,7 @@ public class RequestJobTransferInCloudNetwork extends AchieveREInitiator {
 	private final ServerAgent myServerAgent;
 	private final PowerShortageJob jobToTransfer;
 	private final ACLMessage greenSourceRequest;
+	private final ACLMessage transferMessage;
 	private final boolean isServerTransfer;
 	private final String guid;
 
@@ -56,6 +63,7 @@ public class RequestJobTransferInCloudNetwork extends AchieveREInitiator {
 		this.jobToTransfer = jobToTransfer;
 		this.greenSourceRequest = greenSourceRequest;
 		this.isServerTransfer = isServerTransfer;
+		this.transferMessage = transferMessage;
 	}
 
 	@Override
@@ -106,12 +114,29 @@ public class RequestJobTransferInCloudNetwork extends AchieveREInitiator {
 	protected void handleFailure(ACLMessage failure) {
 		if (nonNull(myServerAgent.manage().getJobByIdAndStartDate(jobToTransfer.getJobInstanceId()))) {
 			final String jobId = jobToTransfer.getJobInstanceId().getJobId();
-			logger.info("[{}] Transfer of job with id {} was unsuccessful! Supplying the job with back up power", guid,
-					jobId);
+			logger.info("[{}] Transfer of job with id {} was unsuccessful!", guid, jobId);
 			final Job jobOnBackUp = myServerAgent.manage().getJobByIdAndStartDate(jobToTransfer.getJobInstanceId());
-			logger.info("[{}] Informing green source to switch the job {} on hold", guid, jobId);
-			myServerAgent.getServerJobs().replace(jobOnBackUp, IN_PROGRESS_BACKUP_ENERGY);
+			if (isServerTransfer) {
+				logger.info("[{}] Putting job {} on hold", myAgent.getName(), jobOnBackUp.getJobId());
+				myServerAgent.getServerJobs().replace(jobOnBackUp, ON_HOLD);
+				final Behaviour requestBehaviour = new RequestJobTransferInCloudNetwork(myServerAgent, transferMessage,
+						greenSourceRequest, jobToTransfer, true);
+				myServerAgent.addBehaviour(
+						new RetryJobTransferRequestInCloudNetwork(myServerAgent, JOB_TRANSFER_RETRY_TIMEOUT,
+								jobToTransfer, requestBehaviour));
+				myServerAgent.removeBehaviour(this);
+			} else if (myServerAgent.manage()
+					.getBackUpAvailableCapacity(jobOnBackUp.getStartTime(), jobOnBackUp.getEndTime(),
+							jobToTransfer.getJobInstanceId()) <= jobOnBackUp.getPower()) {
+				logger.info("[{}] There is not enough back up power to support the job {}. Putting job on hold",
+						myAgent.getName(), jobOnBackUp.getJobId());
+				myServerAgent.getServerJobs().replace(jobOnBackUp, ON_HOLD_SOURCE_SHORTAGE);
+			} else {
+				logger.info("[{}] Putting the job {} on back up power", myAgent.getName(), jobOnBackUp.getJobId());
+				myServerAgent.getServerJobs().replace(jobOnBackUp, IN_PROGRESS_BACKUP_ENERGY);
+			}
 			myServerAgent.manage().updateServerGUI();
+			logger.info("[{}] Informing green source to switch the job {} on hold", guid, jobId);
 			if (isServerTransfer) {
 				final AID receiver = myServerAgent.getGreenSourceForJobMap().get(jobId);
 				displayMessageArrow(myServerAgent, receiver);

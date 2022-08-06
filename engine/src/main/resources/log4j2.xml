@@ -9,32 +9,34 @@
 				pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
 		</Console>
 
-		<RollingFile name="fileLogger"
-			fileName="logs/app.log"
-			filePattern="logs/app-%d{yyyy-MM-dd-HH}.log">
-			<PatternLayout>
+		<!--    <RollingFile name="fileLogger"
+			  fileName="logs/app.log"
+			  filePattern="logs/app-%d{yyyy-MM-dd-HH}.log">
+			  <PatternLayout>
 				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
 				</pattern>
-			</PatternLayout>
-			<Policies>
+			  </PatternLayout>
+			  <Policies>
 				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
 				<SizeBasedTriggeringPolicy size="10MB" />
-			</Policies>
-			<!-- Max 10 files will be created everyday -->
-			<DefaultRolloverStrategy max="10">
+			  </Policies>
+			  &lt;!&ndash; Max 10 files will be created everyday &ndash;&gt;
+			  <DefaultRolloverStrategy max="10">
 				<Delete basePath="logs" maxDepth="10">
-					<!-- Delete all files older than 30 days -->
-					<IfLastModified age="30d" />
+				  &lt;!&ndash; Delete all files older than 30 days &ndash;&gt;
+				  <IfLastModified age="30d" />
 				</Delete>
-			</DefaultRolloverStrategy>
-		</RollingFile>
+			  </DefaultRolloverStrategy>
+			</RollingFile>-->
 
 	</Appenders>
 	<Loggers>
 		<!-- Root logger referring to console appender -->
 		<Root level="info" additivity="false">
 			<AppenderRef ref="console" />
-			<AppenderRef ref="fileLogger" />
+			<!--
+				  <AppenderRef ref="fileLogger" />
+			-->
 		</Root>
 	</Loggers>
 </Configuration>

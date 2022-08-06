@@ -1,4 +1,4 @@
-package agents.greenenergy.behaviour.powercheck;
+package agents.greenenergy.behaviour.powercheck.jobstart;
 
 import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
@@ -8,6 +8,7 @@ import static jade.lang.acl.MessageTemplate.and;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.powercheck.RequestWeatherData;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -29,9 +30,9 @@ import org.slf4j.LoggerFactory;
  * is a part of protocol responsible to double-check the weather before starting
  * the job execution
  */
-public class ReceivePowerCheckRequest extends CyclicBehaviour {
+public class ReceiveJobStartPowerRequest extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ReceivePowerCheckRequest.class);
+	private static final Logger logger = LoggerFactory.getLogger(ReceiveJobStartPowerRequest.class);
 	private static final MessageTemplate messageTemplate = and(MatchPerformative(REQUEST),
 			MatchProtocol(SERVER_JOB_START_CHECK_PROTOCOL));
 
@@ -43,14 +44,14 @@ public class ReceivePowerCheckRequest extends CyclicBehaviour {
 	 *
 	 * @param myAgent agent which is executing the behaviour
 	 */
-	public ReceivePowerCheckRequest(Agent myAgent) {
+	public ReceiveJobStartPowerRequest(Agent myAgent) {
 		this.myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
 		this.guid = myGreenEnergyAgent.getName();
 	}
 
 	/**
 	 * Requests weather data from MonitoringAgent, via {@link RequestWeatherData} and
-	 * {@link ReceiveWeatherData} behaviours
+	 * {@link ReceiveWeatherDataForJobStart} behaviours
 	 */
 	@Override
 	public void action() {
@@ -82,7 +83,7 @@ public class ReceivePowerCheckRequest extends CyclicBehaviour {
 		sequentialBehaviour.addSubBehaviour(
 				new RequestWeatherData(myGreenEnergyAgent, message));
 		sequentialBehaviour.addSubBehaviour(
-				new ReceiveWeatherData(myGreenEnergyAgent, message, job, sequentialBehaviour));
+				new ReceiveWeatherDataForJobStart(myGreenEnergyAgent, message, job, sequentialBehaviour));
 		myAgent.addBehaviour(sequentialBehaviour);
 	}
 }

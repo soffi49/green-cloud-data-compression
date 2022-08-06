@@ -1,18 +1,24 @@
 package agents.greenenergy.behaviour.powershortage.transfer;
 
+import static agents.greenenergy.domain.GreenEnergyAgentConstants.POWER_JOB_RETRY_TIMEOUT;
+import static agents.server.domain.ServerAgentConstants.JOB_TRANSFER_RETRY_TIMEOUT;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 
 import agents.greenenergy.GreenEnergyAgent;
+import agents.server.behaviour.powershortage.transfer.RequestJobTransferInCloudNetwork;
+import agents.server.behaviour.powershortage.transfer.RetryJobTransferRequestInCloudNetwork;
 import common.mapper.JobMapper;
 import domain.job.ImmutablePowerShortageJob;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.job.PowerShortageJob;
+import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +36,7 @@ public class RequestPowerJobTransfer extends AchieveREInitiator {
 	private final PowerJob jobToTransfer;
 	private final OffsetDateTime powerShortageStart;
 	private final String guid;
+	private final ACLMessage transferRequest;
 
 	/**
 	 * Behaviours constructor
@@ -48,6 +55,7 @@ public class RequestPowerJobTransfer extends AchieveREInitiator {
 		this.jobToTransfer = jobToTransfer;
 		this.guid = myGreenAgent.getLocalName();
 		this.powerShortageStart = powerShortageStart;
+		this.transferRequest = transferRequest;
 	}
 
 	@Override
@@ -92,6 +100,12 @@ public class RequestPowerJobTransfer extends AchieveREInitiator {
 			logger.info("[{}] Putting the job with id {} on hold", guid, jobId);
 			myGreenAgent.getPowerJobs().replace(jobToTransfer, JobStatusEnum.ON_HOLD);
 			myGreenAgent.manage().updateGreenSourceGUI();
+			final Behaviour requestBehaviour = new RequestPowerJobTransfer(myGreenAgent, transferRequest, jobToTransfer,
+					powerShortageStart);
+			myGreenAgent.addBehaviour(new RetryPowerJobTransferRequest(myGreenAgent, POWER_JOB_RETRY_TIMEOUT,
+					JobMapper.mapToJobInstanceId(jobToTransfer), requestBehaviour));
+			myGreenAgent.removeBehaviour(this);
+
 		} else {
 			logger.info("[{}] The job with id {} has finished before putting it on hold.", guid,
 					jobToTransfer.getJobId());

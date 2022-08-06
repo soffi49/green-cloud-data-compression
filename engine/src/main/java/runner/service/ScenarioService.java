@@ -1,6 +1,12 @@
 package runner.service;
 
-import static runner.service.domain.ScenarioConstants.*;
+import static runner.service.domain.ScenarioConstants.CLIENT_NUMBER;
+import static runner.service.domain.ScenarioConstants.END_TIME_MAX;
+import static runner.service.domain.ScenarioConstants.MAX_JOB_POWER;
+import static runner.service.domain.ScenarioConstants.MIN_JOB_POWER;
+import static runner.service.domain.ScenarioConstants.RESOURCE_SCENARIO_PATH;
+import static runner.service.domain.ScenarioConstants.START_TIME_MAX;
+import static runner.service.domain.ScenarioConstants.START_TIME_MIN;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gui.controller.GUIControllerImpl;
@@ -10,15 +16,6 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
-import org.apache.commons.io.FileUtils;
-
-import runner.domain.AgentArgs;
-import runner.domain.ClientAgentArgs;
-import runner.domain.ImmutableClientAgentArgs;
-import runner.domain.ScenarioArgs;
-import runner.factory.AgentControllerFactory;
-import runner.factory.AgentControllerFactoryImpl;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +24,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+
+import org.apache.commons.io.FileUtils;
+
+import runner.domain.AgentArgs;
+import runner.domain.ClientAgentArgs;
+import runner.domain.ImmutableClientAgentArgs;
+import runner.domain.ScenarioArgs;
+import runner.factory.AgentControllerFactory;
+import runner.factory.AgentControllerFactoryImpl;
 
 /**
  * Service used in running the scenarios
@@ -99,8 +105,8 @@ public class ScenarioService implements Runnable {
 		});
 	}
 
-	private void createClientAgents(final int agentsNumber, final ScenarioArgs scenario) {
-		IntStream.rangeClosed(1, agentsNumber).forEach(idx -> {
+	private void createClientAgents(final long agentsNumber, final ScenarioArgs scenario) {
+		LongStream.rangeClosed(1, agentsNumber).forEach(idx -> {
 			final int randomPower = MIN_JOB_POWER + RANDOM.nextInt(MAX_JOB_POWER);
 			final int randomStart = START_TIME_MIN + RANDOM.nextInt(START_TIME_MAX);
 			final int randomEnd = randomStart + 1 + RANDOM.nextInt(END_TIME_MAX);
@@ -120,7 +126,7 @@ public class ScenarioService implements Runnable {
 				agentController.putO2AObject(agentNode, AgentController.ASYNC);
 				agentController.start();
 				agentController.activate();
-				TimeUnit.MILLISECONDS.sleep(25);
+				TimeUnit.MILLISECONDS.sleep(250);
 			} catch (StaleProxyException | InterruptedException e) {
 				e.printStackTrace();
 			}

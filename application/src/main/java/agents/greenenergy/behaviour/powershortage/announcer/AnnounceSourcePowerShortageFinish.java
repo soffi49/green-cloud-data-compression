@@ -1,13 +1,15 @@
 package agents.greenenergy.behaviour.powershortage.announcer;
 
 import static common.TimeUtils.getCurrentTime;
-import static messages.domain.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
+import static common.constant.MessageProtocolConstants.ON_HOLD_JOB_CHECK_PROTOCOL;
 
 import agents.greenenergy.GreenEnergyAgent;
-import common.mapper.JobMapper;
+import agents.greenenergy.behaviour.powercheck.ReceiveForecastData;
+import agents.greenenergy.behaviour.powercheck.RequestForecastData;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.SequentialBehaviour;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,15 +51,18 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 					myGreenAgent.getLocalName());
 			jobsOnHold.forEach(powerJob -> {
 				if (myGreenAgent.getPowerJobs().containsKey(powerJob)) {
-					logger.info("[{}] Changing the status of the job {}", myGreenAgent.getLocalName(),
+					logger.info("[{}] Checking if the job {} can be put in progress", myGreenAgent.getLocalName(),
 							powerJob.getJobId());
-					final JobStatusEnum newStatus = powerJob.getStartTime().isAfter(getCurrentTime()) ?
-							JobStatusEnum.ACCEPTED :
-							JobStatusEnum.IN_PROGRESS;
-					myGreenAgent.getPowerJobs().replace(powerJob, newStatus);
-					myGreenAgent.manage().updateGreenSourceGUI();
-					myGreenAgent.send(preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(powerJob),
-							myGreenAgent.getOwnerServer()));
+					final String conversationId = String.join("_", powerJob.getJobId(),
+							powerJob.getStartTime().toString(), myGreenAgent.getLocalName());
+					final SequentialBehaviour sequentialBehaviour = new SequentialBehaviour();
+					sequentialBehaviour.addSubBehaviour(
+							new RequestForecastData(myGreenAgent, conversationId, ON_HOLD_JOB_CHECK_PROTOCOL,
+									powerJob));
+					sequentialBehaviour.addSubBehaviour(
+							new ReceiveForecastData(myGreenAgent, powerJob, ON_HOLD_JOB_CHECK_PROTOCOL, conversationId,
+									sequentialBehaviour));
+					myAgent.addBehaviour(sequentialBehaviour);
 				} else {
 					logger.info("[{}] Job {} has ended before supplying it back with green power",
 							myGreenAgent.getLocalName(), powerJob.getJobId());
@@ -69,8 +74,8 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 
 	private List<PowerJob> getJobsOnHold() {
 		return myGreenAgent.getPowerJobs().entrySet().stream()
-				.filter(job -> job.getValue().equals(JobStatusEnum.ON_HOLD)
-						&& job.getKey().getEndTime().isAfter(getCurrentTime()))
+				.filter(job -> job.getValue().equals(JobStatusEnum.ON_HOLD) && job.getKey().getEndTime()
+						.isAfter(getCurrentTime()))
 				.map(Map.Entry::getKey)
 				.toList();
 	}

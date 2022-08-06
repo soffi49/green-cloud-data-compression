@@ -9,10 +9,12 @@ import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
 import static com.gui.utils.GraphUtils.createSpriteForNode;
 import static com.gui.utils.GraphUtils.updateActiveEdgeStyle;
 import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
+import static com.gui.utils.domain.StyleConstants.ON_HOLD_SPRITE_BIG_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_ACTIVE_BACK_UP_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_ACTIVE_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_INACTIVE_STYLE;
 import static com.gui.utils.domain.StyleConstants.SERVER_STYLE;
+import static com.gui.utils.domain.StyleConstants.SPRITE_DISABLED;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
 
@@ -40,7 +42,8 @@ public class ServerAgentNode extends AgentNode {
 	private final AtomicReference<Double> backUpTraffic;
 	private final AtomicInteger totalNumberOfClients;
 	private final AtomicInteger numberOfExecutedJobs;
-	private Sprite warningSprite;
+	private final AtomicInteger numberOfJobsOnHold;
+	private Sprite onHoldSprite;
 
 	/**
 	 * Server node constructor
@@ -64,6 +67,7 @@ public class ServerAgentNode extends AgentNode {
 		this.cloudNetworkAgent = cloudNetworkAgent;
 		this.totalNumberOfClients = new AtomicInteger(0);
 		this.numberOfExecutedJobs = new AtomicInteger(0);
+		this.numberOfJobsOnHold = new AtomicInteger(0);
 		this.traffic = new AtomicReference<>(0D);
 		this.backUpTraffic = new AtomicReference<>(0D);
 		this.greenEnergyAgents = greenEnergyAgents;
@@ -130,6 +134,17 @@ public class ServerAgentNode extends AgentNode {
 	}
 
 	/**
+	 * Function updates the number of jobs being on hold
+	 *
+	 * @param value new on hold jobs count
+	 */
+	public void updateOnHoldJobsCount(final int value) {
+		this.numberOfJobsOnHold.set(value);
+		labelsMap.get(AgentNodeLabelEnum.JOBS_ON_HOLD_LABEL).setText(formatToHTML(String.valueOf(numberOfJobsOnHold)));
+		updateGraphUI();
+	}
+
+	/**
 	 * Function updates the current maximum capacity
 	 *
 	 * @param maxCapacity new maximum capacity
@@ -144,12 +159,12 @@ public class ServerAgentNode extends AgentNode {
 
 	@Override
 	public synchronized void updateGraphUI() {
-		final String dynamicNodeStyle = isActiveBackUp.get() ?
-				SERVER_ACTIVE_BACK_UP_STYLE :
-				(isActive.get() ? SERVER_ACTIVE_STYLE : SERVER_INACTIVE_STYLE);
-		if (Objects.nonNull(warningSprite)) {
-			//final String dynamicSpriteStyle = isActiveBackUp.get() ? SERVER_ACTIVE_BACK_UP_STYLE : SPRITE_DISABLED;
-			//warningSprite.setAttribute("ui.class", dynamicSpriteStyle);
+		final String dynamicNodeStyle =
+				isActiveBackUp.get() || numberOfJobsOnHold.get() > 0 ? SERVER_ACTIVE_BACK_UP_STYLE
+						: (isActive.get() ? SERVER_ACTIVE_STYLE : SERVER_INACTIVE_STYLE);
+		if (Objects.nonNull(onHoldSprite)) {
+			//final String dynamicSpriteStyle = numberOfJobsOnHold.get() > 0 ? ON_HOLD_SPRITE_BIG_STYLE : SPRITE_DISABLED;
+			//onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
 		}
 		synchronized (graph) {
 			node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicNodeStyle)));
@@ -163,7 +178,7 @@ public class ServerAgentNode extends AgentNode {
 		greenEnergyAgents.forEach(
 				greenEnergyName -> addAgentEdgeToGraph(graph, edges, name, greenEnergyName));
 		addAgentEdgeToGraph(graph, edges, name, cloudNetworkAgent);
-		warningSprite = createSpriteForNode(graph, node);
+		onHoldSprite = createSpriteForNode(graph, node);
 	}
 
 	@Override
@@ -181,5 +196,6 @@ public class ServerAgentNode extends AgentNode {
 				createListLabel(String.valueOf(totalNumberOfClients)));
 		labelsMap.put(AgentNodeLabelEnum.NUMBER_OF_EXECUTED_JOBS_LABEL,
 				createListLabel(String.valueOf(numberOfExecutedJobs)));
+		labelsMap.put(AgentNodeLabelEnum.JOBS_ON_HOLD_LABEL, createListLabel(String.valueOf(numberOfJobsOnHold)));
 	}
 }

@@ -1,8 +1,10 @@
 package agents.server.behaviour.powershortage.announcer;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
+import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static domain.job.JobStatusEnum.ON_HOLD;
+import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
@@ -12,7 +14,10 @@ import static messages.domain.ReplyMessageFactory.prepareReply;
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferConfirmation;
 import agents.server.behaviour.powershortage.transfer.RequestJobTransferInCloudNetwork;
+import common.mapper.JobMapper;
 import domain.GreenSourceData;
+import domain.job.JobInstanceIdentifier;
+import domain.job.PowerJob;
 import domain.job.PowerShortageJob;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -22,7 +27,9 @@ import messages.domain.ReplyMessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -34,7 +41,9 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 	private static final Logger logger = LoggerFactory.getLogger(AnnounceSourceJobTransfer.class);
 
 	private final ServerAgent myServerAgent;
-	private final PowerShortageJob jobTransfer;
+	private final PowerJob jobToTransfer;
+	private final JobInstanceIdentifier jobTransferInstance;
+	private final OffsetDateTime powerShortageStart;
 	private final ACLMessage greenSourceRequest;
 
 	/**
@@ -43,16 +52,20 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 	 * @param agent              agent which executes the behaviour
 	 * @param powerRequest       call for proposal containing the details regarding power needed to execute the job
 	 * @param greenSourceRequest green source power transfer request
-	 * @param jobTransfer        data regarding the job transfer
+	 * @param jobToTransfer      job to be transferred
+	 * @param powerShortageStart time when the power shortage starts
 	 */
 	public AnnounceSourceJobTransfer(final Agent agent,
 			final ACLMessage powerRequest,
 			final ACLMessage greenSourceRequest,
-			final PowerShortageJob jobTransfer) {
+			final PowerJob jobToTransfer,
+			final OffsetDateTime powerShortageStart) {
 		super(agent, powerRequest);
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.jobTransfer = jobTransfer;
+		this.jobToTransfer = jobToTransfer;
 		this.greenSourceRequest = greenSourceRequest;
+		this.powerShortageStart = powerShortageStart;
+		this.jobTransferInstance = JobMapper.mapToJobInstanceId(jobToTransfer);
 	}
 
 	/**
@@ -69,12 +82,12 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 
 		if (responses.isEmpty()) {
 			logger.info("[{}] No responses were retrieved", myAgent.getName());
-			myServerAgent.send(
-					prepareReply(greenSourceRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.FAILURE));
+			handleTransferFailure();
 		} else if (proposals.isEmpty()) {
 			logger.info(
 					"[{}] No green sources are available for the power transfer of job {}. Passing the information to the cloud network",
-					myAgent.getName(), jobTransfer.getJobInstanceId().getJobId());
+					myAgent.getName(), jobTransferInstance.getJobId());
+			final PowerShortageJob jobTransfer = JobMapper.mapToPowerShortageJob(jobToTransfer, powerShortageStart);
 			final ACLMessage transferMessage = preparePowerShortageTransferRequest(jobTransfer,
 					myServerAgent.getOwnerCloudNetworkAgent());
 			displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
@@ -85,7 +98,7 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
 			if (!validProposals.isEmpty()) {
 				final ACLMessage chosenGreenSourceOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
-				final String jobId = jobTransfer.getJobInstanceId().getJobId();
+				final String jobId = jobTransferInstance.getJobId();
 				logger.info("[{}] Chosen Green Source for the job {} transfer: {}", myAgent.getName(), jobId,
 						chosenGreenSourceOffer.getSender().getLocalName());
 
@@ -93,11 +106,11 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 				displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getAllReceiver());
 
 				myServerAgent.addBehaviour(
-						new ListenForSourceJobTransferConfirmation(myServerAgent, jobTransfer.getJobInstanceId(),
+						new ListenForSourceJobTransferConfirmation(myServerAgent, jobTransferInstance,
 								greenSourceRequest));
 				myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenGreenSourceOffer.createReply(),
-						jobTransfer.getJobInstanceId(), POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));
-				rejectJobOffers(myServerAgent, jobTransfer.getJobInstanceId(), chosenGreenSourceOffer, proposals);
+						jobTransferInstance, POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));
+				rejectJobOffers(myServerAgent, jobTransferInstance, chosenGreenSourceOffer, proposals);
 			} else {
 				handleInvalidProposals(proposals);
 			}
@@ -106,8 +119,28 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 
 	private void handleInvalidProposals(final List<ACLMessage> proposals) {
 		logger.info("I didn't understand any proposal from Green Energy Agents");
-		myServerAgent.send(
-				prepareReply(greenSourceRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.FAILURE));
-		rejectJobOffers(myServerAgent, jobTransfer.getJobInstanceId(), null, proposals);
+		handleTransferFailure();
+		rejectJobOffers(myServerAgent, jobTransferInstance, null, proposals);
+	}
+
+	private void handleTransferFailure() {
+		myServerAgent.send(prepareReply(greenSourceRequest.createReply(), jobTransferInstance, ACLMessage.FAILURE));
+		if (Objects.nonNull(myServerAgent.manage().getJobByIdAndStartDate(jobTransferInstance))) {
+			if (myServerAgent.manage()
+					.getBackUpAvailableCapacity(jobToTransfer.getStartTime(), jobToTransfer.getEndTime(),
+							jobTransferInstance) < jobToTransfer.getPower()) {
+				logger.info("[{}] There is not enough back up power to support the job {}. Putting job on hold",
+						myAgent.getName(), jobToTransfer.getJobId());
+				myServerAgent.getServerJobs()
+						.replace(myServerAgent.manage().getJobByIdAndStartDate(jobTransferInstance),
+								ON_HOLD_SOURCE_SHORTAGE);
+			} else {
+				logger.info("[{}] Putting the job {} on back up power", myAgent.getName(), jobToTransfer.getJobId());
+				myServerAgent.getServerJobs()
+						.replace(myServerAgent.manage().getJobByIdAndStartDate(jobTransferInstance),
+								IN_PROGRESS_BACKUP_ENERGY);
+			}
+			myServerAgent.manage().updateServerGUI();
+		}
 	}
 }

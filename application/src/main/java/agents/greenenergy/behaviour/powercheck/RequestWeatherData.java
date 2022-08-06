@@ -11,6 +11,8 @@ import domain.ImmutableGreenSourceWeatherData;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 
+import java.util.Objects;
+
 /**
  * Behaviour responsible for requesting weather data from monitoring agent
  */
@@ -18,6 +20,8 @@ public class RequestWeatherData extends OneShotBehaviour {
 
 	private final GreenEnergyAgent myGreenEnergyAgent;
 	private final ACLMessage message;
+	private final String protocol;
+	private final String conversationId;
 
 	/**
 	 * Behaviour constructor.
@@ -28,6 +32,23 @@ public class RequestWeatherData extends OneShotBehaviour {
 	public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, ACLMessage message) {
 		myGreenEnergyAgent = greenEnergyAgent;
 		this.message = message;
+		this.protocol = null;
+		this.conversationId = null;
+	}
+
+	/**
+	 * Behaviour constructor.
+	 *
+	 * @param greenEnergyAgent agent which is executing the behaviour
+	 * @param protocol         protocol of the message
+	 * @param conversationId   conversation id of the message
+	 */
+	public RequestWeatherData(GreenEnergyAgent greenEnergyAgent, String protocol, String conversationId) {
+		myGreenEnergyAgent = greenEnergyAgent;
+		this.message = null;
+		this.protocol = protocol;
+		this.conversationId = conversationId;
+
 	}
 
 	/**
@@ -37,8 +58,13 @@ public class RequestWeatherData extends OneShotBehaviour {
 	public void action() {
 		ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 		request.addReceiver(myGreenEnergyAgent.getMonitoringAgent());
-		request.setConversationId(message.getConversationId());
-		request.setProtocol(message.getProtocol());
+		if (Objects.nonNull(message)) {
+			request.setConversationId(message.getConversationId());
+			request.setProtocol(message.getProtocol());
+		} else {
+			request.setConversationId(conversationId);
+			request.setProtocol(protocol);
+		}
 		var requestData = ImmutableGreenSourceWeatherData.builder()
 				.location(myGreenEnergyAgent.getLocation())
 				.build();

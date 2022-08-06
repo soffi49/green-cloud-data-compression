@@ -76,7 +76,7 @@ public class ReturnJobStatusUpdate extends CyclicBehaviour {
 
 	private void handleGreenPowerJobMessage(final JobInstanceIdentifier jobInstanceId) {
 		final Job job = myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId());
-		logger.info("[{}] Sending information that the job {} is executed using green power", myAgent.getName(),
+		logger.info("[{}] Sending information that the job {} is executed again using green power", myAgent.getName(),
 				jobInstanceId.getJobId());
 		myAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), GREEN_POWER_JOB_PROTOCOL));
 	}
