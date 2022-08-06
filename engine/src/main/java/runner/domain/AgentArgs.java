@@ -5,8 +5,8 @@ package runner.domain;
  */
 public interface AgentArgs {
 
-    /**
-     * @return agent name
-     */
-    String getName();
+	/**
+	 * @return agent name
+	 */
+	String getName();
 }

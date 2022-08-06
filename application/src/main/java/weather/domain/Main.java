@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,26 +17,26 @@ import org.jetbrains.annotations.Nullable;
 @Immutable
 public interface Main {
 
-    Double getTemp();
+	Double getTemp();
 
-    @JsonProperty("feels_like")
-    Double getFeelsLike();
+	@JsonProperty("feels_like")
+	Double getFeelsLike();
 
-    @JsonProperty("temp_min")
-    Double getMinimumTemperature();
+	@JsonProperty("temp_min")
+	Double getMinimumTemperature();
 
-    @JsonProperty("temp_max")
-    Double getMaximumTemperature();
+	@JsonProperty("temp_max")
+	Double getMaximumTemperature();
 
-    Double getPressure();
+	Double getPressure();
 
-    Double getHumidity();
+	Double getHumidity();
 
-    @JsonProperty("sea_level")
-    @Nullable
-    Double getSeaLeve();
+	@JsonProperty("sea_level")
+	@Nullable
+	Double getSeaLeve();
 
-    @JsonProperty("grnd_level")
-    @Nullable
-    Double getGroundLever();
+	@JsonProperty("grnd_level")
+	@Nullable
+	Double getGroundLever();
 }

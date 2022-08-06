@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 
 @JsonSerialize(as = ImmutableWeather.class)
@@ -12,11 +13,11 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface Weather {
 
-    Long getId();
+	Long getId();
 
-    String getMain();
+	String getMain();
 
-    String getDescription();
+	String getDescription();
 
-    String getIcon();
+	String getIcon();
 }

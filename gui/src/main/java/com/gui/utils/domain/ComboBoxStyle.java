@@ -11,31 +11,32 @@ import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
 
 public class ComboBoxStyle extends BasicComboBoxUI {
-    public ComboBoxStyle() {
-        currentValuePane.setBackground(WHITE_COLOR);
-    }
+	public ComboBoxStyle() {
+		currentValuePane.setBackground(WHITE_COLOR);
+	}
 
-    public static ComboBoxUI createUI(JComponent c) {
-        return new ComboBoxStyle();
-    }
+	public static ComboBoxUI createUI(JComponent c) {
+		return new ComboBoxStyle();
+	}
 
-    @Override
-    protected JButton createArrowButton() {
-        final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, GRAY_5_COLOR, GRAY_5_COLOR, WHITE_COLOR, GRAY_5_COLOR);
-        button.setBorder(BorderFactory.createLineBorder(GRAY_5_COLOR, 2));
-        return button;
-    }
+	@Override
+	protected JButton createArrowButton() {
+		final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, GRAY_5_COLOR, GRAY_5_COLOR, WHITE_COLOR,
+				GRAY_5_COLOR);
+		button.setBorder(BorderFactory.createLineBorder(GRAY_5_COLOR, 2));
+		return button;
+	}
 
-    @Override
-    protected ComboPopup createPopup() {
-        return new BasicComboPopup(comboBox) {
-            @Override
-            protected JScrollPane createScroller() {
-                final JScrollPane jScrollPane = new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                                                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                customizeScrollBar(jScrollPane.getVerticalScrollBar());
-                return jScrollPane;
-            }
-        };
-    }
+	@Override
+	protected ComboPopup createPopup() {
+		return new BasicComboPopup(comboBox) {
+			@Override
+			protected JScrollPane createScroller() {
+				final JScrollPane jScrollPane = new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				customizeScrollBar(jScrollPane.getVerticalScrollBar());
+				return jScrollPane;
+			}
+		};
+	}
 }

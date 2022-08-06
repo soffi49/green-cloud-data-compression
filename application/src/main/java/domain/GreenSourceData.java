@@ -2,6 +2,7 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -12,18 +13,18 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface GreenSourceData {
 
-    /**
-     * @return available power at the given time
-     */
-    double getAvailablePowerInTime();
+	/**
+	 * @return available power at the given time
+	 */
+	double getAvailablePowerInTime();
 
-    /**
-     * @return price for the 1kWh
-     */
-    double getPricePerPowerUnit();
+	/**
+	 * @return price for the 1kWh
+	 */
+	double getPricePerPowerUnit();
 
-    /**
-     * @return unique identifier of the given job of interest
-     */
-    String getJobId();
+	/**
+	 * @return unique identifier of the given job of interest
+	 */
+	String getJobId();
 }
