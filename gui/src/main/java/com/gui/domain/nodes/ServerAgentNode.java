@@ -1,31 +1,20 @@
 package com.gui.domain.nodes;
 
 import static com.gui.domain.types.AgentNodeLabelEnum.CURRENT_MAXIMUM_CAPACITY_LABEL;
-import static com.gui.utils.GUIUtils.concatenateStyles;
+import static com.gui.graph.domain.GraphStyleConstants.CONNECTOR_EDGE_ACTIVE_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.CONNECTOR_EDGE_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.SERVER_BACK_UP_POWER_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.SERVER_ON_HOLD_STYLE;
 import static com.gui.utils.GUIUtils.createListLabel;
 import static com.gui.utils.GUIUtils.formatToHTML;
-import static com.gui.utils.GraphUtils.addAgentBidirectionalEdgeToGraph;
-import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
-import static com.gui.utils.GraphUtils.createSpriteForNode;
-import static com.gui.utils.GraphUtils.updateActiveEdgeStyle;
-import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
-import static com.gui.utils.domain.StyleConstants.ON_HOLD_SPRITE_BIG_STYLE;
-import static com.gui.utils.domain.StyleConstants.SERVER_ACTIVE_BACK_UP_STYLE;
-import static com.gui.utils.domain.StyleConstants.SERVER_ACTIVE_STYLE;
-import static com.gui.utils.domain.StyleConstants.SERVER_INACTIVE_STYLE;
-import static com.gui.utils.domain.StyleConstants.SERVER_STYLE;
-import static com.gui.utils.domain.StyleConstants.SPRITE_DISABLED;
-
-import com.gui.domain.types.AgentNodeLabelEnum;
-
-import org.graphstream.graph.Graph;
-import org.graphstream.ui.spriteManager.Sprite;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.gui.domain.types.AgentNodeLabelEnum;
+import com.gui.graph.domain.GraphStyleConstants;
 
 /**
  * Agent node class representing the server
@@ -43,7 +32,6 @@ public class ServerAgentNode extends AgentNode {
 	private final AtomicInteger totalNumberOfClients;
 	private final AtomicInteger numberOfExecutedJobs;
 	private final AtomicInteger numberOfJobsOnHold;
-	private Sprite onHoldSprite;
 
 	/**
 	 * Server node constructor
@@ -59,7 +47,6 @@ public class ServerAgentNode extends AgentNode {
 			String cloudNetworkAgent,
 			List<String> greenEnergyAgents) {
 		super(name);
-		this.style = SERVER_STYLE;
 		this.isActive = new AtomicBoolean(false);
 		this.isActiveBackUp = new AtomicBoolean(false);
 		this.initialMaximumCapacity = maximumCapacity;
@@ -159,26 +146,21 @@ public class ServerAgentNode extends AgentNode {
 
 	@Override
 	public synchronized void updateGraphUI() {
-		final String dynamicNodeStyle =
-				isActiveBackUp.get() || numberOfJobsOnHold.get() > 0 ? SERVER_ACTIVE_BACK_UP_STYLE
-						: (isActive.get() ? SERVER_ACTIVE_STYLE : SERVER_INACTIVE_STYLE);
-		if (Objects.nonNull(onHoldSprite)) {
-			//final String dynamicSpriteStyle = numberOfJobsOnHold.get() > 0 ? ON_HOLD_SPRITE_BIG_STYLE : SPRITE_DISABLED;
-			//onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
-		}
-		synchronized (graph) {
-			node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicNodeStyle)));
-		}
-		updateActiveEdgeStyle(edges, graph, isActive.get(), name, cloudNetworkAgent);
+		final String style = numberOfJobsOnHold.get() > 0 ? SERVER_ON_HOLD_STYLE
+				: (isActiveBackUp.get() ?
+				SERVER_BACK_UP_POWER_STYLE
+				:
+				(isActive.get() ? GraphStyleConstants.SERVER_ACTIVE_STYLE : GraphStyleConstants.SERVER_INACTIVE_STYLE));
+		final String edgeStyle = isActive.get() ? CONNECTOR_EDGE_ACTIVE_STYLE : CONNECTOR_EDGE_STYLE;
+		graphService.updateNodeStyle(name, style);
+		graphService.updateEdgeStyle(name, cloudNetworkAgent, false, edgeStyle);
 	}
 
 	@Override
-	public void createEdges(final Graph graph) {
-		addAgentBidirectionalEdgeToGraph(graph, edges, name, cloudNetworkAgent);
-		greenEnergyAgents.forEach(
-				greenEnergyName -> addAgentEdgeToGraph(graph, edges, name, greenEnergyName));
-		addAgentEdgeToGraph(graph, edges, name, cloudNetworkAgent);
-		onHoldSprite = createSpriteForNode(graph, node);
+	public void createEdges() {
+		graphService.createAndAddEdgeToGraph(name, cloudNetworkAgent, false);
+		greenEnergyAgents.forEach(greenEnergyName -> graphService.createAndAddEdgeToGraph(name, greenEnergyName, true));
+		graphService.createAndAddEdgeToGraph(name, cloudNetworkAgent, true);
 	}
 
 	@Override

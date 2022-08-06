@@ -1,7 +1,19 @@
 package com.gui.domain.guielements;
 
-import static com.gui.utils.GUIUtils.*;
-import static com.gui.utils.domain.StyleConstants.VERY_LIGHT_GRAY_COLOR;
+import static com.gui.utils.GUIUtils.addPanelHeader;
+import static com.gui.utils.GUIUtils.createBorderPanel;
+import static com.gui.utils.GUIUtils.createDefaultComboBox;
+import static com.gui.utils.GUIUtils.createDefaultScrollPane;
+import static com.gui.utils.domain.StyleConstants.GRAY_1_COLOR;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 import com.gui.domain.nodes.AgentNode;
 import com.gui.domain.nodes.ClientAgentNode;
@@ -11,11 +23,6 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
-import javax.swing.*;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class represents the details' panel of the GUI
@@ -50,7 +57,7 @@ public class DetailsPanel {
 
 	private static JPanel createDefaultMessagePanel() {
 		final JPanel jPanel = new JPanel(new MigLayout(new LC().fillX().height("50px")));
-		jPanel.setBackground(VERY_LIGHT_GRAY_COLOR);
+		jPanel.setBackground(GRAY_1_COLOR);
 		return jPanel;
 	}
 

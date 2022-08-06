@@ -1,23 +1,29 @@
 package com.gui.domain.guielements;
 
-import static com.gui.utils.GUIUtils.*;
-import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
+import static com.gui.utils.GUIUtils.addPanelHeader;
+import static com.gui.utils.GUIUtils.createBorderPanel;
+import static com.gui.utils.GUIUtils.createDefaultScrollPane;
+import static com.gui.utils.GUIUtils.createParagraph;
+import static com.gui.utils.GUIUtils.createSeparator;
+import static com.gui.utils.domain.StyleConstants.GRAY_2_COLOR;
 
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
-
-import org.apache.commons.math3.util.Pair;
-
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Color;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import org.apache.commons.math3.util.Pair;
+
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Class represents the information panel of the GUI
@@ -104,7 +110,7 @@ public class InformationPanel {
 							idx -> {
 								final Pair<String, String> information = informationList.get(lastIdx - 1 - idx);
 								informationBoxPanel.add(
-										createSeparator(LIGHT_GRAY_COLOR), new CC().spanX().growX());
+										createSeparator(GRAY_2_COLOR), new CC().spanX().growX());
 								informationBoxPanel.add(
 										createInformationLabel(Optional.ofNullable(information)), ROW_ATTRIBUTES);
 							});

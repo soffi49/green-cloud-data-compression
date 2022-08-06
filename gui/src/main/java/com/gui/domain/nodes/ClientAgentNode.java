@@ -1,16 +1,14 @@
 package com.gui.domain.nodes;
 
 import static com.gui.domain.types.JobStatusEnum.CREATED;
-import static com.gui.utils.GUIUtils.*;
-import static com.gui.utils.domain.StyleConstants.*;
+import static com.gui.utils.GUIUtils.createListLabel;
+import static com.gui.utils.GUIUtils.formatToHTML;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.gui.domain.types.AgentNodeLabelEnum;
 import com.gui.domain.types.JobStatusEnum;
-
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
-
-import java.util.concurrent.atomic.AtomicReference;
+import com.gui.graph.GraphService;
 
 /**
  * Agent node class representing the client
@@ -38,7 +36,6 @@ public class ClientAgentNode extends AgentNode {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.jobStatusEnum = new AtomicReference<>(CREATED);
-		this.style = CLIENT_STYLE;
 		initializeLabelsMap();
 		createInformationPanel();
 	}
@@ -54,8 +51,8 @@ public class ClientAgentNode extends AgentNode {
 	}
 
 	@Override
-	public Node addToGraph(Graph graph) {
-		return null;
+	public void addToGraph(GraphService testGraph) {
+
 	}
 
 	@Override

@@ -1,9 +1,13 @@
 package com.gui.utils.domain;
 
 import static com.gui.utils.GUIUtils.customizeScrollBar;
-import static com.gui.utils.domain.StyleConstants.*;
+import static com.gui.utils.domain.StyleConstants.GRAY_5_COLOR;
+import static com.gui.utils.domain.StyleConstants.WHITE_COLOR;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicComboBoxUI;
@@ -21,9 +25,9 @@ public class ComboBoxStyle extends BasicComboBoxUI {
 
 	@Override
 	protected JButton createArrowButton() {
-		final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, DARK_GRAY_COLOR, DARK_GRAY_COLOR,
-				WHITE_COLOR, DARK_GRAY_COLOR);
-		button.setBorder(BorderFactory.createLineBorder(DARK_GRAY_COLOR, 2));
+		final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, GRAY_5_COLOR, GRAY_5_COLOR, WHITE_COLOR,
+				GRAY_5_COLOR);
+		button.setBorder(BorderFactory.createLineBorder(GRAY_5_COLOR, 2));
 		return button;
 	}
 

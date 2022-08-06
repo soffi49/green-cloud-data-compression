@@ -1,32 +1,20 @@
 package com.gui.domain.nodes;
 
 import static com.gui.domain.types.AgentNodeLabelEnum.CURRENT_MAXIMUM_CAPACITY_LABEL;
-import static com.gui.utils.GUIUtils.concatenateStyles;
+import static com.gui.graph.domain.GraphStyleConstants.CONNECTOR_EDGE_ACTIVE_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.CONNECTOR_EDGE_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.GREEN_SOURCE_ACTIVE_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.GREEN_SOURCE_INACTIVE_STYLE;
+import static com.gui.graph.domain.GraphStyleConstants.GREEN_SOURCE_ON_HOLD_STYLE;
 import static com.gui.utils.GUIUtils.createListLabel;
 import static com.gui.utils.GUIUtils.formatToHTML;
-import static com.gui.utils.GraphUtils.addAgentBidirectionalEdgeToGraph;
-import static com.gui.utils.GraphUtils.addAgentEdgeToGraph;
-import static com.gui.utils.GraphUtils.createSpriteForNode;
-import static com.gui.utils.GraphUtils.updateActiveEdgeStyle;
-import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_ACTIVE_STYLE;
-import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_INACTIVE_STYLE;
-import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_ON_HOLD_STYLE;
-import static com.gui.utils.domain.StyleConstants.GREEN_ENERGY_STYLE;
-import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
-import static com.gui.utils.domain.StyleConstants.ON_HOLD_SPRITE_SMALL_STYLE;
-import static com.gui.utils.domain.StyleConstants.SPRITE_DISABLED;
 
-import com.gui.domain.Location;
-import com.gui.domain.types.AgentNodeLabelEnum;
-
-import org.graphstream.graph.Graph;
-import org.graphstream.ui.spriteManager.Sprite;
-
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.gui.domain.Location;
+import com.gui.domain.types.AgentNodeLabelEnum;
 
 /**
  * Agent node class representing the green energy source
@@ -43,7 +31,6 @@ public class GreenEnergyAgentNode extends AgentNode {
 	private final AtomicReference<Double> traffic;
 	private final AtomicInteger jobsOnHold;
 	private final AtomicInteger numberOfExecutedJobs;
-	private Sprite onHoldSprite;
 
 	/**
 	 * Green energy source node constructor
@@ -65,7 +52,6 @@ public class GreenEnergyAgentNode extends AgentNode {
 		this.location = location;
 		this.serverAgent = serverAgent;
 		this.monitoringAgent = monitoringAgent;
-		this.style = GREEN_ENERGY_STYLE;
 		this.isActive = new AtomicBoolean(false);
 		this.hasJobsOnHold = new AtomicBoolean(false);
 		this.traffic = new AtomicReference<>(0D);
@@ -136,26 +122,20 @@ public class GreenEnergyAgentNode extends AgentNode {
 
 	@Override
 	public void updateGraphUI() {
-		final String dynamicStyle = hasJobsOnHold.get() ?
-				GREEN_ENERGY_ON_HOLD_STYLE :
-				(isActive.get() ? GREEN_ENERGY_ACTIVE_STYLE : GREEN_ENERGY_INACTIVE_STYLE);
-		if (Objects.nonNull(onHoldSprite)) {
-			//final String dynamicSpriteStyle = hasJobsOnHold.get() ? ON_HOLD_SPRITE_SMALL_STYLE : SPRITE_DISABLED;
-			//onHoldSprite.setAttribute("ui.class", dynamicSpriteStyle);
-		}
-		synchronized (graph) {
-			node.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style, dynamicStyle)));
-		}
-		updateActiveEdgeStyle(edges, graph, isActive.get(), name, serverAgent);
+		final String style = hasJobsOnHold.get() ?
+				GREEN_SOURCE_ON_HOLD_STYLE :
+				(isActive.get() ? GREEN_SOURCE_ACTIVE_STYLE : GREEN_SOURCE_INACTIVE_STYLE);
+		final String edgeStyle = isActive.get() ? CONNECTOR_EDGE_ACTIVE_STYLE : CONNECTOR_EDGE_STYLE;
+		graphService.updateNodeStyle(name, style);
+		graphService.updateEdgeStyle(name, serverAgent, false, edgeStyle);
 	}
 
 	@Override
-	public void createEdges(final Graph graph) {
-		addAgentBidirectionalEdgeToGraph(graph, edges, name, serverAgent);
-		addAgentBidirectionalEdgeToGraph(graph, edges, name, monitoringAgent);
-		addAgentEdgeToGraph(graph, edges, name, monitoringAgent);
-		addAgentEdgeToGraph(graph, edges, name, serverAgent);
-		onHoldSprite = createSpriteForNode(graph, node);
+	public void createEdges() {
+		graphService.createAndAddEdgeToGraph(name, serverAgent, false);
+		graphService.createAndAddEdgeToGraph(name, monitoringAgent, false);
+		graphService.createAndAddEdgeToGraph(name, monitoringAgent, true);
+		graphService.createAndAddEdgeToGraph(name, serverAgent, true);
 	}
 
 	@Override

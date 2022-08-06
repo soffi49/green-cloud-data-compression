@@ -1,78 +1,58 @@
 package com.gui.domain.nodes;
 
-import static com.gui.utils.GUIUtils.concatenateStyles;
 import static com.gui.utils.GUIUtils.createLabelListPanel;
-import static com.gui.utils.domain.StyleConstants.LABEL_STYLE;
 
-import com.gui.domain.event.AbstractEvent;
-import com.gui.domain.types.LabelEnum;
-
-import org.graphstream.graph.Edge;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import com.gui.domain.event.AbstractEvent;
+import com.gui.domain.types.LabelEnum;
+import com.gui.graph.GraphService;
 
 /**
  * Class represents abstract agent node
  */
 public abstract class AgentNode {
 
-	protected String name;
-	protected String style;
-	protected Node node;
-	protected List<Edge> edges;
-	protected JPanel informationPanel;
-	protected Map<LabelEnum, JLabel> labelsMap;
-	protected AtomicReference<AbstractEvent> event;
-	protected boolean isDuringEvent;
-	protected boolean isManualEventEnabled;
-	protected Graph graph;
+    protected String name;
+    protected JPanel informationPanel;
+    protected Map<LabelEnum, JLabel> labelsMap;
+    protected AtomicReference<AbstractEvent> event;
+    protected boolean isDuringEvent;
+    protected boolean isManualEventEnabled;
+    protected GraphService graphService;
 
-	/**
-	 * Class constructor
-	 *
-	 * @param name name of the agent
-	 */
-	public AgentNode(String name) {
-		this.name = name;
-		this.edges = new ArrayList<>();
-		this.event = new AtomicReference<>(null);
-		this.isDuringEvent = false;
-		this.isManualEventEnabled = true;
-	}
+    /**
+     * Class constructor
+     *
+     * @param name name of the agent
+     */
+    public AgentNode(String name) {
+        this.name = name;
+        this.event = new AtomicReference<>(null);
+        this.isDuringEvent = false;
+        this.isManualEventEnabled = true;
+    }
 
-	/**
-	 * Abstract method responsible for adding the node to the graph
-	 *
-	 * @param graph graph to which the node is to be added
-	 * @return added node
-	 */
-	public Node addToGraph(final Graph graph) {
-		final Node newNode = graph.addNode(name);
-		newNode.setAttribute("ui.label", newNode.getId());
-		newNode.setAttribute("ui.class", concatenateStyles(List.of(LABEL_STYLE, style)));
-		this.node = newNode;
-		this.graph = graph;
-		this.updateGraphUI();
-		return newNode;
-	}
+    /**
+     * Abstract method responsible for adding the node to the graph
+     */
+    public void addToGraph(final GraphService graphService) {
+        this.graphService = graphService;
+        graphService.createAndAddNodeToGraph(this);
+        this.updateGraphUI();
+    }
 
-	/**
-	 * Abstract method responsible for creating edges for given node
-	 *
-	 * @param graph graph for which the edges are to be created
-	 */
-	public void createEdges(final Graph graph) {
-	}
+    /**
+     * Abstract method responsible for creating edges for given node
+     */
+    public void createEdges() {
+    }
 
 	/**
 	 * Abstract method which based on the agent status creates the JPanel displaying all data
@@ -101,19 +81,12 @@ public abstract class AgentNode {
 		return name;
 	}
 
-	/**
-	 * @return list of node edges
-	 */
-	public List<Edge> getEdges() {
-		return edges;
-	}
-
-	/**
-	 * @return information panel of agent node
-	 */
-	public JPanel getInformationPanel() {
-		return informationPanel;
-	}
+    /**
+     * @return information panel of agent node
+     */
+    public JPanel getInformationPanel() {
+        return informationPanel;
+    }
 
 	/**
 	 * @return gets the current event
@@ -172,7 +145,7 @@ public abstract class AgentNode {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		AgentNode agentNode = (AgentNode) o;
-		return name.equals(agentNode.name);
+        return name.equals(agentNode.name);
 	}
 
 	@Override

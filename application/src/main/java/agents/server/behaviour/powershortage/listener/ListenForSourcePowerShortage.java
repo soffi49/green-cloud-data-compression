@@ -11,6 +11,14 @@ import static mapper.JsonMapper.getMapper;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.announcer.AnnounceSourceJobTransfer;
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
@@ -24,14 +32,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import messages.domain.CallForProposalMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Behaviour is responsible for catching the information that the specific green source will have the power shortage at the given time
@@ -90,7 +90,7 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
 							new RequestJobTransferInCloudNetwork(myServerAgent, transferMessage, transferRequest,
 									jobToTransfer, false));
 				}
-				schedulePowerShortageHandling(oldJobInstance);
+				schedulePowerShortageHandling(oldJobInstance, transferRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -99,13 +99,17 @@ public class ListenForSourcePowerShortage extends CyclicBehaviour {
 		}
 	}
 
-	private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer) {
+	private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer, final ACLMessage transferRequest) {
 		logger.info("[{}] Scheduling power shortage handling", myAgent.getName());
-		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
-		myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
-		myServerAgent.addBehaviour(
-				HandleServerPowerShortage.createFor(Collections.singletonList(job), jobTransfer.getPowerShortageStart(),
-						myServerAgent, null));
+		if (Objects.nonNull(myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId()))) {
+			final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
+			myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
+			myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(Collections.singletonList(job),
+					jobTransfer.getPowerShortageStart(), myServerAgent, null));
+		} else {
+			myAgent.send(
+					prepareReply(transferRequest.createReply(), jobTransfer.getJobInstanceId(), ACLMessage.REFUSE));
+		}
 	}
 
 	private PowerJob createPowerJobTransferInstance(final PowerShortageJob jobTransfer) {

@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
  */
 public class CheckCurrentWeather extends TickerBehaviour {
 
-
     private static final Logger logger = LoggerFactory.getLogger(ReceivePeriodicWeatherData.class);
 
     private final GreenEnergyAgent myGreenEnergyAgent;

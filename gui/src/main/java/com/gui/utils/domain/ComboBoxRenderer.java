@@ -1,10 +1,16 @@
 package com.gui.utils.domain;
 
-import static com.gui.utils.domain.StyleConstants.*;
+import static com.gui.utils.domain.StyleConstants.GRAY_5_COLOR;
+import static com.gui.utils.domain.StyleConstants.LABEL_FONT;
+import static com.gui.utils.domain.StyleConstants.WHITE_COLOR;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
 
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 
 public class ComboBoxRenderer extends DefaultListCellRenderer {
 
@@ -18,9 +24,9 @@ public class ComboBoxRenderer extends DefaultListCellRenderer {
 			boolean cellHasFocus) {
 		JLabel c = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		c.setBackground(WHITE_COLOR);
-		c.setForeground(DARK_GRAY_COLOR);
+		c.setForeground(GRAY_5_COLOR);
 		c.setBorder(BorderFactory.createEmptyBorder(MARGIN, MARGIN, MARGIN, MARGIN));
-		c.setFont(LIST_VALUE_FONT);
+		c.setFont(LABEL_FONT);
 		return c;
 	}
 

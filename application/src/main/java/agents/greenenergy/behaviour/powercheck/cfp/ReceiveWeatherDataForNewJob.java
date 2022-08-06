@@ -8,6 +8,11 @@ import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.ProposePowerRequest;
 import domain.GreenSourceData;
@@ -18,13 +23,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
-import java.util.Optional;
-
 import messages.domain.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which is responsible for listening for the Monitoring Agent's response with forecast data.
@@ -91,7 +90,7 @@ public class ReceiveWeatherDataForNewJob extends CyclicBehaviour {
 			logger.info("[{}] Too bad weather conditions, sending refuse message to server for job with id {}.", guid,
 					jobId);
 			myGreenEnergyAgent.getPowerJobs().remove(powerJob);
-			displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
+			displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
 			myAgent.send(ReplyMessageFactory.prepareRefuseReply(cfp.createReply()));
 		} else if (powerJob.getPower() > averageAvailablePower.get()) {
 			logger.info("[{}] Refusing job with id {} - not enough available power. Needed {}, available {}", guid,
@@ -106,7 +105,7 @@ public class ReceiveWeatherDataForNewJob extends CyclicBehaviour {
 					.availablePowerInTime(averageAvailablePower.get())
 					.jobId(jobId)
 					.build();
-			displayMessageArrow(myGreenEnergyAgent, cfp.getAllReceiver());
+			displayMessageArrow(myGreenEnergyAgent, cfp.getSender());
 			myAgent.addBehaviour(
 					new ProposePowerRequest(myAgent, prepareReply(cfp.createReply(), responseData, PROPOSE)));
 		}

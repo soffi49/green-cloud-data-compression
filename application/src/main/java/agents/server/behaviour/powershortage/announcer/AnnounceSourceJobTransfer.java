@@ -3,13 +3,20 @@ package agents.server.behaviour.powershortage.announcer;
 import static common.GUIUtils.displayMessageArrow;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static domain.job.JobStatusEnum.ON_HOLD;
 import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static messages.domain.ReplyMessageFactory.prepareReply;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferConfirmation;
@@ -23,14 +30,6 @@ import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import messages.domain.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
 
 /**
  * Behaviours responsible for sending the transfer call for proposal to remaining green sources and choosing the one which
@@ -103,7 +102,7 @@ public class AnnounceSourceJobTransfer extends ContractNetInitiator {
 						chosenGreenSourceOffer.getSender().getLocalName());
 
 				displayMessageArrow(myServerAgent, myServerAgent.getGreenSourceForJobMap().get(jobId));
-				displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getAllReceiver());
+				displayMessageArrow(myServerAgent, chosenGreenSourceOffer.getSender());
 
 				myServerAgent.addBehaviour(
 						new ListenForSourceJobTransferConfirmation(myServerAgent, jobTransferInstance,

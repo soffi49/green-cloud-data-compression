@@ -10,7 +10,21 @@ import static com.gui.utils.GUIUtils.createNumericTextField;
 import static com.gui.utils.GUIUtils.createSeparator;
 import static com.gui.utils.GUIUtils.makeButtonDisabled;
 import static com.gui.utils.GUIUtils.makeButtonEnabled;
-import static com.gui.utils.domain.StyleConstants.LIGHT_GRAY_COLOR;
+import static com.gui.utils.domain.StyleConstants.GRAY_2_COLOR;
+
+import java.awt.event.ActionListener;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import com.gui.domain.event.PowerShortageEvent;
 import com.gui.domain.event.PowerShortageFinishEvent;
@@ -21,20 +35,6 @@ import com.gui.domain.nodes.MonitoringAgentNode;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
-import java.awt.event.ActionListener;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Panel containing utilities which allow to invoke events in the simulation
@@ -99,7 +99,7 @@ public class AdminControlPanel {
 	private void initializePanelTop(final JPanel panel) {
 		addPanelHeader(TITLE_LABEL, panel);
 		panel.add(comboBoxNetwork, new CC().height("30px").growX().spanX());
-		panel.add(createSeparator(LIGHT_GRAY_COLOR), new CC().spanX().growX());
+		panel.add(createSeparator(GRAY_2_COLOR), new CC().spanX().growX());
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class AdminControlPanel {
 	private void addOptionRow(final JPanel panel, final JButton button, final JFormattedTextField input) {
 		panel.add(input, new CC().height("20px").growY().width("30%").alignY("center").gapX("10px", "20px"));
 		panel.add(button, new CC().height("20px").grow().width("70%").alignY("center").gapX("0", "15px"));
-		panel.add(createSeparator(LIGHT_GRAY_COLOR), new CC().spanX().growX());
+		panel.add(createSeparator(GRAY_2_COLOR), new CC().spanX().growX());
 	}
 
 	private void causePowerShortage() {
