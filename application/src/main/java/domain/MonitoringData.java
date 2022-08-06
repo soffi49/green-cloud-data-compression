@@ -2,9 +2,11 @@ package domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -15,14 +17,14 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 public interface MonitoringData {
 
-    /**
-     * Serves as weather timetable that is sent from Monitoring Agent to the Green Source Energy Agent
-     *
-     * @return list of {@link MonitoringData}
-     */
-    List<WeatherData> getWeatherData();
+	/**
+	 * Serves as weather timetable that is sent from Monitoring Agent to the Green Source Energy Agent
+	 *
+	 * @return list of {@link MonitoringData}
+	 */
+	List<WeatherData> getWeatherData();
 
-    default Optional<WeatherData> getDataForTimestamp(Instant timestamp) {
-        return getWeatherData().stream().filter(weatherData -> weatherData.getTime().equals(timestamp)).findFirst();
-    }
+	default Optional<WeatherData> getDataForTimestamp(Instant timestamp) {
+		return getWeatherData().stream().filter(weatherData -> weatherData.getTime().equals(timestamp)).findFirst();
+	}
 }

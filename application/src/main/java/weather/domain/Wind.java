@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value.Immutable;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,10 +14,10 @@ import org.jetbrains.annotations.Nullable;
 @Immutable
 public interface Wind {
 
-    Double getSpeed();
+	Double getSpeed();
 
-    Double getDeg();
+	Double getDeg();
 
-    @Nullable
-    Double getGust();
+	@Nullable
+	Double getGust();
 }
