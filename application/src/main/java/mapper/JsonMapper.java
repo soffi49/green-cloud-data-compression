@@ -7,13 +7,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * Mapper used to parse the retrieved message objects
  */
 public class JsonMapper {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    static {
-        MAPPER.registerModule(new JavaTimeModule());
-    }
+	static {
+		MAPPER.registerModule(new JavaTimeModule());
+	}
 
-    public static ObjectMapper getMapper() {
-        return MAPPER;
-    }
+	public static ObjectMapper getMapper() {
+		return MAPPER;
+	}
 }

@@ -5,12 +5,15 @@ import static mapper.JsonMapper.getMapper;
 
 import agents.AbstractAgent;
 import agents.server.domain.ServerStateManagement;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,92 +28,92 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class AbstractServerAgent extends AbstractAgent {
 
-    protected int initialMaximumCapacity;
-    protected transient ServerStateManagement stateManagement;
-    protected double pricePerHour;
-    protected int currentMaximumCapacity;
-    protected volatile AtomicLong currentlyProcessing;
-    protected volatile ConcurrentMap<Job, JobStatusEnum> serverJobs;
-    protected Map<String, AID> greenSourceForJobMap;
-    protected List<AID> ownedGreenSources;
-    protected AID ownerCloudNetworkAgent;
+	protected int initialMaximumCapacity;
+	protected transient ServerStateManagement stateManagement;
+	protected double pricePerHour;
+	protected int currentMaximumCapacity;
+	protected volatile AtomicLong currentlyProcessing;
+	protected volatile ConcurrentMap<Job, JobStatusEnum> serverJobs;
+	protected Map<String, AID> greenSourceForJobMap;
+	protected List<AID> ownedGreenSources;
+	protected AID ownerCloudNetworkAgent;
 
-    AbstractServerAgent() {
-        super.setup();
+	AbstractServerAgent() {
+		super.setup();
 
-        serverJobs = new ConcurrentHashMap<>();
-        initialMaximumCapacity = 0;
-        ownedGreenSources = new ArrayList<>();
-        greenSourceForJobMap = new HashMap<>();
-        currentlyProcessing = new AtomicLong(0);
-    }
+		serverJobs = new ConcurrentHashMap<>();
+		initialMaximumCapacity = 0;
+		ownedGreenSources = new ArrayList<>();
+		greenSourceForJobMap = new HashMap<>();
+		currentlyProcessing = new AtomicLong(0);
+	}
 
-    /**
-     * Method chooses the green source for job execution
-     *
-     * @param greenSourceOffers offers from green sources
-     * @return chosen offer
-     */
-    public ACLMessage chooseGreenSourceToExecuteJob(final List<ACLMessage> greenSourceOffers) {
-        final Comparator<ACLMessage> compareGreenSources =
-                Comparator.comparingDouble(
-                        greenSource -> {
-                            try {
-                                return getMapper()
-                                        .readValue(greenSource.getContent(), GreenSourceData.class)
-                                        .getAvailablePowerInTime();
-                            } catch (final JsonProcessingException e) {
-                                return Double.MAX_VALUE;
-                            }
-                        });
-        return greenSourceOffers.stream().min(compareGreenSources).orElseThrow();
-    }
+	/**
+	 * Method chooses the green source for job execution
+	 *
+	 * @param greenSourceOffers offers from green sources
+	 * @return chosen offer
+	 */
+	public ACLMessage chooseGreenSourceToExecuteJob(final List<ACLMessage> greenSourceOffers) {
+		final Comparator<ACLMessage> compareGreenSources =
+				Comparator.comparingDouble(
+						greenSource -> {
+							try {
+								return getMapper()
+										.readValue(greenSource.getContent(), GreenSourceData.class)
+										.getAvailablePowerInTime();
+							} catch (final JsonProcessingException e) {
+								return Double.MAX_VALUE;
+							}
+						});
+		return greenSourceOffers.stream().min(compareGreenSources).orElseThrow();
+	}
 
-    public int getInitialMaximumCapacity() {
-        return initialMaximumCapacity;
-    }
+	public int getInitialMaximumCapacity() {
+		return initialMaximumCapacity;
+	}
 
-    public int getCurrentMaximumCapacity() {
-        return currentMaximumCapacity;
-    }
+	public int getCurrentMaximumCapacity() {
+		return currentMaximumCapacity;
+	}
 
-    public void setCurrentMaximumCapacity(int currentMaximumCapacity) {
-        this.currentMaximumCapacity = currentMaximumCapacity;
-    }
+	public void setCurrentMaximumCapacity(int currentMaximumCapacity) {
+		this.currentMaximumCapacity = currentMaximumCapacity;
+	}
 
-    public AID getOwnerCloudNetworkAgent() {
-        return ownerCloudNetworkAgent;
-    }
+	public AID getOwnerCloudNetworkAgent() {
+		return ownerCloudNetworkAgent;
+	}
 
-    public double getPricePerHour() {
-        return pricePerHour;
-    }
+	public double getPricePerHour() {
+		return pricePerHour;
+	}
 
-    public Map<Job, JobStatusEnum> getServerJobs() {
-        return serverJobs;
-    }
+	public Map<Job, JobStatusEnum> getServerJobs() {
+		return serverJobs;
+	}
 
-    public List<AID> getOwnedGreenSources() {
-        return ownedGreenSources;
-    }
+	public List<AID> getOwnedGreenSources() {
+		return ownedGreenSources;
+	}
 
-    public Map<String, AID> getGreenSourceForJobMap() {
-        return greenSourceForJobMap;
-    }
+	public Map<String, AID> getGreenSourceForJobMap() {
+		return greenSourceForJobMap;
+	}
 
-    public ServerStateManagement manage() {
-        return stateManagement;
-    }
+	public ServerStateManagement manage() {
+		return stateManagement;
+	}
 
-    public void tookJobIntoProcessing() {
-        currentlyProcessing.incrementAndGet();
-    }
+	public void tookJobIntoProcessing() {
+		currentlyProcessing.incrementAndGet();
+	}
 
-    public void stoppedJobProcessing() {
-        currentlyProcessing.decrementAndGet();
-    }
+	public void stoppedJobProcessing() {
+		currentlyProcessing.decrementAndGet();
+	}
 
-    public boolean canTakeIntoProcessing() {
-        return currentlyProcessing.get() < JOB_PROCESSING_LIMIT;
-    }
+	public boolean canTakeIntoProcessing() {
+		return currentlyProcessing.get() < JOB_PROCESSING_LIMIT;
+	}
 }

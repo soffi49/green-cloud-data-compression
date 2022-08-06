@@ -2,10 +2,10 @@ package weather.domain;
 
 public interface AbstractWeather {
 
-    Main getMain();
+	Main getMain();
 
-    Wind getWind();
+	Wind getWind();
 
-    Clouds getClouds();
+	Clouds getClouds();
 
 }

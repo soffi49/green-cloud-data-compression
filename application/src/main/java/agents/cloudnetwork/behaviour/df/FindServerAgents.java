@@ -6,7 +6,9 @@ import static yellowpages.YellowPagesService.search;
 import agents.cloudnetwork.CloudNetworkAgent;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
+
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,30 +17,30 @@ import org.slf4j.LoggerFactory;
  */
 public class FindServerAgents extends OneShotBehaviour {
 
-    private static final Logger logger = LoggerFactory.getLogger(FindServerAgents.class);
+	private static final Logger logger = LoggerFactory.getLogger(FindServerAgents.class);
 
-    private CloudNetworkAgent myCloudNetworkAgent;
+	private CloudNetworkAgent myCloudNetworkAgent;
 
-    /**
-     * Method runs at the behaviours start. It casts the agent to the agent of type CloudNetworkAgent
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-        this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
-    }
+	/**
+	 * Method runs at the behaviours start. It casts the agent to the agent of type CloudNetworkAgent
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
+	}
 
-    /**
-     * Method searches the Directory Facilitator for the corresponding to the given Cloud Network Agent servers
-     */
-    @Override
-    public void action() {
-        final List<AID> serverAgents = search(myAgent, SA_SERVICE_TYPE, myAgent.getName());
+	/**
+	 * Method searches the Directory Facilitator for the corresponding to the given Cloud Network Agent servers
+	 */
+	@Override
+	public void action() {
+		final List<AID> serverAgents = search(myAgent, SA_SERVICE_TYPE, myAgent.getName());
 
-        if (serverAgents.isEmpty()) {
-            logger.info("[{}] No Server Agents were found", myCloudNetworkAgent.getName());
-            myCloudNetworkAgent.doDelete();
-        }
-        myCloudNetworkAgent.setOwnedServers(serverAgents);
-    }
+		if (serverAgents.isEmpty()) {
+			logger.info("[{}] No Server Agents were found", myCloudNetworkAgent.getName());
+			myCloudNetworkAgent.doDelete();
+		}
+		myCloudNetworkAgent.setOwnedServers(serverAgents);
+	}
 }
