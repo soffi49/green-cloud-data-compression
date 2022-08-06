@@ -1,12 +1,12 @@
 package domain.job;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.immutables.value.Value;
 
-import java.time.OffsetDateTime;
-import java.util.List;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Object stores the data necessary to perform the transfer in case of the power shortage

@@ -8,6 +8,11 @@ import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.ProposePowerRequest;
 import domain.GreenSourceData;
@@ -18,13 +23,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
-import java.util.Optional;
-
 import messages.domain.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviour which is responsible for listening for the Monitoring Agent's response with forecast data.

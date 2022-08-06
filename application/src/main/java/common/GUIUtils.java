@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import agents.AbstractAgent;
+import agents.cloudnetwork.CloudNetworkAgent;
+import jade.core.AID;
+
 /**
  * Class defines set of utilities used together with GUI Controller
  */

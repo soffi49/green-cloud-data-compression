@@ -6,6 +6,11 @@ import static common.TimeUtils.getCurrentTime;
 import static common.constant.MessageProtocolConstants.CANCELLED_TRANSFER_PROTOCOL;
 import static messages.domain.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 
+import java.time.OffsetDateTime;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import agents.greenenergy.GreenEnergyAgent;
 import common.mapper.JobMapper;
 import domain.job.ImmutablePowerShortageJob;

@@ -11,6 +11,14 @@ import static mapper.JsonMapper.getMapper;
 import static messages.domain.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static messages.domain.ReplyMessageFactory.prepareReply;
 
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.announcer.AnnounceSourceJobTransfer;
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
@@ -24,14 +32,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import messages.domain.CallForProposalMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Behaviour is responsible for catching the information that the specific green source will have the power shortage at the given time
