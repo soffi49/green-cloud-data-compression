@@ -1,4 +1,4 @@
-package com.gui.domain.types;
+package com.gui.agents.domain;
 
 /**
  * Enum storing available job statuses displayed in GUI
@@ -11,6 +11,7 @@ public enum JobStatusEnum {
 	DELAYED("DELAYED"),
 	FINISHED("FINISHED"),
 	ON_BACK_UP("ON BACK UP"),
+    ON_HOLD("ON_HOLD"),
 	REJECTED("REJECTED");
 
 	private final String status;

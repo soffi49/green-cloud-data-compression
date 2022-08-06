@@ -1,11 +1,11 @@
-package com.gui.domain;
+package com.gui.agents.domain;
 
-public class Location {
+public class AgentLocation {
 
 	private final String latitude;
 	private final String longitude;
 
-	public Location(String latitude, String longitude) {
+	public AgentLocation(final String latitude, final String longitude) {
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}

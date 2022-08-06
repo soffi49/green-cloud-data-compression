@@ -1,9 +1,9 @@
-package com.gui.domain.nodes;
+package com.gui.agents;
 
 /**
  * Agent node class representing the monitoring agent
  */
-public class MonitoringAgentNode extends AgentNode {
+public class MonitoringAgentNode extends AbstractAgentNode {
 
 	private final String greenEnergyAgent;
 
@@ -20,7 +20,15 @@ public class MonitoringAgentNode extends AgentNode {
 
 	@Override
 	public void createEdges() {
-		graphService.createAndAddEdgeToGraph(name, greenEnergyAgent, true);
+		graphService.createAndAddEdgeToGraph(agentName, greenEnergyAgent, true);
+	}
+
+	@Override
+	public void updateGraphUI() {
+	}
+
+	@Override
+	public void initializeLabelsMap() {
 	}
 
 }

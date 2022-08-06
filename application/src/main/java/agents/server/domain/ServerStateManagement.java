@@ -16,7 +16,7 @@ import agents.server.ServerAgent;
 import agents.server.behaviour.FinishJobExecution;
 import agents.server.behaviour.StartJobExecution;
 
-import com.gui.domain.nodes.ServerAgentNode;
+import com.gui.agents.ServerAgentNode;
 
 import common.TimeUtils;
 import common.mapper.JobMapper;
@@ -333,10 +333,10 @@ public class ServerStateManagement {
 		serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
 		serverAgentNode.updateJobsCount(getJobCount());
 		serverAgentNode.updateClientNumber(getClientNumber());
-		serverAgentNode.updateIsActive(getIsActiveState(), getIsActiveBackUpState());
+		serverAgentNode.updateIsActive(getIsActiveState());
 		serverAgentNode.updateTraffic(getCurrentPowerInUseForServer());
 		serverAgentNode.updateBackUpTraffic(getCurrentBackUpPowerInUseForServer());
-		serverAgentNode.updateOnHoldJobsCount(getOnHoldJobsCount());
+		serverAgentNode.updateJobsOnHoldCount(getOnHoldJobsCount());
 	}
 
 	/**

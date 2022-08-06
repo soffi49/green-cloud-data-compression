@@ -14,7 +14,7 @@ import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.FinishJobManually;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gui.domain.nodes.GreenEnergyAgentNode;
+import com.gui.agents.GreenEnergyAgentNode;
 
 import common.mapper.JobMapper;
 import domain.MonitoringData;
@@ -294,9 +294,9 @@ public class GreenEnergyStateManagement {
 		final GreenEnergyAgentNode serverAgentNode = (GreenEnergyAgentNode) greenEnergyAgent.getAgentNode();
 		serverAgentNode.updateMaximumCapacity(greenEnergyAgent.getMaximumCapacity());
 		serverAgentNode.updateJobsCount(getJobCount());
-		serverAgentNode.updateIsActive(getIsActiveState(), getHasJobsOnHold());
+		serverAgentNode.updateJobsOnHoldCount(getOnHoldJobCount());
+		serverAgentNode.updateIsActive(getIsActiveState());
 		serverAgentNode.updateTraffic(getCurrentPowerInUseForGreenSource());
-		serverAgentNode.updateJobsOnHold(getOnHoldJobCount());
 	}
 
 	public void handleRefuse(final ACLMessage message, final PowerJob powerJob) {
@@ -418,10 +418,6 @@ public class GreenEnergyStateManagement {
 	}
 
 	private boolean getIsActiveState() {
-		return getCurrentPowerInUseForGreenSource() > 0 || getHasJobsOnHold();
-	}
-
-	private boolean getHasJobsOnHold() {
-		return getOnHoldJobCount() > 0;
+		return getCurrentPowerInUseForGreenSource() > 0 || getOnHoldJobCount() > 0;
 	}
 }

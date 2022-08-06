@@ -15,8 +15,8 @@ import static jade.lang.acl.MessageTemplate.or;
 
 import agents.client.ClientAgent;
 
-import com.gui.domain.nodes.ClientAgentNode;
-import com.gui.domain.types.JobStatusEnum;
+import com.gui.agents.ClientAgentNode;
+import com.gui.agents.domain.JobStatusEnum;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
