@@ -1,5 +1,6 @@
 package com.gui.gui.panels;
 
+import static com.gui.gui.panels.domain.PanelConstants.ADMIN_PANEL_AGENTS_TYPE_LABEL;
 import static com.gui.gui.panels.domain.PanelConstants.ADMIN_PANEL_COMBO_BOX_ATTRIBUTES;
 import static com.gui.gui.panels.domain.PanelConstants.ADMIN_PANEL_DEFAULT_EMPTY_PANEL_TITLE;
 import static com.gui.gui.panels.domain.PanelConstants.ADMIN_PANEL_DEFAULT_PANEL_LAYOUT;
@@ -11,8 +12,8 @@ import static com.gui.gui.utils.GUIComponentUtils.createDefaultAgentComboBox;
 import static com.gui.gui.utils.GUIComponentUtils.createDefaultAgentComboBoxModel;
 import static com.gui.gui.utils.GUIComponentUtils.createSeparator;
 import static com.gui.gui.utils.GUILabelUtils.addPanelHeader;
-import static com.gui.gui.utils.GUIPanelUtils.createBorderPanel;
-import static com.gui.gui.utils.GUIPanelUtils.createDefaultEmptyPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createBorderPanel;
+import static com.gui.gui.utils.GUIContainerUtils.createDefaultEmptyPanel;
 import static com.gui.gui.utils.domain.GUIStyleConstants.GRAY_2_COLOR;
 
 import java.awt.CardLayout;
@@ -27,7 +28,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.gui.agents.domain.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 import com.gui.event.EventGUIService;
 import com.gui.event.EventGUIServiceImpl;
 
@@ -37,8 +38,8 @@ import com.gui.event.EventGUIServiceImpl;
 public class AdminPanel {
 
 	private final JPanel mainPanel;
-	private final List<AgentNode> allNetworkAgentNodes;
-	private final Map<AgentNode, Component> networkAgentNodesEventPanels;
+	private final List<AbstractAgentNode> allNetworkAgentNodes;
+	private final Map<AbstractAgentNode, Component> networkAgentNodesEventPanels;
 	private final JComboBox agentComboBox;
 	private final EventGUIService eventGUIService;
 	private JPanel eventPanel;
@@ -50,7 +51,8 @@ public class AdminPanel {
 		this.eventGUIService = new EventGUIServiceImpl();
 		this.allNetworkAgentNodes = new ArrayList<>();
 		this.networkAgentNodesEventPanels = initializeAgentEventPanelMap();
-		this.agentComboBox = createDefaultAgentComboBox(allNetworkAgentNodes, e -> changeSelectedNetworkAgent());
+		this.agentComboBox = createDefaultAgentComboBox(allNetworkAgentNodes, e -> changeSelectedNetworkAgent(),
+				ADMIN_PANEL_AGENTS_TYPE_LABEL);
 		this.mainPanel = initializeAdminPanel();
 	}
 
@@ -64,7 +66,7 @@ public class AdminPanel {
 	/**
 	 * Method updates the network drop-down with new agent nodes
 	 */
-	public void revalidateComboBoxModel(final AgentNode modifiedAgentNode, final boolean doDelete) {
+	public void revalidateComboBoxModel(final AbstractAgentNode modifiedAgentNode, final boolean doDelete) {
 		if (IS_NETWORK_AGENT.test(modifiedAgentNode)) {
 			if (doDelete) {
 				allNetworkAgentNodes.remove(modifiedAgentNode);
@@ -76,7 +78,7 @@ public class AdminPanel {
 				networkAgentNodesEventPanels.putIfAbsent(modifiedAgentNode, newAgentEventPanel);
 				eventPanel.add(newAgentEventPanel, modifiedAgentNode.getAgentName());
 			}
-			createDefaultAgentComboBoxModel(allNetworkAgentNodes, agentComboBox);
+			createDefaultAgentComboBoxModel(allNetworkAgentNodes, agentComboBox, ADMIN_PANEL_AGENTS_TYPE_LABEL);
 		}
 	}
 
@@ -96,8 +98,8 @@ public class AdminPanel {
 		panel.add(createSeparator(GRAY_2_COLOR), ADMIN_PANEL_SEPARATOR_ATTRIBUTES);
 	}
 
-	private Map<AgentNode, Component> initializeAgentEventPanelMap() {
-		final Map<AgentNode, Component> agentEventPanelMap = new HashMap<>();
+	private Map<AbstractAgentNode, Component> initializeAgentEventPanelMap() {
+		final Map<AbstractAgentNode, Component> agentEventPanelMap = new HashMap<>();
 		allNetworkAgentNodes.forEach(
 				agentNode -> agentEventPanelMap.put(agentNode, eventGUIService.createEventPanelForAgent(agentNode)));
 		return agentEventPanelMap;

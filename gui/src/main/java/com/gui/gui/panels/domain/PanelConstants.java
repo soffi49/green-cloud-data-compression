@@ -2,9 +2,9 @@ package com.gui.gui.panels.domain;
 
 import java.util.function.Predicate;
 
-import com.gui.agents.domain.AgentNode;
-import com.gui.domain.nodes.ClientAgentNode;
-import com.gui.domain.nodes.MonitoringAgentNode;
+import com.gui.agents.AbstractAgentNode;
+import com.gui.agents.ClientAgentNode;
+import com.gui.agents.MonitoringAgentNode;
 
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -18,7 +18,7 @@ public class PanelConstants {
 	/**
 	 * Common constants
 	 */
-	public static final Predicate<AgentNode> IS_NETWORK_AGENT =
+	public static final Predicate<AbstractAgentNode> IS_NETWORK_AGENT =
 			agentNode -> !(agentNode instanceof MonitoringAgentNode) && !(agentNode instanceof ClientAgentNode);
 
 	/**
@@ -32,15 +32,18 @@ public class PanelConstants {
 	/**
 	 * Admin panel constants
 	 */
-	public static final MigLayout ADMIN_PANEL_DEFAULT_PANEL_LAYOUT = new MigLayout(new LC().fillX());
 	public static final String ADMIN_PANEL_DEFAULT_EMPTY_PANEL_TITLE = "DEFAULT_EMPTY_PANEL";
-	public static final CC ADMIN_PANEL_EVENT_PANEL_ATTRIBUTES = new CC().growX().spanX().wrap();
+	public static final String ADMIN_PANEL_AGENTS_TYPE_LABEL = "network agent";
+	public static final MigLayout ADMIN_PANEL_DEFAULT_PANEL_LAYOUT = new MigLayout(new LC().fillX());
+	public static final CC ADMIN_PANEL_EVENT_PANEL_ATTRIBUTES = new CC().grow().span().wrap();
 	public static final CC ADMIN_PANEL_COMBO_BOX_ATTRIBUTES = new CC().height("30px").grow().spanX();
 	public static final CC ADMIN_PANEL_SEPARATOR_ATTRIBUTES = new CC().spanX().growX();
 
 	/**
 	 * Details panel constants
 	 */
+	public static final String DETAILS_PANEL_NETWORK_AGENTS_TYPE_LABEL = "network agent";
+	public static final String DETAILS_PANEL_CLIENT_AGENTS_TYPE_LABEL = "client";
 	public static final MigLayout DETAILS_PANEL_DEFAULT_PANEL_LAYOUT = new MigLayout(new LC().fillX());
 	public static final CC DETAILS_PANEL_ATTRIBUTES = new CC().height("100%").span().grow().wrap().gapY("5px", "0px");
 	public static final CC DETAILS_PANEL_COMBO_BOX_ATTRIBUTES = new CC().height("20px").width("100%").wrap();

@@ -1,7 +1,6 @@
 package com.gui.graph;
 
-import com.gui.domain.nodes.AgentNode;
-import com.mxgraph.model.mxCell;
+import com.gui.agents.AbstractAgentNode;
 import com.mxgraph.swing.mxGraphComponent;
 
 import java.util.List;
@@ -23,7 +22,7 @@ public interface GraphService {
      *
      * @param node agent node to be added to the graph
      */
-    void createAndAddNodeToGraph(final AgentNode node);
+    void createAndAddNodeToGraph(final AbstractAgentNode node);
 
 
     /**
@@ -31,7 +30,7 @@ public interface GraphService {
      *
      * @param node agent node to removed from the graph
      */
-    void removeNodeFromGraph(final AgentNode node);
+    void removeNodeFromGraph(final AbstractAgentNode node);
 
     /**
      * Method updates a stylesheet for the vertex representing given node
