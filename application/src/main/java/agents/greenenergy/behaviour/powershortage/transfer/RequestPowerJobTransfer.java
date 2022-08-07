@@ -21,6 +21,11 @@ import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+
 /**
  * Behaviour is responsible for handling the transfer of power jobs affected by the power shortage
  */

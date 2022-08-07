@@ -13,8 +13,8 @@ import static messages.MessagingUtils.retrieveProposals;
 import agents.client.ClientAgent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gui.domain.nodes.ClientAgentNode;
-import com.gui.domain.types.JobStatusEnum;
+import com.gui.agents.ClientAgentNode;
+import com.gui.agents.domain.JobStatusEnum;
 
 import common.constant.InvalidJobIdConstant;
 import domain.job.Job;

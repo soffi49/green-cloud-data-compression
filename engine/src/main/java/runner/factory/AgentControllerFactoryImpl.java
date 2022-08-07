@@ -1,7 +1,12 @@
 package runner.factory;
 
-import com.gui.domain.Location;
-import com.gui.domain.nodes.*;
+import com.gui.agents.AbstractAgentNode;
+import com.gui.agents.ClientAgentNode;
+import com.gui.agents.CloudNetworkAgentNode;
+import com.gui.agents.GreenEnergyAgentNode;
+import com.gui.agents.MonitoringAgentNode;
+import com.gui.agents.ServerAgentNode;
+import com.gui.agents.domain.AgentLocation;
 
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
@@ -57,7 +62,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 	}
 
 	@Override
-	public AgentNode createAgentNode(AgentArgs agentArgs, ScenarioArgs scenarioArgs) {
+	public AbstractAgentNode createAgentNode(AgentArgs agentArgs, ScenarioArgs scenarioArgs) {
 		if (agentArgs instanceof ClientAgentArgs clientArgs) {
 			final String startDate = formatToDate(clientArgs.getStart());
 			final String endDate = formatToDate(clientArgs.getEnd());
@@ -80,7 +85,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 					Double.parseDouble(greenEnergyAgentArgs.getMaximumCapacity()),
 					greenEnergyAgentArgs.getMonitoringAgent(),
 					greenEnergyAgentArgs.getOwnerSever(),
-					new Location(greenEnergyAgentArgs.getLatitude(), greenEnergyAgentArgs.getLongitude()));
+					new AgentLocation(greenEnergyAgentArgs.getLatitude(), greenEnergyAgentArgs.getLongitude()));
 		}
 		if (agentArgs instanceof MonitoringAgentArgs monitoringAgentArgs) {
 			final ImmutableGreenEnergyAgentArgs ownerGreenSource = scenarioArgs.getGreenEnergyAgentsArgs().stream()

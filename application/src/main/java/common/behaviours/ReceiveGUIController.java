@@ -3,7 +3,7 @@ package common.behaviours;
 import agents.AbstractAgent;
 
 import com.gui.controller.GUIController;
-import com.gui.domain.nodes.AgentNode;
+import com.gui.agents.AbstractAgentNode;
 
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -48,8 +48,8 @@ public class ReceiveGUIController extends CyclicBehaviour {
 		if (object != null) {
 			if (object instanceof GUIController) {
 				abstractAgent.setGuiController((GUIController) object);
-			} else if (object instanceof AgentNode) {
-				abstractAgent.setAgentNode((AgentNode) object);
+			} else if (object instanceof AbstractAgentNode) {
+				abstractAgent.setAgentNode((AbstractAgentNode) object);
 			}
 			if (objectCounter == 1) {
 				logger.info("[{}] Agent connected with the controller", myAgent.getName());

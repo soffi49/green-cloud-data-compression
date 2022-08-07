@@ -1,8 +1,8 @@
 package com.gui.controller;
 
-import com.gui.domain.nodes.AgentNode;
-
 import java.util.List;
+
+import com.gui.agents.AbstractAgentNode;
 
 /**
  * Controller for GUI
@@ -19,19 +19,19 @@ public interface GUIController extends Runnable {
 	 *
 	 * @param agent node of the specified agent
 	 */
-	void addAgentNodeToGraph(final AgentNode agent);
-
-	/**
-	 * Method creates edges based on existing nodes
-	 */
-	void createEdges();
+	void addAgentNodeToGraph(final AbstractAgentNode agent);
 
 	/**
 	 * Method remove agent node from the graph
 	 *
 	 * @param agentNode agent node that is to be removed
 	 */
-	void removeAgentNodeFromGraph(final AgentNode agentNode);
+	void removeAgentNodeFromGraph(final AbstractAgentNode agentNode);
+
+	/**
+	 * Method creates edges based on existing nodes
+	 */
+	void createEdges();
 
 	/**
 	 * Method updates the clients number by given value
@@ -67,6 +67,6 @@ public interface GUIController extends Runnable {
 	 * @param senderAgent    agent sending the message
 	 * @param receiversNames names of the agents receiving the message
 	 */
-	void displayMessageArrow(final AgentNode senderAgent, final List<String> receiversNames);
+	void displayMessageArrow(final AbstractAgentNode senderAgent, final List<String> receiversNames);
 
 }
