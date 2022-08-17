@@ -59,6 +59,8 @@ public class VolunteerForJob extends ProposeInitiator {
 			final Job jobInstance = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceIdentifier);
 			final Integer availableCapacity = myServerAgent.manage().getAvailableCapacity(jobInstance.getStartTime(), jobInstance.getEndTime());
 			if (jobInstance.getPower() > availableCapacity){
+				myServerAgent.getServerJobs().remove(jobInstance);
+				myServerAgent.getGreenSourceForJobMap().remove(jobInstanceIdentifier.getJobId());
 				myServerAgent.manage().updateClientNumber();
 				displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
 				myAgent.send(ReplyMessageFactory.prepareFailureReplyWithProtocol(replyMessage, jobInstanceIdentifier,
