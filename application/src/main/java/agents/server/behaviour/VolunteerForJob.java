@@ -55,13 +55,23 @@ public class VolunteerForJob extends ProposeInitiator {
 			logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
 			final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(),
 					JobWithProtocol.class);
-			final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
-			myServerAgent.getServerJobs()
-					.replace(myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
-			myServerAgent.manage().updateClientNumber();
-			displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-			myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId,
-					jobWithProtocol.getReplyProtocol()));
+			final JobInstanceIdentifier jobInstanceIdentifier = jobWithProtocol.getJobInstanceIdentifier();
+			final Job jobInstance = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceIdentifier);
+			final Integer availableCapacity = myServerAgent.manage().getAvailableCapacity(jobInstance.getStartTime(), jobInstance.getEndTime());
+			if (jobInstance.getPower() > availableCapacity){
+				myServerAgent.manage().updateClientNumber();
+				displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
+				myAgent.send(ReplyMessageFactory.prepareFailureReplyWithProtocol(replyMessage, jobInstanceIdentifier,
+						jobWithProtocol.getReplyProtocol()));
+			}
+			else{
+				myServerAgent.getServerJobs()
+						.replace(jobInstance, JobStatusEnum.ACCEPTED);
+				myServerAgent.manage().updateClientNumber();
+				displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
+				myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceIdentifier,
+						jobWithProtocol.getReplyProtocol()));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
