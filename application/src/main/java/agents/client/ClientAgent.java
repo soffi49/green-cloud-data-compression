@@ -5,6 +5,7 @@ import static common.TimeUtils.getCurrentTime;
 
 import agents.client.behaviour.RequestJobExecution;
 import agents.client.behaviour.df.FindCloudNetworkAgents;
+import agents.client.behaviour.listener.ListenForJobFailure;
 import agents.client.behaviour.listener.ListenForJobUpdate;
 import common.behaviours.ReceiveGUIController;
 import common.TimeUtils;
@@ -111,6 +112,7 @@ public class ClientAgent extends AbstractClientAgent {
 		startingBehaviour.addSubBehaviour(new RequestJobExecution(this, null, job));
 		return List.of(
 				new ListenForJobUpdate(this),
+				new ListenForJobFailure(this),
 				startingBehaviour
 		);
 	}

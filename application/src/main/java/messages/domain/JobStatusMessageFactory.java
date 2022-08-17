@@ -1,8 +1,7 @@
 package messages.domain;
 
 import static common.constant.MessageProtocolConstants.*;
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.ACLMessage.REQUEST;
+import static jade.lang.acl.ACLMessage.*;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,6 +32,14 @@ public class JobStatusMessageFactory {
 		informationMessage.setContent(protocol);
 		informationMessage.addReceiver(new AID(clientId, AID.ISGUID));
 		return informationMessage;
+	}
+
+	public static ACLMessage prepareJobFailureMessageForClient(final String clientId, final String protocol) {
+		final ACLMessage failureMessage = new ACLMessage(FAILURE);
+		failureMessage.setContent(protocol);
+		failureMessage.setProtocol(protocol);
+		failureMessage.addReceiver(new AID(clientId, AID.ISGUID));
+		return failureMessage;
 	}
 
 	/**

@@ -82,27 +82,4 @@ public class ReplyMessageFactory {
 		}
 		return replyMessage;
 	}
-
-	/**
-	 * Method prepares the reply failure message containing the conversation topic as content protocol
-	 *
-	 * @param replyMessage  reply ACLMessage that is to be sent
-	 * @param jobInstanceId unique job instance identifier
-	 * @param protocol      conversation topic being expected response protocol
-	 * @return reply ACLMessage
-	 */
-	public static ACLMessage prepareFailureReplyWithProtocol(final ACLMessage replyMessage,
-												 final JobInstanceIdentifier jobInstanceId, final String protocol) {
-		final JobWithProtocol pricedJob = ImmutableJobWithProtocol.builder()
-				.jobInstanceIdentifier(jobInstanceId)
-				.replyProtocol(protocol)
-				.build();
-		replyMessage.setPerformative(FAILURE);
-		try {
-			replyMessage.setContent(getMapper().writeValueAsString(pricedJob));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		return replyMessage;
-	}
 }

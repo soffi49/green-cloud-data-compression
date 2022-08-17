@@ -1,10 +1,13 @@
 package agents.server.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
+import static common.constant.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
+import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 
 import agents.server.ServerAgent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
@@ -63,8 +66,8 @@ public class VolunteerForJob extends ProposeInitiator {
 				myServerAgent.getGreenSourceForJobMap().remove(jobInstanceIdentifier.getJobId());
 				myServerAgent.manage().updateClientNumber();
 				displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-				myAgent.send(ReplyMessageFactory.prepareFailureReplyWithProtocol(replyMessage, jobInstanceIdentifier,
-						jobWithProtocol.getReplyProtocol()));
+				myServerAgent.send(ReplyMessageFactory.prepareReply(replyMessage, jobInstanceIdentifier, REJECT_PROPOSAL));
+				sendFailureToCNA(accept_proposal, jobInstanceIdentifier);
 			}
 			else{
 				myServerAgent.getServerJobs()
@@ -102,5 +105,17 @@ public class VolunteerForJob extends ProposeInitiator {
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void sendFailureToCNA(ACLMessage message, Object jobId) {
+		final ACLMessage failureMessage = message.createReply();
+		failureMessage.setProtocol(FAILED_JOB_PROTOCOL);
+		failureMessage.setPerformative(FAILURE);
+		try{
+			failureMessage.setContent(getMapper().writeValueAsString(jobId));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		myServerAgent.send(failureMessage);
 	}
 }
