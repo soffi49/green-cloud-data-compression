@@ -48,7 +48,9 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	protected void takeDown() {
 		logger.info("I'm finished. Bye!");
-		getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		if(GUI_ENABLED) {
+			getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		}
 		super.takeDown();
 	}
 

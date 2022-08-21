@@ -9,6 +9,9 @@ import jade.core.Agent;
  * Abstract class representing agent which has the connection with GUI controller
  */
 public abstract class AbstractAgent extends Agent {
+
+	public static boolean GUI_ENABLED = true;
+
 	private GUIController guiController;
 	private AbstractAgentNode agentNode;
 
@@ -44,5 +47,9 @@ public abstract class AbstractAgent extends Agent {
 
 	public void setGuiController(GUIController guiController) {
 		this.guiController = guiController;
+	}
+
+	public static void disableGui() {
+		GUI_ENABLED = false;
 	}
 }
