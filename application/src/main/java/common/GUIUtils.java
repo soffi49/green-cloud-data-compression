@@ -1,5 +1,7 @@
 package common;
 
+import static agents.AbstractAgent.GUI_ENABLED;
+
 import agents.AbstractAgent;
 import agents.cloudnetwork.CloudNetworkAgent;
 import jade.core.AID;
@@ -26,10 +28,12 @@ public class GUIUtils {
 	 * @param jobId unique identifier of the GUI
 	 */
 	public static void announceFinishedJob(final CloudNetworkAgent agent, final String jobId) {
-		final String information = String.format("Execution of the job %s has finished!", jobId);
+		if(!GUI_ENABLED) {
+			return;
+		}
+
 		agent.getGuiController().updateActiveJobsCountByValue(-1);
 		agent.getGuiController().updateAllJobsCountByValue(-1);
-		//agent.getGuiController().addNewInformation(information);
 	}
 
 	/**
@@ -39,6 +43,10 @@ public class GUIUtils {
 	 * @param jobId unique identifier of the GUI
 	 */
 	public static void announceBookedJob(final AbstractAgent agent, final String jobId) {
+		if(!GUI_ENABLED) {
+			return;
+		}
+
 		agent.getGuiController().updateAllJobsCountByValue(1);
 	}
 
@@ -48,9 +56,11 @@ public class GUIUtils {
 	 * @param agent agent updating the GUI
 	 */
 	public static void announceNewClient(final AbstractAgent agent) {
-		final String information = "New client in Cloud Network!";
+		if(!GUI_ENABLED) {
+			return;
+		}
+
 		agent.getGuiController().updateClientsCountByValue(1);
-		//agent.getGuiController().addNewInformation(information);
 	}
 
 	/**
@@ -60,6 +70,10 @@ public class GUIUtils {
 	 * @param receiver address of the receiver
 	 */
 	public static void displayMessageArrow(final AbstractAgent agent, final AID receiver) {
+		if(!GUI_ENABLED) {
+			return;
+		}
+
 		agent.getGuiController()
 				.displayMessageArrow(agent.getAgentNode(), Collections.singletonList(receiver.getLocalName()));
 	}
@@ -71,6 +85,10 @@ public class GUIUtils {
 	 * @param receivers addresses of the receivers
 	 */
 	public static void displayMessageArrow(final AbstractAgent agent, final List<AID> receivers) {
+		if(!GUI_ENABLED) {
+			return;
+		}
+
 		agent.getGuiController()
 				.displayMessageArrow(agent.getAgentNode(), receivers.stream().map(AID::getLocalName).toList());
 	}
@@ -82,6 +100,10 @@ public class GUIUtils {
 	 * @param receivers iterator of addresses of the receivers
 	 */
 	public static void displayMessageArrow(final AbstractAgent agent, final Iterator<AID> receivers) {
+		if(!GUI_ENABLED) {
+			return;
+		}
+
 		final Iterable<AID> iterable = () -> receivers;
 		final Stream<AID> stream = StreamSupport.stream(iterable.spliterator(), false);
 		agent.getGuiController().displayMessageArrow(agent.getAgentNode(), stream.map(AID::getLocalName).toList());

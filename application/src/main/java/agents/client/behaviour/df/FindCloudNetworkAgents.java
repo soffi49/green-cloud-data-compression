@@ -40,6 +40,7 @@ public class FindCloudNetworkAgents extends OneShotBehaviour {
 		if (cloudNetworkAgents.isEmpty()) {
 			logger.info("[{}] No Cloud Network Agents were found", myClientAgent.getName());
 			myClientAgent.doDelete();
+			return;
 		}
 		if (!myClientAgent.isAnnounced()) {
 			announceNewClient(myClientAgent);

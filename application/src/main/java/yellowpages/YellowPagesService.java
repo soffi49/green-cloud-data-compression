@@ -90,7 +90,7 @@ public class YellowPagesService {
 			return Arrays.stream(DFService.search(agent, prepareAgentDescriptionTemplate(serviceType)))
 					.map(DFAgentDescription::getName).toList();
 		} catch (FIPAException e) {
-			e.printStackTrace();
+			logger.info("Haven't found any agents because {}", e.getMessage());
 		}
 
 		return emptyList();

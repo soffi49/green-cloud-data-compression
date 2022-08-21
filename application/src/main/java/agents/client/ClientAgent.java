@@ -41,7 +41,12 @@ public class ClientAgent extends AbstractClientAgent {
 		if (Objects.nonNull(args) && args.length == 4) {
 			initializeAgent();
 			final Job jobToBeExecuted = initializeAgentJob(args);
-			addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviour(jobToBeExecuted)));
+			if (GUI_ENABLED) {
+				addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviour(jobToBeExecuted)));
+			}
+			else {
+				prepareStartingBehaviour(jobToBeExecuted).forEach(this::addBehaviour);
+			}
 		} else {
 			logger.error(
 					"Incorrect arguments: some parameters for client's job are missing - check the parameters in the documentation");
