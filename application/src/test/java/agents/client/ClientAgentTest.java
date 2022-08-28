@@ -43,6 +43,9 @@ class ClientAgentTest {
 				.as("Created agent should have correct properties")
 				.isEqualTo("test_agent");
 
+		// when
+		await().atMost(10, SECONDS).until(() -> !agent.isAlive());
+
 		// then
 		assertThat(agent.isAlive())
 				.as("Agent should be removed when no cloud network agents were found")
