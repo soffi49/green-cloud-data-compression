@@ -3,7 +3,7 @@ package agents.cloudnetwork.behaviour;
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
 import agents.cloudnetwork.CloudNetworkAgent;
@@ -18,7 +18,7 @@ import jade.proto.ProposeInitiator;
 import java.time.OffsetDateTime;
 import java.util.Date;
 
-import messages.domain.ReplyMessageFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

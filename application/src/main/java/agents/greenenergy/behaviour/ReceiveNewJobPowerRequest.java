@@ -1,6 +1,6 @@
-package agents.greenenergy.behaviour.powercheck.cfp;
+package agents.greenenergy.behaviour;
 
-import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -12,6 +12,7 @@ import agents.greenenergy.behaviour.powercheck.RequestForecastData;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import agents.greenenergy.behaviour.powercheck.cfp.ReceiveWeatherDataForNewJob;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.Agent;
@@ -23,7 +24,7 @@ import jade.lang.acl.MessageTemplate;
 import java.util.Objects;
 
 
-import messages.domain.ReplyMessageFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

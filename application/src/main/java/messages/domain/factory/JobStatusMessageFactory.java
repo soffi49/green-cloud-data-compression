@@ -1,6 +1,6 @@
-package messages.domain;
+package messages.domain.factory;
 
-import static common.constant.MessageProtocolConstants.*;
+import static messages.domain.constants.MessageProtocolConstants.*;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;

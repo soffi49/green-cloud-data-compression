@@ -1,7 +1,7 @@
 package agents.server.behaviour.listener;
 
 import agents.server.ServerAgent;
-import agents.server.behaviour.powershortage.announcer.AnnounceServerPowerShortage;
+import agents.server.behaviour.powershortage.announcer.AnnounceServerPowerShortageStart;
 import agents.server.behaviour.powershortage.announcer.AnnounceServerPowerShortageFinish;
 
 import com.gui.event.domain.AbstractEvent;
@@ -43,7 +43,7 @@ public class ListenForServerEvent extends TickerBehaviour {
 						myServerAgent.addBehaviour(new AnnounceServerPowerShortageFinish(myServerAgent));
 					} else {
 						myServerAgent.addBehaviour(
-								new AnnounceServerPowerShortage(myServerAgent, event.getOccurrenceTime(),
+								new AnnounceServerPowerShortageStart(myServerAgent, event.getOccurrenceTime(),
 										powerShortageEvent.getNewMaximumPower()));
 					}
 				}

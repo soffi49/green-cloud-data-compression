@@ -1,4 +1,4 @@
-package common.constant;
+package messages.domain.constants;
 
 /**
  * Constants describing the message protocols.

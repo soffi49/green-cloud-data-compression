@@ -1,8 +1,7 @@
 package agents.server.behaviour.listener;
 
-import static common.constant.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
-import static common.constant.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
-import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
+import static messages.domain.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
 import static domain.job.JobStatusEnum.RUNNING_JOB_STATUSES;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.INFORM;
