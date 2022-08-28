@@ -11,8 +11,7 @@ import agents.server.behaviour.listener.ListenForJobStatusOrManualFinish;
 import agents.server.behaviour.listener.ListenForPowerConfirmation;
 import agents.server.behaviour.listener.ListenForServerEvent;
 import agents.server.behaviour.listener.ListenForWeather;
-import agents.server.behaviour.powershortage.listener.ListenForJobTransferCancellation;
-import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortage;
+import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferRequest;
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.domain.ServerStateManagement;
 import common.behaviours.ReceiveGUIController;
@@ -80,9 +79,8 @@ public class ServerAgent extends AbstractServerAgent {
 		return List.of(
 				new ReceiveJobRequest(),
 				new ListenForPowerConfirmation(),
-				new ListenForSourcePowerShortage(),
+				new ListenForSourceJobTransferRequest(),
 				new ListenForServerEvent(this),
-				new ListenForJobTransferCancellation(this),
 				new ListenForJobStatusOrManualFinish(),
 				new ListenForWeather(this),
 				new ListenForSourcePowerShortageFinish(),
