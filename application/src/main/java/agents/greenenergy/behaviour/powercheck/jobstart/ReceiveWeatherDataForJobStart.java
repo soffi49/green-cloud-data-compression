@@ -2,7 +2,8 @@ package agents.greenenergy.behaviour.powercheck.jobstart;
 
 import static common.GUIUtils.displayMessageArrow;
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
+import static domain.powershortage.PowerShortageCause.WEATHER_CAUSE;
+import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.MessageTemplate.MatchConversationId;
@@ -13,7 +14,7 @@ import static jade.lang.acl.MessageTemplate.or;
 import static java.util.Objects.nonNull;
 
 import agents.greenenergy.GreenEnergyAgent;
-import agents.greenenergy.behaviour.powershortage.announcer.AnnounceWeatherPowerShortage;
+import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
 import domain.MonitoringData;
 import domain.job.CheckedPowerJob;
 import jade.core.behaviours.CyclicBehaviour;
@@ -91,10 +92,11 @@ public class ReceiveWeatherDataForJobStart extends CyclicBehaviour {
 			myAgent.send(ReplyMessageFactory.prepareReply(originalMessage.createReply(), checkedPowerJob, REFUSE));
 			var currentCapacity = myGreenEnergyAgent.getCapacity(data, getCurrentTime().toInstant());
 			myAgent.addBehaviour(
-					new AnnounceWeatherPowerShortage(myGreenEnergyAgent,
+					new AnnounceSourcePowerShortage(myGreenEnergyAgent,
 							checkedPowerJob.getPowerJob(),
 							getCurrentTime(),
-							currentCapacity));
+							currentCapacity,
+							WEATHER_CAUSE));
 		} else {
 			logger.info("[{}] Everything okay - continuing job {} execution!", guid, powerJob.getJobId());
 			displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
