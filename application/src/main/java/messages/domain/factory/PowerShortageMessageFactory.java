@@ -1,13 +1,13 @@
-package messages.domain;
+package messages.domain.factory;
 
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import domain.job.JobInstanceIdentifier;
-import domain.job.PowerShortageJob;
+import domain.powershortage.PowerShortageJob;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 

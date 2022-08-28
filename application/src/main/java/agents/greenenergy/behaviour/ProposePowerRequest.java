@@ -6,7 +6,7 @@ import static common.TimeUtils.getCurrentTime;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.Objects.isNull;
 import static mapper.JsonMapper.getMapper;
-import static messages.domain.ReplyMessageFactory.prepareReply;
+import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 
 import agents.greenenergy.GreenEnergyAgent;
 

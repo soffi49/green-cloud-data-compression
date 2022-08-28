@@ -1,4 +1,4 @@
-package messages.domain;
+package messages.domain.factory;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static mapper.JsonMapper.getMapper;

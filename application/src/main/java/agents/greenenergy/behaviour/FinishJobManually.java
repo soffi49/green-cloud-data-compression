@@ -2,7 +2,7 @@ package agents.greenenergy.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
-import static messages.domain.JobStatusMessageFactory.prepareManualFinishMessageForServer;
+import static messages.domain.factory.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 
 import agents.greenenergy.GreenEnergyAgent;
 import domain.job.JobInstanceIdentifier;

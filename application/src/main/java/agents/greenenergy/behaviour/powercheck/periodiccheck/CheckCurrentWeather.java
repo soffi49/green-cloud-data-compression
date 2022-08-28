@@ -1,10 +1,9 @@
 package agents.greenenergy.behaviour.powercheck.periodiccheck;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.PERIODIC_WEATHER_CHECK_TIMEOUT;
-import static common.constant.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
 
 import agents.greenenergy.GreenEnergyAgent;
-import agents.greenenergy.behaviour.powercheck.jobstart.ReceiveWeatherDataForJobStart;
 import agents.greenenergy.behaviour.powercheck.RequestWeatherData;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.TickerBehaviour;

@@ -7,7 +7,7 @@ import static yellowpages.YellowPagesService.register;
 import agents.cloudnetwork.behaviour.ReceiveJobRequests;
 import agents.cloudnetwork.behaviour.df.FindServerAgents;
 import agents.cloudnetwork.behaviour.jobstatus.ReturnJobStatusUpdate;
-import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerPowerShortage;
+import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerJobTransferRequest;
 import agents.cloudnetwork.domain.CloudNetworkStateManagement;
 import common.behaviours.ReceiveGUIController;
 import jade.core.behaviours.Behaviour;
@@ -48,7 +48,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 		final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
 		parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
 		parallelBehaviour.addSubBehaviour(new ReturnJobStatusUpdate());
-		parallelBehaviour.addSubBehaviour(new ListenForServerPowerShortage());
+		parallelBehaviour.addSubBehaviour(new ListenForServerJobTransferRequest());
 		return Collections.singletonList(parallelBehaviour);
 	}
 

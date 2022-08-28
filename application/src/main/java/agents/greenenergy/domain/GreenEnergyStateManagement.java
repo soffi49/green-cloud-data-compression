@@ -10,24 +10,6 @@ import static domain.job.JobStatusEnum.JOB_ON_HOLD;
 import static java.util.stream.Collectors.toMap;
 import static mapper.JsonMapper.getMapper;
 
-import agents.greenenergy.GreenEnergyAgent;
-import agents.greenenergy.behaviour.FinishJobManually;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gui.agents.GreenEnergyAgentNode;
-
-import common.mapper.JobMapper;
-import domain.MonitoringData;
-import domain.job.ImmutablePowerJob;
-import domain.job.JobInstanceIdentifier;
-import domain.job.JobStatusEnum;
-import domain.job.PowerJob;
-import jade.lang.acl.ACLMessage;
-import messages.domain.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -40,6 +22,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gui.agents.GreenEnergyAgentNode;
+
+import agents.greenenergy.GreenEnergyAgent;
+import agents.greenenergy.behaviour.FinishJobManually;
+import common.mapper.JobMapper;
+import domain.MonitoringData;
+import domain.job.JobInstanceIdentifier;
+import domain.job.JobStatusEnum;
+import domain.job.PowerJob;
+import jade.lang.acl.ACLMessage;
+import messages.domain.factory.ReplyMessageFactory;
 
 /**
  * Set of utilities used to manage the internal state of the green energy agent
@@ -170,37 +168,35 @@ public class GreenEnergyStateManagement {
 	}
 
 	/**
-	 * Method creates new instances for given power job which will be affected by the power shortage
+	 * Method creates new instances for given power job which will be affected by the power shortage.
+	 * If the power shortage will begin after the start of job execution -> job will be divided into 2
 	 *
-	 * @param powerJob           affected job
+	 * Example:
+	 * Job1 (start: 08:00, finish: 10:00)
+	 * Power shortage start: 09:00
+	 *
+	 * Job1Instance1: (start: 08:00, finish: 09:00) <- job not affected by power shortage
+	 * Job1Instance2: (start: 09:00, finish: 10:00) <- job affected by power shortage
+	 *
+	 * @param powerJob           affected power job
 	 * @param powerShortageStart time when power shortage starts
 	 */
 	public PowerJob divideJobForPowerShortage(final PowerJob powerJob, final OffsetDateTime powerShortageStart) {
 		if (powerShortageStart.isAfter(powerJob.getStartTime())) {
-			final PowerJob onHoldJobInstance =
-					ImmutablePowerJob.builder()
-							.jobId(powerJob.getJobId())
-							.power(powerJob.getPower())
-							.startTime(powerShortageStart)
-							.endTime(powerJob.getEndTime())
-							.build();
-			final PowerJob finishedPowerJob =
-					ImmutablePowerJob.builder()
-							.jobId(powerJob.getJobId())
-							.power(powerJob.getPower())
-							.startTime(powerJob.getStartTime())
-							.endTime(powerShortageStart)
-							.build();
+			final PowerJob affectedPowerJobInstance = JobMapper.mapToJobNewStartTime(powerJob, powerShortageStart);
+			final PowerJob notAffectedPowerJobInstance = JobMapper.mapToJobNewEndTime(powerJob, powerShortageStart);
 			final JobStatusEnum currentJobStatus = greenEnergyAgent.getPowerJobs().get(powerJob);
+
 			greenEnergyAgent.getPowerJobs().remove(powerJob);
-			greenEnergyAgent.getPowerJobs().put(onHoldJobInstance, JobStatusEnum.ON_HOLD_TRANSFER);
-			greenEnergyAgent.getPowerJobs().put(finishedPowerJob, currentJobStatus);
+			greenEnergyAgent.getPowerJobs().put(affectedPowerJobInstance, JobStatusEnum.ON_HOLD_TRANSFER);
+			greenEnergyAgent.getPowerJobs().put(notAffectedPowerJobInstance, currentJobStatus);
 			final Date endDate = Date.from(
-					onHoldJobInstance.getEndTime().plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
+					affectedPowerJobInstance.getEndTime().plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
 			greenEnergyAgent.addBehaviour(
-					new FinishJobManually(greenEnergyAgent, endDate, JobMapper.mapToJobInstanceId(onHoldJobInstance)));
+					new FinishJobManually(greenEnergyAgent, endDate,
+							JobMapper.mapToJobInstanceId(affectedPowerJobInstance)));
 			updateGreenSourceGUI();
-			return onHoldJobInstance;
+			return affectedPowerJobInstance;
 		} else {
 			greenEnergyAgent.getPowerJobs().replace(powerJob, JobStatusEnum.ON_HOLD_TRANSFER);
 			updateGreenSourceGUI();

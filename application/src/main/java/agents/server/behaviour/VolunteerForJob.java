@@ -12,7 +12,7 @@ import domain.job.JobWithProtocol;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
-import messages.domain.ReplyMessageFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
