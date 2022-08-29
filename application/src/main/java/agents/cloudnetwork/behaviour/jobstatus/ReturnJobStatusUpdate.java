@@ -4,13 +4,16 @@ import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static common.constant.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
+import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
 import static mapper.JsonMapper.getMapper;
+import static messages.domain.JobStatusMessageFactory.prepareJobFailureMessageForClient;
 import static messages.domain.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
@@ -31,10 +34,12 @@ import java.util.Objects;
 public class ReturnJobStatusUpdate extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReturnJobStatusUpdate.class);
-	private static final MessageTemplate messageTemplate = and(MatchPerformative(INFORM),
-			or(or(MatchProtocol(FINISH_JOB_PROTOCOL),
-							MatchProtocol(STARTED_JOB_PROTOCOL)),
-					MatchProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL)));
+	private static final MessageTemplate messageTemplate = and(
+			or(MatchPerformative(INFORM), MatchPerformative(FAILURE)),
+			or(or(or(MatchProtocol(FINISH_JOB_PROTOCOL),
+					MatchProtocol(STARTED_JOB_PROTOCOL)),
+					MatchProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL)),
+					MatchProtocol(FAILED_JOB_PROTOCOL)));
 
 	private CloudNetworkAgent myCloudNetworkAgent;
 
@@ -64,6 +69,7 @@ public class ReturnJobStatusUpdate extends CyclicBehaviour {
 						case FINISH_JOB_PROTOCOL -> handleFinishJobMessage(jobInstanceId);
 						case STARTED_JOB_PROTOCOL -> handleStartedJobMessage(jobInstanceId);
 						case POWER_SHORTAGE_FINISH_ALERT_PROTOCOL -> handleGreenPowerJobMessage(jobInstanceId);
+						case FAILED_JOB_PROTOCOL -> handleFailedJobMessage(jobInstanceId);
 					}
 				}
 			} catch (Exception e) {
@@ -100,6 +106,21 @@ public class ReturnJobStatusUpdate extends CyclicBehaviour {
 		final String clientId = myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()).getClientIdentifier();
 		updateNetworkInformation(jobInstanceId.getJobId());
 		myAgent.send(prepareJobStatusMessageForClient(clientId, FINISH_JOB_PROTOCOL));
+	}
+
+	private void handleFailedJobMessage(final JobInstanceIdentifier jobInstanceId) {
+		logger.info("[{}] Sending information that the job {} execution has failed",
+				myAgent.getName(), jobInstanceId.getJobId());
+		final String clientId = myCloudNetworkAgent
+				.manage()
+				.getJobById(jobInstanceId.getJobId())
+				.getClientIdentifier();
+		myCloudNetworkAgent
+				.getNetworkJobs()
+				.remove(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()));
+		myCloudNetworkAgent
+				.getServerForJobMap().remove(jobInstanceId.getJobId());
+		myAgent.send(prepareJobFailureMessageForClient(clientId, FAILED_JOB_PROTOCOL));
 	}
 
 	private void updateNetworkInformation(final String jobId) {

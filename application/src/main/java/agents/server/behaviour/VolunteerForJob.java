@@ -55,7 +55,6 @@ public class VolunteerForJob extends ProposeInitiator {
 	@Override
 	protected void handleAcceptProposal(final ACLMessage accept_proposal) {
 		try {
-			logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
 			final JobWithProtocol jobWithProtocol = getMapper().readValue(accept_proposal.getContent(),
 					JobWithProtocol.class);
 			final JobInstanceIdentifier jobInstanceIdentifier = jobWithProtocol.getJobInstanceIdentifier();
@@ -64,19 +63,18 @@ public class VolunteerForJob extends ProposeInitiator {
 			if (jobInstance.getPower() > availableCapacity){
 				myServerAgent.getServerJobs().remove(jobInstance);
 				myServerAgent.getGreenSourceForJobMap().remove(jobInstanceIdentifier.getJobId());
-				myServerAgent.manage().updateClientNumber();
-				displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
 				myServerAgent.send(ReplyMessageFactory.prepareReply(replyMessage, jobInstanceIdentifier, REJECT_PROPOSAL));
-				sendFailureToCNA(accept_proposal, jobInstanceIdentifier);
+				myServerAgent.send(ReplyMessageFactory.prepareFailureReply(accept_proposal.createReply(), jobInstanceIdentifier));
 			}
 			else{
+				logger.info("[{}] Sending ACCEPT_PROPOSAL to Green Source Agent", myAgent.getName());
 				myServerAgent.getServerJobs()
 						.replace(jobInstance, JobStatusEnum.ACCEPTED);
-				myServerAgent.manage().updateClientNumber();
-				displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
 				myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceIdentifier,
 						jobWithProtocol.getReplyProtocol()));
 			}
+			myServerAgent.manage().updateClientNumber();
+			displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -105,17 +103,5 @@ public class VolunteerForJob extends ProposeInitiator {
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	private void sendFailureToCNA(ACLMessage message, Object jobId) {
-		final ACLMessage failureMessage = message.createReply();
-		failureMessage.setProtocol(FAILED_JOB_PROTOCOL);
-		failureMessage.setPerformative(FAILURE);
-		try{
-			failureMessage.setContent(getMapper().writeValueAsString(jobId));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		myServerAgent.send(failureMessage);
 	}
 }

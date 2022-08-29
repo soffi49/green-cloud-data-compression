@@ -1,7 +1,9 @@
 package messages.domain;
 
-import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
-import static jade.lang.acl.ACLMessage.*;
+import static common.constant.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
+import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
+import static jade.lang.acl.ACLMessage.FAILURE;
 import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -77,6 +79,18 @@ public class ReplyMessageFactory {
 		replyMessage.setPerformative(ACCEPT_PROPOSAL);
 		try {
 			replyMessage.setContent(getMapper().writeValueAsString(pricedJob));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return replyMessage;
+	}
+
+	public static ACLMessage prepareFailureReply(final ACLMessage replyMessage,
+												 final Object jobId) {
+		replyMessage.setProtocol(FAILED_JOB_PROTOCOL);
+		replyMessage.setPerformative(FAILURE);
+		try{
+			replyMessage.setContent(getMapper().writeValueAsString(jobId));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
