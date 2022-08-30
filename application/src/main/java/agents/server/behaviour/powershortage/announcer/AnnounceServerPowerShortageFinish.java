@@ -6,8 +6,9 @@ import static agents.server.behaviour.powershortage.announcer.logs.PowerShortage
 import static agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_FINISH_UPDATE_JOB_STATUS_LOG;
 import static agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_FINISH_USE_BACK_UP_LOG;
 import static agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_FINISH_USE_GREEN_ENERGY_LOG;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
 
 import java.util.List;
@@ -69,9 +70,9 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 					final JobInstanceIdentifier jobInstance = JobMapper.mapToJobInstanceId(job);
 					final int jobPower = job.getPower();
 					final int availablePower = myServerAgent.manage()
-							.getAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance);
+							.getAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance, null);
 					final int availableBackUpPower = myServerAgent.manage()
-							.getBackUpAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance);
+							.getAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance, BACK_UP_POWER);
 
 					if (availablePower < jobPower && availableBackUpPower < jobPower) {
 						logger.info(POWER_SHORTAGE_FINISH_LEAVE_ON_HOLD_LOG, guid, job.getJobId());

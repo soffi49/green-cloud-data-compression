@@ -5,7 +5,8 @@ import static agents.server.behaviour.powershortage.initiator.logs.PowerShortage
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_FAIL_NO_BACK_UP_LOG;
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NONE_AVAILABLE_LOG;
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG;
-import static common.GUIUtils.displayMessageArrow;
+import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static utils.GUIUtils.displayMessageArrow;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
 import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static messages.MessagingUtils.rejectJobOffers;
@@ -135,8 +136,8 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToTransferInstance);
 		if (Objects.nonNull(job)) {
 			final int availableBackUpPower = myServerAgent.manage()
-					.getBackUpAvailableCapacity(jobToTransfer.getStartTime(), jobToTransfer.getEndTime(),
-							jobToTransferInstance);
+					.getAvailableCapacity(jobToTransfer.getStartTime(), jobToTransfer.getEndTime(),
+							jobToTransferInstance, BACK_UP_POWER);
 
 			if (availableBackUpPower < jobToTransfer.getPower()) {
 				logger.info(GS_TRANSFER_FAIL_NO_BACK_UP_LOG, guid, jobToTransfer.getJobId());

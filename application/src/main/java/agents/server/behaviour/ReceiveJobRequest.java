@@ -1,6 +1,6 @@
 package agents.server.behaviour;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
@@ -60,7 +60,7 @@ public class ReceiveJobRequest extends CyclicBehaviour {
 			try {
 				final Job job = getMapper().readValue(message.getContent(), Job.class);
 				final Integer availableCapacity = myServerAgent.manage()
-						.getAvailableCapacity(job.getStartTime(), job.getEndTime());
+						.getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null);
 				if (job.getPower() <= availableCapacity && !myServerAgent.getServerJobs().containsKey(job)
 						&& myServerAgent.canTakeIntoProcessing()) {
 					myServerAgent.getServerJobs().putIfAbsent(job, JobStatusEnum.PROCESSING);

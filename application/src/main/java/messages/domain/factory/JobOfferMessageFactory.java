@@ -3,18 +3,17 @@ package messages.domain.factory;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static mapper.JsonMapper.getMapper;
 
-import agents.server.ServerAgent;
+import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import agents.server.ServerAgent;
 import domain.ImmutableServerData;
 import domain.ServerData;
 import domain.job.ImmutablePricedJob;
 import domain.job.Job;
 import domain.job.PricedJob;
 import jade.lang.acl.ACLMessage;
-
-import java.io.IOException;
 
 /**
  * Class storing methods used in creating the job offers
@@ -60,7 +59,8 @@ public class JobOfferMessageFactory {
 			final String jobId,
 			final ACLMessage replyMessage) {
 		final Job job = serverAgent.manage().getJobById(jobId);
-		final int availablePower = serverAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime());
+		final int availablePower = serverAgent.manage()
+				.getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null);
 		final ImmutableServerData jobOffer = ImmutableServerData.builder()
 				.servicePrice(servicePrice)
 				.availablePower(availablePower)
