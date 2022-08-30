@@ -1,5 +1,7 @@
 package common;
 
+import static java.time.ZoneOffset.UTC;
+
 import exception.IncorrectTaskDateException;
 
 
@@ -9,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.TimeZone;
 
 /**
  * Service used to perform operations on date and time structures.
@@ -17,6 +20,7 @@ public class TimeUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(TimeUtils.class);
 
+	private static Clock CLOCK = Clock.systemDefaultZone();
 	private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm";
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
 	private static final Long TIME_ERROR = 10L;
@@ -54,7 +58,7 @@ public class TimeUtils {
 	 * @return current time
 	 */
 	public static OffsetDateTime getCurrentTime() {
-		return OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
+		return OffsetDateTime.now(CLOCK).atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
 	}
 
 	/**
@@ -108,5 +112,10 @@ public class TimeUtils {
 			final Instant timeStampEnd,
 			final Instant timeToCheck) {
 		return !timeToCheck.isBefore(timeStampStart) && timeToCheck.isBefore(timeStampEnd);
+	}
+
+	public static void useMockTime(Instant instant) {
+		CLOCK = Clock.fixed(instant, UTC);
+		TimeZone.setDefault(TimeZone.getTimeZone(UTC));
 	}
 }

@@ -65,7 +65,11 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 						.latitude(Double.parseDouble(args[4].toString()))
 						.longitude(Double.parseDouble(args[5].toString()))
 						.build();
-				this.energyType = (EnergyTypeEnum) args[6];
+				if(args[6] instanceof String argument) {
+					this.energyType = EnergyTypeEnum.valueOf(argument);
+				} else {
+					this.energyType = (EnergyTypeEnum) args[6];
+				}
 			} catch (NumberFormatException e) {
 				logger.info("Incorrect argument: please check arguments in the documentation");
 				doDelete();
