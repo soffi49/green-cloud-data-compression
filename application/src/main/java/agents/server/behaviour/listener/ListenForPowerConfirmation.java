@@ -1,7 +1,7 @@
 package agents.server.behaviour.listener;
 
-import static common.GUIUtils.announceBookedJob;
-import static common.TimeUtils.getCurrentTime;
+import static utils.GUIUtils.announceBookedJob;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;

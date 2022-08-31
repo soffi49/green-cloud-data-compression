@@ -1,6 +1,6 @@
 package agents.cloudnetwork.domain;
 
-import static common.GUIUtils.announceFinishedJob;
+import static utils.GUIUtils.announceFinishedJob;
 import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.PROCESSING;
 

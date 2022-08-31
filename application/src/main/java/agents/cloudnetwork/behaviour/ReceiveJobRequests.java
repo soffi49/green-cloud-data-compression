@@ -1,6 +1,6 @@
 package agents.cloudnetwork.behaviour;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static messages.domain.constants.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;

@@ -3,7 +3,7 @@ package agents.server.behaviour.powershortage.listener;
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_CONFIRMED_LOG;
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_JOB_FINISHED_LOG;
 import static agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_CONFIRMATION_TEMPLATE;
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchContent;

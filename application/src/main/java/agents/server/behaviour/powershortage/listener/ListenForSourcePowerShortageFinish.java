@@ -2,8 +2,8 @@ package agents.server.behaviour.powershortage.listener;
 
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG;
 import static agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
 

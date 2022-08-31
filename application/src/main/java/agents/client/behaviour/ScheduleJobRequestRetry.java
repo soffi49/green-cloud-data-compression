@@ -1,7 +1,7 @@
 package agents.client.behaviour;
 
 import static agents.client.ClientAgentConstants.JOB_RETRY_MINUTES_ADJUSTMENT;
-import static common.TimeUtils.convertToSimulationTime;
+import static utils.TimeUtils.convertToSimulationTime;
 
 import agents.client.ClientAgent;
 import agents.client.behaviour.df.FindCloudNetworkAgents;

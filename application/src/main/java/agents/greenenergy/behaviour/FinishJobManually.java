@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static messages.domain.factory.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 

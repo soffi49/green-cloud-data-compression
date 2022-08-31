@@ -1,7 +1,7 @@
 package agents.monitoring.behaviour;
 
 import static agents.monitoring.MonitoringAgentConstants.OFFLINE_MODE;
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;

@@ -1,6 +1,6 @@
 package messages;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 

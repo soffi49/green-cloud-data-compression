@@ -1,8 +1,8 @@
 package agents.server.behaviour.powershortage.handler;
 
 import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.GS_TRANSFER_EXECUTION_LOG;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 
 import java.time.OffsetDateTime;

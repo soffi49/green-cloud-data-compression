@@ -1,6 +1,6 @@
 package domain.job;
 
-import static common.TimeUtils.isWithinTimeStamp;
+import static utils.TimeUtils.isWithinTimeStamp;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

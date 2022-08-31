@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour.powercheck;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 
 import agents.greenenergy.GreenEnergyAgent;

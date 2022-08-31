@@ -1,8 +1,8 @@
 package agents.greenenergy.behaviour;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.Objects.isNull;
 import static mapper.JsonMapper.getMapper;

@@ -1,4 +1,4 @@
-package common;
+package utils;
 
 import static agents.AbstractAgent.GUI_ENABLED;
 

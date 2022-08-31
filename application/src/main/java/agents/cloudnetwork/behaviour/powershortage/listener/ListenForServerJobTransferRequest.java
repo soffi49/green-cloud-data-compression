@@ -4,7 +4,7 @@ import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerSho
 import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerShortageCloudListenerLog.SERVER_TRANSFER_REQUEST_JOB_NOT_FOUND_LOG;
 import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerShortageCloudListenerLog.SERVER_TRANSFER_REQUEST_NO_SERVERS_AVAILABLE_LOG;
 import static agents.cloudnetwork.behaviour.powershortage.listener.templates.PowerShortageCloudMessageTemplates.SERVER_JOB_TRANSFER_REQUEST_TEMPLATE;
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static messages.MessagingUtils.readMessageContent;
 import static messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;

@@ -1,7 +1,7 @@
 package agents.greenenergy.behaviour.powershortage.handler;
 
 import static agents.greenenergy.behaviour.powershortage.handler.logs.PowerShortageSourceHandlerLog.POWER_SHORTAGE_HANDLING_PUT_ON_HOLD_LOG;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 
 import java.time.OffsetDateTime;
 import java.util.Date;

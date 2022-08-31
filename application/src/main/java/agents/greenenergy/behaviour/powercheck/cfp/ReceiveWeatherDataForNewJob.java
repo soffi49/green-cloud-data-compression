@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour.powercheck.cfp;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.MessageTemplate.MatchConversationId;
 import static jade.lang.acl.MessageTemplate.MatchSender;
