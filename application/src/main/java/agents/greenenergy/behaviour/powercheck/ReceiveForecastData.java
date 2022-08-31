@@ -1,7 +1,7 @@
 package agents.greenenergy.behaviour.powercheck;
 
 import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.ON_HOLD_JOB_CHECK_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.ON_HOLD_JOB_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.MessageTemplate.MatchConversationId;
@@ -12,7 +12,7 @@ import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
-import static messages.domain.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
+import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
 
 import agents.greenenergy.GreenEnergyAgent;
 import com.fasterxml.jackson.core.JsonProcessingException;

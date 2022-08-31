@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour.powercheck.jobstart;
 
-import static common.constant.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;

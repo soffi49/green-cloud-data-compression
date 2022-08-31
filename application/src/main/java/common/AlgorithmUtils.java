@@ -1,11 +1,15 @@
 package common;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
 import domain.job.Job;
 import domain.job.PowerJob;
-
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Service used to perform operations using already existing, implemented algorithms

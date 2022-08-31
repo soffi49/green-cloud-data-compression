@@ -1,8 +1,8 @@
 package agents.cloudnetwork.behaviour;
 
 import static common.GUIUtils.displayMessageArrow;
-import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
-import static common.constant.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -18,7 +18,7 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.Objects;
 
-import messages.domain.CallForProposalMessageFactory;
+import messages.domain.factory.CallForProposalMessageFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,12 +1,9 @@
 package agents.server.behaviour.powershortage.handler;
 
+import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG;
+import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG;
+import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG;
 import static common.TimeUtils.getCurrentTime;
-
-import agents.server.ServerAgent;
-import domain.job.Job;
-import domain.job.JobStatusEnum;
-import jade.core.Agent;
-import jade.core.behaviours.WakerBehaviour;
 
 import java.time.OffsetDateTime;
 import java.util.Date;
@@ -16,14 +13,22 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import agents.server.ServerAgent;
+import domain.job.Job;
+import domain.job.JobStatusEnum;
+import jade.core.Agent;
+import jade.core.behaviours.WakerBehaviour;
+
 /**
- * Behaviour is responsible for using the backup power to finish job execution in case when no other energy source is available
+ * Behaviour updates the server state upon power shortage
  */
 public class HandleServerPowerShortage extends WakerBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(HandleServerPowerShortage.class);
+
 	private final ServerAgent myServerAgent;
-	private final List<Job> jobsToExecute;
+	private final String guid;
+	private final List<Job> affectedJobs;
 	private final Integer newMaximumCapacity;
 
 	/**
@@ -31,54 +36,57 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 	 *
 	 * @param myAgent            agent executing the behaviour
 	 * @param shortageTime       time when the power shortage starts
-	 * @param jobsToExecute      list of the jobs to be finished
-	 * @param newMaximumCapacity maximum capacity value during power shortage
+	 * @param affectedJobs       list of the jobs to be finished
+	 * @param newMaximumCapacity maximum capacity value available during power shortage
 	 *                           (if null then it means that shortage does not concern server directly)
 	 */
-	private HandleServerPowerShortage(Agent myAgent, Date shortageTime, List<Job> jobsToExecute,
+	private HandleServerPowerShortage(Agent myAgent, Date shortageTime, List<Job> affectedJobs,
 			final Integer newMaximumCapacity) {
 		super(myAgent, shortageTime);
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.jobsToExecute = jobsToExecute;
+		this.guid = myAgent.getName();
+		this.affectedJobs = affectedJobs;
 		this.newMaximumCapacity = newMaximumCapacity;
 	}
 
 	/**
 	 * Method creates the behaviour based on the passed parameters
 	 *
-	 * @param jobsToExecute   list of the jobs to be finished
 	 * @param serverAgent     agent executing the behaviour
+	 * @param affectedJobs    list of the jobs affected by power shortage
 	 * @param newMaximumPower maximum power value during power shortage
 	 * @return behaviour scheduling the power shortage handling
 	 */
-	public static HandleServerPowerShortage createFor(final List<Job> jobsToExecute,
-			final OffsetDateTime shortageStartTime,
-			final ServerAgent serverAgent, final Integer newMaximumPower) {
+	public static HandleServerPowerShortage createFor(final List<Job> affectedJobs,
+			final OffsetDateTime shortageStartTime, final ServerAgent serverAgent, final Integer newMaximumPower) {
 		final OffsetDateTime startTime = getCurrentTime().isAfter(shortageStartTime) ?
 				getCurrentTime() :
 				shortageStartTime;
-		return new HandleServerPowerShortage(serverAgent, Date.from(startTime.toInstant()), jobsToExecute,
+		return new HandleServerPowerShortage(serverAgent, Date.from(startTime.toInstant()), affectedJobs,
 				newMaximumPower);
 	}
 
-    /**
-     * Method prints the information about the jobs that need to be halted that they are supplied with backup energy
-     **/
-    @Override
-    protected void onWake() {
-        jobsToExecute.forEach(job -> {
-            if (myServerAgent.getServerJobs().containsKey(job)) {
-                if(myServerAgent.getServerJobs().get(job).equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY)) {
-                    logger.info("[{}] Supplying job with id {} using backup power", myServerAgent.getName(), job.getJobId());
-                } else {
-                    logger.info("[{}] Putting job with id {} on hold", myServerAgent.getName(), job.getJobId());
-                }
-                myServerAgent.manage().updateServerGUI();
-            }
-        });
-        if (Objects.nonNull(newMaximumCapacity)) {
-            myServerAgent.manage().updateMaximumCapacity(newMaximumCapacity);
-        }
-        myAgent.removeBehaviour(this);
-    }
+	/**
+	 * Method is responsible for logging the information about the job status during power shortage.
+	 * It updates also the maximum capacity of given server during the power shortage.
+	 **/
+	@Override
+	protected void onWake() {
+		affectedJobs.forEach(job -> {
+			if (myServerAgent.getServerJobs().containsKey(job)) {
+				final JobStatusEnum jobStatus = myServerAgent.getServerJobs().get(job);
+				final String jobId = job.getJobId();
+
+				switch (jobStatus) {
+					case ON_HOLD_TRANSFER -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG, guid, jobId);
+					case IN_PROGRESS_BACKUP_ENERGY -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG, guid, jobId);
+					default -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG, guid, jobId);
+				}
+				myServerAgent.manage().updateServerGUI();
+			}
+		});
+		if (Objects.nonNull(newMaximumCapacity)) {
+			myServerAgent.manage().updateMaximumCapacity(newMaximumCapacity);
+		}
+	}
 }

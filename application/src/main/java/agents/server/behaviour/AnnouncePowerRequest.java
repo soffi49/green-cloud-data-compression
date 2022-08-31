@@ -4,7 +4,7 @@ import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
-import static messages.domain.JobOfferMessageFactory.makeServerJobOffer;
+import static messages.domain.factory.JobOfferMessageFactory.makeServerJobOffer;
 
 import agents.server.ServerAgent;
 
@@ -21,7 +21,7 @@ import jade.proto.ContractNetInitiator;
 import java.util.List;
 import java.util.Vector;
 
-import messages.domain.ReplyMessageFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

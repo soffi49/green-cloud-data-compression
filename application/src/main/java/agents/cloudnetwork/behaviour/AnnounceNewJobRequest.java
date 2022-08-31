@@ -4,30 +4,28 @@ import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_POWER_DI
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.RETRY_LIMIT;
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.RETRY_PAUSE_MILLISECONDS;
 import static mapper.JsonMapper.getMapper;
+import static messages.MessagingUtils.readMessageContent;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
-import static messages.domain.JobOfferMessageFactory.makeJobOfferForClient;
+import static messages.domain.factory.JobOfferMessageFactory.makeJobOfferForClient;
 
-import agents.cloudnetwork.CloudNetworkAgent;
+import java.util.List;
+import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import common.constant.InvalidJobIdConstant;
+import agents.cloudnetwork.CloudNetworkAgent;
 import common.mapper.JobMapper;
 import domain.ServerData;
 import domain.job.Job;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
-
-import java.util.List;
-import java.util.Vector;
-
-import messages.domain.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 /**
  * Behaviour which is responsible for broadcasting client's job to servers and choosing server to execute the job
@@ -90,7 +88,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, ServerData.class);
 			if (!validProposals.isEmpty()) {
 				final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
-				final ServerData chosenServerData = readMessage(chosenServerOffer);
+				final ServerData chosenServerData = readMessageContent(chosenServerOffer, ServerData.class);
 				final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
 				logger.info("[{}] Chosen Server for the job {}: {}", guid, jobId,
 						chosenServerOffer.getSender().getName());
@@ -106,15 +104,6 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 			} else {
 				handleInvalidResponses(proposals);
 			}
-		}
-	}
-
-	private ServerData readMessage(final ACLMessage message) {
-		try {
-			return getMapper().readValue(message.getContent(), ServerData.class);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			throw new RuntimeException();
 		}
 	}
 

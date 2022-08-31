@@ -6,7 +6,7 @@ import static jade.lang.acl.MessageTemplate.MatchConversationId;
 import static jade.lang.acl.MessageTemplate.MatchSender;
 import static jade.lang.acl.MessageTemplate.and;
 import static java.util.Objects.nonNull;
-import static messages.domain.ReplyMessageFactory.prepareReply;
+import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 
 import java.util.Optional;
 
@@ -23,7 +23,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import messages.domain.ReplyMessageFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 /**
  * Behaviour which is responsible for listening for the Monitoring Agent's response with forecast data.
