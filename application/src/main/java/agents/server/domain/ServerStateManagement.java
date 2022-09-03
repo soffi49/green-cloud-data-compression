@@ -6,10 +6,10 @@ import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
 import static domain.job.JobStatusEnum.JOB_ON_HOLD;
 import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
-import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.factory.JobStatusMessageFactory.prepareFinishMessage;
 import static utils.AlgorithmUtils.getMaximumUsedPowerDuringTimeStamp;
 import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.differenceInHours;
 import static utils.TimeUtils.getCurrentTime;
 import static utils.TimeUtils.isWithinTimeStamp;
 
@@ -102,40 +102,6 @@ public class ServerStateManagement {
 		}
 	}
 
-	private void sendFinishInformation(final Job jobToFinish, final boolean informCNA) {
-		final List<AID> receivers = informCNA ?
-				List.of(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()),
-						serverAgent.getOwnerCloudNetworkAgent()) :
-				Collections.singletonList(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()));
-		final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(),
-				receivers);
-
-		displayMessageArrow(serverAgent, receivers);
-		serverAgent.send(finishJobMessage);
-	}
-
-	private void updateStateAfterJobFinish(final Job jobToFinish) {
-		if (isJobUnique(jobToFinish.getJobId())) {
-			serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
-		}
-		serverAgent.getServerJobs().remove(jobToFinish);
-		incrementFinishedJobs(jobToFinish.getJobId());
-	}
-
-	private void supplyJobsWithBackupPower(final Map<Job, JobStatusEnum> jobEntries) {
-		jobEntries.entrySet().stream()
-				.filter(job -> job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE))
-				.forEach(jobEntry -> {
-					final Job job = jobEntry.getKey();
-					if (getAvailableCapacity(job.getStartTime(), job.getEndTime(), JobMapper.mapToJobInstanceId(job),
-							BACK_UP_POWER) >= job.getPower()) {
-						logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(), job.getJobId());
-						jobEntry.setValue(IN_PROGRESS_BACKUP_ENERGY);
-						updateServerGUI();
-					}
-				});
-	}
-
 	/**
 	 * Method calculates the price for executing the job by given green source and server
 	 *
@@ -145,7 +111,7 @@ public class ServerStateManagement {
 	public double calculateServicePrice(final GreenSourceData greenSourceData) {
 		var job = getJobById(greenSourceData.getJobId());
 		var powerCost = job.getPower() * greenSourceData.getPricePerPowerUnit();
-		var computingCost = HOURS.between(job.getEndTime(), job.getStartTime()) * serverAgent.getPricePerHour();
+		var computingCost = differenceInHours(job.getStartTime(), job.getEndTime()) * serverAgent.getPricePerHour();
 		return powerCost + computingCost;
 	}
 
@@ -220,11 +186,13 @@ public class ServerStateManagement {
 	public void incrementStartedJobs(final String jobId) {
 		if (isJobUnique(jobId)) {
 			uniqueStartedJobs.getAndAdd(1);
-			logger.info("[{}] Started job {}. Number of unique started jobs is {}", serverAgent.getLocalName(), jobId,
+			logger.info("[{}] Started job {}. Number of unique started jobs is {}", serverAgent.getLocalName(),
+					jobId,
 					uniqueStartedJobs);
 		}
 		startedJobsInstances.getAndAdd(1);
-		logger.info("[{}] Started job instance {}. Number of started job instances is {}", serverAgent.getLocalName(),
+		logger.info("[{}] Started job instance {}. Number of started job instances is {}",
+				serverAgent.getLocalName(),
 				jobId, startedJobsInstances);
 		updateServerGUI();
 	}
@@ -253,7 +221,11 @@ public class ServerStateManagement {
 	 */
 	public void updateMaximumCapacity(final int newMaximumCapacity) {
 		serverAgent.setCurrentMaximumCapacity(newMaximumCapacity);
-		((ServerAgentNode) serverAgent.getAgentNode()).updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
+
+		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
+		if (Objects.nonNull(serverAgentNode)) {
+			serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
+		}
 	}
 
 	/**
@@ -301,20 +273,77 @@ public class ServerStateManagement {
 	 */
 	public void updateServerGUI() {
 		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
-		serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
-		serverAgentNode.updateJobsCount(getJobCount());
-		serverAgentNode.updateClientNumber(getClientNumber());
-		serverAgentNode.updateIsActive(getIsActiveState());
-		serverAgentNode.updateTraffic(getCurrentPowerInUseForServer());
-		serverAgentNode.updateBackUpTraffic(getCurrentBackUpPowerInUseForServer());
-		serverAgentNode.updateJobsOnHoldCount(getOnHoldJobsCount());
+
+		if (Objects.nonNull(serverAgentNode)) {
+			serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity());
+			serverAgentNode.updateJobsCount(getJobCount());
+			serverAgentNode.updateClientNumber(getClientNumber());
+			serverAgentNode.updateIsActive(getIsActiveState());
+			serverAgentNode.updateTraffic(getCurrentPowerInUseForServer());
+			serverAgentNode.updateBackUpTraffic(getCurrentBackUpPowerInUseForServer());
+			serverAgentNode.updateJobsOnHoldCount(getOnHoldJobsCount());
+		}
 	}
 
 	/**
 	 * Method updates the client number
 	 */
-	public void updateClientNumber() {
-		((ServerAgentNode) serverAgent.getAgentNode()).updateClientNumber(getClientNumber());
+	public void updateClientNumberGUI() {
+		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
+
+		if (Objects.nonNull(serverAgentNode)) {
+			serverAgentNode.updateClientNumber(getClientNumber());
+		}
+	}
+
+	public AtomicInteger getUniqueStartedJobs() {
+		return uniqueStartedJobs;
+	}
+
+	public AtomicInteger getUniqueFinishedJobs() {
+		return uniqueFinishedJobs;
+	}
+
+	public AtomicInteger getStartedJobsInstances() {
+		return startedJobsInstances;
+	}
+
+	public AtomicInteger getFinishedJobsInstances() {
+		return finishedJobsInstances;
+	}
+
+	private void sendFinishInformation(final Job jobToFinish, final boolean informCNA) {
+		final List<AID> receivers = informCNA ?
+				List.of(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()),
+						serverAgent.getOwnerCloudNetworkAgent()) :
+				Collections.singletonList(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()));
+		final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(),
+				receivers);
+
+		displayMessageArrow(serverAgent, receivers);
+		serverAgent.send(finishJobMessage);
+	}
+
+	private void updateStateAfterJobFinish(final Job jobToFinish) {
+		incrementFinishedJobs(jobToFinish.getJobId());
+		if (isJobUnique(jobToFinish.getJobId())) {
+			serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
+		}
+		serverAgent.getServerJobs().remove(jobToFinish);
+	}
+
+	private void supplyJobsWithBackupPower(final Map<Job, JobStatusEnum> jobEntries) {
+		jobEntries.entrySet().stream()
+				.filter(job -> job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE))
+				.forEach(jobEntry -> {
+					final Job job = jobEntry.getKey();
+					if (getAvailableCapacity(job.getStartTime(), job.getEndTime(), JobMapper.mapToJobInstanceId(job),
+							BACK_UP_POWER) >= job.getPower()) {
+						logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(), job.getJobId());
+						serverAgent.getServerJobs().replace(job, IN_PROGRESS_BACKUP_ENERGY);
+						updateServerGUI();
+					}
+				});
 	}
 
 	private int getJobCount() {
