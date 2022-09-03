@@ -4,8 +4,8 @@ import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerSho
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_NO_IMPACT_LOG;
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_TRANSFER_LOG;
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_WEATHER_LOG;
-import static common.AlgorithmUtils.findJobsWithinPower;
-import static common.GUIUtils.displayMessageArrow;
+import static utils.AlgorithmUtils.findJobsWithinPower;
+import static utils.GUIUtils.displayMessageArrow;
 import static domain.powershortage.PowerShortageCause.PHYSICAL_CAUSE;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 
@@ -81,7 +81,7 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
 			jobsToTransfer.forEach(powerJob -> {
 				logger.info(POWER_SHORTAGE_SOURCE_START_TRANSFER_LOG, guid, powerJob.getJobId());
 				final PowerJob jobToTransfer = myGreenAgent.manage()
-						.divideJobForPowerShortage(powerJob, shortageStartTime);
+						.dividePowerJobForPowerShortage(powerJob, shortageStartTime);
 				requestJobTransferInServer(powerJob, jobToTransfer);
 				myGreenAgent.manage().updateGreenSourceGUI();
 			});

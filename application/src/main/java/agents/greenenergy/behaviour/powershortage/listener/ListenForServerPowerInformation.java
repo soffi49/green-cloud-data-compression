@@ -7,7 +7,7 @@ import static agents.greenenergy.behaviour.powershortage.listener.logs.PowerShor
 import static agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_START_LOG;
 import static agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG;
 import static agents.greenenergy.behaviour.powershortage.listener.templates.PowerShortageSourceMessageTemplates.SERVER_POWER_SHORTAGE_INFORMATION_TEMPLATE;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.MessagingUtils.readMessageContent;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
@@ -79,7 +79,7 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 		if (Objects.nonNull(affectedJob)) {
 			logger.info(SERVER_POWER_SHORTAGE_START_LOG, guid, powerShortageJob.getJobInstanceId().getJobId());
 			myGreenEnergyAgent.manage()
-					.divideJobForPowerShortage(affectedJob, powerShortageJob.getPowerShortageStart());
+					.dividePowerJobForPowerShortage(affectedJob, powerShortageJob.getPowerShortageStart());
 		} else {
 			logger.info(SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG, guid,
 					powerShortageJob.getJobInstanceId().getJobId());

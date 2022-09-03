@@ -6,8 +6,9 @@ import static agents.server.behaviour.powershortage.initiator.logs.PowerShortage
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_HOLD_SOURCE_LOG;
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_REFUSE_LOG;
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_SUCCESSFUL_LOG;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
 import static domain.job.JobStatusEnum.ON_HOLD;
 import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
@@ -174,8 +175,8 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private void updateServerStateUponJobOnHold(final Job job) {
 		final String jobId = job.getJobId();
 		final int availableBackUpPower =
-				myServerAgent.manage().getBackUpAvailableCapacity(job.getStartTime(), job.getEndTime(),
-						jobToTransfer.getJobInstanceId());
+				myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime(),
+						jobToTransfer.getJobInstanceId(), BACK_UP_POWER);
 
 		if (isNull(greenSourceRequest)) {
 			logger.info(CNA_JOB_TRANSFER_PUT_ON_HOLD_LOG, guid, jobId);

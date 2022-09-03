@@ -1,7 +1,7 @@
 package agents.server.behaviour;
 
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 
 import agents.server.ServerAgent;

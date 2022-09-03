@@ -3,7 +3,7 @@ package agents.server.behaviour.powershortage.handler;
 import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG;
 import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG;
 import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 
 import java.time.OffsetDateTime;
 import java.util.Date;

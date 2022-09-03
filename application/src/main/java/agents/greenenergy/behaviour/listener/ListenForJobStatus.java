@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour.listener;
 
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.ACCEPTED;

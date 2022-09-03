@@ -1,7 +1,5 @@
 package agents.client;
 
-import static common.TimeUtils.SECONDS_FOR_HOUR;
-
 import java.time.temporal.ValueRange;
 
 /**

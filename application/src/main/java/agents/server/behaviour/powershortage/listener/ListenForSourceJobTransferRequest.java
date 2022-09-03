@@ -3,7 +3,7 @@ package agents.server.behaviour.powershortage.listener;
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG;
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG;
 import static agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_REQUEST_TEMPLATE;
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;

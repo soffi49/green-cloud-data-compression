@@ -1,7 +1,7 @@
 package agents.client.behaviour.listener;
 
 import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;

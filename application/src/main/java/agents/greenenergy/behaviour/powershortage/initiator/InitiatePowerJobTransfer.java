@@ -6,7 +6,7 @@ import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerSho
 import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_REFUSE_NOT_FOUND_LOG;
 import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_LOG;
 import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_NOT_FOUND_LOG;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 
 import java.time.OffsetDateTime;

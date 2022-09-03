@@ -6,10 +6,15 @@ import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.factory.JobOfferMessageFactory.makeServerJobOffer;
 
-import agents.server.ServerAgent;
+import java.util.List;
+import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import agents.server.ServerAgent;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
@@ -17,14 +22,7 @@ import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
-
-import java.util.List;
-import java.util.Vector;
-
 import messages.domain.factory.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Behaviours responsible for passing the power request to green sources and choosing one to provide the power
@@ -71,7 +69,7 @@ public class AnnouncePowerRequest extends ContractNetInitiator {
 			logger.info("[{}] No Green Sources available - sending refuse message to Cloud Network Agent", myAgent);
 			myServerAgent.getServerJobs().remove(job);
 			myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
-		} else if (myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime())
+		} else if (myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null)
 				<= job.getPower()) {
 			logger.info("[{}] No enough capacity - sending refuse message to Cloud Network Agent", myAgent);
 			myServerAgent.getServerJobs().remove(job);

@@ -3,7 +3,7 @@ package agents.cloudnetwork.behaviour.powershortage.announcer;
 import static agents.cloudnetwork.behaviour.powershortage.announcer.logs.PowerShortageCloudAnnouncerLog.SERVER_TRANSFER_CHOSEN_SERVER_LOG;
 import static agents.cloudnetwork.behaviour.powershortage.announcer.logs.PowerShortageCloudAnnouncerLog.SERVER_TRANSFER_NO_RESPONSE_LOG;
 import static agents.cloudnetwork.behaviour.powershortage.announcer.logs.PowerShortageCloudAnnouncerLog.SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG;
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.readMessageContent;
 import static messages.MessagingUtils.rejectJobOffers;

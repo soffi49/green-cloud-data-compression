@@ -1,13 +1,13 @@
 package agents.client;
 
-import static common.TimeUtils.convertToSimulationTime;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.convertToSimulationTime;
+import static utils.TimeUtils.getCurrentTime;
 
 import agents.client.behaviour.RequestJobExecution;
 import agents.client.behaviour.df.FindCloudNetworkAgents;
 import agents.client.behaviour.listener.ListenForJobUpdate;
 import common.behaviours.ReceiveGUIController;
-import common.TimeUtils;
+import utils.TimeUtils;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;

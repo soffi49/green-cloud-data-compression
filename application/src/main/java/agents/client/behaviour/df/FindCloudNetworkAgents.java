@@ -1,7 +1,7 @@
 package agents.client.behaviour.df;
 
 import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
-import static common.GUIUtils.announceNewClient;
+import static utils.GUIUtils.announceNewClient;
 import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.search;
 

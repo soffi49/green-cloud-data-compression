@@ -16,7 +16,7 @@ import agents.cloudnetwork.CloudNetworkAgent;
 import agents.greenenergy.GreenEnergyAgent;
 import agents.monitoring.MonitoringAgent;
 import agents.server.ServerAgent;
-import common.TimeUtils;
+import utils.TimeUtils;
 import jade.junit.jupiter.JadeAgent;
 import jade.junit.jupiter.JadeExtension;
 

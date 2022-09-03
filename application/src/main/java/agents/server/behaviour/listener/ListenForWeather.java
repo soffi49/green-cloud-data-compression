@@ -58,7 +58,7 @@ public class ListenForWeather extends CyclicBehaviour {
 
 			var currentAvailableCapacity = myServerAgent.manage()
 					.getAvailableCapacity(checkedPowerJob.getPowerJob().getStartTime(),
-							checkedPowerJob.getPowerJob().getEndTime());
+							checkedPowerJob.getPowerJob().getEndTime(), null, null);
 			if (currentAvailableCapacity < 0) {
 				logger.error("[{}] Exceeded available capacity by {}!",
 						myServerAgent.getName(), abs(currentAvailableCapacity));

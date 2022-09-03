@@ -1,7 +1,7 @@
 package agents.cloudnetwork.behaviour.powershortage.handler;
 
 import static agents.cloudnetwork.behaviour.powershortage.handler.logs.PowerShortageCloudHandlerLog.SERVER_TRANSFER_EXECUTE_TRANSFER_LOG;
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 
 import java.time.OffsetDateTime;
 import java.util.Date;

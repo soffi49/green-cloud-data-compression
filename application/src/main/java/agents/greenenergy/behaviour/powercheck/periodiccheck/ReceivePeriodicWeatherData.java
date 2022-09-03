@@ -1,6 +1,6 @@
 package agents.greenenergy.behaviour.powercheck.periodiccheck;
 
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 import static domain.powershortage.PowerShortageCause.WEATHER_CAUSE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;

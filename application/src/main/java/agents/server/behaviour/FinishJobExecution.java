@@ -1,6 +1,6 @@
 package agents.server.behaviour;
 
-import static common.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.getCurrentTime;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 
 import agents.server.ServerAgent;

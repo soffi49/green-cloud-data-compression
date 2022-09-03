@@ -1,22 +1,24 @@
 package agents.server.domain;
 
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
-import static common.TimeUtils.isWithinTimeStamp;
+import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
-import static domain.job.JobStatusEnum.GREEN_POWER_SERVER_JOB_STATUSES;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
 import static domain.job.JobStatusEnum.JOB_ON_HOLD;
 import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.factory.JobStatusMessageFactory.prepareFinishMessage;
+import static utils.AlgorithmUtils.getMaximumUsedPowerDuringTimeStamp;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,6 @@ import com.gui.agents.ServerAgentNode;
 import agents.server.ServerAgent;
 import agents.server.behaviour.FinishJobExecution;
 import agents.server.behaviour.StartJobExecution;
-import common.TimeUtils;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
@@ -59,56 +60,25 @@ public class ServerStateManagement {
 	}
 
 	/**
-	 * Method computes the available power for given time frame
+	 * Method computes the available capacity (of given type) for the specified time frame.
 	 *
-	 * @param startDate starting date
-	 * @param endDate   end date
-	 * @return available power
-	 */
-	public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate) {
-		var usedPower = serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
-						|| TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate))
-				.map(Job::getPower).mapToInt(Integer::intValue).sum();
-		return serverAgent.getCurrentMaximumCapacity() - usedPower;
-	}
-
-	/**
-	 * Method computes the available back-up power for given time frame and active jobs
-	 *
-	 * @param startDate    starting date
-	 * @param endDate      end date
-	 * @param jobToExclude job to exclude from set
-	 * @return available power
-	 */
-	public synchronized int getBackUpAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate,
-			final JobInstanceIdentifier jobToExclude) {
-		var usedPower = serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
-						|| TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate)
-						&& serverAgent.getServerJobs().get(job).equals(IN_PROGRESS_BACKUP_ENERGY)
-						&& !JobMapper.mapToJobInstanceId(job).equals(jobToExclude)).map(Job::getPower)
-				.mapToInt(Integer::intValue).sum();
-		return serverAgent.getInitialMaximumCapacity() - usedPower;
-	}
-
-	/**
-	 * Method computes the available power for given time frame and active jobs
-	 *
-	 * @param startDate    starting date
-	 * @param endDate      end date
-	 * @param jobToExclude job to exclude from set
+	 * @param startDate       starting date
+	 * @param endDate         end date
+	 * @param jobToExclude    (optional) job which will be excluded from the power calculation
+	 * @param powerSourceType type of the source which is being used to power-up the job
+	 *                        (if not provided then type is ALL)
 	 * @return available power
 	 */
 	public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate,
-			final JobInstanceIdentifier jobToExclude) {
-		var usedPower = serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), startDate)
-						|| TimeUtils.isWithinTimeStampWithBuffer(job.getStartTime(), job.getEndTime(), endDate)
-						&& GREEN_POWER_SERVER_JOB_STATUSES.contains(serverAgent.getServerJobs().get(job))
-						&& !JobMapper.mapToJobInstanceId(job).equals(jobToExclude)).map(Job::getPower)
-				.mapToInt(Integer::intValue).sum();
-		return serverAgent.getCurrentMaximumCapacity() - usedPower;
+			final JobInstanceIdentifier jobToExclude, final ServerPowerSourceType powerSourceType) {
+		final Set<Job> jobsOfInterest = serverAgent.getServerJobs().keySet().stream()
+				.filter(job -> Objects.isNull(jobToExclude) || !JobMapper.mapToJobInstanceId(job).equals(jobToExclude))
+				.filter(job -> Objects.isNull(powerSourceType) ||
+						powerSourceType.getJobStatuses().contains(serverAgent.getServerJobs().get(job)))
+				.collect(Collectors.toSet());
+		final int maxUsedPower =
+				getMaximumUsedPowerDuringTimeStamp(jobsOfInterest, startDate, endDate);
+		return serverAgent.getCurrentMaximumCapacity() - maxUsedPower;
 	}
 
 	/**
@@ -130,18 +100,20 @@ public class ServerStateManagement {
 			serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
 		}
 		if (jobStatusEnum.equals(IN_PROGRESS_BACKUP_ENERGY)) {
-			serverAgent.getServerJobs().entrySet().stream().filter(job ->
-					isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime())
-							&& job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE)
-							&& job.getKey().getPower() <= jobToFinish.getPower()).forEach(job -> {
-				if (getBackUpAvailableCapacity(job.getKey().getStartTime(), job.getKey().getEndTime(),
-						JobMapper.mapToJobInstanceId(job.getKey())) >= job.getKey().getPower()) {
-					logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(),
-							job.getKey().getJobId());
-					job.setValue(IN_PROGRESS_BACKUP_ENERGY);
-					updateServerGUI();
-				}
-			});
+			serverAgent.getServerJobs().entrySet().stream()
+					.filter(job ->
+							isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime())
+									&& job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE)
+									&& job.getKey().getPower() <= jobToFinish.getPower())
+					.forEach(job -> {
+						if (getAvailableCapacity(job.getKey().getStartTime(), job.getKey().getEndTime(),
+								JobMapper.mapToJobInstanceId(job.getKey()), BACK_UP_POWER) >= job.getKey().getPower()) {
+							logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(),
+									job.getKey().getJobId());
+							job.setValue(IN_PROGRESS_BACKUP_ENERGY);
+							updateServerGUI();
+						}
+					});
 		}
 		incrementFinishedJobs(jobToFinish.getJobId());
 		displayMessageArrow(serverAgent, receivers);
@@ -200,19 +172,6 @@ public class ServerStateManagement {
 		return serverAgent.getServerJobs().keySet().stream()
 				.filter(job -> job.getJobId().equals(jobInstanceId.getJobId()) && job.getStartTime()
 						.isEqual(jobInstanceId.getStartTime())).findFirst().orElse(null);
-	}
-
-	/**
-	 * Method retrieves the job by the job id and end time from job map
-	 *
-	 * @param jobId   job identifier
-	 * @param endTime job end time
-	 * @return job
-	 */
-	public Job getJobByIdAndEndDate(final String jobId, final OffsetDateTime endTime) {
-		return serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getEndTime().isEqual(endTime)).findFirst()
-				.orElse(null);
 	}
 
 	/**

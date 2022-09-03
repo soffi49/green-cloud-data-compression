@@ -1,9 +1,9 @@
 package agents.greenenergy.domain;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
-import static common.TimeUtils.isWithinTimeStamp;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static domain.job.JobStatusEnum.ACTIVE_JOB_STATUSES;
 import static domain.job.JobStatusEnum.JOB_ON_HOLD;
@@ -181,7 +181,7 @@ public class GreenEnergyStateManagement {
 	 * @param powerJob           affected power job
 	 * @param powerShortageStart time when power shortage starts
 	 */
-	public PowerJob divideJobForPowerShortage(final PowerJob powerJob, final OffsetDateTime powerShortageStart) {
+	public PowerJob dividePowerJobForPowerShortage(final PowerJob powerJob, final OffsetDateTime powerShortageStart) {
 		if (powerShortageStart.isAfter(powerJob.getStartTime())) {
 			final PowerJob affectedPowerJobInstance = JobMapper.mapToJobNewStartTime(powerJob, powerShortageStart);
 			final PowerJob notAffectedPowerJobInstance = JobMapper.mapToJobNewEndTime(powerJob, powerShortageStart);

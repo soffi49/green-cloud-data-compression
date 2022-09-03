@@ -1,8 +1,8 @@
 package agents.server.behaviour.powercheck;
 
 import static agents.server.domain.ServerAgentConstants.PREEMPTIVE_POWER_CHECK_TIME_WINDOW;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_START_CHECK_PROTOCOL;
 import static common.mapper.JobMapper.mapJobToPowerJob;
 import static common.mapper.JobMapper.mapPowerJobToCheckedPowerJob;

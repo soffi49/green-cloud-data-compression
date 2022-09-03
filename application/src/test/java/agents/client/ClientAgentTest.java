@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import agents.AbstractAgent;
-import common.TimeUtils;
+import utils.TimeUtils;
 import jade.junit.jupiter.JadeAgent;
 import jade.junit.jupiter.JadeExtension;
 
