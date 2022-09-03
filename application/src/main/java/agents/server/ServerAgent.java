@@ -6,23 +6,22 @@ import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
-import agents.server.behaviour.ReceiveJobRequest;
-import agents.server.behaviour.listener.ListenForJobStatusOrManualFinish;
-import agents.server.behaviour.listener.ListenForPowerConfirmation;
-import agents.server.behaviour.listener.ListenForServerEvent;
-import agents.server.behaviour.listener.ListenForWeather;
-import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferRequest;
-import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
-import agents.server.domain.ServerStateManagement;
-import common.behaviours.ReceiveGUIController;
-import jade.core.AID;
-import jade.core.behaviours.Behaviour;
-
 import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import agents.server.behaviour.jobexecution.listener.ListenForJobStartCheckRequest;
+import agents.server.behaviour.jobexecution.listener.ListenForNewJob;
+import agents.server.behaviour.jobexecution.listener.ListenForPowerSupplyUpdate;
+import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferRequest;
+import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
+import agents.server.behaviour.sensor.SenseServerEvent;
+import agents.server.domain.ServerStateManagement;
+import common.behaviours.ReceiveGUIController;
+import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 
 /**
  * Agent representing the Server Agent which executes the clients' jobs
@@ -47,7 +46,7 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	protected void takeDown() {
 		logger.info("I'm finished. Bye!");
-		if(GUI_ENABLED) {
+		if (GUI_ENABLED) {
 			getGuiController().removeAgentNodeFromGraph(getAgentNode());
 		}
 		super.takeDown();
@@ -79,14 +78,12 @@ public class ServerAgent extends AbstractServerAgent {
 
 	private List<Behaviour> behavioursRunAtStart() {
 		return List.of(
-				new ReceiveJobRequest(),
-				new ListenForPowerConfirmation(),
+				new ListenForNewJob(),
+				new ListenForPowerSupplyUpdate(),
 				new ListenForSourceJobTransferRequest(),
-				new ListenForServerEvent(this),
-				new ListenForJobStatusOrManualFinish(),
-				new ListenForWeather(this),
-				new ListenForSourcePowerShortageFinish(),
-				new ListenForWeather(this)
+				new SenseServerEvent(this),
+				new ListenForJobStartCheckRequest(),
+				new ListenForSourcePowerShortageFinish()
 		);
 	}
 }
