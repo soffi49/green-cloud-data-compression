@@ -3,6 +3,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import java.time.Instant;
+import java.time.ZoneId;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ class SimpleScenarioTest {
 	@BeforeAll
 	static void init() {
 		AbstractAgent.disableGui();
-		TimeUtils.useMockTime(NOW);
+		TimeUtils.useMockTime(NOW, ZoneId.of("UTC"));
 	}
 
 	@Test

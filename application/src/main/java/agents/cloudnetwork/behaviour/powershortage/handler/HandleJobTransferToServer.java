@@ -3,7 +3,7 @@ package agents.cloudnetwork.behaviour.powershortage.handler;
 import static agents.cloudnetwork.behaviour.powershortage.handler.logs.PowerShortageCloudHandlerLog.SERVER_TRANSFER_EXECUTE_TRANSFER_LOG;
 import static utils.TimeUtils.getCurrentTime;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 
@@ -55,10 +55,10 @@ public class HandleJobTransferToServer extends WakerBehaviour {
 	 */
 	public static HandleJobTransferToServer createFor(final CloudNetworkAgent cloudNetworkAgent,
 			final PowerShortageJob powerShortageJob, AID newServer) {
-		final OffsetDateTime transferTime = getCurrentTime().isAfter(powerShortageJob.getPowerShortageStart()) ?
+		final Instant transferTime = getCurrentTime().isAfter(powerShortageJob.getPowerShortageStart()) ?
 				getCurrentTime() :
 				powerShortageJob.getPowerShortageStart();
-		return new HandleJobTransferToServer(cloudNetworkAgent, Date.from(transferTime.toInstant()),
+		return new HandleJobTransferToServer(cloudNetworkAgent, Date.from(transferTime),
 				powerShortageJob.getJobInstanceId().getJobId(), newServer);
 	}
 

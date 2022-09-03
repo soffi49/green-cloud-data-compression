@@ -3,14 +3,14 @@ package agents.server.behaviour.powershortage.announcer;
 import static agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_DETECTED_LOG;
 import static agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_NO_IMPACT_LOG;
 import static agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_TRANSFER_REQUEST_LOG;
-import static utils.AlgorithmUtils.findJobsWithinPower;
-import static utils.GUIUtils.displayMessageArrow;
-import static messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
 import static domain.job.JobStatusEnum.ACTIVE_JOB_STATUSES;
+import static messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
 import static messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
+import static utils.AlgorithmUtils.findJobsWithinPower;
+import static utils.GUIUtils.displayMessageArrow;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class AnnounceServerPowerShortageStart extends OneShotBehaviour {
 
 	private final ServerAgent myServerAgent;
 	private final String guid;
-	private final OffsetDateTime powerShortageStartTime;
+	private final Instant powerShortageStartTime;
 	private final int recalculatedAvailablePower;
 
 	/**
@@ -47,7 +47,7 @@ public class AnnounceServerPowerShortageStart extends OneShotBehaviour {
 	 * @param powerShortageStartTime     start time when the power shortage will begin
 	 * @param recalculatedAvailablePower maximum power available during the power shortage
 	 */
-	public AnnounceServerPowerShortageStart(final ServerAgent myAgent, final OffsetDateTime powerShortageStartTime,
+	public AnnounceServerPowerShortageStart(final ServerAgent myAgent, final Instant powerShortageStartTime,
 			final int recalculatedAvailablePower) {
 		super(myAgent);
 		this.powerShortageStartTime = powerShortageStartTime;

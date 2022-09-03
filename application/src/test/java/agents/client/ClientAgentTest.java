@@ -7,6 +7,7 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import java.time.Instant;
+import java.time.ZoneId;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class ClientAgentTest {
 	@BeforeAll
 	static void init() {
 		AbstractAgent.disableGui();
-		TimeUtils.useMockTime(NOW);
+		TimeUtils.useMockTime(NOW, ZoneId.of("UTC"));
 	}
 
 	@Test

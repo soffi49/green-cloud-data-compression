@@ -1,17 +1,24 @@
 package agents.greenenergy.behaviour;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
-import static utils.GUIUtils.displayMessageArrow;
-import static utils.TimeUtils.getCurrentTime;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.Objects.isNull;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 
-import agents.greenenergy.GreenEnergyAgent;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import agents.greenenergy.GreenEnergyAgent;
 import common.mapper.JobMapper;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
@@ -20,14 +27,6 @@ import domain.job.PowerJob;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Objects;
 
 /**
  * Behaviour which is responsible for sending the proposal with power request to Server Agent and
@@ -113,7 +112,7 @@ public class ProposePowerRequest extends ProposeInitiator {
 	}
 
 	private Date calculateExpectedJobEndTime(final PowerJob job) {
-		final OffsetDateTime endDate = getCurrentTime().isAfter(job.getEndTime()) ? getCurrentTime() : job.getEndTime();
-		return Date.from(endDate.plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
+		final Instant endDate = getCurrentTime().isAfter(job.getEndTime()) ? getCurrentTime() : job.getEndTime();
+		return Date.from(endDate.plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS));
 	}
 }

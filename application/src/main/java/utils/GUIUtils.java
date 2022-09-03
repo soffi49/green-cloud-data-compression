@@ -2,10 +2,6 @@ package utils;
 
 import static agents.AbstractAgent.GUI_ENABLED;
 
-import agents.AbstractAgent;
-import agents.cloudnetwork.CloudNetworkAgent;
-import jade.core.AID;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -25,10 +21,9 @@ public class GUIUtils {
 	 * Method updates the GUI to indicate that the job execution has finished
 	 *
 	 * @param agent agent updating the GUI
-	 * @param jobId unique identifier of the GUI
 	 */
-	public static void announceFinishedJob(final CloudNetworkAgent agent, final String jobId) {
-		if(!GUI_ENABLED) {
+	public static void announceFinishedJob(final CloudNetworkAgent agent) {
+		if (!GUI_ENABLED) {
 			return;
 		}
 
@@ -40,10 +35,9 @@ public class GUIUtils {
 	 * Method updates the GUI to indicate that a new job is planned to be executed
 	 *
 	 * @param agent agent updating the GUI
-	 * @param jobId unique identifier of the GUI
 	 */
-	public static void announceBookedJob(final AbstractAgent agent, final String jobId) {
-		if(!GUI_ENABLED) {
+	public static void announceBookedJob(final AbstractAgent agent) {
+		if (!GUI_ENABLED) {
 			return;
 		}
 
@@ -56,7 +50,7 @@ public class GUIUtils {
 	 * @param agent agent updating the GUI
 	 */
 	public static void announceNewClient(final AbstractAgent agent) {
-		if(!GUI_ENABLED) {
+		if (!GUI_ENABLED) {
 			return;
 		}
 
@@ -70,7 +64,7 @@ public class GUIUtils {
 	 * @param receiver address of the receiver
 	 */
 	public static void displayMessageArrow(final AbstractAgent agent, final AID receiver) {
-		if(!GUI_ENABLED) {
+		if (!GUI_ENABLED) {
 			return;
 		}
 
@@ -85,7 +79,7 @@ public class GUIUtils {
 	 * @param receivers addresses of the receivers
 	 */
 	public static void displayMessageArrow(final AbstractAgent agent, final List<AID> receivers) {
-		if(!GUI_ENABLED) {
+		if (!GUI_ENABLED) {
 			return;
 		}
 
@@ -100,7 +94,7 @@ public class GUIUtils {
 	 * @param receivers iterator of addresses of the receivers
 	 */
 	public static void displayMessageArrow(final AbstractAgent agent, final Iterator<AID> receivers) {
-		if(!GUI_ENABLED) {
+		if (!GUI_ENABLED) {
 			return;
 		}
 

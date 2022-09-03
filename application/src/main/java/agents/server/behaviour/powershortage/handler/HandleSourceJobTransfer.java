@@ -1,11 +1,11 @@
 package agents.server.behaviour.powershortage.handler;
 
 import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.GS_TRANSFER_EXECUTION_LOG;
+import static messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static utils.GUIUtils.displayMessageArrow;
 import static utils.TimeUtils.getCurrentTime;
-import static messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -60,10 +60,10 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	 */
 	public static HandleSourceJobTransfer createFor(final ServerAgent serverAgent,
 			final JobInstanceIdentifier jobInstanceId, final AID newGreenSource) {
-		final OffsetDateTime transferTime = getCurrentTime().isAfter(jobInstanceId.getStartTime()) ?
+		final Instant transferTime = getCurrentTime().isAfter(jobInstanceId.getStartTime()) ?
 				getCurrentTime() :
 				jobInstanceId.getStartTime();
-		return new HandleSourceJobTransfer(serverAgent, Date.from(transferTime.toInstant()), jobInstanceId,
+		return new HandleSourceJobTransfer(serverAgent, Date.from(transferTime), jobInstanceId,
 				newGreenSource);
 	}
 

@@ -1,11 +1,11 @@
 package domain.job;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
 
 import org.immutables.value.Value;
 
-import java.time.OffsetDateTime;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Object stores the data which allow to identify two instances of the job with the same jobId
@@ -23,5 +23,5 @@ public interface JobInstanceIdentifier {
 	/**
 	 * @return job start time
 	 */
-	OffsetDateTime getStartTime();
+	Instant getStartTime();
 }

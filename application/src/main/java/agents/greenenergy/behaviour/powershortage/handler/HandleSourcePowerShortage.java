@@ -3,7 +3,7 @@ package agents.greenenergy.behaviour.powershortage.handler;
 import static agents.greenenergy.behaviour.powershortage.handler.logs.PowerShortageSourceHandlerLog.POWER_SHORTAGE_HANDLING_PUT_ON_HOLD_LOG;
 import static utils.TimeUtils.getCurrentTime;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -51,12 +51,12 @@ public class HandleSourcePowerShortage extends WakerBehaviour {
 	 * @return behaviour scheduling the power shortage handling
 	 */
 	public static HandleSourcePowerShortage createFor(final List<PowerJob> jobsToHalt,
-			final OffsetDateTime shortageStartTime, final Integer newMaximumCapacity,
+			final Instant shortageStartTime, final Integer newMaximumCapacity,
 			final GreenEnergyAgent greenEnergyAgent) {
-		final OffsetDateTime startTime = getCurrentTime().isAfter(shortageStartTime) ?
+		final Instant startTime = getCurrentTime().isAfter(shortageStartTime) ?
 				getCurrentTime() :
 				shortageStartTime;
-		return new HandleSourcePowerShortage(greenEnergyAgent, Date.from(startTime.toInstant()), jobsToHalt,
+		return new HandleSourcePowerShortage(greenEnergyAgent, Date.from(startTime), jobsToHalt,
 				newMaximumCapacity);
 	}
 

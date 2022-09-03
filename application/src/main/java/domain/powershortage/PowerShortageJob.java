@@ -1,11 +1,11 @@
 package domain.powershortage;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
 
 import org.immutables.value.Value;
 
-import java.time.OffsetDateTime;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import domain.job.JobInstanceIdentifier;
 
@@ -25,5 +25,5 @@ public interface PowerShortageJob {
 	/**
 	 * @return time when transfer will happen
 	 */
-	OffsetDateTime getPowerShortageStart();
+	Instant getPowerShortageStart();
 }

@@ -1,9 +1,15 @@
 package messages.domain.factory;
 
-import static messages.domain.constants.MessageProtocolConstants.*;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static mapper.JsonMapper.getMapper;
+import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+
+import java.time.Instant;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -11,9 +17,6 @@ import domain.job.ImmutableJobInstanceIdentifier;
 import domain.job.JobInstanceIdentifier;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-
-import java.time.OffsetDateTime;
-import java.util.List;
 
 /**
  * Class storing methods used in creating messages informing that the job execution has finished
@@ -44,7 +47,7 @@ public class JobStatusMessageFactory {
 	 * @param receivers    list of AID addresses of the message receivers
 	 * @return inform ACLMessage
 	 */
-	public static ACLMessage prepareFinishMessage(final String jobId, final OffsetDateTime jobStartTime,
+	public static ACLMessage prepareFinishMessage(final String jobId, final Instant jobStartTime,
 			final List<AID> receivers) {
 		final ACLMessage informationMessage = new ACLMessage(INFORM);
 		final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder().jobId(jobId)
@@ -87,7 +90,7 @@ public class JobStatusMessageFactory {
 	 * @param receivers    list of AID addresses of the message receivers
 	 * @return inform ACLMessage
 	 */
-	public static ACLMessage prepareJobStartedMessage(final String jobId, final OffsetDateTime jobStartTime,
+	public static ACLMessage prepareJobStartedMessage(final String jobId, final Instant jobStartTime,
 			final List<AID> receivers) {
 		final ACLMessage informationMessage = new ACLMessage(INFORM);
 		informationMessage.setProtocol(STARTED_JOB_PROTOCOL);

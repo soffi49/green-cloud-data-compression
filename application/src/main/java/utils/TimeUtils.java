@@ -1,17 +1,20 @@
 package utils;
 
-import static java.time.ZoneOffset.UTC;
-
-import exception.IncorrectTaskDateException;
-
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.TimeZone;
+import exception.IncorrectTaskDateException;
 
 /**
  * Service used to perform operations on date and time structures.
@@ -19,27 +22,25 @@ import java.util.TimeZone;
 public class TimeUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(TimeUtils.class);
-
-	private static Clock CLOCK = Clock.systemDefaultZone();
 	private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm";
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
-	private static final Long TIME_ERROR = 10L;
+	private static final Long TIME_ERROR = 5L;
 	private static final int MILLISECOND_MULTIPLIER = 1000;
 	private static final int HOUR_DIVIDER = 3600;
-
-	public static final int SECONDS_FOR_HOUR = 3;
+	private static final int SECONDS_FOR_HOUR = 3;
+	private static Clock CLOCK = Clock.systemDefaultZone();
 
 	/**
-	 * Mapper used to convert the date written as string to the offset date
+	 * Mapper used to convert the date written as string to the instant date
 	 *
 	 * @param date string date to be converted to offset date type
-	 * @return OffsetDateTime date
+	 * @return Instant date
 	 */
-	public static OffsetDateTime convertToOffsetDateTime(final String date) {
+	public static Instant convertToInstantTime(final String date) {
 		try {
 			final LocalDateTime datetime = LocalDateTime.parse(date, DATE_TIME_FORMATTER);
 			final ZonedDateTime zoned = datetime.atZone(ZoneId.of("UTC"));
-			return zoned.toOffsetDateTime();
+			return zoned.toInstant();
 		} catch (DateTimeParseException e) {
 			logger.info("The provided date format is incorrect");
 			e.printStackTrace();
@@ -50,15 +51,15 @@ public class TimeUtils {
 	/**
 	 * @return current time with possible error delay
 	 */
-	public static OffsetDateTime getCurrentTimeMinusError() {
-		return getCurrentTime().minusMinutes(TIME_ERROR);
+	public static Instant getCurrentTimeMinusError() {
+		return getCurrentTime().minus(TIME_ERROR, ChronoUnit.MINUTES);
 	}
 
 	/**
 	 * @return current time
 	 */
-	public static OffsetDateTime getCurrentTime() {
-		return OffsetDateTime.now(CLOCK).atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime();
+	public static Instant getCurrentTime() {
+		return OffsetDateTime.now(CLOCK).toInstant();
 	}
 
 	/**
@@ -79,43 +80,20 @@ public class TimeUtils {
 	 * @param timeToCheck    time which has to be checked
 	 * @return true or false value
 	 */
-	public static boolean isWithinTimeStamp(final OffsetDateTime timeStampStart,
-			final OffsetDateTime timeStampEnd,
-			final OffsetDateTime timeToCheck) {
-		return !timeToCheck.isBefore(timeStampStart) && timeToCheck.isBefore(timeStampEnd);
-	}
-
-	/**
-	 * Method checks if the given time is with a 25-seconds buffer given timestamp
-	 *
-	 * @param timeStampStart start of the time stamp
-	 * @param timeStampEnd   end of the time stamp
-	 * @param timeToCheck    time which has to be checked
-	 * @return true or false value
-	 */
-	public static boolean isWithinTimeStampWithBuffer(final OffsetDateTime timeStampStart,
-			final OffsetDateTime timeStampEnd,
-			final OffsetDateTime timeToCheck) {
-		return !timeToCheck.isBefore(timeStampStart.minusSeconds(30)) &&
-				timeToCheck.isBefore(timeStampEnd.plusSeconds(30));
-	}
-
-	/**
-	 * Method checks if the given time is within given timestamp
-	 *
-	 * @param timeStampStart start of the time stamp
-	 * @param timeStampEnd   end of the time stamp
-	 * @param timeToCheck    time which has to be checked
-	 * @return true or false value
-	 */
 	public static boolean isWithinTimeStamp(final Instant timeStampStart,
 			final Instant timeStampEnd,
 			final Instant timeToCheck) {
 		return !timeToCheck.isBefore(timeStampStart) && timeToCheck.isBefore(timeStampEnd);
 	}
 
-	public static void useMockTime(Instant instant) {
-		CLOCK = Clock.fixed(instant, UTC);
-		TimeZone.setDefault(TimeZone.getTimeZone(UTC));
+	/**
+	 * Method used in testing scenarios to set current time
+	 *
+	 * @param instant time which is to be set as a current time
+	 * @param zone    time zone for current time
+	 */
+	public static void useMockTime(Instant instant, ZoneId zone) {
+		CLOCK = Clock.fixed(instant, zone);
+		TimeZone.setDefault(TimeZone.getTimeZone(zone));
 	}
 }

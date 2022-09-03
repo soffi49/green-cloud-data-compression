@@ -110,7 +110,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
 						.cloudCover(25.0)
 						.temperature(25.0)
 						.windSpeed(10.0)
-						.time(getCurrentTime().toInstant())
+						.time(getCurrentTime())
 						.build())
 				.build();
 	}
@@ -121,7 +121,7 @@ public class ServeWeatherInformation extends CyclicBehaviour {
 						.cloudCover(50.0)
 						.temperature(10.0)
 						.windSpeed(5.0)
-						.time(getCurrentTime().toInstant())
+						.time(getCurrentTime())
 						.build())
 				.build();
 	}

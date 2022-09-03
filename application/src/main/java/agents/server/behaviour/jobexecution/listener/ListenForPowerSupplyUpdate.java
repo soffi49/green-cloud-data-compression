@@ -85,7 +85,7 @@ public class ListenForPowerSupplyUpdate extends CyclicBehaviour {
 
 		if (messageType.equals(SERVER_JOB_CFP_PROTOCOL)) {
 			logger.info(SUPPLY_CONFIRMATION_JOB_ANNOUNCEMENT_LOG, guid, jobId);
-			announceBookedJob(myServerAgent, jobId);
+			announceBookedJob(myServerAgent);
 		}
 		scheduleJobExecution(jobInstanceId, messageType);
 	}

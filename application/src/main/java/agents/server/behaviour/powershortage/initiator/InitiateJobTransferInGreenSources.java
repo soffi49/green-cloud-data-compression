@@ -6,7 +6,6 @@ import static agents.server.behaviour.powershortage.initiator.logs.PowerShortage
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NONE_AVAILABLE_LOG;
 import static agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG;
 import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
-import static utils.GUIUtils.displayMessageArrow;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
 import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static messages.MessagingUtils.rejectJobOffers;
@@ -16,8 +15,9 @@ import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static utils.GUIUtils.displayMessageArrow;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -51,7 +51,7 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 	private final String guid;
 	private final PowerJob jobToTransfer;
 	private final JobInstanceIdentifier jobToTransferInstance;
-	private final OffsetDateTime powerShortageStart;
+	private final Instant powerShortageStart;
 	private final ACLMessage greenSourceRequest;
 
 	/**
@@ -67,7 +67,7 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 			final ACLMessage powerRequest,
 			final ACLMessage greenSourceRequest,
 			final PowerJob jobToTransfer,
-			final OffsetDateTime powerShortageStart) {
+			final Instant powerShortageStart) {
 		super(agent, powerRequest);
 		this.myServerAgent = (ServerAgent) myAgent;
 		this.guid = myAgent.getName();

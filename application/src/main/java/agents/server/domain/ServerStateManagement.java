@@ -13,7 +13,7 @@ import static utils.GUIUtils.displayMessageArrow;
 import static utils.TimeUtils.getCurrentTime;
 import static utils.TimeUtils.isWithinTimeStamp;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +69,7 @@ public class ServerStateManagement {
 	 *                        (if not provided then type is ALL)
 	 * @return available power
 	 */
-	public synchronized int getAvailableCapacity(final OffsetDateTime startDate, final OffsetDateTime endDate,
+	public synchronized int getAvailableCapacity(final Instant startDate, final Instant endDate,
 			final JobInstanceIdentifier jobToExclude, final ServerPowerSourceType powerSourceType) {
 		final Set<Job> jobsOfInterest = serverAgent.getServerJobs().keySet().stream()
 				.filter(job -> Objects.isNull(jobToExclude) || !JobMapper.mapToJobInstanceId(job).equals(jobToExclude))
@@ -156,7 +156,7 @@ public class ServerStateManagement {
 	 * @return pair of job and current status
 	 */
 	public Map.Entry<Job, JobStatusEnum> getCurrentJobInstance(final String jobId) {
-		final OffsetDateTime currentTime = getCurrentTime();
+		final Instant currentTime = getCurrentTime();
 		return serverAgent.getServerJobs().entrySet().stream().filter(jobEntry -> {
 			final Job job = jobEntry.getKey();
 			return job.getJobId().equals(jobId) && (
@@ -172,9 +172,9 @@ public class ServerStateManagement {
 	 * @param startTime job start time
 	 * @return job
 	 */
-	public Job getJobByIdAndStartDate(final String jobId, final OffsetDateTime startTime) {
+	public Job getJobByIdAndStartDate(final String jobId, final Instant startTime) {
 		return serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getStartTime().isEqual(startTime)).findFirst()
+				.filter(job -> job.getJobId().equals(jobId) && job.getStartTime().equals(startTime)).findFirst()
 				.orElse(null);
 	}
 
@@ -187,7 +187,7 @@ public class ServerStateManagement {
 	public Job getJobByIdAndStartDate(final JobInstanceIdentifier jobInstanceId) {
 		return serverAgent.getServerJobs().keySet().stream()
 				.filter(job -> job.getJobId().equals(jobInstanceId.getJobId()) && job.getStartTime()
-						.isEqual(jobInstanceId.getStartTime())).findFirst().orElse(null);
+						.equals(jobInstanceId.getStartTime())).findFirst().orElse(null);
 	}
 
 	/**
@@ -270,7 +270,7 @@ public class ServerStateManagement {
 	 * @param job                affected job
 	 * @param powerShortageStart time when power shortage starts
 	 */
-	public Job divideJobForPowerShortage(final Job job, final OffsetDateTime powerShortageStart) {
+	public Job divideJobForPowerShortage(final Job job, final Instant powerShortageStart) {
 		if (powerShortageStart.isAfter(job.getStartTime()) && !powerShortageStart.equals(job.getStartTime())) {
 			final Job affectedJobInstance = JobMapper.mapToJobNewStartTime(job, powerShortageStart);
 			final Job notAffectedJobInstance = JobMapper.mapToJobNewEndTime(job, powerShortageStart);

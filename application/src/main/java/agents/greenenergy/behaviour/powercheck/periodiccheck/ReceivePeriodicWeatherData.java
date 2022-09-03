@@ -1,6 +1,5 @@
 package agents.greenenergy.behaviour.powercheck.periodiccheck;
 
-import static utils.TimeUtils.getCurrentTime;
 import static domain.powershortage.PowerShortageCause.WEATHER_CAUSE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
@@ -13,8 +12,9 @@ import static jade.lang.acl.MessageTemplate.or;
 import static java.util.Objects.nonNull;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
+import static utils.TimeUtils.getCurrentTime;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public class ReceivePeriodicWeatherData extends CyclicBehaviour {
 	}
 
 	private void handleInform(final MonitoringData data) {
-		final OffsetDateTime time = getCurrentTime();
+		final Instant time = getCurrentTime();
 		logger.info("[{}] Received the weather data at {}", guid, time);
 		final double availablePower = myGreenEnergyAgent.manage().getAvailablePower(getCurrentTime(), data).orElse(0.0);
 		if (availablePower < myGreenEnergyAgent.manage().getCurrentPowerInUseForGreenSource()) {

@@ -4,12 +4,12 @@ import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerSho
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_NO_IMPACT_LOG;
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_TRANSFER_LOG;
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_WEATHER_LOG;
-import static utils.AlgorithmUtils.findJobsWithinPower;
-import static utils.GUIUtils.displayMessageArrow;
 import static domain.powershortage.PowerShortageCause.PHYSICAL_CAUSE;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
+import static utils.AlgorithmUtils.findJobsWithinPower;
+import static utils.GUIUtils.displayMessageArrow;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -38,7 +38,7 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(AnnounceSourcePowerShortage.class);
 
-	private final OffsetDateTime shortageStartTime;
+	private final Instant shortageStartTime;
 	private final PowerJob powerJobToInclude;
 	private final Double maxAvailablePower;
 	private final GreenEnergyAgent myGreenAgent;
@@ -54,7 +54,7 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
 	 * @param maxAvailablePower power available during the power shortage
 	 */
 	public AnnounceSourcePowerShortage(GreenEnergyAgent myAgent, PowerJob powerJobToInclude,
-			OffsetDateTime shortageStartTime, Double maxAvailablePower, PowerShortageCause cause) {
+			Instant shortageStartTime, Double maxAvailablePower, PowerShortageCause cause) {
 		super(myAgent);
 		this.shortageStartTime = shortageStartTime;
 		this.maxAvailablePower = maxAvailablePower;
@@ -90,7 +90,7 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
 	}
 
 	private void initiatePowerShortageHandler(final List<PowerJob> jobsToTransfer) {
-		final Integer maximumCapacity = cause.equals(PHYSICAL_CAUSE)? maxAvailablePower.intValue() : null;
+		final Integer maximumCapacity = cause.equals(PHYSICAL_CAUSE) ? maxAvailablePower.intValue() : null;
 		myGreenAgent.addBehaviour(
 				HandleSourcePowerShortage.createFor(jobsToTransfer, shortageStartTime, maximumCapacity,
 						myGreenAgent));
@@ -101,8 +101,7 @@ public class AnnounceSourcePowerShortage extends OneShotBehaviour {
 				JobMapper.mapToPowerShortageJob(originalJob, shortageStartTime), myGreenAgent.getOwnerServer());
 
 		displayMessageArrow(myGreenAgent, myGreenAgent.getOwnerServer());
-		myGreenAgent.addBehaviour(
-				new InitiatePowerJobTransfer(myGreenAgent, transferMessage, jobToTransfer, shortageStartTime));
+		myGreenAgent.addBehaviour(new InitiatePowerJobTransfer(myGreenAgent, transferMessage, jobToTransfer));
 	}
 
 	private List<PowerJob> prepareJobsToTransfer(final List<PowerJob> affectedJobs, final List<PowerJob> jobsToKeep) {

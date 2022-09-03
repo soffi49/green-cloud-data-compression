@@ -6,8 +6,7 @@ import static com.gui.gui.utils.GUIComponentUtils.addStyleToButton;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,8 +42,8 @@ public class EventServiceImpl implements EventService {
 		}
 	}
 
-	private OffsetDateTime getPowerShortageTime() {
-		return OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime().plusSeconds(1);
+	private Instant getPowerShortageTime() {
+		return Instant.now().plusSeconds(1);
 	}
 
 	private void disableEventForTimeout(final JButton button, final String labelOnButtonEnable,

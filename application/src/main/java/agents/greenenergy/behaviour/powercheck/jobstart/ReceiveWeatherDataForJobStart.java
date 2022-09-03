@@ -90,7 +90,7 @@ public class ReceiveWeatherDataForJobStart extends CyclicBehaviour {
 					guid, powerJob.getJobId(), powerJob.getPower(), availablePower);
 			displayMessageArrow(myGreenEnergyAgent, myGreenEnergyAgent.getOwnerServer());
 			myAgent.send(ReplyMessageFactory.prepareReply(originalMessage.createReply(), checkedPowerJob, REFUSE));
-			var currentCapacity = myGreenEnergyAgent.getCapacity(data, getCurrentTime().toInstant());
+			var currentCapacity = myGreenEnergyAgent.getCapacity(data, getCurrentTime());
 			myAgent.addBehaviour(
 					new AnnounceSourcePowerShortage(myGreenEnergyAgent,
 							checkedPowerJob.getPowerJob(),
