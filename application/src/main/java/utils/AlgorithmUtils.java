@@ -1,6 +1,5 @@
 package utils;
 
-import static utils.TimeUtils.isWithinTimeStamp;
 import static utils.domain.JobWithTime.TimeType.START_TIME;
 
 import java.time.OffsetDateTime;
@@ -35,8 +34,7 @@ public class AlgorithmUtils {
 	public static int getMaximumUsedPowerDuringTimeStamp(final Set<Job> jobList, final OffsetDateTime startTime,
 			final OffsetDateTime endTime) {
 		final List<Job> jobsWithinInterval = jobList.stream()
-				.filter(job -> isWithinTimeStamp(startTime, endTime, job.getStartTime()) ||
-						isWithinTimeStamp(startTime, endTime, job.getEndTime()))
+				.filter(job -> job.getStartTime().isBefore(endTime) && job.getEndTime().isAfter(startTime))
 				.toList();
 		final List<JobWithTime> jobsWithTimeMap = jobsWithinInterval.stream()
 				.map(job -> mapToJobWithTime(job, startTime, endTime))
