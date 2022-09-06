@@ -1,13 +1,14 @@
 package messages;
 
-import static utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
+import static utils.GUIUtils.displayMessageArrow;
 
 import java.util.List;
 import java.util.Vector;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import agents.AbstractAgent;
 import domain.job.JobInstanceIdentifier;
@@ -104,10 +105,11 @@ public class MessagingUtils {
 	 * @param expectedClassType class type of the message body
 	 * @return mapped to Object message content
 	 */
-	public static <T> T readMessageContent(final ACLMessage message,
-			final Class<?> expectedClassType) {
+	public static <T> T readMessageContent(final ACLMessage message, final Class<?> expectedClassType) {
 		try {
 			return (T) getMapper().readValue(message.getContent(), expectedClassType);
+		} catch (MismatchedInputException e) {
+			throw new RuntimeException();
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			throw new RuntimeException();
