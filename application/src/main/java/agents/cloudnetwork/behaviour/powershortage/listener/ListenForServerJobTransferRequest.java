@@ -4,7 +4,6 @@ import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerSho
 import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerShortageCloudListenerLog.SERVER_TRANSFER_REQUEST_JOB_NOT_FOUND_LOG;
 import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerShortageCloudListenerLog.SERVER_TRANSFER_REQUEST_NO_SERVERS_AVAILABLE_LOG;
 import static agents.cloudnetwork.behaviour.powershortage.listener.templates.PowerShortageCloudMessageTemplates.SERVER_JOB_TRANSFER_REQUEST_TEMPLATE;
-import static utils.GUIUtils.displayMessageArrow;
 import static messages.MessagingUtils.readMessageContent;
 import static messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
@@ -13,8 +12,9 @@ import static messages.domain.constants.powershortage.PowerShortageMessageConten
 import static messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static utils.GUIUtils.displayMessageArrow;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -61,7 +61,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 		if (Objects.nonNull(transferRequest)) {
 			final PowerShortageJob powerShortageJob = readMessageContent(transferRequest, PowerShortageJob.class);
 			final JobInstanceIdentifier jobInstance = powerShortageJob.getJobInstanceId();
-			final OffsetDateTime shortageStartTime = powerShortageJob.getPowerShortageStart();
+			final Instant shortageStartTime = powerShortageJob.getPowerShortageStart();
 			final Job job = myCloudNetworkAgent.manage().getJobById(jobInstance.getJobId());
 
 			if (Objects.nonNull(job)) {
@@ -88,7 +88,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 	}
 
 	private void askRemainingServersToTransferJob(final List<AID> remainingServers, final Job originalJob,
-			final OffsetDateTime shortageStartTime, final ACLMessage originalRequest) {
+			final Instant shortageStartTime, final ACLMessage originalRequest) {
 		final Job jobToTransfer = prepareJobToTransfer(originalJob, shortageStartTime);
 		final PowerShortageJob newPowerShortageJob = JobMapper.mapToPowerShortageJob(jobToTransfer, shortageStartTime);
 		final ACLMessage cfp = createCallForProposal(jobToTransfer, remainingServers, CNA_JOB_CFP_PROTOCOL);
@@ -105,8 +105,8 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 		myCloudNetworkAgent.send(reply);
 	}
 
-	private Job prepareJobToTransfer(final Job job, final OffsetDateTime shortageStartTime) {
-		final OffsetDateTime startTime = job.getStartTime().isAfter(shortageStartTime) ?
+	private Job prepareJobToTransfer(final Job job, final Instant shortageStartTime) {
+		final Instant startTime = job.getStartTime().isAfter(shortageStartTime) ?
 				job.getStartTime() :
 				shortageStartTime;
 		return JobMapper.mapToJobNewStartTime(job, startTime);

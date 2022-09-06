@@ -6,10 +6,8 @@ import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerSho
 import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_REFUSE_NOT_FOUND_LOG;
 import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_LOG;
 import static agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_NOT_FOUND_LOG;
-import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-
-import java.time.OffsetDateTime;
+import static utils.TimeUtils.getCurrentTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,27 +28,19 @@ public class InitiatePowerJobTransfer extends AchieveREInitiator {
 	private final GreenEnergyAgent myGreenAgent;
 	private final String guid;
 	private final PowerJob jobToTransfer;
-	private final OffsetDateTime powerShortageStart;
-	private final ACLMessage transferRequest;
 
 	/**
 	 * Behaviours constructor
 	 *
-	 * @param agent              green source executing the behaviour
-	 * @param transferRequest    message with request for the power job transfer
-	 * @param jobToTransfer      job that is requested to be transferred
-	 * @param powerShortageStart time when the power shortage starts
+	 * @param agent           green source executing the behaviour
+	 * @param transferRequest message with request for the power job transfer
+	 * @param jobToTransfer   job that is requested to be transferred
 	 */
-	public InitiatePowerJobTransfer(GreenEnergyAgent agent,
-			ACLMessage transferRequest,
-			PowerJob jobToTransfer,
-			OffsetDateTime powerShortageStart) {
+	public InitiatePowerJobTransfer(GreenEnergyAgent agent, ACLMessage transferRequest, PowerJob jobToTransfer) {
 		super(agent, transferRequest);
 		this.myGreenAgent = agent;
 		this.jobToTransfer = jobToTransfer;
 		this.guid = myGreenAgent.getLocalName();
-		this.powerShortageStart = powerShortageStart;
-		this.transferRequest = transferRequest;
 	}
 
 	/**

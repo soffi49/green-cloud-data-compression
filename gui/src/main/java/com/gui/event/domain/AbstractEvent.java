@@ -1,6 +1,6 @@
 package com.gui.event.domain;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 /**
  * Class represents the abstract event which may occur in the environment
@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 public abstract class AbstractEvent {
 
 	protected EventTypeEnum eventTypeEnum;
-	protected OffsetDateTime occurrenceTime;
+	protected Instant occurrenceTime;
 
 	/**
 	 * Default event constructor
@@ -16,7 +16,7 @@ public abstract class AbstractEvent {
 	 * @param eventTypeEnum  type of the event
 	 * @param occurrenceTime time when the event occurs
 	 */
-	protected AbstractEvent(final EventTypeEnum eventTypeEnum, final OffsetDateTime occurrenceTime) {
+	protected AbstractEvent(final EventTypeEnum eventTypeEnum, final Instant occurrenceTime) {
 		this.eventTypeEnum = eventTypeEnum;
 		this.occurrenceTime = occurrenceTime;
 	}
@@ -31,7 +31,7 @@ public abstract class AbstractEvent {
 	/**
 	 * @return time when the event will occur
 	 */
-	public OffsetDateTime getOccurrenceTime() {
+	public Instant getOccurrenceTime() {
 		return occurrenceTime;
 	}
 }

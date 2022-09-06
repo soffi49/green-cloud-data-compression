@@ -4,7 +4,7 @@ import static agents.server.behaviour.jobexecution.handler.logs.JobHandlingHandl
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static utils.TimeUtils.getCurrentTime;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 
@@ -54,10 +54,10 @@ public class HandleJobFinish extends WakerBehaviour {
 	 */
 	public static HandleJobFinish createFor(final ServerAgent serverAgent, final Job jobToFinish,
 			final boolean informCNA) {
-		final OffsetDateTime endTime = getCurrentTime().isAfter(jobToFinish.getEndTime()) ?
+		final Instant endTime = getCurrentTime().isAfter(jobToFinish.getEndTime()) ?
 				getCurrentTime() :
 				jobToFinish.getEndTime();
-		return new HandleJobFinish(serverAgent, Date.from(endTime.toInstant()), jobToFinish, informCNA);
+		return new HandleJobFinish(serverAgent, Date.from(endTime), jobToFinish, informCNA);
 	}
 
 	/**

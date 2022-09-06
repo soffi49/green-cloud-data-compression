@@ -1,5 +1,11 @@
 package runner.factory;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Objects;
+
 import com.gui.agents.AbstractAgentNode;
 import com.gui.agents.ClientAgentNode;
 import com.gui.agents.CloudNetworkAgentNode;
@@ -11,12 +17,15 @@ import com.gui.agents.domain.AgentLocation;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import runner.domain.*;
-
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
+import runner.domain.AgentArgs;
+import runner.domain.ClientAgentArgs;
+import runner.domain.CloudNetworkArgs;
+import runner.domain.GreenEnergyAgentArgs;
+import runner.domain.ImmutableGreenEnergyAgentArgs;
+import runner.domain.ImmutableServerAgentArgs;
+import runner.domain.MonitoringAgentArgs;
+import runner.domain.ScenarioArgs;
+import runner.domain.ServerAgentArgs;
 
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
@@ -113,8 +122,8 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 	}
 
 	private String formatToDate(final String value) {
-		final OffsetDateTime date = OffsetDateTime.now().plusHours(Long.parseLong(value));
+		final Instant date = Instant.now().plus(Long.parseLong(value), ChronoUnit.HOURS);
 		final String dateFormat = "dd/MM/yyyy HH:mm";
-		return date.format(DateTimeFormatter.ofPattern(dateFormat));
+		return DateTimeFormatter.ofPattern(dateFormat).format(date);
 	}
 }

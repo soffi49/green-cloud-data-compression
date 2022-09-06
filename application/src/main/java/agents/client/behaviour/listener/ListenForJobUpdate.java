@@ -1,33 +1,32 @@
 package agents.client.behaviour.listener;
 
 import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
-import static utils.TimeUtils.getCurrentTime;
-import static messages.domain.constants.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
-import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
-import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
-import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
-import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
+import static messages.domain.constants.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static utils.TimeUtils.getCurrentTime;
 
-import agents.client.ClientAgent;
-
-import com.gui.agents.ClientAgentNode;
-import com.gui.agents.domain.JobStatusEnum;
-
-import jade.core.behaviours.CyclicBehaviour;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
+import com.gui.agents.ClientAgentNode;
+import com.gui.agents.domain.JobStatusEnum;
+
+import agents.client.ClientAgent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 /**
  * Behaviour which handles the information that the job status is updated
@@ -90,7 +89,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	}
 
 	private void checkIfJobStartedOnTime() {
-		final OffsetDateTime startTime = getCurrentTime();
+		final Instant startTime = getCurrentTime();
 		final long timeDifference = ChronoUnit.MILLIS.between(myClientAgent.getSimulatedJobStart(), startTime);
 		if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
 			logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
@@ -101,7 +100,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	}
 
 	private void checkIfJobFinishedOnTime() {
-		final OffsetDateTime endTime = getCurrentTime();
+		final Instant endTime = getCurrentTime();
 		final long timeDifference = ChronoUnit.MILLIS.between(endTime, myClientAgent.getSimulatedJobEnd());
 		if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
 			logger.info("[{}] The execution of my job finished on time! :)", myAgent.getName());

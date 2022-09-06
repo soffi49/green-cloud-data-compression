@@ -82,7 +82,7 @@ public class CloudNetworkStateManagement {
 		logger.info("[{}] Finished job {}. Number of finished jobs is {} out of {} started",
 				cloudNetworkAgent.getLocalName(), jobId, finishedJobs, startedJobs);
 		updateCloudNetworkGUI();
-		announceFinishedJob(cloudNetworkAgent, jobId);
+		announceFinishedJob(cloudNetworkAgent);
 	}
 
 	private void updateCloudNetworkGUI() {

@@ -3,15 +3,15 @@ package agents.server.behaviour.powershortage.listener;
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG;
 import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG;
 import static agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_REQUEST_TEMPLATE;
-import static utils.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static utils.GUIUtils.displayMessageArrow;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -93,14 +93,14 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 	}
 
 	private PowerJob createJobTransferInstance(final PowerShortageJob jobTransfer, final Job originalJob) {
-		final OffsetDateTime startTime = originalJob.getStartTime().isAfter(jobTransfer.getPowerShortageStart()) ?
+		final Instant startTime = originalJob.getStartTime().isAfter(jobTransfer.getPowerShortageStart()) ?
 				originalJob.getStartTime() :
 				jobTransfer.getPowerShortageStart();
 		return JobMapper.mapToPowerJob(originalJob, startTime);
 	}
 
 	private void askForTransferInRemainingGS(final List<AID> remainingGreenSources, final PowerJob powerJob,
-			final OffsetDateTime shortageStartTime, final ACLMessage transferRequest) {
+			final Instant shortageStartTime, final ACLMessage transferRequest) {
 		final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(powerJob,
 				remainingGreenSources, SERVER_JOB_CFP_PROTOCOL);
 

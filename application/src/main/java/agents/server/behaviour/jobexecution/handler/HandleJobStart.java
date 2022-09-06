@@ -8,7 +8,7 @@ import static messages.domain.factory.JobStatusMessageFactory.prepareJobStartedM
 import static utils.GUIUtils.displayMessageArrow;
 import static utils.TimeUtils.getCurrentTime;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -72,10 +72,10 @@ public class HandleJobStart extends WakerBehaviour {
 			final Job job,
 			final boolean informCNAStart,
 			final boolean informCNAFinish) {
-		final OffsetDateTime startDate = getCurrentTime().isAfter(job.getStartTime()) ?
+		final Instant startDate = getCurrentTime().isAfter(job.getStartTime()) ?
 				getCurrentTime() :
 				job.getStartTime();
-		return new HandleJobStart(serverAgent, Date.from(startDate.toInstant()), job, informCNAStart,
+		return new HandleJobStart(serverAgent, Date.from(startDate), job, informCNAStart,
 				informCNAFinish);
 	}
 

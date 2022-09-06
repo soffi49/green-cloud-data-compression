@@ -1,11 +1,11 @@
 package domain.job;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import org.immutables.value.Value.Immutable;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Object storing the data describing the client's job
@@ -28,12 +28,12 @@ public interface Job {
 	/**
 	 * @return time when the job execution should start
 	 */
-	OffsetDateTime getStartTime();
+	Instant getStartTime();
 
 	/**
 	 * @return time when the job execution should finish
 	 */
-	OffsetDateTime getEndTime();
+	Instant getEndTime();
 
 	/**
 	 * @return power necessary to execute the job

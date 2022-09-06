@@ -1,18 +1,16 @@
 package agents.greenenergy.domain;
 
 import static agents.greenenergy.domain.GreenEnergyAgentConstants.MAX_ERROR_IN_JOB_FINISH;
-import static utils.GUIUtils.displayMessageArrow;
-import static utils.TimeUtils.getCurrentTime;
-import static utils.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static domain.job.JobStatusEnum.ACTIVE_JOB_STATUSES;
 import static domain.job.JobStatusEnum.JOB_ON_HOLD;
 import static java.util.stream.Collectors.toMap;
 import static mapper.JsonMapper.getMapper;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.isWithinTimeStamp;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,9 +77,9 @@ public class GreenEnergyStateManagement {
 	 * @param startTime job start time
 	 * @return job
 	 */
-	public PowerJob getJobByIdAndStartDate(final String jobId, final OffsetDateTime startTime) {
+	public PowerJob getJobByIdAndStartDate(final String jobId, final Instant startTime) {
 		return greenEnergyAgent.getPowerJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getStartTime().isEqual(startTime))
+				.filter(job -> job.getJobId().equals(jobId) && job.getStartTime().equals(startTime))
 				.findFirst()
 				.orElse(null);
 	}
@@ -95,7 +93,7 @@ public class GreenEnergyStateManagement {
 	public PowerJob getJobByIdAndStartDate(final JobInstanceIdentifier jobInstanceId) {
 		return greenEnergyAgent.getPowerJobs().keySet().stream()
 				.filter(job -> job.getJobId().equals(jobInstanceId.getJobId())
-						&& job.getStartTime().isEqual(jobInstanceId.getStartTime()))
+						&& job.getStartTime().equals(jobInstanceId.getStartTime()))
 				.findFirst()
 				.orElse(null);
 	}
@@ -107,9 +105,9 @@ public class GreenEnergyStateManagement {
 	 * @param endTime job end time
 	 * @return job
 	 */
-	public PowerJob getJobByIdAndEndDate(final String jobId, final OffsetDateTime endTime) {
+	public PowerJob getJobByIdAndEndDate(final String jobId, final Instant endTime) {
 		return greenEnergyAgent.getPowerJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getEndTime().isEqual(endTime))
+				.filter(job -> job.getJobId().equals(jobId) && job.getEndTime().equals(endTime))
 				.findFirst()
 				.orElse(null);
 	}
@@ -181,7 +179,7 @@ public class GreenEnergyStateManagement {
 	 * @param powerJob           affected power job
 	 * @param powerShortageStart time when power shortage starts
 	 */
-	public PowerJob dividePowerJobForPowerShortage(final PowerJob powerJob, final OffsetDateTime powerShortageStart) {
+	public PowerJob dividePowerJobForPowerShortage(final PowerJob powerJob, final Instant powerShortageStart) {
 		if (powerShortageStart.isAfter(powerJob.getStartTime())) {
 			final PowerJob affectedPowerJobInstance = JobMapper.mapToJobNewStartTime(powerJob, powerShortageStart);
 			final PowerJob notAffectedPowerJobInstance = JobMapper.mapToJobNewEndTime(powerJob, powerShortageStart);
@@ -191,7 +189,7 @@ public class GreenEnergyStateManagement {
 			greenEnergyAgent.getPowerJobs().put(affectedPowerJobInstance, JobStatusEnum.ON_HOLD_TRANSFER);
 			greenEnergyAgent.getPowerJobs().put(notAffectedPowerJobInstance, currentJobStatus);
 			final Date endDate = Date.from(
-					affectedPowerJobInstance.getEndTime().plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS).toInstant());
+					affectedPowerJobInstance.getEndTime().plusMillis(MAX_ERROR_IN_JOB_FINISH));
 			greenEnergyAgent.addBehaviour(
 					new FinishJobManually(greenEnergyAgent, endDate,
 							JobMapper.mapToJobInstanceId(affectedPowerJobInstance)));
@@ -220,7 +218,6 @@ public class GreenEnergyStateManagement {
 						Stream.concat(
 								validJobs.stream().map(PowerJob::getStartTime),
 								validJobs.stream().map(PowerJob::getEndTime)))
-				.map(OffsetDateTime::toInstant)
 				.distinct()
 				.toList();
 	}
@@ -320,8 +317,8 @@ public class GreenEnergyStateManagement {
 	 * @param weather monitoring data with weather for requested timetable
 	 * @return average available power as decimal or empty optional if power not available
 	 */
-	public synchronized Optional<Double> getAvailablePower(final OffsetDateTime time, final MonitoringData weather) {
-		var availablePower = getPower(time.toInstant(), weather);
+	public synchronized Optional<Double> getAvailablePower(final Instant time, final MonitoringData weather) {
+		var availablePower = getPower(time, weather);
 		logger.info("[{}] Calculated available {} power {} at {}", greenEnergyAgent.getName(),
 				greenEnergyAgent.getEnergyType(),
 				String.format("%.2f", availablePower), time);
@@ -356,8 +353,8 @@ public class GreenEnergyStateManagement {
 
 	private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather,
 			final boolean isNewJob) {
-		var start = powerJob.getStartTime().toInstant();
-		var end = powerJob.getEndTime().toInstant();
+		var start = powerJob.getStartTime();
+		var end = powerJob.getEndTime();
 		var timetable = getJobsTimetable(powerJob).stream()
 				.filter(time -> isWithinTimeStamp(start, end, time))
 				.toList();

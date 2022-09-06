@@ -2,7 +2,7 @@ package utils;
 
 import static utils.domain.JobWithTime.TimeType.START_TIME;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,8 +31,8 @@ public class AlgorithmUtils {
 	 * @param startTime start time of the interval
 	 * @param endTime   end time of the interval
 	 */
-	public static int getMaximumUsedPowerDuringTimeStamp(final Set<Job> jobList, final OffsetDateTime startTime,
-			final OffsetDateTime endTime) {
+	public static int getMaximumUsedPowerDuringTimeStamp(final Set<Job> jobList, final Instant startTime,
+			final Instant endTime) {
 		final List<Job> jobsWithinInterval = jobList.stream()
 				.filter(job -> job.getStartTime().isBefore(endTime) && job.getEndTime().isAfter(startTime))
 				.toList();
@@ -101,10 +101,10 @@ public class AlgorithmUtils {
 		return (List<T>) result.get().subList;
 	}
 
-	private static List<JobWithTime> mapToJobWithTime(final Job job, final OffsetDateTime startTime,
-			final OffsetDateTime endTime) {
-		final OffsetDateTime realStart = job.getStartTime().isBefore(startTime) ? startTime : job.getStartTime();
-		final OffsetDateTime realEnd = job.getEndTime().isAfter(endTime) ? endTime : job.getEndTime();
+	private static List<JobWithTime> mapToJobWithTime(final Job job, final Instant startTime,
+			final Instant endTime) {
+		final Instant realStart = job.getStartTime().isBefore(startTime) ? startTime : job.getStartTime();
+		final Instant realEnd = job.getEndTime().isAfter(endTime) ? endTime : job.getEndTime();
 
 		return List.of(
 				new JobWithTime(job, realStart, START_TIME),

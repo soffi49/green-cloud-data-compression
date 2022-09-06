@@ -5,7 +5,7 @@ import static agents.server.behaviour.powershortage.handler.logs.PowerShortageSe
 import static agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG;
 import static utils.TimeUtils.getCurrentTime;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -58,11 +58,11 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 	 * @return behaviour scheduling the power shortage handling
 	 */
 	public static HandleServerPowerShortage createFor(final List<Job> affectedJobs,
-			final OffsetDateTime shortageStartTime, final ServerAgent serverAgent, final Integer newMaximumPower) {
-		final OffsetDateTime startTime = getCurrentTime().isAfter(shortageStartTime) ?
+			final Instant shortageStartTime, final ServerAgent serverAgent, final Integer newMaximumPower) {
+		final Instant startTime = getCurrentTime().isAfter(shortageStartTime) ?
 				getCurrentTime() :
 				shortageStartTime;
-		return new HandleServerPowerShortage(serverAgent, Date.from(startTime.toInstant()), affectedJobs,
+		return new HandleServerPowerShortage(serverAgent, Date.from(startTime), affectedJobs,
 				newMaximumPower);
 	}
 
