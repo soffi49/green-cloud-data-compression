@@ -1,9 +1,6 @@
 package agents.server.domain;
 
 import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
-import static utils.GUIUtils.displayMessageArrow;
-import static utils.TimeUtils.getCurrentTime;
-import static utils.TimeUtils.isWithinTimeStamp;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
@@ -12,6 +9,9 @@ import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static messages.domain.factory.JobStatusMessageFactory.prepareFinishMessage;
 import static utils.AlgorithmUtils.getMaximumUsedPowerDuringTimeStamp;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
+import static utils.TimeUtils.isWithinTimeStamp;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.gui.agents.ServerAgentNode;
 
 import agents.server.ServerAgent;
-import agents.server.behaviour.FinishJobExecution;
-import agents.server.behaviour.StartJobExecution;
+import agents.server.behaviour.jobexecution.handler.HandleJobFinish;
+import agents.server.behaviour.jobexecution.handler.HandleJobStart;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
@@ -82,42 +82,58 @@ public class ServerStateManagement {
 	}
 
 	/**
-	 * Method performs default behaviour when the job is finished
+	 * Method performs job finishing action
 	 *
 	 * @param jobToFinish job to be finished
 	 * @param informCNA   flag indicating whether cloud network should be informed about the job finish
 	 */
 	public void finishJobExecution(final Job jobToFinish, final boolean informCNA) {
 		final JobStatusEnum jobStatusEnum = serverAgent.getServerJobs().get(jobToFinish);
+
+		sendFinishInformation(jobToFinish, informCNA);
+		updateStateAfterJobFinish(jobToFinish);
+
+		if (jobStatusEnum.equals(IN_PROGRESS_BACKUP_ENERGY)) {
+			final Map<Job, JobStatusEnum> jobsWithinTimeStamp = serverAgent.getServerJobs().entrySet().stream()
+					.filter(job -> isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(),
+							getCurrentTime()))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			supplyJobsWithBackupPower(jobsWithinTimeStamp);
+		}
+	}
+
+	private void sendFinishInformation(final Job jobToFinish, final boolean informCNA) {
 		final List<AID> receivers = informCNA ?
 				List.of(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()),
 						serverAgent.getOwnerCloudNetworkAgent()) :
 				Collections.singletonList(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()));
 		final ACLMessage finishJobMessage = prepareFinishMessage(jobToFinish.getJobId(), jobToFinish.getStartTime(),
 				receivers);
-		serverAgent.getServerJobs().remove(jobToFinish);
-		if (Objects.isNull(serverAgent.manage().getJobById(jobToFinish.getJobId()))) {
-			serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
-		}
-		if (jobStatusEnum.equals(IN_PROGRESS_BACKUP_ENERGY)) {
-			serverAgent.getServerJobs().entrySet().stream()
-					.filter(job ->
-							isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime())
-									&& job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE)
-									&& job.getKey().getPower() <= jobToFinish.getPower())
-					.forEach(job -> {
-						if (getAvailableCapacity(job.getKey().getStartTime(), job.getKey().getEndTime(),
-								JobMapper.mapToJobInstanceId(job.getKey()), BACK_UP_POWER) >= job.getKey().getPower()) {
-							logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(),
-									job.getKey().getJobId());
-							job.setValue(IN_PROGRESS_BACKUP_ENERGY);
-							updateServerGUI();
-						}
-					});
-		}
-		incrementFinishedJobs(jobToFinish.getJobId());
+
 		displayMessageArrow(serverAgent, receivers);
 		serverAgent.send(finishJobMessage);
+	}
+
+	private void updateStateAfterJobFinish(final Job jobToFinish) {
+		if (isJobUnique(jobToFinish.getJobId())) {
+			serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
+		}
+		serverAgent.getServerJobs().remove(jobToFinish);
+		incrementFinishedJobs(jobToFinish.getJobId());
+	}
+
+	private void supplyJobsWithBackupPower(final Map<Job, JobStatusEnum> jobEntries) {
+		jobEntries.entrySet().stream()
+				.filter(job -> job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE))
+				.forEach(jobEntry -> {
+					final Job job = jobEntry.getKey();
+					if (getAvailableCapacity(job.getStartTime(), job.getEndTime(), JobMapper.mapToJobInstanceId(job),
+							BACK_UP_POWER) >= job.getPower()) {
+						logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(), job.getJobId());
+						jobEntry.setValue(IN_PROGRESS_BACKUP_ENERGY);
+						updateServerGUI();
+					}
+				});
 	}
 
 	/**
@@ -264,12 +280,12 @@ public class ServerStateManagement {
 			serverAgent.getServerJobs().put(affectedJobInstance, JobStatusEnum.ON_HOLD_TRANSFER);
 			serverAgent.getServerJobs().put(notAffectedJobInstance, currentJobStatus);
 
-			serverAgent.addBehaviour(StartJobExecution.createFor(serverAgent, affectedJobInstance, false, true));
+			serverAgent.addBehaviour(HandleJobStart.createFor(serverAgent, affectedJobInstance, false, true));
 			if (getCurrentTime().isBefore(notAffectedJobInstance.getStartTime())) {
 				serverAgent.addBehaviour(
-						StartJobExecution.createFor(serverAgent, notAffectedJobInstance, true, false));
+						HandleJobStart.createFor(serverAgent, notAffectedJobInstance, true, false));
 			} else if (getCurrentTime().isBefore(notAffectedJobInstance.getEndTime())) {
-				serverAgent.addBehaviour(FinishJobExecution.createFor(serverAgent, notAffectedJobInstance, false));
+				serverAgent.addBehaviour(HandleJobFinish.createFor(serverAgent, notAffectedJobInstance, false));
 			}
 
 			return affectedJobInstance;
