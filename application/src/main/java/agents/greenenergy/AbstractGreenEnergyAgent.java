@@ -1,9 +1,9 @@
 package agents.greenenergy;
 
 import agents.AbstractAgent;
-import agents.greenenergy.domain.EnergyTypeEnum;
-import agents.greenenergy.domain.GreenEnergyStateManagement;
-import agents.greenenergy.domain.GreenPower;
+import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
+import agents.greenenergy.management.GreenEnergyStateManagement;
+import agents.greenenergy.management.GreenPowerManagement;
 import domain.MonitoringData;
 import domain.WeatherData;
 import domain.job.JobStatusEnum;
@@ -31,14 +31,14 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 	 * energyType        allows to differentiate between SOLAR and WIND energy sources
 	 */
 
-	protected transient GreenPower greenPower;
+	protected transient GreenPowerManagement greenPowerManagement;
 	protected transient GreenEnergyStateManagement stateManagement;
 	protected transient Location location;
 	protected double pricePerPowerUnit;
 	protected transient Map<PowerJob, JobStatusEnum> powerJobs;
 	protected AID monitoringAgent;
 	protected AID ownerServer;
-	protected EnergyTypeEnum energyType;
+	protected GreenEnergySourceTypeEnum energyType;
 
 	AbstractGreenEnergyAgent() {
 		super.setup();
@@ -57,23 +57,23 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 	}
 
 	public Double getCapacity(WeatherData weather, ZonedDateTime startTime) {
-		return greenPower.getAvailablePower(weather, startTime, location);
+		return greenPowerManagement.getAvailablePower(weather, startTime);
 	}
 
 	public Double getCapacity(MonitoringData weather, Instant startTime) {
-		return greenPower.getAvailablePower(weather, startTime, location);
+		return greenPowerManagement.getAvailablePower(weather, startTime);
 	}
 
 	public int getMaximumCapacity() {
-		return this.greenPower.getCurrentMaximumCapacity();
+		return this.greenPowerManagement.getCurrentMaximumCapacity();
 	}
 
 	public void setMaximumCapacity(int maximumCapacity) {
-		this.greenPower.setCurrentMaximumCapacity(maximumCapacity);
+		this.greenPowerManagement.setCurrentMaximumCapacity(maximumCapacity);
 	}
 
 	public int getInitialMaximumCapacity() {
-		return this.greenPower.getInitialMaximumCapacity();
+		return this.greenPowerManagement.getInitialMaximumCapacity();
 	}
 
 	public Map<PowerJob, JobStatusEnum> getPowerJobs() {
@@ -96,7 +96,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 		this.monitoringAgent = monitoringAgent;
 	}
 
-	public EnergyTypeEnum getEnergyType() {
+	public GreenEnergySourceTypeEnum getEnergyType() {
 		return energyType;
 	}
 

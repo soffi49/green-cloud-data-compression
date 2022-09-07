@@ -11,14 +11,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import agents.greenenergy.behaviour.ReceiveNewJobPowerRequest;
-import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
-import agents.greenenergy.behaviour.listener.ListenForJobStatus;
-import agents.greenenergy.behaviour.powercheck.periodiccheck.CheckCurrentWeather;
+import agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;
+import agents.greenenergy.behaviour.sensor.SenseGreenSourceEvent;
+import agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyStatus;
+import agents.greenenergy.behaviour.weathercheck.request.RequestWeatherPeriodically;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
-import agents.greenenergy.domain.EnergyTypeEnum;
-import agents.greenenergy.domain.GreenEnergyStateManagement;
-import agents.greenenergy.domain.GreenPower;
+import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
+import agents.greenenergy.management.GreenEnergyStateManagement;
+import agents.greenenergy.management.GreenPowerManagement;
 import common.behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
@@ -47,7 +47,6 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	@Override
 	protected void takeDown() {
-		getGuiController().removeAgentNodeFromGraph(getAgentNode());
 		super.takeDown();
 	}
 
@@ -58,16 +57,16 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
 			this.stateManagement = new GreenEnergyStateManagement(this);
 			try {
-				this.greenPower = new GreenPower(Integer.parseInt(args[2].toString()), this);
+				this.greenPowerManagement = new GreenPowerManagement(Integer.parseInt(args[2].toString()), this);
 				this.pricePerPowerUnit = Double.parseDouble(args[3].toString());
 				this.location = ImmutableLocation.builder()
 						.latitude(Double.parseDouble(args[4].toString()))
 						.longitude(Double.parseDouble(args[5].toString()))
 						.build();
 				if(args[6] instanceof String argument) {
-					this.energyType = EnergyTypeEnum.valueOf(argument);
+					this.energyType = GreenEnergySourceTypeEnum.valueOf(argument);
 				} else {
-					this.energyType = (EnergyTypeEnum) args[6];
+					this.energyType = (GreenEnergySourceTypeEnum) args[6];
 				}
 			} catch (NumberFormatException e) {
 				logger.info("Incorrect argument: please check arguments in the documentation");
@@ -82,11 +81,11 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	private List<Behaviour> behavioursRunAtStart() {
 		return List.of(
-				new ReceiveNewJobPowerRequest(this),
-				new ListenForJobStatus(this),
-				new ListenForGreenSourceEvent(this),
+				new ListenForPowerSupplyRequest(this),
+				new ListenForPowerSupplyStatus(this),
+				new SenseGreenSourceEvent(this),
 				new ListenForServerPowerInformation(this),
-				new CheckCurrentWeather(this)
+				new RequestWeatherPeriodically(this)
 		);
 	}
 }

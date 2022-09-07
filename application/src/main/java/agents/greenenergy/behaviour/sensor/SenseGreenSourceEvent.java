@@ -1,5 +1,6 @@
-package agents.greenenergy.behaviour.listener;
+package agents.greenenergy.behaviour.sensor;
 
+import static agents.greenenergy.domain.GreenEnergyAgentConstants.GREEN_ENERGY_ENVIRONMENT_SENSOR_TIMEOUT;
 import static domain.powershortage.PowerShortageCause.PHYSICAL_CAUSE;
 
 import java.util.Objects;
@@ -13,11 +14,10 @@ import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerS
 import jade.core.behaviours.TickerBehaviour;
 
 /**
- * Behaviour is responsible for listening for the outside world events
+ * Behaviour listens for the outside world events
  */
-public class ListenForGreenSourceEvent extends TickerBehaviour {
+public class SenseGreenSourceEvent extends TickerBehaviour {
 
-	private static final int TICK_TIMEOUT = 100;
 	private final GreenEnergyAgent myGreenEnergyAgent;
 
 	/**
@@ -25,8 +25,8 @@ public class ListenForGreenSourceEvent extends TickerBehaviour {
 	 *
 	 * @param myGreenEnergyAgent agent which is executing the behaviour
 	 */
-	public ListenForGreenSourceEvent(final GreenEnergyAgent myGreenEnergyAgent) {
-		super(myGreenEnergyAgent, TICK_TIMEOUT);
+	public SenseGreenSourceEvent(final GreenEnergyAgent myGreenEnergyAgent) {
+		super(myGreenEnergyAgent, GREEN_ENERGY_ENVIRONMENT_SENSOR_TIMEOUT);
 		this.myGreenEnergyAgent = myGreenEnergyAgent;
 	}
 
@@ -36,10 +36,12 @@ public class ListenForGreenSourceEvent extends TickerBehaviour {
 	@Override
 	protected void onTick() {
 		final AbstractEvent event = myGreenEnergyAgent.getAgentNode().removeEventFromStack();
+
 		if (Objects.nonNull(event)) {
 			switch (event.getEventTypeEnum()) {
 				case POWER_SHORTAGE -> {
 					final PowerShortageEvent powerShortageEvent = (PowerShortageEvent) event;
+
 					if (powerShortageEvent.isIndicateFinish()) {
 						myGreenEnergyAgent.addBehaviour(new AnnounceSourcePowerShortageFinish(myGreenEnergyAgent));
 					} else {
