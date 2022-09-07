@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static utils.TimeUtils.convertToInstantTime;
 import static utils.TimeUtils.convertToSimulationTime;
+import static utils.TimeUtils.differenceInHours;
 import static utils.TimeUtils.getCurrentTime;
 import static utils.TimeUtils.getCurrentTimeMinusError;
 import static utils.TimeUtils.isWithinTimeStamp;
@@ -17,6 +18,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
+import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -110,6 +112,16 @@ class TimeUtilsTest {
 
 		final long resultMilliseconds = convertToSimulationTime(seconds);
 		assertThat(resultMilliseconds).isEqualTo(expectedMilliseconds);
+	}
+
+	@Test
+	@DisplayName("Test computing time difference in hours")
+	void testComputingTimeDifferenceInHours() {
+		final Instant mockInstant1 = Instant.parse("2022-01-01T09:45:00.000Z");
+		final Instant mockInstant2 = Instant.parse("2022-01-01T10:55:00.000Z");
+
+		final double hourDifference = differenceInHours(mockInstant1, mockInstant2);
+		assertThat(hourDifference).isCloseTo(1.16, Percentage.withPercentage(1));
 	}
 
 	@ParameterizedTest

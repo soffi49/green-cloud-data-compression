@@ -81,8 +81,8 @@ public class InitiatePowerDeliveryForJob extends ContractNetInitiator {
 		} else {
 			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
 			final boolean isJobStillProcessed = myServerAgent.getServerJobs()
-					.replace(myServerAgent.manage().getJobById(job.getJobId()), JobStatusEnum.PROCESSING,
-							JobStatusEnum.ACCEPTED);
+					.replace(myServerAgent.manage().getJobByIdAndStartDate(job.getJobId(), job.getStartTime()),
+							JobStatusEnum.PROCESSING, JobStatusEnum.ACCEPTED);
 
 			if (!validProposals.isEmpty() && isJobStillProcessed) {
 				final ACLMessage chosenGreenSourceOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
@@ -105,7 +105,8 @@ public class InitiatePowerDeliveryForJob extends ContractNetInitiator {
 		final double servicePrice = myServerAgent.manage().calculateServicePrice(offerData);
 		final ACLMessage proposalMessage = makeServerJobOffer(myServerAgent, servicePrice, jobId, replyMessage);
 		myServerAgent.getGreenSourceForJobMap().put(jobId, chosenGreenSource);
-		myServerAgent.addBehaviour(new InitiateExecutionOfferForJob(myAgent, proposalMessage, chosenOffer.createReply()));
+		myServerAgent.addBehaviour(
+				new InitiateExecutionOfferForJob(myAgent, proposalMessage, chosenOffer.createReply()));
 	}
 
 	private void handleInvalidProposals(final List<ACLMessage> proposals) {

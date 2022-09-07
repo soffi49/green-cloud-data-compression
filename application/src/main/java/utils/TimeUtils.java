@@ -1,5 +1,7 @@
 package utils;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -84,6 +86,17 @@ public class TimeUtils {
 			final Instant timeStampEnd,
 			final Instant timeToCheck) {
 		return !timeToCheck.isBefore(timeStampStart) && timeToCheck.isBefore(timeStampEnd);
+	}
+
+	/**
+	 * Method computes difference in hours between two dates
+	 *
+	 * @param startTime time interval start time
+	 * @param endTime   time interval end time
+	 * @return time in hours
+	 */
+	public static double differenceInHours(final Instant startTime, final Instant endTime) {
+		return (double) SECONDS.between(startTime, endTime) / HOUR_DIVIDER;
 	}
 
 	/**

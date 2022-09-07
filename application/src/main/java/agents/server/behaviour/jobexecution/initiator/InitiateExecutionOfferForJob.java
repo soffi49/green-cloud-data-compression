@@ -60,7 +60,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 		final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
 		myServerAgent.getServerJobs()
 				.replace(myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
-		myServerAgent.manage().updateClientNumber();
+		myServerAgent.manage().updateClientNumberGUI();
 		displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
 		myAgent.send(prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
 	}
