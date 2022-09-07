@@ -1,6 +1,6 @@
 package agents.server.behaviour.sensor;
 
-import static agents.server.domain.ServerAgentConstants.ENVIRONMENT_SENSOR_TIMEOUT;
+import static agents.server.domain.ServerAgentConstants.SERVER_ENVIRONMENT_SENSOR_TIMEOUT;
 
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ public class SenseServerEvent extends TickerBehaviour {
 	 * @param myServerAgent agent which is executing the behaviour
 	 */
 	public SenseServerEvent(final ServerAgent myServerAgent) {
-		super(myServerAgent, ENVIRONMENT_SENSOR_TIMEOUT);
+		super(myServerAgent, SERVER_ENVIRONMENT_SENSOR_TIMEOUT);
 		this.myServerAgent = myServerAgent;
 	}
 

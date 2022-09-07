@@ -128,7 +128,6 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 	private void respondWithFailureMessage() {
 		final ACLMessage response = prepareReply(serverRequest.createReply(), NO_SERVER_AVAILABLE_CAUSE_MESSAGE,
 				ACLMessage.FAILURE);
-		displayMessageArrow(myCloudNetworkAgent, jobClient);
 		myCloudNetworkAgent.send(response);
 	}
 

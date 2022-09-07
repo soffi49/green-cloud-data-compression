@@ -8,7 +8,7 @@ import static messages.MessagingUtils.readMessageContent;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
-import static messages.domain.factory.JobOfferMessageFactory.makeJobOfferForClient;
+import static messages.domain.factory.OfferMessageFactory.makeJobOfferForClient;
 
 import java.util.List;
 import java.util.Vector;

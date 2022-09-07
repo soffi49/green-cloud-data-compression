@@ -1,5 +1,7 @@
 package agents;
 
+import java.util.Objects;
+
 import com.gui.controller.GUIController;
 import com.gui.agents.AbstractAgentNode;
 
@@ -31,6 +33,14 @@ public abstract class AbstractAgent extends Agent {
 	protected void setup() {
 		super.setup();
 		setEnabledO2ACommunication(true, 2);
+	}
+
+	@Override
+	protected void takeDown() {
+		if (GUI_ENABLED && Objects.nonNull(getGuiController())) {
+			getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		}
+		super.takeDown();
 	}
 
 	public AbstractAgentNode getAgentNode() {

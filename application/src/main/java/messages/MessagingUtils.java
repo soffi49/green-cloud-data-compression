@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import agents.AbstractAgent;
 import domain.job.JobInstanceIdentifier;
+import exception.IncorrectMessageContentException;
 import jade.lang.acl.ACLMessage;
 import messages.domain.factory.ReplyMessageFactory;
 
@@ -109,10 +110,10 @@ public class MessagingUtils {
 		try {
 			return (T) getMapper().readValue(message.getContent(), expectedClassType);
 		} catch (MismatchedInputException e) {
-			throw new RuntimeException();
+			throw new IncorrectMessageContentException();
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new RuntimeException();
+			throw new IncorrectMessageContentException();
 		}
 	}
 }

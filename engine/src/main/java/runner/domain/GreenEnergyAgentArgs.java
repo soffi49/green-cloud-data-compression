@@ -1,6 +1,6 @@
 package runner.domain;
 
-import agents.greenenergy.domain.EnergyTypeEnum;
+import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -48,5 +48,5 @@ public interface GreenEnergyAgentArgs extends AgentArgs {
 	/**
 	 * @return type of energy source
 	 */
-	EnergyTypeEnum getEnergyType();
+	GreenEnergySourceTypeEnum getEnergyType();
 }

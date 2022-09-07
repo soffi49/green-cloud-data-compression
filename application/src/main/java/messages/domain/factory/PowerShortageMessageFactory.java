@@ -1,8 +1,8 @@
 package messages.domain.factory;
 
+import static mapper.JsonMapper.getMapper;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
-import static mapper.JsonMapper.getMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -11,6 +11,9 @@ import domain.powershortage.PowerShortageJob;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
+/**
+ * Class storing methods used in creating messages for communicating the power shortage
+ */
 public class PowerShortageMessageFactory {
 
 	/**
@@ -34,6 +37,28 @@ public class PowerShortageMessageFactory {
 	}
 
 	/**
+	 * Method prepares the message passing the job affected by the power shortage with provided protocol
+	 *
+	 * @param messageContent message content
+	 * @param receiver       address of a receiver agent
+	 * @param protocol       message protocol
+	 * @return inform ACLMessage
+	 */
+	public static ACLMessage prepareJobPowerShortageInformation(final Object messageContent,
+			final AID receiver,
+			final String protocol) {
+		final ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+		try {
+			message.setContent(getMapper().writeValueAsString(messageContent));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		message.setProtocol(protocol);
+		message.addReceiver(receiver);
+		return message;
+	}
+
+	/**
 	 * Method prepares the message informing about the finish of the shortage in power for given agent
 	 *
 	 * @param jobInstanceId unique identifier of the job instance
@@ -42,36 +67,6 @@ public class PowerShortageMessageFactory {
 	 */
 	public static ACLMessage preparePowerShortageFinishInformation(final JobInstanceIdentifier jobInstanceId,
 			final AID receiver) {
-		final ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-		try {
-			message.setContent(getMapper().writeValueAsString(jobInstanceId));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		message.setProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL);
-		message.addReceiver(receiver);
-		return message;
-	}
-
-	/**
-	 * Method prepares the message passing the job affected by the power shortage with provided protocol
-	 *
-	 * @param powerShortageJob message content
-	 * @param receiver         address of a receiver agent
-	 * @param protocol         message protocol
-	 * @return inform ACLMessage
-	 */
-	public static ACLMessage prepareJobPowerShortageInformation(final PowerShortageJob powerShortageJob,
-			final AID receiver,
-			final String protocol) {
-		final ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-		try {
-			message.setContent(getMapper().writeValueAsString(powerShortageJob));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		message.setProtocol(protocol);
-		message.addReceiver(receiver);
-		return message;
+		return prepareJobPowerShortageInformation(jobInstanceId, receiver, POWER_SHORTAGE_FINISH_ALERT_PROTOCOL);
 	}
 }

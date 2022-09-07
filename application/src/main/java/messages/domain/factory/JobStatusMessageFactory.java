@@ -19,7 +19,7 @@ import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Class storing methods used in creating messages informing that the job execution has finished
+ * Class storing methods used in creating messages passing job status
  */
 public class JobStatusMessageFactory {
 

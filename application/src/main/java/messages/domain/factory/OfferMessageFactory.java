@@ -2,12 +2,16 @@ package messages.domain.factory;
 
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static mapper.JsonMapper.getMapper;
+import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import agents.greenenergy.GreenEnergyAgent;
 import agents.server.ServerAgent;
+import domain.GreenSourceData;
+import domain.ImmutableGreenSourceData;
 import domain.ImmutableServerData;
 import domain.ServerData;
 import domain.job.ImmutablePricedJob;
@@ -16,9 +20,9 @@ import domain.job.PricedJob;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Class storing methods used in creating the job offers
+ * Class storing methods used in creating the offers
  */
-public class JobOfferMessageFactory {
+public class OfferMessageFactory {
 
 	/**
 	 * Method used in making the proposal message containing the offer made by the Cloud Network Agent
@@ -73,5 +77,24 @@ public class JobOfferMessageFactory {
 			e.printStackTrace();
 		}
 		return replyMessage;
+	}
+
+	/**
+	 * Method used in making the proposal message containing the offer made by the Green Energy Agent
+	 *
+	 * @param greenEnergyAgent      green energy which is making the power supply offer
+	 * @param averageAvailablePower power available during job execution
+	 * @param jobId                 unique identifier of the job of interest
+	 * @param replyMessage          reply message as which the power supply offer is to be sent
+	 * @return proposal ACLMessage
+	 */
+	public static ACLMessage makeGreenEnergyPowerSupplyOffer(final GreenEnergyAgent greenEnergyAgent,
+			final double averageAvailablePower, final String jobId, final ACLMessage replyMessage) {
+		final GreenSourceData responseData = ImmutableGreenSourceData.builder()
+				.pricePerPowerUnit(greenEnergyAgent.getPricePerPowerUnit())
+				.availablePowerInTime(averageAvailablePower)
+				.jobId(jobId)
+				.build();
+		return prepareReply(replyMessage, responseData, PROPOSE);
 	}
 }

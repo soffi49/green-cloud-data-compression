@@ -35,7 +35,6 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected void takeDown() {
-		getGuiController().removeAgentNodeFromGraph(getAgentNode());
 		super.takeDown();
 	}
 

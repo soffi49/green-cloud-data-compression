@@ -253,11 +253,11 @@ public class ServerStateManagement {
 			serverAgent.getServerJobs().put(notAffectedJobInstance, currentJobStatus);
 
 			serverAgent.addBehaviour(HandleJobStart.createFor(serverAgent, affectedJobInstance, false, true));
+			serverAgent.addBehaviour(HandleJobFinish.createFor(serverAgent, notAffectedJobInstance, false));
+
 			if (getCurrentTime().isBefore(notAffectedJobInstance.getStartTime())) {
 				serverAgent.addBehaviour(
 						HandleJobStart.createFor(serverAgent, notAffectedJobInstance, true, false));
-			} else if (getCurrentTime().isBefore(notAffectedJobInstance.getEndTime())) {
-				serverAgent.addBehaviour(HandleJobFinish.createFor(serverAgent, notAffectedJobInstance, false));
 			}
 
 			return affectedJobInstance;
@@ -328,6 +328,7 @@ public class ServerStateManagement {
 		incrementFinishedJobs(jobToFinish.getJobId());
 		if (isJobUnique(jobToFinish.getJobId())) {
 			serverAgent.getGreenSourceForJobMap().remove(jobToFinish.getJobId());
+			updateClientNumberGUI();
 		}
 		serverAgent.getServerJobs().remove(jobToFinish);
 	}
