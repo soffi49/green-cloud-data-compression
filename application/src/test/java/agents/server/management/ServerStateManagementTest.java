@@ -1,4 +1,4 @@
-package agents.server.domain;
+package agents.server.management;
 
 import static domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
 import static domain.job.JobStatusEnum.ON_HOLD_TRANSFER;
@@ -37,6 +37,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 
 import agents.AbstractAgent;
 import agents.server.ServerAgent;
+import agents.server.domain.ServerPowerSourceType;
+import agents.server.management.ServerStateManagement;
 import domain.GreenSourceData;
 import domain.ImmutableGreenSourceData;
 import domain.job.ImmutableJob;

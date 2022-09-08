@@ -7,4 +7,5 @@ public class ExceptionMessages {
 
 	public static final String INCORRECT_MESSAGE_FORMAT = "The provided message content has incorrect format";
 	public static final String INCORRECT_DATE_FORMAT = "The provided execution date has incorrect format";
+	public static final String WEATHER_API_INTERNAL_ERROR = "The API retrieved null instead of the weather data";
 }

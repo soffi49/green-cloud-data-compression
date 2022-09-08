@@ -4,7 +4,7 @@ import static agents.server.domain.ServerAgentConstants.JOB_PROCESSING_LIMIT;
 import static mapper.JsonMapper.getMapper;
 
 import agents.AbstractAgent;
-import agents.server.domain.ServerStateManagement;
+import agents.server.management.ServerStateManagement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

@@ -1,19 +1,17 @@
 package agents.greenenergy;
 
+import java.time.Instant;
+import java.util.Map;
+
 import agents.AbstractAgent;
 import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
 import agents.greenenergy.management.GreenEnergyStateManagement;
 import agents.greenenergy.management.GreenPowerManagement;
 import domain.MonitoringData;
-import domain.WeatherData;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
-
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Map;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
@@ -56,12 +54,9 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 		this.pricePerPowerUnit = pricePerPowerUnit;
 	}
 
-	public Double getCapacity(WeatherData weather, ZonedDateTime startTime) {
-		return greenPowerManagement.getAvailablePower(weather, startTime);
-	}
-
 	public Double getCapacity(MonitoringData weather, Instant startTime) {
-		return greenPowerManagement.getAvailablePower(weather, startTime);
+		final double availablePower = greenPowerManagement.getAvailablePower(weather, startTime);
+		return availablePower > getMaximumCapacity() ? getMaximumCapacity() : availablePower;
 	}
 
 	public int getMaximumCapacity() {

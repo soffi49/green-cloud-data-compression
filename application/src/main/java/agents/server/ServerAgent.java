@@ -18,7 +18,7 @@ import agents.server.behaviour.jobexecution.listener.ListenForPowerSupplyUpdate;
 import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferRequest;
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.behaviour.sensor.SenseServerEvent;
-import agents.server.domain.ServerStateManagement;
+import agents.server.management.ServerStateManagement;
 import common.behaviours.ReceiveGUIController;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;

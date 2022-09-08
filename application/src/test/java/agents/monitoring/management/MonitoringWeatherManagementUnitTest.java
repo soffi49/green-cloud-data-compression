@@ -1,10 +1,11 @@
-package agents.monitoring;
+package agents.monitoring.management;
 
 import static config.constants.CacheTestConstants.MOCK_CURRENT_WEATHER;
 import static config.constants.CacheTestConstants.MOCK_FORECAST;
 import static config.constants.CacheTestConstants.MOCK_FUTURE_WEATHER;
 import static config.constants.CacheTestConstants.MOCK_LOCATION;
 import static config.constants.CacheTestConstants.MOCK_TIME;
+import static exception.domain.ExceptionMessages.WEATHER_API_INTERNAL_ERROR;
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-import agents.monitoring.management.MonitoringWeatherManagement;
 import domain.GreenSourceForecastData;
 import domain.GreenSourceWeatherData;
 import domain.ImmutableGreenSourceForecastData;
@@ -112,7 +112,7 @@ class MonitoringWeatherManagementUnitTest {
 
 		assertThatThrownBy(() -> monitoringWeatherManagement.getWeather(MOCK_GS_WEATHER))
 				.isInstanceOf(APIFetchInternalException.class)
-				.hasMessage("The API retrieved null instead of the weather data");
+				.hasMessage(WEATHER_API_INTERNAL_ERROR);
 	}
 
 	@Test
@@ -140,7 +140,7 @@ class MonitoringWeatherManagementUnitTest {
 						.withTimestamp(newTime)
 						.withWind(newWind));
 		final GreenSourceForecastData newGSForecast = ImmutableGreenSourceForecastData.copyOf(MOCK_GS_FORECAST)
-						.withTimetable(newTime);
+				.withTimetable(newTime);
 		doReturn(forecastWeather).when(mockAPI).getForecast(MOCK_LOCATION);
 
 		assertThat(mockCache.getForecast(MOCK_LOCATION, newTime)).isEmpty();
@@ -202,7 +202,7 @@ class MonitoringWeatherManagementUnitTest {
 
 		assertThatThrownBy(() -> monitoringWeatherManagement.getForecast(MOCK_GS_FORECAST))
 				.isInstanceOf(APIFetchInternalException.class)
-				.hasMessage("The API retrieved null instead of the weather data");
+				.hasMessage(WEATHER_API_INTERNAL_ERROR);
 	}
 
 	private void prepareCache() {

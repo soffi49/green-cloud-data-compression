@@ -75,26 +75,6 @@ public class GreenPowerManagement {
 	}
 
 	/**
-	 * Returns available solar power in regard to the sunset and sunrise times and cloudiness.
-	 *
-	 * @param weather  current weather used in calculations
-	 * @param dateTime datetime used in sun times calculations
-	 * @param location location used in sun times calculations
-	 * @return available solar power
-	 */
-	private double getSolarPower(WeatherData weather, ZonedDateTime dateTime, Location location) {
-		var sunTimes = getSunTimes(dateTime, location);
-		var dayTime = dateTime.toLocalTime();
-		if (!MOCK_SOLAR_ENERGY && (dayTime.isBefore(Objects.requireNonNull(sunTimes.getRise()).toLocalTime()) ||
-				dayTime.isAfter(Objects.requireNonNull(sunTimes.getSet()).toLocalTime()))) {
-			logger.debug(SOLAR_FARM_SHUTDOWN_LOG, dateTime, sunTimes.getRise(), sunTimes.getSet());
-			return 0;
-		}
-
-		return currentMaximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
-	}
-
-	/**
 	 * @param currentMaximumCapacity - new maximum capacity
 	 */
 	public void setCurrentMaximumCapacity(int currentMaximumCapacity) {
@@ -121,18 +101,25 @@ public class GreenPowerManagement {
 				* TEST_MULTIPLIER;
 	}
 
+	private double getSolarPower(WeatherData weather, ZonedDateTime dateTime, Location location) {
+		var sunTimes = getSunTimes(dateTime, location);
+		var dayTime = dateTime.toLocalTime();
+		if (!MOCK_SOLAR_ENERGY || (dayTime.isBefore(Objects.requireNonNull(sunTimes.getRise()).toLocalTime()) ||
+				dayTime.isAfter(Objects.requireNonNull(sunTimes.getSet()).toLocalTime()))) {
+			logger.debug(SOLAR_FARM_SHUTDOWN_LOG, dateTime, sunTimes.getRise(), sunTimes.getSet());
+			return 0;
+		}
+
+		return currentMaximumCapacity * min(weather.getCloudCover() / 100 + 0.1, 1) * TEST_MULTIPLIER;
+	}
+
 	private SunTimes getSunTimes(ZonedDateTime dateTime, Location location) {
 		return SunTimes.compute().on(dateTime).at(location.getLatitude(), location.getLongitude()).execute();
 	}
 
 	private WeatherData getNearestWeather(MonitoringData monitoringData, Instant timestamp) {
-		var timestamps = monitoringData.getWeatherData().stream().map(WeatherData::getTime).toList();
-		var nearestTimestamp = timestamps.stream()
-				.min(comparingLong(i -> Math.abs(i.getEpochSecond() - timestamp.getEpochSecond())))
-				.orElseThrow(() -> new NoSuchElementException("No value present"));
 		return monitoringData.getWeatherData().stream()
-				.filter(weather -> weather.getTime().equals(nearestTimestamp))
-				.findFirst()
+				.min(comparingLong(i -> Math.abs(i.getTime().getEpochSecond() - timestamp.getEpochSecond())))
 				.orElseThrow(() -> new NoSuchElementException("No value present"));
 	}
 }

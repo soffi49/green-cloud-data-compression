@@ -1,4 +1,4 @@
-package agents.server.domain;
+package agents.server.management;
 
 import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
@@ -30,6 +30,7 @@ import com.gui.agents.ServerAgentNode;
 import agents.server.ServerAgent;
 import agents.server.behaviour.jobexecution.handler.HandleJobFinish;
 import agents.server.behaviour.jobexecution.handler.HandleJobStart;
+import agents.server.domain.ServerPowerSourceType;
 import common.mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
