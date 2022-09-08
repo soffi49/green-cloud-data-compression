@@ -5,6 +5,10 @@ import static common.constant.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static common.constant.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -15,6 +19,7 @@ import static jade.lang.acl.MessageTemplate.or;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.JobStatusMessageFactory.prepareJobFailureMessageForClient;
 import static messages.domain.JobStatusMessageFactory.prepareJobStatusMessageForClient;
+import static messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;

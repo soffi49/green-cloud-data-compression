@@ -1,14 +1,13 @@
 package domain.job;
 
-import static common.TimeUtils.isWithinTimeStamp;
+import static utils.TimeUtils.isWithinTimeStamp;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
 
 import org.immutables.value.Value;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Object storing the data describing power request send to the green source
@@ -26,12 +25,12 @@ public interface PowerJob {
 	/**
 	 * @return time when the power delivery should start
 	 */
-	OffsetDateTime getStartTime();
+	Instant getStartTime();
 
 	/**
 	 * @return time when the power delivery should finish
 	 */
-	OffsetDateTime getEndTime();
+	Instant getEndTime();
 
 	/**
 	 * @return power that is to be delivered
@@ -39,6 +38,6 @@ public interface PowerJob {
 	int getPower();
 
 	default boolean isExecutedAtTime(Instant timestamp) {
-		return isWithinTimeStamp(getStartTime().toInstant(), getEndTime().toInstant(), timestamp);
+		return isWithinTimeStamp(getStartTime(), getEndTime(), timestamp);
 	}
 }

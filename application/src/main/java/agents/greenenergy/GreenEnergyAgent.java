@@ -1,17 +1,19 @@
 package agents.greenenergy;
 
-import static common.TimeUtils.isWithinTimeStamp;
-import static common.constant.DFServiceConstants.*;
-import static domain.job.JobStatusEnum.ACCEPTED;
-import static domain.job.JobStatusEnum.IN_PROGRESS;
-import static java.util.stream.Collectors.toMap;
 import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
 import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.greenenergy.behaviour.powercheck.cfp.ReceiveNewJobPowerRequest;
-import agents.greenenergy.behaviour.listener.ListenForJobStatus;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import agents.greenenergy.behaviour.ReceiveNewJobPowerRequest;
 import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
+import agents.greenenergy.behaviour.listener.ListenForJobStatus;
 import agents.greenenergy.behaviour.powercheck.jobstart.ReceiveJobStartPowerRequest;
 import agents.greenenergy.behaviour.powercheck.periodiccheck.CheckCurrentWeather;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
@@ -22,15 +24,6 @@ import common.behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Agent representing the Green Energy Source Agent that produces the power for the Servers
@@ -72,7 +65,11 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 						.latitude(Double.parseDouble(args[4].toString()))
 						.longitude(Double.parseDouble(args[5].toString()))
 						.build();
-				this.energyType = (EnergyTypeEnum) args[6];
+				if(args[6] instanceof String argument) {
+					this.energyType = EnergyTypeEnum.valueOf(argument);
+				} else {
+					this.energyType = (EnergyTypeEnum) args[6];
+				}
 			} catch (NumberFormatException e) {
 				logger.info("Incorrect argument: please check arguments in the documentation");
 				doDelete();

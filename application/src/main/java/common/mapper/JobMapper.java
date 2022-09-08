@@ -1,17 +1,17 @@
 package common.mapper;
 
+import java.time.Instant;
+
 import domain.job.CheckedPowerJob;
 import domain.job.ImmutableCheckedPowerJob;
 import domain.job.ImmutableJob;
 import domain.job.ImmutableJobInstanceIdentifier;
 import domain.job.ImmutablePowerJob;
-import domain.job.ImmutablePowerShortageJob;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.PowerJob;
-import domain.job.PowerShortageJob;
-
-import java.time.OffsetDateTime;
+import domain.powershortage.ImmutablePowerShortageJob;
+import domain.powershortage.PowerShortageJob;
 
 /**
  * Class provides set of methods mapping job classes
@@ -35,7 +35,7 @@ public class JobMapper {
 	 * @param powerJob power job to be mapped to job
 	 * @return PowerJob
 	 */
-	public static PowerJob mapToPowerJob(final Job powerJob, final OffsetDateTime startTime) {
+	public static PowerJob mapToPowerJob(final Job powerJob, final Instant startTime) {
 		return ImmutablePowerJob.builder()
 				.jobId(powerJob.getJobId())
 				.power(powerJob.getPower())
@@ -54,16 +54,59 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param job job to be mapped to job
+	 * @param job       job to be mapped to job
+	 * @param startTime new job start time
 	 * @return Job
 	 */
-	public static Job mapToJob(final Job job, final OffsetDateTime startTime) {
+	public static Job mapToJobNewStartTime(final Job job, final Instant startTime) {
 		return ImmutableJob.builder()
 				.clientIdentifier(job.getClientIdentifier())
 				.jobId(job.getJobId())
 				.power(job.getPower())
 				.startTime(startTime)
 				.endTime(job.getEndTime())
+				.build();
+	}
+
+	/**
+	 * @param job job to be mapped to job
+	 * @return Job
+	 */
+	public static Job mapToJobNewEndTime(final Job job, final Instant endTime) {
+		return ImmutableJob.builder()
+				.clientIdentifier(job.getClientIdentifier())
+				.jobId(job.getJobId())
+				.power(job.getPower())
+				.startTime(job.getStartTime())
+				.endTime(endTime)
+				.build();
+	}
+
+	/**
+	 * @param powerJob  power job to be mapped to job
+	 * @param startTime new power job start time
+	 * @return PowerJob
+	 */
+	public static PowerJob mapToJobNewStartTime(final PowerJob powerJob, final Instant startTime) {
+		return ImmutablePowerJob.builder()
+				.jobId(powerJob.getJobId())
+				.power(powerJob.getPower())
+				.startTime(startTime)
+				.endTime(powerJob.getEndTime())
+				.build();
+	}
+
+	/**
+	 * @param powerJob power job to be mapped to job
+	 * @param endTime  new power job end time
+	 * @return PowerJob
+	 */
+	public static PowerJob mapToJobNewEndTime(final PowerJob powerJob, final Instant endTime) {
+		return ImmutablePowerJob.builder()
+				.jobId(powerJob.getJobId())
+				.power(powerJob.getPower())
+				.startTime(powerJob.getStartTime())
+				.endTime(endTime)
 				.build();
 	}
 
@@ -81,8 +124,10 @@ public class JobMapper {
 	 * @param startTime power shortage start time
 	 * @return PowerShortageJob
 	 */
-	public static PowerShortageJob mapToPowerShortageJob(final Job job, final OffsetDateTime startTime) {
-		return ImmutablePowerShortageJob.builder().jobInstanceId(mapToJobInstanceId(job)).powerShortageStart(startTime)
+	public static PowerShortageJob mapToPowerShortageJob(final Job job, final Instant startTime) {
+		return ImmutablePowerShortageJob.builder()
+				.jobInstanceId(mapToJobInstanceId(job))
+				.powerShortageStart(startTime)
 				.build();
 	}
 
@@ -91,8 +136,10 @@ public class JobMapper {
 	 * @param startTime power shortage start time
 	 * @return PowerShortageJob
 	 */
-	public static PowerShortageJob mapToPowerShortageJob(final PowerJob job, final OffsetDateTime startTime) {
-		return ImmutablePowerShortageJob.builder().jobInstanceId(mapToJobInstanceId(job)).powerShortageStart(startTime)
+	public static PowerShortageJob mapToPowerShortageJob(final PowerJob job, final Instant startTime) {
+		return ImmutablePowerShortageJob.builder()
+				.jobInstanceId(mapToJobInstanceId(job))
+				.powerShortageStart(startTime)
 				.build();
 	}
 

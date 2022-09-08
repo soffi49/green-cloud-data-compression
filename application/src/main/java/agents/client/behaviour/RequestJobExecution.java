@@ -4,7 +4,7 @@ import static agents.client.ClientAgentConstants.CLOUD_NETWORK_AGENTS;
 import static agents.client.ClientAgentConstants.MAX_RETRIES;
 import static agents.client.ClientAgentConstants.MAX_TRAFFIC_DIFFERENCE;
 import static agents.client.ClientAgentConstants.RETRY_PAUSE_MILLISECONDS;
-import static common.constant.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.CLIENT_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.rejectJobOffers;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.function.Predicate;
 
-import messages.domain.CallForProposalMessageFactory;
-import messages.domain.ReplyMessageFactory;
+import messages.domain.factory.CallForProposalMessageFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

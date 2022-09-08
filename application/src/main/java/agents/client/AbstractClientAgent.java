@@ -1,9 +1,9 @@
 package agents.client;
 
+import java.time.Instant;
+
 import agents.AbstractAgent;
 import jade.core.AID;
-
-import java.time.OffsetDateTime;
 
 /**
  * Abstract agent class storing the data regarding Client Agent
@@ -11,8 +11,8 @@ import java.time.OffsetDateTime;
 public abstract class AbstractClientAgent extends AbstractAgent {
 
 	protected AID chosenCloudNetworkAgent;
-	protected OffsetDateTime simulatedJobStart;
-	protected OffsetDateTime simulatedJobEnd;
+	protected Instant simulatedJobStart;
+	protected Instant simulatedJobEnd;
 	protected Integer retries;
 	protected boolean announced;
 
@@ -29,8 +29,8 @@ public abstract class AbstractClientAgent extends AbstractAgent {
 	 * @param simulatedJobEnd         time when the job execution should end in the simulation
 	 */
 	AbstractClientAgent(AID chosenCloudNetworkAgent,
-			OffsetDateTime simulatedJobStart,
-			OffsetDateTime simulatedJobEnd) {
+			Instant simulatedJobStart,
+			Instant simulatedJobEnd) {
 		this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
 		this.simulatedJobStart = simulatedJobStart;
 		this.simulatedJobEnd = simulatedJobEnd;
@@ -44,19 +44,19 @@ public abstract class AbstractClientAgent extends AbstractAgent {
 		this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
 	}
 
-	public OffsetDateTime getSimulatedJobStart() {
+	public Instant getSimulatedJobStart() {
 		return simulatedJobStart;
 	}
 
-	public void setSimulatedJobStart(OffsetDateTime simulatedJobStart) {
+	public void setSimulatedJobStart(Instant simulatedJobStart) {
 		this.simulatedJobStart = simulatedJobStart;
 	}
 
-	public OffsetDateTime getSimulatedJobEnd() {
+	public Instant getSimulatedJobEnd() {
 		return simulatedJobEnd;
 	}
 
-	public void setSimulatedJobEnd(OffsetDateTime simulatedJobEnd) {
+	public void setSimulatedJobEnd(Instant simulatedJobEnd) {
 		this.simulatedJobEnd = simulatedJobEnd;
 	}
 

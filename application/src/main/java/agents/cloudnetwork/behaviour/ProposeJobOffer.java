@@ -1,10 +1,16 @@
 package agents.cloudnetwork.behaviour;
 
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
+
+import java.time.Instant;
+import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.behaviour.jobstatus.ReturnJobDelay;
@@ -14,14 +20,7 @@ import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
-
-import java.time.OffsetDateTime;
-import java.util.Date;
-
-import messages.domain.ReplyMessageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import messages.domain.factory.ReplyMessageFactory;
 
 /**
  * Behaviour responsible for sending proposal with job execution offer to the client
@@ -85,9 +84,9 @@ public class ProposeJobOffer extends ProposeInitiator {
 	}
 
 	private Date calculateExpectedJobStart(final Job job) {
-		final OffsetDateTime startTime = getCurrentTime().isAfter(job.getStartTime()) ?
+		final Instant startTime = getCurrentTime().isAfter(job.getStartTime()) ?
 				getCurrentTime() :
 				job.getStartTime();
-		return Date.from(startTime.plusSeconds(MAX_ERROR_IN_JOB_START).toInstant());
+		return Date.from(startTime.plusSeconds(MAX_ERROR_IN_JOB_START));
 	}
 }

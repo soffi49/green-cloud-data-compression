@@ -1,9 +1,9 @@
 package agents.cloudnetwork.behaviour.jobstatus;
 
-import static common.constant.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
-import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
-import static messages.domain.JobStatusMessageFactory.prepareJobStatusMessageForClient;
+import static messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;

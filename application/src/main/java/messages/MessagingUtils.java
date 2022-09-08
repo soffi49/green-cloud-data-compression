@@ -1,19 +1,18 @@
 package messages;
 
-import static common.GUIUtils.displayMessageArrow;
+import static utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static mapper.JsonMapper.getMapper;
 
-import agents.AbstractAgent;
+import java.util.List;
+import java.util.Vector;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import agents.AbstractAgent;
 import domain.job.JobInstanceIdentifier;
 import jade.lang.acl.ACLMessage;
-import messages.domain.ReplyMessageFactory;
-
-import java.util.List;
-import java.util.Vector;
+import messages.domain.factory.ReplyMessageFactory;
 
 /**
  * Service providing common utilities for message exchange
@@ -96,5 +95,22 @@ public class MessagingUtils {
 	public static List<ACLMessage> retrieveValidMessages(final List<ACLMessage> messages,
 			final Class<?> expectedClassType) {
 		return messages.stream().filter(message -> isMessageContentValid(message, expectedClassType)).toList();
+	}
+
+	/**
+	 * Method reads the message object content
+	 *
+	 * @param message           messages to read
+	 * @param expectedClassType class type of the message body
+	 * @return mapped to Object message content
+	 */
+	public static <T> T readMessageContent(final ACLMessage message,
+			final Class<?> expectedClassType) {
+		try {
+			return (T) getMapper().readValue(message.getContent(), expectedClassType);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
 	}
 }

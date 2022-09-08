@@ -1,6 +1,6 @@
 package agents.cloudnetwork.domain;
 
-import static common.GUIUtils.announceFinishedJob;
+import static utils.GUIUtils.announceFinishedJob;
 import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.PROCESSING;
 
@@ -82,7 +82,7 @@ public class CloudNetworkStateManagement {
 		logger.info("[{}] Finished job {}. Number of finished jobs is {} out of {} started",
 				cloudNetworkAgent.getLocalName(), jobId, finishedJobs, startedJobs);
 		updateCloudNetworkGUI();
-		announceFinishedJob(cloudNetworkAgent, jobId);
+		announceFinishedJob(cloudNetworkAgent);
 	}
 
 	private void updateCloudNetworkGUI() {

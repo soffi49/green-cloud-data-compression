@@ -1,6 +1,6 @@
 package agents.cloudnetwork.behaviour.jobstatus;
 
-import static messages.domain.JobStatusMessageFactory.prepareJobStartStatusRequestMessage;
+import static messages.domain.factory.JobStatusMessageFactory.prepareJobStartStatusRequestMessage;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import domain.job.Job;

@@ -1,90 +1,91 @@
 package agents.server.behaviour.powershortage.listener;
 
-import static common.GUIUtils.displayMessageArrow;
-import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.MatchPerformative;
-import static jade.lang.acl.MessageTemplate.MatchProtocol;
-import static jade.lang.acl.MessageTemplate.and;
+import static agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG;
+import static agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE;
+import static utils.GUIUtils.displayMessageArrow;
+import static utils.TimeUtils.getCurrentTime;
 import static mapper.JsonMapper.getMapper;
-import static messages.domain.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
+import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
+
+import java.util.EnumSet;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import agents.server.ServerAgent;
 import common.mapper.JobMapper;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
+import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.EnumSet;
-import java.util.Objects;
 
 /**
- * Behaviour is responsible for listening for the information that the power shortage
- * in the given green source has finished
+ * Behaviour listens for the information that the power shortage in the given green source has finished
  */
 public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForSourcePowerShortageFinish.class);
-	private static final MessageTemplate messageTemplate = and(MatchPerformative(INFORM),
-			MatchProtocol(POWER_SHORTAGE_FINISH_ALERT_PROTOCOL));
+	private static final EnumSet<JobStatusEnum> POWER_SHORTAGE_STATUSES = EnumSet.of(
+			JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY,
+			JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE);
 
 	private ServerAgent myServerAgent;
+	private String guid;
 
 	/**
-	 * Method runs at the start of the behaviour.
-	 * It casts the abstract agent to agent of type Server Agent
+	 * Method casts the abstract agent to agent of type Server Agent
 	 */
 	@Override
 	public void onStart() {
 		super.onStart();
-		myServerAgent = (ServerAgent) myAgent;
+		this.myServerAgent = (ServerAgent) myAgent;
+		this.guid = myServerAgent.getName();
 	}
 
 	/**
-	 * Method listens for the message coming from the Green Source agent informing that the power
-	 * shortage has finished and that the power jobs which were on hold can now be supplied with the
-	 * green source power.
+	 * Method listens for the message coming from the Green Source informing that the power
+	 * shortage has finished and that given power job can be supplied again using green source power.
 	 */
 	@Override
 	public void action() {
-		final ACLMessage inform = myAgent.receive(messageTemplate);
+		final ACLMessage inform = myAgent.receive(SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE);
 
 		if (Objects.nonNull(inform)) {
-			try {
-				logger.info(
-						"[{}] Received the information that the power shortage is finished. Using green energy to power up the job",
-						myAgent.getName());
-				final JobInstanceIdentifier jobInstanceIdentifier = getMapper().readValue(inform.getContent(),
-						JobInstanceIdentifier.class);
-				final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceIdentifier);
-				final EnumSet<JobStatusEnum> powerShortageStatuses = EnumSet.of(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY,
-						JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE);
-				if (Objects.nonNull(job) && powerShortageStatuses.contains(myServerAgent.getServerJobs().get(job))) {
-					logger.info("[{}] Supplying job {} with green energy", myAgent.getName(), job.getJobId());
-					final JobStatusEnum newStatus = job.getStartTime().isAfter(getCurrentTime()) ?
-							JobStatusEnum.ACCEPTED :
-							JobStatusEnum.IN_PROGRESS;
-					myServerAgent.getServerJobs().replace(job, newStatus);
-					myServerAgent.manage().updateServerGUI();
-					logger.info(
-							"[{}] Passing information to CNA that job {} is being supplied again using the green energy",
-							myAgent.getName(), job.getJobId());
-					displayMessageArrow(myServerAgent, myServerAgent.getOwnerCloudNetworkAgent());
-					myServerAgent.send(preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job),
-							myServerAgent.getOwnerCloudNetworkAgent()));
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+			final Job job = getJobFromMessage(inform);
+
+			if (Objects.nonNull(job) && POWER_SHORTAGE_STATUSES.contains(myServerAgent.getServerJobs().get(job))) {
+				logger.info(GS_SHORTAGE_FINISH_LOG, guid, job.getJobId());
+				final AID cloudNetwork = myServerAgent.getOwnerCloudNetworkAgent();
+				final ACLMessage informationToCNA =
+						preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job), cloudNetwork);
+
+				myServerAgent.getServerJobs().replace(job, getNewJobStatus(job));
+				myServerAgent.manage().updateServerGUI();
+				displayMessageArrow(myServerAgent, cloudNetwork);
+				myServerAgent.send(informationToCNA);
 			}
 		} else {
 			block();
 		}
+	}
+
+	private Job getJobFromMessage(final ACLMessage message) {
+		try {
+			final JobInstanceIdentifier jobInstanceIdentifier = getMapper().readValue(message.getContent(),
+					JobInstanceIdentifier.class);
+			return myServerAgent.manage().getJobByIdAndStartDate(jobInstanceIdentifier);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private JobStatusEnum getNewJobStatus(final Job job) {
+		return job.getStartTime().isAfter(getCurrentTime()) ?
+				JobStatusEnum.ACCEPTED :
+				JobStatusEnum.IN_PROGRESS;
 	}
 }

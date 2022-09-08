@@ -1,8 +1,8 @@
 package agents.greenenergy.behaviour.listener;
 
-import static common.TimeUtils.getCurrentTime;
-import static common.constant.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
-import static common.constant.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static utils.TimeUtils.getCurrentTime;
+import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
 import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.INFORM;
