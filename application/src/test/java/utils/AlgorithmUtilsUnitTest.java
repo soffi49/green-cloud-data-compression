@@ -19,7 +19,7 @@ import domain.job.ImmutablePowerJob;
 import domain.job.Job;
 import domain.job.PowerJob;
 
-class AlgorithmUtilsTest {
+class AlgorithmUtilsUnitTest {
 
 	// GETTING MAXIMUM POWER WITHIN TIMESTAMP TESTS
 

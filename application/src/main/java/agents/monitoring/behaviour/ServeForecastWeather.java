@@ -2,10 +2,10 @@ package agents.monitoring.behaviour;
 
 import static agents.monitoring.behaviour.logs.WeatherServingLog.SERVE_FORECAST_LOG;
 import static agents.monitoring.behaviour.templates.WeatherServingMessageTemplates.SERVE_FORECAST_TEMPLATE;
-import static agents.monitoring.management.domain.MonitoringAgentConstants.BAD_STUB_DATA;
-import static agents.monitoring.management.domain.MonitoringAgentConstants.BAD_STUB_PROBABILITY;
-import static agents.monitoring.management.domain.MonitoringAgentConstants.OFFLINE_MODE;
-import static agents.monitoring.management.domain.MonitoringAgentConstants.STUB_DATA;
+import static agents.monitoring.domain.MonitoringAgentConstants.BAD_STUB_DATA;
+import static agents.monitoring.domain.MonitoringAgentConstants.BAD_STUB_PROBABILITY;
+import static agents.monitoring.domain.MonitoringAgentConstants.OFFLINE_MODE;
+import static agents.monitoring.domain.MonitoringAgentConstants.STUB_DATA;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static mapper.JsonMapper.getMapper;
