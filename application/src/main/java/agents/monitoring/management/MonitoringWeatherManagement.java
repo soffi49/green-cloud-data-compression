@@ -1,7 +1,9 @@
 package agents.monitoring.management;
 
+import static agents.monitoring.management.logs.MonitoringManagementLog.RETRIEVE_WEATHER_LOG;
 import static java.time.Instant.now;
 import static java.util.Comparator.comparingLong;
+import static java.util.Objects.nonNull;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,6 +19,7 @@ import domain.ImmutableWeatherData;
 import domain.MonitoringData;
 import domain.WeatherData;
 import domain.location.Location;
+import exception.APIFetchInternalException;
 import weather.api.OpenWeatherMapApi;
 import weather.cache.WeatherCache;
 import weather.domain.AbstractWeather;
@@ -32,11 +35,22 @@ public class MonitoringWeatherManagement {
 	private final WeatherCache cache;
 
 	/**
-	 * Constructor initializing api and cache for weather
+	 * Default constructor
 	 */
 	public MonitoringWeatherManagement() {
 		this.api = new OpenWeatherMapApi();
 		this.cache = WeatherCache.getInstance();
+	}
+
+	/**
+	 * Constructor initializing api and cache for weather
+	 *
+	 * @param api   weather api
+	 * @param cache weather cache
+	 */
+	public MonitoringWeatherManagement(final OpenWeatherMapApi api, final WeatherCache cache) {
+		this.api = api;
+		this.cache = cache;
 	}
 
 	/**
@@ -46,7 +60,7 @@ public class MonitoringWeatherManagement {
 	 * @return weather for current moment
 	 */
 	public MonitoringData getWeather(GreenSourceWeatherData requestData) {
-		logger.info("Retrieving weather info for {}!", requestData.getLocation());
+		logger.info(RETRIEVE_WEATHER_LOG, requestData.getLocation());
 		return ImmutableMonitoringData.builder()
 				.addWeatherData(getWeatherData(requestData.getLocation(), now()))
 				.build();
@@ -60,7 +74,7 @@ public class MonitoringWeatherManagement {
 	 */
 	public MonitoringData getForecast(GreenSourceForecastData requestData) {
 		var location = requestData.getLocation();
-		logger.info("Retrieving forecast info for {}!", location);
+		logger.info(RETRIEVE_WEATHER_LOG, location);
 		var weatherData = requestData.getTimetable().stream()
 				.map(time -> getForecastData(location, time))
 				.toList();
@@ -72,8 +86,12 @@ public class MonitoringWeatherManagement {
 	private WeatherData getWeatherData(Location location, Instant time) {
 		return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
 					var weather = api.getWeather(location);
-					cache.updateCache(location, weather);
-					return buildWeatherData(weather, weather.getTimestamp());
+					if (nonNull(weather)) {
+						cache.updateCache(location, weather);
+						return buildWeatherData(weather, weather.getTimestamp());
+					} else {
+						throw new APIFetchInternalException();
+					}
 				}
 		);
 	}
@@ -81,8 +99,12 @@ public class MonitoringWeatherManagement {
 	private WeatherData getForecastData(Location location, Instant time) {
 		return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
 					var forecast = api.getForecast(location);
-					cache.updateCache(location, forecast);
-					return buildWeatherData(getNearestForecast(forecast.getList(), time), time);
+					if (nonNull(forecast)) {
+						cache.updateCache(location, forecast);
+						return buildWeatherData(getNearestForecast(forecast.getList(), time), time);
+					} else {
+						throw new APIFetchInternalException();
+					}
 				}
 		);
 	}
@@ -97,13 +119,8 @@ public class MonitoringWeatherManagement {
 	}
 
 	private FutureWeather getNearestForecast(List<FutureWeather> forecasts, Instant timestamp) {
-		var timestamps = forecasts.stream().map(FutureWeather::getTimestamp).toList();
-		var nearestTimestamp = timestamps.stream()
-				.min(comparingLong(i -> Math.abs(i.getEpochSecond() - timestamp.getEpochSecond())))
-				.orElseThrow(() -> new NoSuchElementException("No value present"));
 		return forecasts.stream()
-				.filter(forecast -> forecast.getTimestamp().equals(nearestTimestamp))
-				.findFirst()
+				.min(comparingLong(i -> Math.abs(i.getTimestamp().getEpochSecond() - timestamp.getEpochSecond())))
 				.orElseThrow(() -> new NoSuchElementException("No value present"));
 	}
 }

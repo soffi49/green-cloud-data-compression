@@ -1,4 +1,4 @@
-package agents.monitoring.management.domain;
+package agents.monitoring.domain;
 
 import static utils.TimeUtils.getCurrentTime;
 
