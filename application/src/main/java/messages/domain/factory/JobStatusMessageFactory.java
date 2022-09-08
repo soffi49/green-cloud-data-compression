@@ -1,7 +1,6 @@
 package messages.domain.factory;
 
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.ACLMessage.REQUEST;
+import static jade.lang.acl.ACLMessage.*;
 import static mapper.JsonMapper.getMapper;
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
@@ -38,6 +37,13 @@ public class JobStatusMessageFactory {
 		return informationMessage;
 	}
 
+	/**
+	 * Method prepares the failure message about the job execution which is to be sent
+	 * to the client
+	 *
+	 * @param clientId client global name
+	 * @return failure ACLMessage
+	 */
 	public static ACLMessage prepareJobFailureMessageForClient(final String clientId, final String protocol) {
 		final ACLMessage failureMessage = new ACLMessage(FAILURE);
 		failureMessage.setContent(protocol);

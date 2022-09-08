@@ -1,6 +1,6 @@
 package messages.domain.factory;
 
-import static common.constant.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.FAILURE;
@@ -85,6 +85,13 @@ public class ReplyMessageFactory {
 		return replyMessage;
 	}
 
+	/**
+	 * Method prepares the reply accept message containing the conversation topic as content protocol
+	 *
+	 * @param replyMessage  reply ACLMessage that is to be sent
+	 * @param jobId unique job instance identifier
+	 * @return reply ACLMessage
+	 */
 	public static ACLMessage prepareFailureReply(final ACLMessage replyMessage,
 												 final Object jobId) {
 		replyMessage.setProtocol(FAILED_JOB_PROTOCOL);
