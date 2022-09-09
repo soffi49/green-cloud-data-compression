@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import agents.greenenergy.behaviour.ReceiveNewJobPowerRequest;
 import agents.greenenergy.behaviour.listener.ListenForGreenSourceEvent;
 import agents.greenenergy.behaviour.listener.ListenForJobStatus;
-import agents.greenenergy.behaviour.powercheck.jobstart.ReceiveJobStartPowerRequest;
 import agents.greenenergy.behaviour.powercheck.periodiccheck.CheckCurrentWeather;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import agents.greenenergy.domain.EnergyTypeEnum;
@@ -87,7 +86,6 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 				new ListenForJobStatus(this),
 				new ListenForGreenSourceEvent(this),
 				new ListenForServerPowerInformation(this),
-				new ReceiveJobStartPowerRequest(this),
 				new CheckCurrentWeather(this)
 		);
 	}

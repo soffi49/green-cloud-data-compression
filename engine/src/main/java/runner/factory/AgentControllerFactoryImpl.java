@@ -1,6 +1,7 @@
 package runner.factory;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -124,6 +125,6 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 	private String formatToDate(final String value) {
 		final Instant date = Instant.now().plus(Long.parseLong(value), ChronoUnit.HOURS);
 		final String dateFormat = "dd/MM/yyyy HH:mm";
-		return DateTimeFormatter.ofPattern(dateFormat).format(date);
+		return DateTimeFormatter.ofPattern(dateFormat).withZone(ZoneId.of("UTC")).format(date);
 	}
 }
