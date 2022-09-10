@@ -1,33 +1,36 @@
 package agents.cloudnetwork.behaviour.df;
 
-import static yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
+import static agents.cloudnetwork.behaviour.df.logs.CloudNetworkDFLog.NO_SERVERS_FOUND_LOG;
 import static yellowpages.YellowPagesService.search;
-
-import agents.cloudnetwork.CloudNetworkAgent;
-import jade.core.AID;
-import jade.core.behaviours.OneShotBehaviour;
+import static yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
 
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import agents.cloudnetwork.CloudNetworkAgent;
+import jade.core.AID;
+import jade.core.behaviours.OneShotBehaviour;
+
 /**
- * Behaviours which is responsible for finding corresponding server agents for given Cloud Network Agent in DF
+ * Behaviours finds corresponding server agents for given Cloud Network Agent in DF
  */
 public class FindServerAgents extends OneShotBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(FindServerAgents.class);
 
 	private CloudNetworkAgent myCloudNetworkAgent;
+	private String guid;
 
 	/**
-	 * Method runs at the behaviours start. It casts the agent to the agent of type CloudNetworkAgent
+	 * Method casts the agent to the agent of type CloudNetworkAgent
 	 */
 	@Override
 	public void onStart() {
 		super.onStart();
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
+		this.guid = myAgent.getName();
 	}
 
 	/**
@@ -38,7 +41,7 @@ public class FindServerAgents extends OneShotBehaviour {
 		final List<AID> serverAgents = search(myAgent, SA_SERVICE_TYPE, myAgent.getName());
 
 		if (serverAgents.isEmpty()) {
-			logger.info("[{}] No Server Agents were found", myCloudNetworkAgent.getName());
+			logger.info(NO_SERVERS_FOUND_LOG, guid);
 			myCloudNetworkAgent.doDelete();
 		}
 		myCloudNetworkAgent.setOwnedServers(serverAgents);

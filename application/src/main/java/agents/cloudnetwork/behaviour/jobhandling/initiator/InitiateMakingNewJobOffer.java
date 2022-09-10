@@ -1,8 +1,13 @@
-package agents.cloudnetwork.behaviour;
+package agents.cloudnetwork.behaviour.jobhandling.initiator;
 
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.ACCEPT_SERVER_PROPOSAL_LOG;
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.REJECT_SERVER_PROPOSAL_LOG;
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static mapper.JobMapper.mapToJobInstanceId;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
+import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static utils.GUIUtils.displayMessageArrow;
 import static utils.TimeUtils.getCurrentTime;
 
@@ -13,8 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import agents.cloudnetwork.behaviour.jobstatus.ReturnJobDelay;
-import mapper.JobMapper;
+import agents.cloudnetwork.behaviour.jobhandling.handler.HandleDelayedJob;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;
@@ -23,11 +27,11 @@ import jade.proto.ProposeInitiator;
 import messages.domain.factory.ReplyMessageFactory;
 
 /**
- * Behaviour responsible for sending proposal with job execution offer to the client
+ * Behaviour sends proposal with job execution offer to the client
  */
-public class ProposeJobOffer extends ProposeInitiator {
+public class InitiateMakingNewJobOffer extends ProposeInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(ProposeJobOffer.class);
+	private static final Logger logger = LoggerFactory.getLogger(InitiateMakingNewJobOffer.class);
 
 	private final ACLMessage replyMessage;
 	private final CloudNetworkAgent myCloudNetworkAgent;
@@ -40,7 +44,7 @@ public class ProposeJobOffer extends ProposeInitiator {
 	 * @param msg          proposal message with job execution price that will be sent to the client
 	 * @param replyMessage reply message sent to server with ACCEPT/REJECT proposal
 	 */
-	public ProposeJobOffer(final Agent agent, final ACLMessage msg, final ACLMessage replyMessage) {
+	public InitiateMakingNewJobOffer(final Agent agent, final ACLMessage msg, final ACLMessage replyMessage) {
 		super(agent, msg);
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
 		this.guid = agent.getName();
@@ -48,39 +52,41 @@ public class ProposeJobOffer extends ProposeInitiator {
 	}
 
 	/**
-	 * Method handles accept proposal message retrieved from the Client Agent. It sends accept proposal to the
-	 * chosen for job execution Server Agent and updates the network state.
+	 * Method handles ACCEPT_PROPOSAL message retrieved from the Client Agent.
+	 * It sends accept proposal to the chosen for job execution Server Agent and updates the network state.
 	 *
 	 * @param accept_proposal received accept proposal message
 	 */
 	@Override
 	protected void handleAcceptProposal(final ACLMessage accept_proposal) {
-		logger.info("[{}] Sending ACCEPT_PROPOSAL to Server Agent", guid);
+		logger.info(ACCEPT_SERVER_PROPOSAL_LOG, guid);
 		final String jobId = accept_proposal.getContent();
 		final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
+
 		myCloudNetworkAgent.getNetworkJobs().replace(job, JobStatusEnum.ACCEPTED);
-		myAgent.addBehaviour(new ReturnJobDelay(myCloudNetworkAgent, calculateExpectedJobStart(job), job.getJobId()));
+		myAgent.addBehaviour(new HandleDelayedJob(myCloudNetworkAgent, calculateExpectedJobStart(job), job.getJobId()));
+
 		displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
-		myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, JobMapper.mapToJobInstanceId(job),
-				SERVER_JOB_CFP_PROTOCOL));
+		myAgent.send(prepareAcceptReplyWithProtocol(replyMessage, mapToJobInstanceId(job), SERVER_JOB_CFP_PROTOCOL));
 	}
 
 	/**
-	 * Method handles reject proposal message retrieved from the Client Agent. It sends reject proposal to the
-	 * Server Agent previously chosen for the job execution.
+	 * Method handles REJECT_PROPOSAL message retrieved from the Client Agent.
+	 * It sends reject proposal to the Server Agent previously chosen for the job execution.
 	 *
 	 * @param reject_proposal received reject proposal message
 	 */
 	@Override
 	protected void handleRejectProposal(final ACLMessage reject_proposal) {
-		logger.info("[{}] Client {} rejected the job proposal", guid, reject_proposal.getSender().getName());
+		logger.info(REJECT_SERVER_PROPOSAL_LOG, guid, reject_proposal.getSender().getName());
 		final String jobId = reject_proposal.getContent();
 		final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
+
 		myCloudNetworkAgent.getServerForJobMap().remove(jobId);
 		myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.manage().getJobById(jobId));
+
 		displayMessageArrow(myCloudNetworkAgent, replyMessage.getAllReceiver());
-		myCloudNetworkAgent.send(
-				ReplyMessageFactory.prepareReply(replyMessage, JobMapper.mapToJobInstanceId(job), REJECT_PROPOSAL));
+		myCloudNetworkAgent.send(prepareReply(replyMessage, mapToJobInstanceId(job), REJECT_PROPOSAL));
 	}
 
 	private Date calculateExpectedJobStart(final Job job) {

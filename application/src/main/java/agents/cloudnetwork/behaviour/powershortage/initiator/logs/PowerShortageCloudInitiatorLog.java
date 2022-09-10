@@ -1,9 +1,9 @@
-package agents.cloudnetwork.behaviour.powershortage.announcer.logs;
+package agents.cloudnetwork.behaviour.powershortage.initiator.logs;
 
 /**
- * Class contains all constants used in logging information in announcer behaviours for power shortage in cloud network
+ * Class contains all constants used in logging information in initiator behaviours for power shortage in cloud network
  */
-public class PowerShortageCloudAnnouncerLog {
+public class PowerShortageCloudInitiatorLog {
 
 	// POWER SHORTAGE IN SERVER JOB TRANSFER LOG MESSAGES
 	public static final String SERVER_TRANSFER_NO_RESPONSE_LOG = "[{}] No responses were retrieved from servers for job transfer";

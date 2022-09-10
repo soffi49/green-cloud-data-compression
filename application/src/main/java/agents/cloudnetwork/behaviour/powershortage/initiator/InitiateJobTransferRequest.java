@@ -1,8 +1,8 @@
-package agents.cloudnetwork.behaviour.powershortage.announcer;
+package agents.cloudnetwork.behaviour.powershortage.initiator;
 
-import static agents.cloudnetwork.behaviour.powershortage.announcer.logs.PowerShortageCloudAnnouncerLog.SERVER_TRANSFER_CHOSEN_SERVER_LOG;
-import static agents.cloudnetwork.behaviour.powershortage.announcer.logs.PowerShortageCloudAnnouncerLog.SERVER_TRANSFER_NO_RESPONSE_LOG;
-import static agents.cloudnetwork.behaviour.powershortage.announcer.logs.PowerShortageCloudAnnouncerLog.SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG;
+import static agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_CHOSEN_SERVER_LOG;
+import static agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_RESPONSE_LOG;
+import static agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG;
 import static utils.GUIUtils.displayMessageArrow;
 import static mapper.JsonMapper.getMapper;
 import static messages.MessagingUtils.readMessageContent;
@@ -36,8 +36,8 @@ import jade.proto.ContractNetInitiator;
  * Behaviours sends the CFP to remaining servers looking for job transfer and selects the one which will
  * handle the remaining job execution
  */
-public class AnnounceJobTransferRequest extends ContractNetInitiator {
-	private static final Logger logger = LoggerFactory.getLogger(AnnounceJobTransferRequest.class);
+public class InitiateJobTransferRequest extends ContractNetInitiator {
+	private static final Logger logger = LoggerFactory.getLogger(InitiateJobTransferRequest.class);
 
 	private final CloudNetworkAgent myCloudNetworkAgent;
 	private final String guid;
@@ -54,7 +54,7 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 	 * @param jobTransfer   job for which the transfer is being performed
 	 * @param jobClient     client which should be informed about job status updates
 	 */
-	public AnnounceJobTransferRequest(final Agent agent,
+	public InitiateJobTransferRequest(final Agent agent,
 			final ACLMessage cfp,
 			final ACLMessage serverRequest,
 			final PowerShortageJob jobTransfer,

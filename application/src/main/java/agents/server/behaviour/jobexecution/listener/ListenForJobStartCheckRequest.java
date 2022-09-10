@@ -4,7 +4,9 @@ import static agents.server.behaviour.jobexecution.listener.logs.JobHandlingList
 import static agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.JOB_STATUS_REQUEST_TEMPLATE;
 import static domain.job.JobStatusEnum.RUNNING_JOB_STATUSES;
 import static jade.lang.acl.ACLMessage.AGREE;
-import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.ACLMessage.FAILURE;
+import static jade.lang.acl.ACLMessage.INFORM;
+import static messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +50,7 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 
 		if (Objects.nonNull(request)) {
 			final String jobId = request.getContent();
+			myServerAgent.send(prepareStringReply(request.createReply(), "REQUEST PROCESSING", AGREE));
 			logger.info(JOB_START_STATUS_RECEIVED_REQUEST_LOG, guid, jobId);
 			final Map.Entry<Job, JobStatusEnum> jobInstance = myServerAgent.manage().getCurrentJobInstance(jobId);
 			myServerAgent.send(createReplyWithJobStatus(request, jobInstance));
@@ -56,17 +59,10 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 		}
 	}
 
-	private ACLMessage createReplyWithJobStatus(final ACLMessage message, final Map.Entry<Job, JobStatusEnum> jobInstance) {
-		final ACLMessage reply = message.createReply();
-
-		if (Objects.nonNull(jobInstance) && RUNNING_JOB_STATUSES.contains(jobInstance.getValue())) {
-			reply.setContent("JOB STARTED");
-			reply.setPerformative(AGREE);
-		} else {
-			reply.setContent("JOB HAS NOT STARTED");
-			reply.setPerformative(REFUSE);
-		}
-
-		return reply;
+	private ACLMessage createReplyWithJobStatus(final ACLMessage message,
+			final Map.Entry<Job, JobStatusEnum> jobInstance) {
+		return Objects.nonNull(jobInstance) && RUNNING_JOB_STATUSES.contains(jobInstance.getValue()) ?
+				prepareStringReply(message.createReply(), "JOB STARTED", INFORM) :
+				prepareStringReply(message.createReply(), "JOB HAS NOT STARTED", FAILURE);
 	}
 }

@@ -28,21 +28,6 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 	}
 
 	/**
-	 * Abstract Cloud Network Agent constructor.
-	 *
-	 * @param networkJobs     list of the jobs together with their statuses
-	 *                        that are being processed in the network
-	 * @param serverForJobMap map storing jobs and corresponding job's executor addresses
-	 * @param ownedServers    list of addresses of the owned servers
-	 */
-	AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap,
-			List<AID> ownedServers) {
-		this.serverForJobMap = serverForJobMap;
-		this.networkJobs = networkJobs;
-		this.ownedServers = ownedServers;
-	}
-
-	/**
 	 * Method run on agent start. It initializes the Cloud Network Agent data with default values
 	 */
 	@Override
