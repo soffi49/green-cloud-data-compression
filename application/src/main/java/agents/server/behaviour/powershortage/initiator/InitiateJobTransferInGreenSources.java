@@ -12,7 +12,7 @@ import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
 import static messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static utils.GUIUtils.displayMessageArrow;
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferConfirmation;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;

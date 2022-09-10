@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.ServerData;
 import domain.job.Job;
 import jade.core.Agent;

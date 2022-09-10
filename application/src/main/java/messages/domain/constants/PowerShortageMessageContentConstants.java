@@ -1,4 +1,4 @@
-package messages.domain.constants.powershortage;
+package messages.domain.constants;
 
 /**
  * Class stores constants passed as message content during power shortage handling process

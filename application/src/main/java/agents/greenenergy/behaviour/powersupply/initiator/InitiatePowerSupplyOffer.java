@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powersupply.handler.HandleManualPowerSupplyFinish;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.JobWithProtocol;

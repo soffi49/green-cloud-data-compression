@@ -1,25 +1,24 @@
 package agents.greenenergy;
 
-import static common.constant.DFServiceConstants.GS_SERVICE_NAME;
-import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.GS_SERVICE_NAME;
+import static yellowpages.domain.DFServiceConstants.GS_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;
-import agents.greenenergy.behaviour.sensor.SenseGreenSourceEvent;
-import agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyStatus;
-import agents.greenenergy.behaviour.weathercheck.request.RequestWeatherPeriodically;
 import agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
+import agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;
+import agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyStatus;
+import agents.greenenergy.behaviour.sensor.SenseGreenSourceEvent;
+import agents.greenenergy.behaviour.weathercheck.request.RequestWeatherPeriodically;
 import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
 import agents.greenenergy.management.GreenEnergyStateManagement;
 import agents.greenenergy.management.GreenPowerManagement;
-import common.behaviours.ReceiveGUIController;
+import behaviours.ReceiveGUIController;
 import domain.location.ImmutableLocation;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
@@ -52,7 +51,6 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	private void initializeAgent(final Object[] args) {
 		if (Objects.nonNull(args) && args.length == 7) {
-			this.powerJobs = new ConcurrentHashMap<>();
 			this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
 			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
 			this.stateManagement = new GreenEnergyStateManagement(this);
@@ -63,7 +61,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 						.latitude(Double.parseDouble(args[4].toString()))
 						.longitude(Double.parseDouble(args[5].toString()))
 						.build();
-				if(args[6] instanceof String argument) {
+				if (args[6] instanceof String argument) {
 					this.energyType = GreenEnergySourceTypeEnum.valueOf(argument);
 				} else {
 					this.energyType = (GreenEnergySourceTypeEnum) args[6];

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powershortage.handler.HandleSourcePowerShortage;
 import agents.greenenergy.behaviour.powershortage.initiator.InitiatePowerJobTransfer;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.powershortage.PowerShortageCause;

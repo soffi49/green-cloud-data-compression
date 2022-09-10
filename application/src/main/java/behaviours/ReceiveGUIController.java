@@ -1,4 +1,4 @@
-package common.behaviours;
+package behaviours;
 
 import agents.AbstractAgent;
 

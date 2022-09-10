@@ -31,7 +31,7 @@ import agents.server.ServerAgent;
 import agents.server.behaviour.jobexecution.handler.HandleJobFinish;
 import agents.server.behaviour.jobexecution.handler.HandleJobStart;
 import agents.server.domain.ServerPowerSourceType;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;

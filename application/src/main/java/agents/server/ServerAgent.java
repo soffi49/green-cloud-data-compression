@@ -1,8 +1,8 @@
 package agents.server;
 
-import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
-import static common.constant.DFServiceConstants.SA_SERVICE_NAME;
-import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.GS_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.SA_SERVICE_NAME;
+import static yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
@@ -19,7 +19,7 @@ import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransfer
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.behaviour.sensor.SenseServerEvent;
 import agents.server.management.ServerStateManagement;
-import common.behaviours.ReceiveGUIController;
+import behaviours.ReceiveGUIController;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 

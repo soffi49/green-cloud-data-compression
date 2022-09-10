@@ -2,6 +2,7 @@ package agents.greenenergy;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import agents.AbstractAgent;
 import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
@@ -18,28 +19,18 @@ import jade.core.AID;
  */
 public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
-	/**
-	 * greenPower        defines maximum power of the green source and holds algorithms to compute available power
-	 * stateManagement   defines the class holding set of utilities used to manage the state of the green source
-	 * location          geographical location (longitude and latitude) of the green source
-	 * pricePerPowerUnit price for the 1 power unit (1 kWh)
-	 * powerJobs         list of power orders together with their statuses
-	 * monitoringAgent   address of the corresponding monitoring agent
-	 * ownerServer       address of the server which owns the given green source
-	 * energyType        allows to differentiate between SOLAR and WIND energy sources
-	 */
-
 	protected transient GreenPowerManagement greenPowerManagement;
 	protected transient GreenEnergyStateManagement stateManagement;
 	protected transient Location location;
+	protected GreenEnergySourceTypeEnum energyType;
 	protected double pricePerPowerUnit;
 	protected transient Map<PowerJob, JobStatusEnum> powerJobs;
 	protected AID monitoringAgent;
 	protected AID ownerServer;
-	protected GreenEnergySourceTypeEnum energyType;
 
 	AbstractGreenEnergyAgent() {
 		super.setup();
+		this.powerJobs = new ConcurrentHashMap<>();
 	}
 
 	public AID getOwnerServer() {
@@ -89,6 +80,10 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
 	public void setMonitoringAgent(AID monitoringAgent) {
 		this.monitoringAgent = monitoringAgent;
+	}
+
+	public void setGreenPowerManagement(GreenPowerManagement greenPowerManagement) {
+		this.greenPowerManagement = greenPowerManagement;
 	}
 
 	public GreenEnergySourceTypeEnum getEnergyType() {

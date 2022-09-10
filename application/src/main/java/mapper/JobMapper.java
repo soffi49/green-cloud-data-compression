@@ -1,4 +1,4 @@
-package common.mapper;
+package mapper;
 
 import java.time.Instant;
 
@@ -41,15 +41,6 @@ public class JobMapper {
 				.power(powerJob.getPower())
 				.startTime(startTime)
 				.endTime(powerJob.getEndTime())
-				.build();
-	}
-
-	public static CheckedPowerJob mapPowerJobToCheckedPowerJob(final PowerJob powerJob, final boolean informCNAStart,
-			final boolean informCNAFinish) {
-		return ImmutableCheckedPowerJob.builder()
-				.powerJob(powerJob)
-				.informCNAStart(informCNAStart)
-				.informCNAFinish(informCNAFinish)
 				.build();
 	}
 

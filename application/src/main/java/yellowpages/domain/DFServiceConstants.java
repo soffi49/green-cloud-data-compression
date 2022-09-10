@@ -1,4 +1,4 @@
-package common.constant;
+package yellowpages.domain;
 
 /**
  * Constants describing the services registered in DF.

@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import agents.server.ServerAgent;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;

@@ -1,6 +1,6 @@
 package agents.cloudnetwork.behaviour.df;
 
-import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.search;
 
 import agents.cloudnetwork.CloudNetworkAgent;

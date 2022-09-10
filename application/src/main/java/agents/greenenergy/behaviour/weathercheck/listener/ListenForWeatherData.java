@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.MonitoringData;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;

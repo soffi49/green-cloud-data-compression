@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import domain.ImmutableWeatherData;
+import domain.WeatherData;
 import domain.location.ImmutableLocation;
 import domain.location.Location;
 import weather.domain.Clouds;
@@ -62,6 +64,13 @@ public class CacheTestConstants {
 			.main(MOCK_MAIN)
 			.visibility(10D)
 			.timestamp(MOCK_TIME)
+			.build();
+
+	public static final WeatherData MOCK_WEATHER = ImmutableWeatherData.builder()
+			.cloudCover(MOCK_CLOUD.getAll())
+			.temperature(MOCK_MAIN.getTemp())
+			.time(MOCK_TIME)
+			.windSpeed(MOCK_WIND.getSpeed())
 			.build();
 
 	public static final Forecast MOCK_FORECAST = ImmutableForecast.builder()

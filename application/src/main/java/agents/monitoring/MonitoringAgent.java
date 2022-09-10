@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import agents.monitoring.behaviour.ServeForecastWeather;
-import common.behaviours.ReceiveGUIController;
+import behaviours.ReceiveGUIController;
 
 /**
  * Agent which is responsible for monitoring the weather and sending the data to the Green Source Agent

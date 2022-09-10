@@ -10,8 +10,8 @@ import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 

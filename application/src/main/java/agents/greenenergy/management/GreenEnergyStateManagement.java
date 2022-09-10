@@ -10,6 +10,7 @@ import static agents.greenenergy.management.logs.GreenEnergyManagementLog.UNIQUE
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static domain.job.JobStatusEnum.ACTIVE_JOB_STATUSES;
 import static domain.job.JobStatusEnum.JOB_ON_HOLD;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
 import static utils.TimeUtils.getCurrentTime;
 import static utils.TimeUtils.isWithinTimeStamp;
@@ -32,11 +33,11 @@ import com.gui.agents.GreenEnergyAgentNode;
 
 import agents.greenenergy.GreenEnergyAgent;
 import agents.greenenergy.behaviour.powersupply.handler.HandleManualPowerSupplyFinish;
-import common.mapper.JobMapper;
 import domain.MonitoringData;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
+import mapper.JobMapper;
 
 /**
  * Set of methods used to manage the internal state of the green energy agent
@@ -143,8 +144,11 @@ public class GreenEnergyStateManagement {
 	 */
 	public void updateMaximumCapacity(final int newMaximumCapacity) {
 		greenEnergyAgent.setMaximumCapacity(newMaximumCapacity);
-		((GreenEnergyAgentNode) greenEnergyAgent.getAgentNode()).updateMaximumCapacity(
-				greenEnergyAgent.getMaximumCapacity());
+		final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) greenEnergyAgent.getAgentNode();
+
+		if (nonNull(greenEnergyAgentNode)) {
+			greenEnergyAgentNode.updateMaximumCapacity(greenEnergyAgent.getMaximumCapacity());
+		}
 	}
 
 	/**
@@ -247,30 +251,40 @@ public class GreenEnergyStateManagement {
 	 * Method updates the information on the green source GUI
 	 */
 	public void updateGreenSourceGUI() {
-		final GreenEnergyAgentNode serverAgentNode = (GreenEnergyAgentNode) greenEnergyAgent.getAgentNode();
-		serverAgentNode.updateMaximumCapacity(greenEnergyAgent.getMaximumCapacity());
-		serverAgentNode.updateJobsCount(getJobCount());
-		serverAgentNode.updateJobsOnHoldCount(getOnHoldJobCount());
-		serverAgentNode.updateIsActive(getIsActiveState());
-		serverAgentNode.updateTraffic(getCurrentPowerInUseForGreenSource());
+		final GreenEnergyAgentNode greenEnergyAgentNode = (GreenEnergyAgentNode) greenEnergyAgent.getAgentNode();
+
+		if (nonNull(greenEnergyAgentNode)) {
+			greenEnergyAgentNode.updateMaximumCapacity(greenEnergyAgent.getMaximumCapacity());
+			greenEnergyAgentNode.updateJobsCount(getJobCount());
+			greenEnergyAgentNode.updateJobsOnHoldCount(getOnHoldJobCount());
+			greenEnergyAgentNode.updateIsActive(getIsActiveState());
+			greenEnergyAgentNode.updateTraffic(getCurrentPowerInUseForGreenSource());
+		}
+	}
+
+	public AtomicInteger getUniqueStartedJobs() {
+		return uniqueStartedJobs;
+	}
+
+	public AtomicInteger getUniqueFinishedJobs() {
+		return uniqueFinishedJobs;
+	}
+
+	public AtomicInteger getStartedJobsInstances() {
+		return startedJobsInstances;
+	}
+
+	public AtomicInteger getFinishedJobsInstances() {
+		return finishedJobsInstances;
 	}
 
 	private synchronized Double getPower(Instant start, MonitoringData weather) {
-		var powerJobs = greenEnergyAgent.getPowerJobs().keySet().stream()
-				.filter(job -> ACCEPTED_JOB_STATUSES.contains(greenEnergyAgent.getPowerJobs().get(job)))
-				.toList();
-
-		if (powerJobs.isEmpty()) {
-			return greenEnergyAgent.getCapacity(weather, start);
-		}
-
-		return powerJobs.stream()
-				.filter(job -> job.isExecutedAtTime(start))
-				.map(PowerJob::getPower)
-				.map(power -> greenEnergyAgent.getCapacity(weather, start) - power)
-				.mapToDouble(Double::doubleValue)
-				.average()
-				.orElseGet(() -> 0.0);
+		final double inUseCapacity = greenEnergyAgent.getPowerJobs().keySet().stream()
+				.filter(job -> ACCEPTED_JOB_STATUSES.contains(greenEnergyAgent.getPowerJobs().get(job)) &&
+						job.isExecutedAtTime(start))
+				.mapToInt(PowerJob::getPower)
+				.sum();
+		return greenEnergyAgent.getCapacity(weather, start) - inUseCapacity;
 	}
 
 	private synchronized Map<Instant, Double> getPowerChart(PowerJob powerJob, final MonitoringData weather,
