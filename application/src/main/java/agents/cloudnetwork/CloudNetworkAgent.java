@@ -8,7 +8,7 @@ import agents.cloudnetwork.behaviour.jobhandling.listener.ListenForClientsJob;
 import agents.cloudnetwork.behaviour.df.FindServerAgents;
 import agents.cloudnetwork.behaviour.jobhandling.listener.ListenForJobStatusChange;
 import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerJobTransferRequest;
-import agents.cloudnetwork.domain.CloudNetworkStateManagement;
+import agents.cloudnetwork.management.CloudNetworkStateManagement;
 import behaviours.ReceiveGUIController;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;

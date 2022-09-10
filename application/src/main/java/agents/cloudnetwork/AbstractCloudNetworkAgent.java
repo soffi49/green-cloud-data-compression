@@ -1,7 +1,7 @@
 package agents.cloudnetwork;
 
 import agents.AbstractAgent;
-import agents.cloudnetwork.domain.CloudNetworkStateManagement;
+import agents.cloudnetwork.management.CloudNetworkStateManagement;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;

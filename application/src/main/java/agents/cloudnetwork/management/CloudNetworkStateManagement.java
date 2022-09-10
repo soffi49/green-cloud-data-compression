@@ -1,21 +1,23 @@
-package agents.cloudnetwork.domain;
+package agents.cloudnetwork.management;
 
-import static utils.GUIUtils.announceFinishedJob;
+import static agents.cloudnetwork.management.logs.CloudNetworkManagementLog.FINISHED_JOB_COUNT_LOG;
+import static agents.cloudnetwork.management.logs.CloudNetworkManagementLog.STARTED_JOB_COUNT_LOG;
 import static domain.job.JobStatusEnum.ACCEPTED;
 import static domain.job.JobStatusEnum.PROCESSING;
+import static java.util.Objects.nonNull;
+import static utils.GUIUtils.announceFinishedJob;
 
-import agents.cloudnetwork.CloudNetworkAgent;
-
-import com.gui.agents.CloudNetworkAgentNode;
-
-import domain.job.Job;
-import domain.job.JobStatusEnum;
+import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.EnumSet;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.gui.agents.CloudNetworkAgentNode;
+
+import agents.cloudnetwork.CloudNetworkAgent;
+import domain.job.Job;
+import domain.job.JobStatusEnum;
 
 /**
  * Set of utilities used to manage the state of the cloud network
@@ -66,9 +68,11 @@ public class CloudNetworkStateManagement {
 	 */
 	public void incrementStartedJobs(final String jobId) {
 		startedJobs.getAndAdd(1);
-		logger.info("[{}] Started job {}. Number of started jobs is {}", cloudNetworkAgent.getLocalName(), jobId,
-				startedJobs);
-		cloudNetworkAgent.getGuiController().updateActiveJobsCountByValue(1);
+		logger.info(STARTED_JOB_COUNT_LOG, cloudNetworkAgent.getLocalName(), jobId, startedJobs);
+
+		if (nonNull(cloudNetworkAgent.getGuiController())) {
+			cloudNetworkAgent.getGuiController().updateActiveJobsCountByValue(1);
+		}
 		updateCloudNetworkGUI();
 	}
 
@@ -79,17 +83,27 @@ public class CloudNetworkStateManagement {
 	 */
 	public void incrementFinishedJobs(final String jobId) {
 		finishedJobs.getAndAdd(1);
-		logger.info("[{}] Finished job {}. Number of finished jobs is {} out of {} started",
-				cloudNetworkAgent.getLocalName(), jobId, finishedJobs, startedJobs);
+		logger.info(FINISHED_JOB_COUNT_LOG, cloudNetworkAgent.getLocalName(), jobId, finishedJobs, startedJobs);
 		updateCloudNetworkGUI();
 		announceFinishedJob(cloudNetworkAgent);
 	}
 
+	public AtomicInteger getStartedJobs() {
+		return startedJobs;
+	}
+
+	public AtomicInteger getFinishedJobs() {
+		return finishedJobs;
+	}
+
 	private void updateCloudNetworkGUI() {
 		final CloudNetworkAgentNode cloudNetworkAgentNode = (CloudNetworkAgentNode) cloudNetworkAgent.getAgentNode();
-		cloudNetworkAgentNode.updateClientNumber(getScheduledJobs());
-		cloudNetworkAgentNode.updateJobsCount(getJobInProgressCount());
-		cloudNetworkAgentNode.updateTraffic(getCurrentPowerInUse());
+
+		if (nonNull(cloudNetworkAgentNode)) {
+			cloudNetworkAgentNode.updateClientNumber(getScheduledJobs());
+			cloudNetworkAgentNode.updateJobsCount(getJobInProgressCount());
+			cloudNetworkAgentNode.updateTraffic(getCurrentPowerInUse());
+		}
 	}
 
 	private int getJobInProgressCount() {

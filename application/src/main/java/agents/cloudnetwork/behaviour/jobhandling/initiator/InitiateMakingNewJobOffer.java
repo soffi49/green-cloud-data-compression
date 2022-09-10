@@ -24,7 +24,6 @@ import domain.job.JobStatusEnum;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ProposeInitiator;
-import messages.domain.factory.ReplyMessageFactory;
 
 /**
  * Behaviour sends proposal with job execution offer to the client
