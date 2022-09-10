@@ -1,11 +1,14 @@
-package agents.client.behaviour.listener;
+package agents.client.behaviour.jobannouncement.listener;
 
-import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.MessageTemplate.MatchPerformative;
-import static jade.lang.acl.MessageTemplate.MatchProtocol;
-import static jade.lang.acl.MessageTemplate.and;
-import static jade.lang.acl.MessageTemplate.or;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_BACK_UP_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_DELAY_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_FINISH_DELAY_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_FINISH_ON_TIME_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_GREEN_POWER_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_START_DELAY_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_START_ON_TIME_LOG;
+import static agents.client.behaviour.jobannouncement.listener.templates.JobAnnouncementMessageTemplates.CLIENT_JOB_UPDATE_TEMPLATE;
+import static agents.client.domain.ClientAgentConstants.MAX_TIME_DIFFERENCE;
 import static messages.domain.constants.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
@@ -26,21 +29,16 @@ import com.gui.agents.domain.JobStatusEnum;
 import agents.client.ClientAgent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 
 /**
- * Behaviour which handles the information that the job status is updated
+ * Behaviour handles the information that the job status has been updated
  */
 public class ListenForJobUpdate extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForJobUpdate.class);
-	private static final MessageTemplate messageTemplate = and(
-			or(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
-							or(MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL))),
-					MatchProtocol(GREEN_POWER_JOB_PROTOCOL)),
-			MatchPerformative(INFORM));
 
 	private final ClientAgent myClientAgent;
+	private final String guid;
 
 	/**
 	 * Behaviours constructor.
@@ -50,6 +48,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	public ListenForJobUpdate(final ClientAgent clientAgent) {
 		super(clientAgent);
 		this.myClientAgent = clientAgent;
+		this.guid = myClientAgent.getName();
 	}
 
 	/**
@@ -57,7 +56,8 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	 */
 	@Override
 	public void action() {
-		final ACLMessage message = myAgent.receive(messageTemplate);
+		final ACLMessage message = myAgent.receive(CLIENT_JOB_UPDATE_TEMPLATE);
+
 		if (Objects.nonNull(message)) {
 			switch (message.getProtocol()) {
 				case STARTED_JOB_PROTOCOL -> {
@@ -71,15 +71,15 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 					myClientAgent.doDelete();
 				}
 				case DELAYED_JOB_PROTOCOL -> {
-					logger.info("[{}] The execution of my job has some delay! :(", myAgent.getName());
+					logger.info(CLIENT_JOB_DELAY_LOG, guid);
 					((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.DELAYED);
 				}
 				case BACK_UP_POWER_JOB_PROTOCOL -> {
-					logger.info("[{}] My job is being executed using the back up power!", myAgent.getName());
+					logger.info(CLIENT_JOB_BACK_UP_LOG, guid);
 					((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.ON_BACK_UP);
 				}
 				case GREEN_POWER_JOB_PROTOCOL -> {
-					logger.info("[{}] My job is again being executed using the green power!", myAgent.getName());
+					logger.info(CLIENT_JOB_GREEN_POWER_LOG, guid);
 					((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
 				}
 			}
@@ -92,10 +92,9 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 		final Instant startTime = getCurrentTime();
 		final long timeDifference = ChronoUnit.MILLIS.between(myClientAgent.getSimulatedJobStart(), startTime);
 		if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
-			logger.info("[{}] The execution of my job started on time! :)", myAgent.getName());
+			logger.info(CLIENT_JOB_START_ON_TIME_LOG, guid);
 		} else {
-			logger.info("[{}] The execution of my job started with a delay equal to {}! :(", myAgent.getName(),
-					timeDifference);
+			logger.info(CLIENT_JOB_START_DELAY_LOG, guid, timeDifference);
 		}
 	}
 
@@ -103,10 +102,9 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 		final Instant endTime = getCurrentTime();
 		final long timeDifference = ChronoUnit.MILLIS.between(endTime, myClientAgent.getSimulatedJobEnd());
 		if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
-			logger.info("[{}] The execution of my job finished on time! :)", myAgent.getName());
+			logger.info(CLIENT_JOB_FINISH_ON_TIME_LOG, guid);
 		} else {
-			logger.info("[{}] The execution of my job finished with a delay equal to {}! :(", myAgent.getName(),
-					timeDifference);
+			logger.info(CLIENT_JOB_FINISH_DELAY_LOG, guid, timeDifference);
 		}
 	}
 }
