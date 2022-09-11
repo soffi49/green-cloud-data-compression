@@ -1,6 +1,7 @@
 package agents.client.behaviour.listener;
 
 import static agents.client.ClientAgentConstants.MAX_TIME_DIFFERENCE;
+import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;
@@ -11,6 +12,7 @@ import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PRO
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
@@ -35,10 +37,10 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForJobUpdate.class);
 	private static final MessageTemplate messageTemplate = and(
-			or(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
-							or(MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL), MatchProtocol(STARTED_JOB_PROTOCOL))),
-					MatchProtocol(GREEN_POWER_JOB_PROTOCOL)),
-			MatchPerformative(INFORM));
+			or(or(or(or(or(MatchProtocol(FINISH_JOB_PROTOCOL), MatchProtocol(DELAYED_JOB_PROTOCOL)),
+							MatchProtocol(BACK_UP_POWER_JOB_PROTOCOL)), MatchProtocol(STARTED_JOB_PROTOCOL)),
+					MatchProtocol(GREEN_POWER_JOB_PROTOCOL)), MatchProtocol(FAILED_JOB_PROTOCOL)),
+			or(MatchPerformative(INFORM), MatchPerformative(FAILURE)));
 
 	private final ClientAgent myClientAgent;
 
@@ -81,6 +83,11 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 				case GREEN_POWER_JOB_PROTOCOL -> {
 					logger.info("[{}] My job is again being executed using the green power!", myAgent.getName());
 					((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
+				}
+				case FAILED_JOB_PROTOCOL -> {
+					logger.info("[{}] The execution of my job has failed", myClientAgent.getName());
+					myClientAgent.getGuiController().updateClientsCountByValue(-1);
+					myClientAgent.doDelete();
 				}
 			}
 		} else {
