@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import agents.cloudnetwork.behaviour.powershortage.announcer.AnnounceJobTransferRequest;
+import agents.cloudnetwork.behaviour.powershortage.initiator.InitiateJobTransferRequest;
 import mapper.JobMapper;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
@@ -94,7 +94,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 		final ACLMessage cfp = createCallForProposal(jobToTransfer, remainingServers, CNA_JOB_CFP_PROTOCOL);
 
 		displayMessageArrow(myCloudNetworkAgent, remainingServers);
-		myAgent.addBehaviour(new AnnounceJobTransferRequest(myAgent, cfp, originalRequest, newPowerShortageJob,
+		myAgent.addBehaviour(new InitiateJobTransferRequest(myAgent, cfp, originalRequest, newPowerShortageJob,
 				jobToTransfer.getClientIdentifier()));
 	}
 

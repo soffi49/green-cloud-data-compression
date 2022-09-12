@@ -4,11 +4,11 @@ import static yellowpages.domain.DFServiceConstants.CNA_SERVICE_NAME;
 import static yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
-import agents.cloudnetwork.behaviour.ReceiveJobRequests;
+import agents.cloudnetwork.behaviour.jobhandling.listener.ListenForClientsJob;
 import agents.cloudnetwork.behaviour.df.FindServerAgents;
-import agents.cloudnetwork.behaviour.jobstatus.ReturnJobStatusUpdate;
+import agents.cloudnetwork.behaviour.jobhandling.listener.ListenForJobStatusChange;
 import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerJobTransferRequest;
-import agents.cloudnetwork.domain.CloudNetworkStateManagement;
+import agents.cloudnetwork.management.CloudNetworkStateManagement;
 import behaviours.ReceiveGUIController;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
@@ -46,7 +46,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 	private List<Behaviour> prepareBehaviours() {
 		final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
 		parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
-		parallelBehaviour.addSubBehaviour(new ReturnJobStatusUpdate());
+		parallelBehaviour.addSubBehaviour(new ListenForJobStatusChange());
 		parallelBehaviour.addSubBehaviour(new ListenForServerJobTransferRequest());
 		return Collections.singletonList(parallelBehaviour);
 	}
@@ -54,7 +54,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 	private SequentialBehaviour prepareStartingBehaviour() {
 		var startingBehaviour = new SequentialBehaviour(this);
 		startingBehaviour.addSubBehaviour(new FindServerAgents());
-		startingBehaviour.addSubBehaviour(new ReceiveJobRequests());
+		startingBehaviour.addSubBehaviour(new ListenForClientsJob());
 		return startingBehaviour;
 	}
 }

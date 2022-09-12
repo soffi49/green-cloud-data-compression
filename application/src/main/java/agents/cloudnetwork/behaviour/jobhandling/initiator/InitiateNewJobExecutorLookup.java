@@ -1,5 +1,10 @@
-package agents.cloudnetwork.behaviour;
+package agents.cloudnetwork.behaviour.jobhandling.initiator;
 
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.CHOSEN_SERVER_FOR_JOB_LOG;
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.INCORRECT_PROPOSAL_FORMAT_LOG;
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVERS_AVAILABLE_RETRIES_LIMIT_LOG;
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVERS_AVAILABLE_RETRY_LOG;
+import static agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVER_RESPONSES_LOG;
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.RETRY_LIMIT;
 import static agents.cloudnetwork.domain.CloudNetworkAgentConstants.RETRY_PAUSE_MILLISECONDS;
@@ -19,20 +24,21 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import mapper.JobMapper;
+import agents.cloudnetwork.behaviour.jobhandling.handler.HandleJobRequestRetry;
 import domain.ServerData;
 import domain.job.Job;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import mapper.JobMapper;
 import messages.domain.factory.ReplyMessageFactory;
 
 /**
- * Behaviour which is responsible for broadcasting client's job to servers and choosing server to execute the job
+ * Behaviour initiates lookup for server which will execute the client's job
  */
-public class AnnounceNewJobRequest extends ContractNetInitiator {
+public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(AnnounceNewJobRequest.class);
+	private static final Logger logger = LoggerFactory.getLogger(InitiateNewJobExecutorLookup.class);
 
 	private final ACLMessage originalMessage;
 	private final ACLMessage replyMessage;
@@ -47,7 +53,7 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 	 * @param cfp             call for proposal message containing job requriements sent to the servers
 	 * @param originalMessage original message received from the client
 	 */
-	public AnnounceNewJobRequest(final Agent agent, final ACLMessage cfp, final ACLMessage originalMessage,
+	public InitiateNewJobExecutorLookup(final Agent agent, final ACLMessage cfp, final ACLMessage originalMessage,
 			String jobId) {
 		super(agent, cfp);
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
@@ -58,8 +64,8 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 	}
 
 	/**
-	 * Method which waits for all Server Agent responses. It is responsible for analyzing the received proposals,
-	 * choosing the Server Agent for job execution and rejecting the remaining Server Agents.
+	 * Method waits for all Server Agent responses.
+	 * It chooses the Server Agent for job execution and rejects the remaining ones.
 	 *
 	 * @param responses   retrieved responses from Server Agents
 	 * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
@@ -69,37 +75,24 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 		final List<ACLMessage> proposals = retrieveProposals(responses);
 
 		if (responses.isEmpty()) {
-			logger.info("[{}] No responses were retrieved", guid);
+			logger.info(NO_SERVER_RESPONSES_LOG, guid);
 		} else if (proposals.isEmpty()) {
-			var retries = myCloudNetworkAgent.getJobRequestRetries().get(jobId);
-			if (retries >= RETRY_LIMIT) {
-				logger.info("[{}] No Servers available - reached limit of retires - sending refuse message to client",
-						guid);
-				myCloudNetworkAgent.getJobRequestRetries().remove(jobId);
-				myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
-			} else {
-				myCloudNetworkAgent.getJobRequestRetries().put(jobId, ++retries);
-				logger.info("[{}] No Servers available - schedule {} retry to process the message", guid, retries);
-				myAgent.addBehaviour(new ScheduleReceiveJobRequestRetry(myCloudNetworkAgent, RETRY_PAUSE_MILLISECONDS,
-						originalMessage,
-						jobId));
-			}
+			initiateRetryProcess();
 		} else {
 			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, ServerData.class);
 			if (!validProposals.isEmpty()) {
 				final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
 				final ServerData chosenServerData = readMessageContent(chosenServerOffer, ServerData.class);
 				final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
-				logger.info("[{}] Chosen Server for the job {}: {}", guid, jobId,
-						chosenServerOffer.getSender().getName());
-				final ACLMessage serverReplyMessage = chosenServerOffer.createReply();
-				logger.info("[{}] Sending job execution offer to Client", guid);
-				myCloudNetworkAgent.getServerForJobMap()
-						.put(chosenServerData.getJobId(), chosenServerOffer.getSender());
-				myCloudNetworkAgent.addBehaviour(new ProposeJobOffer(myCloudNetworkAgent,
-						makeJobOfferForClient(chosenServerData,
-								myCloudNetworkAgent.manage().getCurrentPowerInUse(),
-								replyMessage), serverReplyMessage));
+
+				logger.info(CHOSEN_SERVER_FOR_JOB_LOG, guid, jobId, chosenServerOffer.getSender().getName());
+
+				final ACLMessage reply = chosenServerOffer.createReply();
+				final ACLMessage offer = makeJobOfferForClient(chosenServerData,
+						myCloudNetworkAgent.manage().getCurrentPowerInUse(), replyMessage);
+
+				myCloudNetworkAgent.getServerForJobMap().put(jobId, chosenServerOffer.getSender());
+				myCloudNetworkAgent.addBehaviour(new InitiateMakingNewJobOffer(myCloudNetworkAgent, offer, reply));
 				rejectJobOffers(myCloudNetworkAgent, JobMapper.mapToJobInstanceId(job), chosenServerOffer, proposals);
 			} else {
 				handleInvalidResponses(proposals);
@@ -108,10 +101,25 @@ public class AnnounceNewJobRequest extends ContractNetInitiator {
 	}
 
 	private void handleInvalidResponses(final List<ACLMessage> proposals) {
-		logger.info("[{}] I didn't understand any proposal from Server Agents", guid);
+		logger.info(INCORRECT_PROPOSAL_FORMAT_LOG, guid);
 		final Job job = myCloudNetworkAgent.manage().getJobById(jobId);
 		rejectJobOffers(myCloudNetworkAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
 		myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
+	}
+
+	private void initiateRetryProcess() {
+		int retries = myCloudNetworkAgent.getJobRequestRetries().get(jobId);
+
+		if (retries >= RETRY_LIMIT) {
+			logger.info(NO_SERVERS_AVAILABLE_RETRIES_LIMIT_LOG, guid);
+			myCloudNetworkAgent.getJobRequestRetries().remove(jobId);
+			myAgent.send(ReplyMessageFactory.prepareRefuseReply(replyMessage));
+		} else {
+			myCloudNetworkAgent.getJobRequestRetries().put(jobId, ++retries);
+			logger.info(NO_SERVERS_AVAILABLE_RETRY_LOG, guid, retries);
+			myAgent.addBehaviour(new HandleJobRequestRetry(myCloudNetworkAgent, RETRY_PAUSE_MILLISECONDS,
+					originalMessage, jobId));
+		}
 	}
 
 	private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {

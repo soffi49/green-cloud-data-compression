@@ -1,7 +1,7 @@
 package agents.cloudnetwork;
 
 import agents.AbstractAgent;
-import agents.cloudnetwork.domain.CloudNetworkStateManagement;
+import agents.cloudnetwork.management.CloudNetworkStateManagement;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
@@ -25,21 +25,6 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
 	AbstractCloudNetworkAgent() {
 		super.setup();
-	}
-
-	/**
-	 * Abstract Cloud Network Agent constructor.
-	 *
-	 * @param networkJobs     list of the jobs together with their statuses
-	 *                        that are being processed in the network
-	 * @param serverForJobMap map storing jobs and corresponding job's executor addresses
-	 * @param ownedServers    list of addresses of the owned servers
-	 */
-	AbstractCloudNetworkAgent(Map<Job, JobStatusEnum> networkJobs, Map<String, AID> serverForJobMap,
-			List<AID> ownedServers) {
-		this.serverForJobMap = serverForJobMap;
-		this.networkJobs = networkJobs;
-		this.ownedServers = ownedServers;
 	}
 
 	/**

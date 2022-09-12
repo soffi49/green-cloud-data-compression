@@ -1,7 +1,7 @@
 package agents.greenenergy.management.logs;
 
 /**
- * Class contains all constants used in logging information in green energy agent's managers\
+ * Class contains all constants used in logging information in green energy agent's managers
  */
 public class GreenEnergyManagementLog {
 

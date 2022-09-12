@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.quality.Strictness.LENIENT;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -24,10 +25,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 
 import agents.AbstractAgent;
 import agents.greenenergy.GreenEnergyAgent;
@@ -39,6 +43,8 @@ import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = LENIENT)
 class GreenEnergyStateManagementUnitTest {
 
 	// MOCK OBJECTS
