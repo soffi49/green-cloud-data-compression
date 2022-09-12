@@ -1,15 +1,18 @@
 package agents.cloudnetwork.behaviour.jobhandling.listener;
 
 import static agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_GREEN_POWER_STATUS_LOG;
+import static agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_JOB_FAILED_STATUS_LOG;
 import static agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_JOB_FINISH_STATUS_LOG;
 import static agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_JOB_START_STATUS_LOG;
 import static agents.cloudnetwork.behaviour.jobhandling.listener.templates.JobHandlingMessageTemplates.JOB_STATUS_CHANGE_TEMPLATE;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
 import static messages.MessagingUtils.readMessageContent;
+import static messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static messages.domain.factory.JobStatusMessageFactory.prepareJobFailureMessageForClient;
 import static messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 
 import java.util.Objects;
@@ -60,6 +63,7 @@ public class ListenForJobStatusChange extends CyclicBehaviour {
 					case FINISH_JOB_PROTOCOL -> handleFinishJobMessage(jobId);
 					case STARTED_JOB_PROTOCOL -> handleStartedJobMessage(jobId);
 					case POWER_SHORTAGE_FINISH_ALERT_PROTOCOL -> handleGreenPowerJobMessage(jobId);
+					case FAILED_JOB_PROTOCOL -> handleFailedJobMessage(jobInstanceId);
 				}
 			}
 		} else {
@@ -96,5 +100,19 @@ public class ListenForJobStatusChange extends CyclicBehaviour {
 		myCloudNetworkAgent.getNetworkJobs().remove(myCloudNetworkAgent.manage().getJobById(jobId));
 		myCloudNetworkAgent.getServerForJobMap().remove(jobId);
 		myCloudNetworkAgent.manage().incrementFinishedJobs(jobId);
+	}
+
+	private void handleFailedJobMessage(final JobInstanceIdentifier jobInstanceId) {
+		logger.info(SEND_JOB_FAILED_STATUS_LOG, guid, jobInstanceId.getJobId());
+		final String clientId = myCloudNetworkAgent
+				.manage()
+				.getJobById(jobInstanceId.getJobId())
+				.getClientIdentifier();
+		myCloudNetworkAgent
+				.getNetworkJobs()
+				.remove(myCloudNetworkAgent.manage().getJobById(jobInstanceId.getJobId()));
+		myCloudNetworkAgent
+				.getServerForJobMap().remove(jobInstanceId.getJobId());
+		myAgent.send(prepareJobFailureMessageForClient(clientId, FAILED_JOB_PROTOCOL));
 	}
 }
