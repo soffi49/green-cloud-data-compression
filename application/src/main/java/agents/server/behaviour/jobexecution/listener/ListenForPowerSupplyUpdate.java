@@ -5,6 +5,7 @@ import static agents.server.behaviour.jobexecution.listener.logs.JobHandlingList
 import static agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_CONFIRMATION_JOB_SCHEDULING_LOG;
 import static agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_FINISHED_MANUALLY_LOG;
 import static agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.POWER_SUPPLY_UPDATE_TEMPLATE;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static messages.MessagingUtils.readMessageContent;
 import static messages.domain.constants.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
@@ -22,6 +23,7 @@ import agents.server.behaviour.jobexecution.handler.HandleJobStart;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
+import exception.IncorrectMessageContentException;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
@@ -70,7 +72,7 @@ public class ListenForPowerSupplyUpdate extends CyclicBehaviour {
 
 	private void handlePowerSupplyManualFinishMessage(final ACLMessage inform) {
 		final Job job = retrieveJobFromMessage(inform);
-		final JobStatusEnum statusEnum = myServerAgent.getServerJobs().getOrDefault(job, null);
+		final JobStatusEnum statusEnum = isNull(job) ? null : myServerAgent.getServerJobs().getOrDefault(job, null);
 
 		if (nonNull(statusEnum) && statusEnum.equals(JobStatusEnum.IN_PROGRESS)) {
 			logger.debug(SUPPLY_FINISHED_MANUALLY_LOG, guid, job.getClientIdentifier(), job.getClientIdentifier());
@@ -107,7 +109,7 @@ public class ListenForPowerSupplyUpdate extends CyclicBehaviour {
 		try {
 			final String jobId = readMessageContent(inform, String.class);
 			return myServerAgent.manage().getJobById(jobId);
-		} catch (Exception e) {
+		} catch (IncorrectMessageContentException e) {
 			final JobInstanceIdentifier identifier = readMessageContent(inform, JobInstanceIdentifier.class);
 			return myServerAgent.manage().getJobByIdAndStartDate(identifier);
 		}

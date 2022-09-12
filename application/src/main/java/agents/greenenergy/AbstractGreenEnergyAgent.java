@@ -1,47 +1,36 @@
 package agents.greenenergy;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import agents.AbstractAgent;
-import agents.greenenergy.domain.EnergyTypeEnum;
-import agents.greenenergy.domain.GreenEnergyStateManagement;
-import agents.greenenergy.domain.GreenPower;
+import agents.greenenergy.domain.GreenEnergySourceTypeEnum;
+import agents.greenenergy.management.GreenEnergyStateManagement;
+import agents.greenenergy.management.GreenPowerManagement;
 import domain.MonitoringData;
-import domain.WeatherData;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import domain.location.Location;
 import jade.core.AID;
-
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Map;
 
 /**
  * Abstract agent class storing data of the Green Source Energy Agent
  */
 public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
-	/**
-	 * greenPower        defines maximum power of the green source and holds algorithms to compute available power
-	 * stateManagement   defines the class holding set of utilities used to manage the state of the green source
-	 * location          geographical location (longitude and latitude) of the green source
-	 * pricePerPowerUnit price for the 1 power unit (1 kWh)
-	 * powerJobs         list of power orders together with their statuses
-	 * monitoringAgent   address of the corresponding monitoring agent
-	 * ownerServer       address of the server which owns the given green source
-	 * energyType        allows to differentiate between SOLAR and WIND energy sources
-	 */
-
-	protected transient GreenPower greenPower;
+	protected transient GreenPowerManagement greenPowerManagement;
 	protected transient GreenEnergyStateManagement stateManagement;
 	protected transient Location location;
+	protected GreenEnergySourceTypeEnum energyType;
 	protected double pricePerPowerUnit;
 	protected transient Map<PowerJob, JobStatusEnum> powerJobs;
 	protected AID monitoringAgent;
 	protected AID ownerServer;
-	protected EnergyTypeEnum energyType;
 
 	AbstractGreenEnergyAgent() {
 		super.setup();
+		this.powerJobs = new ConcurrentHashMap<>();
 	}
 
 	public AID getOwnerServer() {
@@ -56,24 +45,21 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 		this.pricePerPowerUnit = pricePerPowerUnit;
 	}
 
-	public Double getCapacity(WeatherData weather, ZonedDateTime startTime) {
-		return greenPower.getAvailablePower(weather, startTime, location);
-	}
-
 	public Double getCapacity(MonitoringData weather, Instant startTime) {
-		return greenPower.getAvailablePower(weather, startTime, location);
+		final double availablePower = greenPowerManagement.getAvailablePower(weather, startTime);
+		return availablePower > getMaximumCapacity() ? getMaximumCapacity() : availablePower;
 	}
 
 	public int getMaximumCapacity() {
-		return this.greenPower.getCurrentMaximumCapacity();
+		return this.greenPowerManagement.getCurrentMaximumCapacity();
 	}
 
 	public void setMaximumCapacity(int maximumCapacity) {
-		this.greenPower.setCurrentMaximumCapacity(maximumCapacity);
+		this.greenPowerManagement.setCurrentMaximumCapacity(maximumCapacity);
 	}
 
 	public int getInitialMaximumCapacity() {
-		return this.greenPower.getInitialMaximumCapacity();
+		return this.greenPowerManagement.getInitialMaximumCapacity();
 	}
 
 	public Map<PowerJob, JobStatusEnum> getPowerJobs() {
@@ -96,7 +82,11 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 		this.monitoringAgent = monitoringAgent;
 	}
 
-	public EnergyTypeEnum getEnergyType() {
+	public void setGreenPowerManagement(GreenPowerManagement greenPowerManagement) {
+		this.greenPowerManagement = greenPowerManagement;
+	}
+
+	public GreenEnergySourceTypeEnum getEnergyType() {
 		return energyType;
 	}
 

@@ -26,7 +26,7 @@ import weather.domain.AbstractWeather;
 import weather.domain.FutureWeather;
 
 /**
- * Class stores all methods used in weather management
+ * Set of methods used in weather management
  */
 public class MonitoringWeatherManagement {
 

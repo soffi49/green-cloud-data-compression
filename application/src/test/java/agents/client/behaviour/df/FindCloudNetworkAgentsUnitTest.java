@@ -1,6 +1,6 @@
 package agents.client.behaviour.df;
 
-import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
 import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -19,7 +19,6 @@ import com.gui.controller.GUIController;
 
 import agents.client.ClientAgent;
 import jade.core.AID;
-import jade.core.behaviours.CompositeBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import yellowpages.YellowPagesService;
 

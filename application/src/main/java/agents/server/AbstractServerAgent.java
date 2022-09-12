@@ -4,7 +4,7 @@ import static agents.server.domain.ServerAgentConstants.JOB_PROCESSING_LIMIT;
 import static mapper.JsonMapper.getMapper;
 
 import agents.AbstractAgent;
-import agents.server.domain.ServerStateManagement;
+import agents.server.management.ServerStateManagement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -28,10 +28,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class AbstractServerAgent extends AbstractAgent {
 
-	protected int initialMaximumCapacity;
 	protected transient ServerStateManagement stateManagement;
-	protected double pricePerHour;
+	protected int initialMaximumCapacity;
 	protected int currentMaximumCapacity;
+	protected double pricePerHour;
 	protected volatile AtomicLong currentlyProcessing;
 	protected volatile ConcurrentMap<Job, JobStatusEnum> serverJobs;
 	protected Map<String, AID> greenSourceForJobMap;

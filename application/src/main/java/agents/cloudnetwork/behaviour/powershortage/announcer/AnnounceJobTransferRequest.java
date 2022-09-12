@@ -10,8 +10,8 @@ import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
 import static messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 
@@ -128,7 +128,6 @@ public class AnnounceJobTransferRequest extends ContractNetInitiator {
 	private void respondWithFailureMessage() {
 		final ACLMessage response = prepareReply(serverRequest.createReply(), NO_SERVER_AVAILABLE_CAUSE_MESSAGE,
 				ACLMessage.FAILURE);
-		displayMessageArrow(myCloudNetworkAgent, jobClient);
 		myCloudNetworkAgent.send(response);
 	}
 

@@ -8,7 +8,7 @@ import static messages.MessagingUtils.readMessageContent;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
-import static messages.domain.factory.JobOfferMessageFactory.makeJobOfferForClient;
+import static messages.domain.factory.OfferMessageFactory.makeJobOfferForClient;
 
 import java.util.List;
 import java.util.Vector;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import agents.cloudnetwork.CloudNetworkAgent;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.ServerData;
 import domain.job.Job;
 import jade.core.Agent;

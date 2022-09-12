@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import agents.server.ServerAgent;
 import agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import agents.server.behaviour.powershortage.initiator.InitiateJobTransferInCloudNetwork;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.Job;
 import domain.powershortage.PowerShortageJob;
 import jade.core.AID;

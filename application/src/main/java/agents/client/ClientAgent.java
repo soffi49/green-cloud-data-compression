@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import agents.client.behaviour.RequestJobExecution;
 import agents.client.behaviour.df.FindCloudNetworkAgents;
 import agents.client.behaviour.listener.ListenForJobUpdate;
-import common.behaviours.ReceiveGUIController;
+import behaviours.ReceiveGUIController;
 import domain.job.ImmutableJob;
 import domain.job.Job;
 import exception.IncorrectTaskDateException;
@@ -59,9 +59,6 @@ public class ClientAgent extends AbstractClientAgent {
 	@Override
 	protected void takeDown() {
 		logger.info("I'm finished. Bye!");
-		if (Objects.nonNull(getGuiController())) {
-			getGuiController().removeAgentNodeFromGraph(getAgentNode());
-		}
 		super.takeDown();
 	}
 

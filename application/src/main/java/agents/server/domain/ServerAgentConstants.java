@@ -5,6 +5,6 @@ package agents.server.domain;
  */
 public class ServerAgentConstants {
     public static final long JOB_PROCESSING_LIMIT = 5;
-    public static final long ENVIRONMENT_SENSOR_TIMEOUT = 100;
+    public static final long SERVER_ENVIRONMENT_SENSOR_TIMEOUT = 100;
 }
 

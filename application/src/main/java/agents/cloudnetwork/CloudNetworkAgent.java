@@ -1,7 +1,7 @@
 package agents.cloudnetwork;
 
-import static common.constant.DFServiceConstants.CNA_SERVICE_NAME;
-import static common.constant.DFServiceConstants.CNA_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.CNA_SERVICE_NAME;
+import static yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 
 import agents.cloudnetwork.behaviour.ReceiveJobRequests;
@@ -9,7 +9,7 @@ import agents.cloudnetwork.behaviour.df.FindServerAgents;
 import agents.cloudnetwork.behaviour.jobstatus.ReturnJobStatusUpdate;
 import agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerJobTransferRequest;
 import agents.cloudnetwork.domain.CloudNetworkStateManagement;
-import common.behaviours.ReceiveGUIController;
+import behaviours.ReceiveGUIController;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
@@ -35,7 +35,6 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected void takeDown() {
-		getGuiController().removeAgentNodeFromGraph(getAgentNode());
 		super.takeDown();
 	}
 

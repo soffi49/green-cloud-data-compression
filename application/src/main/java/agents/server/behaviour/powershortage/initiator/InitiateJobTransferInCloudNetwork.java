@@ -15,7 +15,7 @@ import static domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static messages.domain.factory.JobStatusMessageFactory.prepareFinishMessage;
 import static messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;

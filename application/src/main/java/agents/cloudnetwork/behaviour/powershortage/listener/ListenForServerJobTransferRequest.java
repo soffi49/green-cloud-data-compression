@@ -6,9 +6,9 @@ import static agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerSho
 import static agents.cloudnetwork.behaviour.powershortage.listener.templates.PowerShortageCloudMessageTemplates.SERVER_JOB_TRANSFER_REQUEST_TEMPLATE;
 import static messages.MessagingUtils.readMessageContent;
 import static messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
-import static messages.domain.constants.powershortage.PowerShortageMessageContentConstants.TRANSFER_PROCESSING_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
+import static messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_PROCESSING_MESSAGE;
 import static messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
 import static messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static messages.domain.factory.ReplyMessageFactory.prepareStringReply;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.behaviour.powershortage.announcer.AnnounceJobTransferRequest;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.powershortage.PowerShortageJob;

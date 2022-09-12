@@ -1,8 +1,8 @@
 package agents.server;
 
-import static common.constant.DFServiceConstants.GS_SERVICE_TYPE;
-import static common.constant.DFServiceConstants.SA_SERVICE_NAME;
-import static common.constant.DFServiceConstants.SA_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.GS_SERVICE_TYPE;
+import static yellowpages.domain.DFServiceConstants.SA_SERVICE_NAME;
+import static yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
 import static yellowpages.YellowPagesService.register;
 import static yellowpages.YellowPagesService.search;
 
@@ -18,8 +18,8 @@ import agents.server.behaviour.jobexecution.listener.ListenForPowerSupplyUpdate;
 import agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferRequest;
 import agents.server.behaviour.powershortage.listener.ListenForSourcePowerShortageFinish;
 import agents.server.behaviour.sensor.SenseServerEvent;
-import agents.server.domain.ServerStateManagement;
-import common.behaviours.ReceiveGUIController;
+import agents.server.management.ServerStateManagement;
+import behaviours.ReceiveGUIController;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 
@@ -46,9 +46,6 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	protected void takeDown() {
 		logger.info("I'm finished. Bye!");
-		if (GUI_ENABLED) {
-			getGuiController().removeAgentNodeFromGraph(getAgentNode());
-		}
 		super.takeDown();
 	}
 

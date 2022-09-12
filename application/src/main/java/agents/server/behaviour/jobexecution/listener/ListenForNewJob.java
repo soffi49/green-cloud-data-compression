@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import agents.server.ServerAgent;
 import agents.server.behaviour.jobexecution.initiator.InitiatePowerDeliveryForJob;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.behaviours.CyclicBehaviour;

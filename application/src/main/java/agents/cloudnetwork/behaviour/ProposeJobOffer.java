@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import agents.cloudnetwork.CloudNetworkAgent;
 import agents.cloudnetwork.behaviour.jobstatus.ReturnJobDelay;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
 import jade.core.Agent;

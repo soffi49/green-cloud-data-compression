@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gui.agents.ClientAgentNode;
 import com.gui.agents.domain.JobStatusEnum;
 
-import common.constant.InvalidJobIdConstant;
+import messages.domain.constants.MessageContentConstants;
 import domain.job.Job;
 import domain.job.PricedJob;
 import jade.core.AID;
@@ -112,7 +112,7 @@ public class RequestJobExecution extends ContractNetInitiator {
 			List<ACLMessage> validProposals = proposals.stream().filter(isValidProposal).toList();
 
 			if (validProposals.isEmpty()) {
-				rejectJobOffers(myClientAgent, InvalidJobIdConstant.INVALID_JOB_ID, null, proposals);
+				rejectJobOffers(myClientAgent, MessageContentConstants.INVALID_JOB_ID_MESSAGE, null, proposals);
 				logger.info("[{}] I didn't understand any proposal from Cloud Network Agents", guid);
 				myClientAgent.getGuiController().updateClientsCountByValue(-1);
 				((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.REJECTED);

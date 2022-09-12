@@ -4,8 +4,8 @@ import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerSho
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_FINISH_NO_JOBS_LOG;
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_JOB_ENDED_LOG;
 import static agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_VERIFY_POWER_LOG;
-import static utils.TimeUtils.getCurrentTime;
 import static messages.domain.constants.MessageProtocolConstants.ON_HOLD_JOB_CHECK_PROTOCOL;
+import static utils.TimeUtils.getCurrentTime;
 
 import java.util.List;
 import java.util.Map;
@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import agents.greenenergy.GreenEnergyAgent;
-import agents.greenenergy.behaviour.powercheck.ReceiveForecastData;
-import agents.greenenergy.behaviour.powercheck.RequestForecastData;
+import agents.greenenergy.behaviour.weathercheck.listener.ListenForWeatherData;
+import agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData;
 import domain.job.JobStatusEnum;
 import domain.job.PowerJob;
 import jade.core.behaviours.Behaviour;
@@ -73,10 +73,9 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 
 		final SequentialBehaviour sequentialBehaviour = new SequentialBehaviour();
 		sequentialBehaviour.addSubBehaviour(
-				new RequestForecastData(myGreenAgent, conversationId, ON_HOLD_JOB_CHECK_PROTOCOL,
-						affectedJob));
+				new RequestWeatherData(myGreenAgent, conversationId, ON_HOLD_JOB_CHECK_PROTOCOL, affectedJob));
 		sequentialBehaviour.addSubBehaviour(
-				new ReceiveForecastData(myGreenAgent, affectedJob, ON_HOLD_JOB_CHECK_PROTOCOL, conversationId,
+				new ListenForWeatherData(myGreenAgent, affectedJob, ON_HOLD_JOB_CHECK_PROTOCOL, conversationId,
 						sequentialBehaviour));
 		return sequentialBehaviour;
 	}

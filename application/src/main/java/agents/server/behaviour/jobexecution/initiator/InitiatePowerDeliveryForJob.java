@@ -8,7 +8,7 @@ import static messages.MessagingUtils.readMessageContent;
 import static messages.MessagingUtils.rejectJobOffers;
 import static messages.MessagingUtils.retrieveProposals;
 import static messages.MessagingUtils.retrieveValidMessages;
-import static messages.domain.factory.JobOfferMessageFactory.makeServerJobOffer;
+import static messages.domain.factory.OfferMessageFactory.makeServerJobOffer;
 import static messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import agents.server.ServerAgent;
-import common.mapper.JobMapper;
+import mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobStatusEnum;
@@ -70,14 +70,14 @@ public class InitiatePowerDeliveryForJob extends ContractNetInitiator {
 		myServerAgent.stoppedJobProcessing();
 		if (responses.isEmpty()) {
 			logger.info(NEW_JOB_LOOK_FOR_GS_NO_RESPONSE_LOG, guid);
-			refuseToExecuteJob();
+			refuseToExecuteJob(proposals);
 		} else if (proposals.isEmpty()) {
 			logger.info(NEW_JOB_LOOK_FOR_GS_NO_SOURCES_AVAILABLE_LOG, guid);
-			refuseToExecuteJob();
+			refuseToExecuteJob(proposals);
 		} else if (myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null)
 				<= job.getPower()) {
 			logger.info(NEW_JOB_LOOK_FOR_GS_NO_POWER_AVAILABLE_LOG, guid);
-			refuseToExecuteJob();
+			refuseToExecuteJob(proposals);
 		} else {
 			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
 			final boolean isJobStillProcessed = myServerAgent.getServerJobs()
@@ -111,11 +111,12 @@ public class InitiatePowerDeliveryForJob extends ContractNetInitiator {
 
 	private void handleInvalidProposals(final List<ACLMessage> proposals) {
 		rejectJobOffers(myServerAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
-		refuseToExecuteJob();
+		refuseToExecuteJob(proposals);
 	}
 
-	private void refuseToExecuteJob() {
+	private void refuseToExecuteJob(final List<ACLMessage> proposals) {
 		myServerAgent.getServerJobs().remove(job);
 		myAgent.send(prepareRefuseReply(replyMessage));
+		rejectJobOffers(myServerAgent, JobMapper.mapToJobInstanceId(job), null, proposals);
 	}
 }
