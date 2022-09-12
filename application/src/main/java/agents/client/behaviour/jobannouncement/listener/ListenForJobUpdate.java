@@ -2,6 +2,7 @@ package agents.client.behaviour.jobannouncement.listener;
 
 import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_BACK_UP_LOG;
 import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_DELAY_LOG;
+import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_FAILED_LOG;
 import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_FINISH_DELAY_LOG;
 import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_FINISH_ON_TIME_LOG;
 import static agents.client.behaviour.jobannouncement.listener.logs.JobAnnouncementListenerLog.CLIENT_JOB_GREEN_POWER_LOG;
@@ -11,10 +12,10 @@ import static agents.client.behaviour.jobannouncement.listener.templates.JobAnno
 import static agents.client.domain.ClientAgentConstants.MAX_TIME_DIFFERENCE;
 import static messages.domain.constants.MessageProtocolConstants.BACK_UP_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
-import static messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
@@ -84,7 +85,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 					((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
 				}
 				case FAILED_JOB_PROTOCOL -> {
-					logger.info("[{}] The execution of my job has failed", myClientAgent.getName());
+					logger.info(CLIENT_JOB_FAILED_LOG, myClientAgent.getName());
 					myClientAgent.getGuiController().updateClientsCountByValue(-1);
 					myClientAgent.doDelete();
 				}
