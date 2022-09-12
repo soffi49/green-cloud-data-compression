@@ -14,6 +14,7 @@ import static messages.domain.constants.MessageProtocolConstants.DELAYED_JOB_PRO
 import static messages.domain.constants.MessageProtocolConstants.FINISH_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.GREEN_POWER_JOB_PROTOCOL;
 import static messages.domain.constants.MessageProtocolConstants.STARTED_JOB_PROTOCOL;
+import static messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
@@ -81,6 +82,11 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 				case GREEN_POWER_JOB_PROTOCOL -> {
 					logger.info(CLIENT_JOB_GREEN_POWER_LOG, guid);
 					((ClientAgentNode) myClientAgent.getAgentNode()).updateJobStatus(JobStatusEnum.IN_PROGRESS);
+				}
+				case FAILED_JOB_PROTOCOL -> {
+					logger.info("[{}] The execution of my job has failed", myClientAgent.getName());
+					myClientAgent.getGuiController().updateClientsCountByValue(-1);
+					myClientAgent.doDelete();
 				}
 			}
 		} else {

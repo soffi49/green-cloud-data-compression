@@ -55,14 +55,23 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 	 */
 	@Override
 	protected void handleAcceptProposal(final ACLMessage accept_proposal) {
-		logger.info(SERVER_OFFER_ACCEPT_PROPOSAL_GS_LOG, guid);
 		final JobWithProtocol jobWithProtocol = readMessageContent(accept_proposal, JobWithProtocol.class);
 		final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
-		myServerAgent.getServerJobs()
-				.replace(myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId), JobStatusEnum.ACCEPTED);
+		final Job jobInstance = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+		final Integer availableCapacity = myServerAgent.manage().getAvailableCapacity(jobInstance.getStartTime(), jobInstance.getEndTime(), null, null);
+		if (jobInstance.getPower() > availableCapacity){
+			myServerAgent.getServerJobs().remove(jobInstance);
+			myServerAgent.getGreenSourceForJobMap().remove(jobInstanceId.getJobId());
+			myServerAgent.send(ReplyMessageFactory.prepareReply(replyMessage, jobInstanceId, REJECT_PROPOSAL));
+			myServerAgent.send(ReplyMessageFactory.prepareFailureReply(accept_proposal.createReply(), jobInstanceId));
+		}
+		else{
+			logger.info(SERVER_OFFER_ACCEPT_PROPOSAL_GS_LOG, guid);
+			myServerAgent.getServerJobs().replace(jobInstance, JobStatusEnum.ACCEPTED);
+			myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
+		}
 		myServerAgent.manage().updateClientNumberGUI();
 		displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
-		myAgent.send(prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
 	}
 
 	/**
