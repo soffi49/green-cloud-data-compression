@@ -11,9 +11,9 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import agents.client.behaviour.RequestJobExecution;
+import agents.client.behaviour.jobannouncement.initiator.InitiateNewJobAnnouncement;
 import agents.client.behaviour.df.FindCloudNetworkAgents;
-import agents.client.behaviour.listener.ListenForJobUpdate;
+import agents.client.behaviour.jobannouncement.listener.ListenForJobUpdate;
 import behaviours.ReceiveGUIController;
 import domain.job.ImmutableJob;
 import domain.job.Job;
@@ -109,7 +109,7 @@ public class ClientAgent extends AbstractClientAgent {
 	private List<Behaviour> prepareStartingBehaviour(final Job job) {
 		var startingBehaviour = new SequentialBehaviour(this);
 		startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
-		startingBehaviour.addSubBehaviour(new RequestJobExecution(this, null, job));
+		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this, null, job));
 		return List.of(
 				new ListenForJobUpdate(this),
 				startingBehaviour

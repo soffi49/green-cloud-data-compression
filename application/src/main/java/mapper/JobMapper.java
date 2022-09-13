@@ -2,8 +2,6 @@ package mapper;
 
 import java.time.Instant;
 
-import domain.job.CheckedPowerJob;
-import domain.job.ImmutableCheckedPowerJob;
 import domain.job.ImmutableJob;
 import domain.job.ImmutableJobInstanceIdentifier;
 import domain.job.ImmutablePowerJob;
@@ -97,6 +95,22 @@ public class JobMapper {
 				.jobId(powerJob.getJobId())
 				.power(powerJob.getPower())
 				.startTime(powerJob.getStartTime())
+				.endTime(endTime)
+				.build();
+	}
+
+	/**
+	 * @param job       job to be mapped to job
+	 * @param endTime   new job end time
+	 * @param startTime new job start time
+	 * @return PowerJob
+	 */
+	public static Job mapToJobWithNewTime(final Job job, final Instant startTime, final Instant endTime) {
+		return ImmutableJob.builder()
+				.jobId(job.getJobId())
+				.clientIdentifier(job.getClientIdentifier())
+				.power(job.getPower())
+				.startTime(startTime)
 				.endTime(endTime)
 				.build();
 	}

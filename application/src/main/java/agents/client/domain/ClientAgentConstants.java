@@ -1,4 +1,4 @@
-package agents.client;
+package agents.client.domain;
 
 import java.time.temporal.ValueRange;
 

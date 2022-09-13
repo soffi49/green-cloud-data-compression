@@ -1,5 +1,6 @@
 package agents.server.management;
 
+import static agents.server.domain.ServerPowerSourceType.ALL;
 import static agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
 import static domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static domain.job.JobStatusEnum.IN_PROGRESS;
@@ -31,13 +32,13 @@ import agents.server.ServerAgent;
 import agents.server.behaviour.jobexecution.handler.HandleJobFinish;
 import agents.server.behaviour.jobexecution.handler.HandleJobStart;
 import agents.server.domain.ServerPowerSourceType;
-import mapper.JobMapper;
 import domain.GreenSourceData;
 import domain.job.Job;
 import domain.job.JobInstanceIdentifier;
 import domain.job.JobStatusEnum;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
+import mapper.JobMapper;
 
 /**
  * Set of utilities used to manage the internal state of the server agent
@@ -72,10 +73,12 @@ public class ServerStateManagement {
 	 */
 	public synchronized int getAvailableCapacity(final Instant startDate, final Instant endDate,
 			final JobInstanceIdentifier jobToExclude, final ServerPowerSourceType powerSourceType) {
+		final Set<JobStatusEnum> statuses = Objects.isNull(powerSourceType) ?
+				ALL.getJobStatuses() :
+				powerSourceType.getJobStatuses();
 		final Set<Job> jobsOfInterest = serverAgent.getServerJobs().keySet().stream()
 				.filter(job -> Objects.isNull(jobToExclude) || !JobMapper.mapToJobInstanceId(job).equals(jobToExclude))
-				.filter(job -> Objects.isNull(powerSourceType) ||
-						powerSourceType.getJobStatuses().contains(serverAgent.getServerJobs().get(job)))
+				.filter(job -> statuses.contains(serverAgent.getServerJobs().get(job)))
 				.collect(Collectors.toSet());
 		final int maxUsedPower =
 				getMaximumUsedPowerDuringTimeStamp(jobsOfInterest, startDate, endDate);

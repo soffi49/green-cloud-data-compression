@@ -21,25 +21,6 @@ public abstract class AbstractClientAgent extends AbstractAgent {
 		retries = 0;
 	}
 
-	/**
-	 * Abstract Client Agent constructor.
-	 *
-	 * @param chosenCloudNetworkAgent Cloud Network Agent that was chosen for the job execution
-	 * @param simulatedJobStart       time when the job execution should start in the simulation
-	 * @param simulatedJobEnd         time when the job execution should end in the simulation
-	 */
-	AbstractClientAgent(AID chosenCloudNetworkAgent,
-			Instant simulatedJobStart,
-			Instant simulatedJobEnd) {
-		this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
-		this.simulatedJobStart = simulatedJobStart;
-		this.simulatedJobEnd = simulatedJobEnd;
-	}
-
-	public AID getChosenCloudNetworkAgent() {
-		return chosenCloudNetworkAgent;
-	}
-
 	public void setChosenCloudNetworkAgent(AID chosenCloudNetworkAgent) {
 		this.chosenCloudNetworkAgent = chosenCloudNetworkAgent;
 	}
