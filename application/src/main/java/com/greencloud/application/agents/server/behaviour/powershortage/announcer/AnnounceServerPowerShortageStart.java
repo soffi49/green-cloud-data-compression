@@ -1,0 +1,119 @@
+package com.greencloud.application.agents.server.behaviour.powershortage.announcer;
+
+import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_DETECTED_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_NO_IMPACT_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_TRANSFER_REQUEST_LOG;
+import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
+import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInCloudNetwork;
+import com.greencloud.application.domain.job.Job;
+import com.greencloud.application.domain.job.JobStatusEnum;
+import com.greencloud.application.domain.powershortage.PowerShortageJob;
+import com.greencloud.application.mapper.JobMapper;
+import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
+import com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory;
+import com.greencloud.application.utils.AlgorithmUtils;
+
+import jade.core.AID;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import jade.lang.acl.ACLMessage;
+
+/**
+ * Behaviour sends the information to the Cloud Network Agent (CNA) that the power shortage has occurred
+ */
+public class AnnounceServerPowerShortageStart extends OneShotBehaviour {
+
+	private static final Logger logger = LoggerFactory.getLogger(AnnounceServerPowerShortageStart.class);
+
+	private final ServerAgent myServerAgent;
+	private final String guid;
+	private final Instant powerShortageStartTime;
+	private final int recalculatedAvailablePower;
+
+	/**
+	 * Behaviour constructor
+	 *
+	 * @param myAgent                    agent executing the behaviour
+	 * @param powerShortageStartTime     start time when the power shortage will begin
+	 * @param recalculatedAvailablePower maximum power available during the power shortage
+	 */
+	public AnnounceServerPowerShortageStart(final ServerAgent myAgent, final Instant powerShortageStartTime,
+			final int recalculatedAvailablePower) {
+		super(myAgent);
+		this.powerShortageStartTime = powerShortageStartTime;
+		this.recalculatedAvailablePower = recalculatedAvailablePower;
+		this.myServerAgent = myAgent;
+		this.guid = myAgent.getName();
+	}
+
+	/**
+	 * Method is responsible for announcing to the cloud network that there will be some power shortage
+	 * which cannot be handled by the server itself
+	 */
+	@Override
+	public void action() {
+		logger.info(POWER_SHORTAGE_START_DETECTED_LOG, guid, powerShortageStartTime);
+		final List<Job> affectedJobs = getAffectedPowerJobs();
+
+		if (affectedJobs.isEmpty()) {
+			logger.info(POWER_SHORTAGE_START_NO_IMPACT_LOG, guid);
+			myServerAgent.addBehaviour(
+					HandleServerPowerShortage.createFor(Collections.emptyList(), powerShortageStartTime, myServerAgent,
+							recalculatedAvailablePower));
+		} else {
+			final List<Job> jobsToKeep = AlgorithmUtils.findJobsWithinPower(affectedJobs, recalculatedAvailablePower, Job.class);
+			final List<Job> jobsToTransfer = affectedJobs.stream().filter(job -> !jobsToKeep.contains(job)).toList();
+
+			jobsToTransfer.forEach(job -> {
+				logger.info(POWER_SHORTAGE_START_TRANSFER_REQUEST_LOG, guid, job.getJobId());
+				final Job jobToTransfer = myServerAgent.manage().divideJobForPowerShortage(job, powerShortageStartTime);
+				final PowerShortageJob originalJobForShortage = JobMapper.mapToPowerShortageJob(job,
+						powerShortageStartTime);
+				final PowerShortageJob jobTransferForShortage = JobMapper.mapToPowerShortageJob(jobToTransfer,
+						powerShortageStartTime);
+
+				requestJobTransferInCloudNetwork(originalJobForShortage, jobTransferForShortage);
+				informGreenSourceAboutPowerShortage(originalJobForShortage);
+			});
+			myServerAgent.addBehaviour(
+					HandleServerPowerShortage.createFor(jobsToTransfer, powerShortageStartTime, myServerAgent,
+							recalculatedAvailablePower));
+		}
+	}
+
+	private void requestJobTransferInCloudNetwork(final PowerShortageJob originalJob,
+			final PowerShortageJob jobToTransfer) {
+		final AID cloudNetwork = myServerAgent.getOwnerCloudNetworkAgent();
+		final ACLMessage transferMessage = PowerShortageMessageFactory.preparePowerShortageTransferRequest(originalJob, cloudNetwork);
+		final Behaviour transferRequest = new InitiateJobTransferInCloudNetwork(myServerAgent, transferMessage, null,
+				jobToTransfer);
+
+		displayMessageArrow(myServerAgent, cloudNetwork);
+		myServerAgent.addBehaviour(transferRequest);
+	}
+
+	private void informGreenSourceAboutPowerShortage(final PowerShortageJob originalJob) {
+		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(originalJob.getJobInstanceId().getJobId());
+		final ACLMessage powerShortageInformation = PowerShortageMessageFactory.prepareJobPowerShortageInformation(originalJob, greenSource,
+				MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL);
+
+		displayMessageArrow(myServerAgent, greenSource);
+		myServerAgent.send(powerShortageInformation);
+	}
+
+	private List<Job> getAffectedPowerJobs() {
+		return myServerAgent.getServerJobs().keySet().stream()
+				.filter(job -> powerShortageStartTime.isBefore(job.getEndTime()) && JobStatusEnum.ACTIVE_JOB_STATUSES.contains(
+						myServerAgent.getServerJobs().get(job))).toList();
+	}
+}

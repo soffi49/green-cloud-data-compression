@@ -8,14 +8,6 @@ import static runner.service.domain.ScenarioConstants.RESOURCE_SCENARIO_PATH;
 import static runner.service.domain.ScenarioConstants.START_TIME_MAX;
 import static runner.service.domain.ScenarioConstants.START_TIME_MIN;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.gui.controller.GUIControllerImpl;
-import com.gui.agents.AbstractAgentNode;
-
-import jade.wrapper.AgentController;
-import jade.wrapper.ContainerController;
-import jade.wrapper.StaleProxyException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +20,13 @@ import java.util.stream.LongStream;
 
 import org.apache.commons.io.FileUtils;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.gui.agents.AbstractAgentNode;
+import com.gui.controller.GUIControllerImpl;
+
+import jade.wrapper.AgentController;
+import jade.wrapper.ContainerController;
+import jade.wrapper.StaleProxyException;
 import runner.domain.AgentArgs;
 import runner.domain.ClientAgentArgs;
 import runner.domain.ImmutableClientAgentArgs;
@@ -51,7 +50,7 @@ public class ScenarioService implements Runnable {
 	/**
 	 * Service constructor
 	 *
-	 * @param containerController container controller in which agents' controllers are to be created
+	 * @param containerController container controller in which com.greencloud.application.agents' controllers are to be created
 	 */
 	public ScenarioService(ContainerController containerController, GUIControllerImpl guiController, String fileName) {
 		this.factory = new AgentControllerFactoryImpl(containerController);
