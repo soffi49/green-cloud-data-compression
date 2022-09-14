@@ -1,5 +1,8 @@
 package com.greencloud.application.agents.server;
 
+import static com.greencloud.application.agents.server.domain.ServerAgentConstants.JOB_PROCESSING_LIMIT;
+import static com.greencloud.application.mapper.JsonMapper.getMapper;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,12 +14,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.AbstractAgent;
-import com.greencloud.application.agents.server.domain.ServerAgentConstants;
 import com.greencloud.application.agents.server.management.ServerStateManagement;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobStatusEnum;
-import com.greencloud.application.mapper.JsonMapper;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -57,7 +58,7 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 				Comparator.comparingDouble(
 						greenSource -> {
 							try {
-								return JsonMapper.getMapper()
+								return getMapper()
 										.readValue(greenSource.getContent(), GreenSourceData.class)
 										.getAvailablePowerInTime();
 							} catch (final JsonProcessingException e) {
@@ -112,6 +113,6 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	}
 
 	public boolean canTakeIntoProcessing() {
-		return currentlyProcessing.get() < ServerAgentConstants.JOB_PROCESSING_LIMIT;
+		return currentlyProcessing.get() < JOB_PROCESSING_LIMIT;
 	}
 }

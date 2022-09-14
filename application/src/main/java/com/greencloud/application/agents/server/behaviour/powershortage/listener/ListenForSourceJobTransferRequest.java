@@ -1,5 +1,9 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.listener;
 
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
 
 import java.time.Instant;
@@ -9,12 +13,12 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInCloudNetwork;
 import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInGreenSources;
-import com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog;
 import com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.PowerJob;
@@ -38,7 +42,6 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForSourceJobTransferRequest.class);
 	private ServerAgent myServerAgent;
-	private String guid;
 
 	/**
 	 * Method casts the abstract agent to agent of type Server Agent
@@ -47,7 +50,6 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 	public void onStart() {
 		super.onStart();
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -70,20 +72,22 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 				if (Objects.nonNull(originalJob)) {
 					final PowerJob powerJob = createJobTransferInstance(affectedJob, originalJob);
 					final List<AID> remainingGreenSources = getRemainingGreenSources(transferRequest.getSender());
-					myAgent.send(ReplyMessageFactory.prepareReply(transferRequest.createReply(), PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE,
-							ACLMessage.AGREE));
+					myAgent.send(ReplyMessageFactory.prepareReply(transferRequest.createReply(),
+							TRANSFER_SUCCESSFUL_MESSAGE, ACLMessage.AGREE));
 
+					MDC.put(MDC_JOB_ID, powerJob.getJobId());
 					if (!remainingGreenSources.isEmpty()) {
-						logger.info(PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG, myAgent.getName(), powerJob.getJobId());
+						logger.info(GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG, powerJob.getJobId());
 						askForTransferInRemainingGS(remainingGreenSources, powerJob,
 								affectedJob.getPowerShortageStart(), transferRequest);
 					} else {
-						logger.info(PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG, guid);
+						logger.info(GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG);
 						passTransferRequestToCNA(affectedJob, powerJob, transferRequest);
 					}
 					schedulePowerShortageHandling(affectedJob, transferRequest);
 				} else {
-					myAgent.send(ReplyMessageFactory.prepareReply(transferRequest.createReply(), PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE,
+					myAgent.send(ReplyMessageFactory.prepareReply(transferRequest.createReply(),
+							PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE,
 							ACLMessage.REFUSE));
 				}
 			}
@@ -114,7 +118,8 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 		final PowerShortageJob jobToTransfer = JobMapper.mapToPowerShortageJob(powerJob,
 				affectedJob.getPowerShortageStart());
 		final AID cloudNetwork = myServerAgent.getOwnerCloudNetworkAgent();
-		final ACLMessage transferMessage = PowerShortageMessageFactory.preparePowerShortageTransferRequest(affectedJob, cloudNetwork);
+		final ACLMessage transferMessage = PowerShortageMessageFactory.preparePowerShortageTransferRequest(affectedJob,
+				cloudNetwork);
 
 		displayMessageArrow(myServerAgent, cloudNetwork);
 		myServerAgent.addBehaviour(

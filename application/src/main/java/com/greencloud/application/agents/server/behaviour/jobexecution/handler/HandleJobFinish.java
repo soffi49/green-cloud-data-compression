@@ -1,6 +1,9 @@
 package com.greencloud.application.agents.server.behaviour.jobexecution.handler;
 
 import static com.greencloud.application.agents.server.behaviour.jobexecution.handler.logs.JobHandlingHandlerLog.JOB_FINISH_LOG;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
 import java.util.Date;
@@ -8,11 +11,10 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.Job;
-import com.greencloud.application.domain.job.JobStatusEnum;
-import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -26,7 +28,6 @@ public class HandleJobFinish extends WakerBehaviour {
 
 	private final Job jobToExecute;
 	private final ServerAgent myServerAgent;
-	private final String guid;
 	private final boolean informCNA;
 
 	/**
@@ -42,7 +43,6 @@ public class HandleJobFinish extends WakerBehaviour {
 		this.jobToExecute = job;
 		this.myServerAgent = (ServerAgent) agent;
 		this.informCNA = informCNA;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -55,8 +55,8 @@ public class HandleJobFinish extends WakerBehaviour {
 	 */
 	public static HandleJobFinish createFor(final ServerAgent serverAgent, final Job jobToFinish,
 			final boolean informCNA) {
-		final Instant endTime = TimeUtils.getCurrentTime().isAfter(jobToFinish.getEndTime()) ?
-				TimeUtils.getCurrentTime() :
+		final Instant endTime = getCurrentTime().isAfter(jobToFinish.getEndTime()) ?
+				getCurrentTime() :
 				jobToFinish.getEndTime();
 		return new HandleJobFinish(serverAgent, Date.from(endTime), jobToFinish, informCNA);
 	}
@@ -68,9 +68,10 @@ public class HandleJobFinish extends WakerBehaviour {
 	 */
 	@Override
 	protected void onWake() {
-		if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && JobStatusEnum.ACCEPTED_JOB_STATUSES.contains(
+		MDC.put(MDC_JOB_ID, jobToExecute.getJobId());
+		if (Objects.nonNull(myServerAgent.getServerJobs().get(jobToExecute)) && ACCEPTED_JOB_STATUSES.contains(
 				myServerAgent.getServerJobs().get(jobToExecute))) {
-			logger.info(JOB_FINISH_LOG, guid, jobToExecute.getJobId(), jobToExecute.getEndTime());
+			logger.info(JOB_FINISH_LOG, jobToExecute.getJobId(), jobToExecute.getEndTime());
 			myServerAgent.manage().finishJobExecution(jobToExecute, informCNA);
 		}
 	}

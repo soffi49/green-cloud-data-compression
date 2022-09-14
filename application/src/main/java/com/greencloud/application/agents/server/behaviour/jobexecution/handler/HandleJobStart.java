@@ -4,7 +4,10 @@ import static com.greencloud.application.agents.server.behaviour.jobexecution.ha
 import static com.greencloud.application.agents.server.behaviour.jobexecution.handler.logs.JobHandlingHandlerLog.JOB_START_NO_GREEN_SOURCE_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.handler.logs.JobHandlingHandlerLog.JOB_START_NO_INFORM_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.handler.logs.JobHandlingHandlerLog.JOB_START_NO_PRESENT_LOG;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -13,12 +16,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobStatusEnum;
-import com.greencloud.application.messages.domain.factory.JobStatusMessageFactory;
-import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -33,7 +35,6 @@ public class HandleJobStart extends WakerBehaviour {
 	private static final Logger logger = LoggerFactory.getLogger(HandleJobStart.class);
 
 	private final ServerAgent myServerAgent;
-	private final String guid;
 	private final Job jobToExecute;
 	private final boolean informCNAStart;
 	private final boolean informCNAFinish;
@@ -56,7 +57,6 @@ public class HandleJobStart extends WakerBehaviour {
 		this.myServerAgent = (ServerAgent) agent;
 		this.informCNAStart = informCNAStart;
 		this.informCNAFinish = informCNAFinish;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -73,9 +73,7 @@ public class HandleJobStart extends WakerBehaviour {
 			final Job job,
 			final boolean informCNAStart,
 			final boolean informCNAFinish) {
-		final Instant startDate = TimeUtils.getCurrentTime().isAfter(job.getStartTime()) ?
-				TimeUtils.getCurrentTime() :
-				job.getStartTime();
+		final Instant startDate = getCurrentTime().isAfter(job.getStartTime()) ? getCurrentTime() : job.getStartTime();
 		return new HandleJobStart(serverAgent, Date.from(startDate), job, informCNAStart,
 				informCNAFinish);
 	}
@@ -88,14 +86,15 @@ public class HandleJobStart extends WakerBehaviour {
 	@Override
 	protected void onWake() {
 		final String jobId = jobToExecute.getJobId();
+		MDC.put(MDC_JOB_ID, jobId);
 
 		if (!myServerAgent.getGreenSourceForJobMap().containsKey(jobId)) {
-			logger.info(JOB_START_NO_GREEN_SOURCE_LOG, guid, jobId);
+			logger.info(JOB_START_NO_GREEN_SOURCE_LOG, jobId);
 		} else if (!myServerAgent.getServerJobs().containsKey(jobToExecute)) {
-			logger.info(JOB_START_NO_PRESENT_LOG, guid, jobId);
+			logger.info(JOB_START_NO_PRESENT_LOG, jobId);
 		} else {
 			final String logMessage = informCNAStart ? JOB_START_LOG : JOB_START_NO_INFORM_LOG;
-			logger.info(logMessage, guid, jobId);
+			logger.info(logMessage, jobId);
 
 			myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.ACCEPTED, JobStatusEnum.IN_PROGRESS);
 			sendJobStartMessage(jobId);
@@ -109,7 +108,7 @@ public class HandleJobStart extends WakerBehaviour {
 				? List.of(myServerAgent.getGreenSourceForJobMap().get(jobId),
 				myServerAgent.getOwnerCloudNetworkAgent())
 				: Collections.singletonList(myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId()));
-		final ACLMessage startedJobMessage = JobStatusMessageFactory.prepareJobStartedMessage(jobId, jobToExecute.getStartTime(), receivers);
+		final ACLMessage startedJobMessage = prepareJobStartedMessage(jobId, jobToExecute.getStartTime(), receivers);
 
 		displayMessageArrow(myServerAgent, receivers);
 		myAgent.send(startedJobMessage);

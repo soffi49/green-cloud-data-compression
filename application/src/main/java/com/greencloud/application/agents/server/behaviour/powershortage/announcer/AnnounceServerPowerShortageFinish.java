@@ -7,20 +7,23 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.a
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_FINISH_USE_BACK_UP_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_FINISH_USE_GREEN_ENERGY_LOG;
 import static com.greencloud.application.agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory;
 import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.AID;
@@ -35,7 +38,6 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	private static final Logger logger = LoggerFactory.getLogger(AnnounceServerPowerShortageFinish.class);
 
 	private final ServerAgent myServerAgent;
-	private final String guid;
 
 	/**
 	 * Behaviour constructor
@@ -45,7 +47,6 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	public AnnounceServerPowerShortageFinish(ServerAgent myAgent) {
 		super(myAgent);
 		this.myServerAgent = myAgent;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -54,14 +55,14 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	 */
 	@Override
 	public void action() {
-		logger.info(POWER_SHORTAGE_FINISH_DETECTED_LOG, guid);
+		logger.info(POWER_SHORTAGE_FINISH_DETECTED_LOG);
 		myServerAgent.setCurrentMaximumCapacity(myServerAgent.getInitialMaximumCapacity());
 		final List<Job> affectedJobs = getJobsOnHold();
 
 		if (affectedJobs.isEmpty()) {
-			logger.info(POWER_SHORTAGE_FINISH_UPDATE_CAPACITY_LOG, guid);
+			logger.info(POWER_SHORTAGE_FINISH_UPDATE_CAPACITY_LOG);
 		} else {
-			logger.info(POWER_SHORTAGE_FINISH_UPDATE_JOB_STATUS_LOG, guid);
+			logger.info(POWER_SHORTAGE_FINISH_UPDATE_JOB_STATUS_LOG);
 
 			affectedJobs.forEach(job -> {
 				final boolean isJobPresent = myServerAgent.getServerJobs().containsKey(job) &&
@@ -75,14 +76,15 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 					final int availableBackUpPower = myServerAgent.manage()
 							.getAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance, BACK_UP_POWER);
 
+					MDC.put(MDC_JOB_ID, job.getJobId());
 					if (availablePower < jobPower && availableBackUpPower < jobPower) {
-						logger.info(POWER_SHORTAGE_FINISH_LEAVE_ON_HOLD_LOG, guid, job.getJobId());
+						logger.info(POWER_SHORTAGE_FINISH_LEAVE_ON_HOLD_LOG, job.getJobId());
 					} else if (availableBackUpPower >= jobPower) {
-						logger.info(POWER_SHORTAGE_FINISH_USE_BACK_UP_LOG, guid, job.getJobId());
+						logger.info(POWER_SHORTAGE_FINISH_USE_BACK_UP_LOG, job.getJobId());
 						myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
 						myServerAgent.manage().updateServerGUI();
 					} else {
-						logger.info(POWER_SHORTAGE_FINISH_USE_GREEN_ENERGY_LOG, guid, job.getJobId());
+						logger.info(POWER_SHORTAGE_FINISH_USE_GREEN_ENERGY_LOG, job.getJobId());
 						updateJobStatus(job, jobInstance);
 					}
 				}
@@ -91,13 +93,13 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	}
 
 	private void updateJobStatus(final Job job, final JobInstanceIdentifier jobInstance) {
-		final JobStatusEnum newStatus = job.getStartTime().isAfter(TimeUtils.getCurrentTime()) ?
+		final JobStatusEnum newStatus = job.getStartTime().isAfter(getCurrentTime()) ?
 				JobStatusEnum.ACCEPTED :
 				JobStatusEnum.IN_PROGRESS;
 		myServerAgent.getServerJobs().replace(job, newStatus);
 
 		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
-		final ACLMessage finishInformation = PowerShortageMessageFactory.preparePowerShortageFinishInformation(jobInstance, greenSource);
+		final ACLMessage finishInformation = preparePowerShortageFinishInformation(jobInstance, greenSource);
 		finishInformation.addReceiver(myServerAgent.getOwnerCloudNetworkAgent());
 
 		displayMessageArrow(myServerAgent, finishInformation.getAllReceiver());

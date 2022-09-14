@@ -3,6 +3,8 @@ package com.greencloud.application.agents.server.behaviour.powershortage.handler
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
 import java.util.Date;
@@ -11,11 +13,11 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobStatusEnum;
-import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -28,7 +30,6 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 	private static final Logger logger = LoggerFactory.getLogger(HandleServerPowerShortage.class);
 
 	private final ServerAgent myServerAgent;
-	private final String guid;
 	private final List<Job> affectedJobs;
 	private final Integer newMaximumCapacity;
 
@@ -45,7 +46,6 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 			final Integer newMaximumCapacity) {
 		super(myAgent, shortageTime);
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myAgent.getName();
 		this.affectedJobs = affectedJobs;
 		this.newMaximumCapacity = newMaximumCapacity;
 	}
@@ -60,8 +60,8 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 	 */
 	public static HandleServerPowerShortage createFor(final List<Job> affectedJobs,
 			final Instant shortageStartTime, final ServerAgent serverAgent, final Integer newMaximumPower) {
-		final Instant startTime = TimeUtils.getCurrentTime().isAfter(shortageStartTime) ?
-				TimeUtils.getCurrentTime() :
+		final Instant startTime = getCurrentTime().isAfter(shortageStartTime) ?
+				getCurrentTime() :
 				shortageStartTime;
 		return new HandleServerPowerShortage(serverAgent, Date.from(startTime), affectedJobs,
 				newMaximumPower);
@@ -77,11 +77,11 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 			if (myServerAgent.getServerJobs().containsKey(job)) {
 				final JobStatusEnum jobStatus = myServerAgent.getServerJobs().get(job);
 				final String jobId = job.getJobId();
-
+				MDC.put(MDC_JOB_ID, job.getJobId());
 				switch (jobStatus) {
-					case ON_HOLD_TRANSFER -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG, guid, jobId);
-					case IN_PROGRESS_BACKUP_ENERGY -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG, guid, jobId);
-					default -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG, guid, jobId);
+					case ON_HOLD_TRANSFER -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG, jobId);
+					case IN_PROGRESS_BACKUP_ENERGY -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG, jobId);
+					default -> logger.info(POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG, jobId);
 				}
 				myServerAgent.manage().updateServerGUI();
 			}

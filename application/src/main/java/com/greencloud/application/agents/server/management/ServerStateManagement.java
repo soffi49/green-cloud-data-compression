@@ -2,7 +2,15 @@ package com.greencloud.application.agents.server.management;
 
 import static com.greencloud.application.agents.server.domain.ServerPowerSourceType.ALL;
 import static com.greencloud.application.agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.domain.job.JobStatusEnum.ACCEPTED_JOB_STATUSES;
+import static com.greencloud.application.domain.job.JobStatusEnum.IN_PROGRESS;
+import static com.greencloud.application.domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.application.domain.job.JobStatusEnum.JOB_ON_HOLD;
+import static com.greencloud.application.domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -15,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.jobexecution.handler.HandleJobFinish;
@@ -90,10 +99,10 @@ public class ServerStateManagement {
 		sendFinishInformation(jobToFinish, informCNA);
 		updateStateAfterJobFinish(jobToFinish);
 
-		if (jobStatusEnum.equals(JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY)) {
+		if (jobStatusEnum.equals(IN_PROGRESS_BACKUP_ENERGY)) {
 			final Map<Job, JobStatusEnum> jobsWithinTimeStamp = serverAgent.getServerJobs().entrySet().stream()
-					.filter(job -> TimeUtils.isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(),
-							TimeUtils.getCurrentTime()))
+					.filter(job -> isWithinTimeStamp(job.getKey().getStartTime(), job.getKey().getEndTime(),
+							getCurrentTime()))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			supplyJobsWithBackupPower(jobsWithinTimeStamp);
 		}
@@ -119,7 +128,7 @@ public class ServerStateManagement {
 	 * @return pair of job and current status
 	 */
 	public Map.Entry<Job, JobStatusEnum> getCurrentJobInstance(final String jobId) {
-		final Instant currentTime = TimeUtils.getCurrentTime();
+		final Instant currentTime = getCurrentTime();
 		return serverAgent.getServerJobs().entrySet().stream().filter(jobEntry -> {
 			final Job job = jobEntry.getKey();
 			return job.getJobId().equals(jobId) && (
@@ -183,14 +192,10 @@ public class ServerStateManagement {
 	public void incrementStartedJobs(final String jobId) {
 		if (isJobUnique(jobId)) {
 			uniqueStartedJobs.getAndAdd(1);
-			logger.info("[{}] Started job {}. Number of unique started jobs is {}", serverAgent.getLocalName(),
-					jobId,
-					uniqueStartedJobs);
+			logger.info("Started job {}. Number of unique started jobs is {}", jobId, uniqueStartedJobs);
 		}
 		startedJobsInstances.getAndAdd(1);
-		logger.info("[{}] Started job instance {}. Number of started job instances is {}",
-				serverAgent.getLocalName(),
-				jobId, startedJobsInstances);
+		logger.info("Started job instance {}. Number of started job instances is {}", jobId, startedJobsInstances);
 		updateServerGUI();
 	}
 
@@ -200,14 +205,15 @@ public class ServerStateManagement {
 	 * @param jobId unique identifier of the job
 	 */
 	public void incrementFinishedJobs(final String jobId) {
+		MDC.put(MDC_JOB_ID, jobId);
 		if (isJobUnique(jobId)) {
 			uniqueFinishedJobs.getAndAdd(1);
-			logger.info("[{}] Finished job {}. Number of unique finished jobs is {} out of {} started",
-					serverAgent.getLocalName(), jobId, uniqueFinishedJobs, uniqueStartedJobs);
+			logger.info("Finished job {}. Number of unique finished jobs is {} out of {} started", jobId,
+					uniqueFinishedJobs, uniqueStartedJobs);
 		}
 		finishedJobsInstances.getAndAdd(1);
-		logger.info("[{}] Finished job instance {}. Number of finished job instances is {} out of {} started",
-				serverAgent.getLocalName(), jobId, finishedJobsInstances, startedJobsInstances);
+		logger.info("Finished job instance {}. Number of finished job instances is {} out of {} started", jobId,
+				finishedJobsInstances, startedJobsInstances);
 		updateServerGUI();
 	}
 
@@ -252,7 +258,7 @@ public class ServerStateManagement {
 			serverAgent.addBehaviour(HandleJobStart.createFor(serverAgent, affectedJobInstance, false, true));
 			serverAgent.addBehaviour(HandleJobFinish.createFor(serverAgent, notAffectedJobInstance, false));
 
-			if (TimeUtils.getCurrentTime().isBefore(notAffectedJobInstance.getStartTime())) {
+			if (getCurrentTime().isBefore(notAffectedJobInstance.getStartTime())) {
 				serverAgent.addBehaviour(
 						HandleJobStart.createFor(serverAgent, notAffectedJobInstance, true, false));
 			}
@@ -332,13 +338,14 @@ public class ServerStateManagement {
 
 	private void supplyJobsWithBackupPower(final Map<Job, JobStatusEnum> jobEntries) {
 		jobEntries.entrySet().stream()
-				.filter(job -> job.getValue().equals(JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE))
+				.filter(job -> job.getValue().equals(ON_HOLD_SOURCE_SHORTAGE))
 				.forEach(jobEntry -> {
 					final Job job = jobEntry.getKey();
 					if (getAvailableCapacity(job.getStartTime(), job.getEndTime(), JobMapper.mapToJobInstanceId(job),
 							BACK_UP_POWER) >= job.getPower()) {
-						logger.info("[{}] Supplying job {} with back up power", serverAgent.getName(), job.getJobId());
-						serverAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+						MDC.put(MDC_JOB_ID, job.getJobId());
+						logger.info("Supplying job {} with back up power", job.getJobId());
+						serverAgent.getServerJobs().replace(job, IN_PROGRESS_BACKUP_ENERGY);
 						updateServerGUI();
 					}
 				});
@@ -346,8 +353,8 @@ public class ServerStateManagement {
 
 	private int getJobCount() {
 		return serverAgent.getServerJobs().entrySet().stream()
-				.filter(job -> JobStatusEnum.ACCEPTED_JOB_STATUSES.contains(job.getValue()) && TimeUtils.isWithinTimeStamp(
-						job.getKey().getStartTime(), job.getKey().getEndTime(), TimeUtils.getCurrentTime()))
+				.filter(job -> ACCEPTED_JOB_STATUSES.contains(job.getValue()) && isWithinTimeStamp(
+						job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
 				.map(Map.Entry::getKey).map(Job::getJobId).collect(Collectors.toSet()).size();
 	}
 
@@ -357,22 +364,21 @@ public class ServerStateManagement {
 
 	private int getCurrentPowerInUseForServer() {
 		return serverAgent.getServerJobs().entrySet().stream()
-				.filter(job -> job.getValue().equals(JobStatusEnum.IN_PROGRESS) && TimeUtils.isWithinTimeStamp(job.getKey().getStartTime(),
-						job.getKey().getEndTime(), TimeUtils.getCurrentTime())).mapToInt(job -> job.getKey().getPower()).sum();
+				.filter(job -> job.getValue().equals(IN_PROGRESS) && isWithinTimeStamp(job.getKey().getStartTime(),
+						job.getKey().getEndTime(), getCurrentTime())).mapToInt(job -> job.getKey().getPower()).sum();
 	}
 
 	private int getCurrentBackUpPowerInUseForServer() {
 		return serverAgent.getServerJobs().entrySet().stream()
-				.filter(job -> job.getValue().equals(
-						JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY) && TimeUtils.isWithinTimeStamp(
-						job.getKey().getStartTime(), job.getKey().getEndTime(), TimeUtils.getCurrentTime()))
+				.filter(job -> job.getValue().equals(IN_PROGRESS_BACKUP_ENERGY) && isWithinTimeStamp(
+						job.getKey().getStartTime(), job.getKey().getEndTime(), getCurrentTime()))
 				.mapToInt(job -> job.getKey().getPower()).sum();
 	}
 
 	private int getOnHoldJobsCount() {
 		return serverAgent.getServerJobs().entrySet().stream()
-				.filter(job -> JobStatusEnum.JOB_ON_HOLD.contains(job.getValue()) && TimeUtils.isWithinTimeStamp(job.getKey().getStartTime(),
-						job.getKey().getEndTime(), TimeUtils.getCurrentTime())).toList().size();
+				.filter(job -> JOB_ON_HOLD.contains(job.getValue()) && isWithinTimeStamp(job.getKey().getStartTime(),
+						job.getKey().getEndTime(), getCurrentTime())).toList().size();
 	}
 
 	private boolean getIsActiveState() {

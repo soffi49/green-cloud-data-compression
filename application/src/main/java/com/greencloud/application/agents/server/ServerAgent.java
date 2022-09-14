@@ -1,10 +1,13 @@
 package com.greencloud.application.agents.server;
 
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
+
 import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.behaviour.jobexecution.listener.ListenForJobStartCheckRequest;
 import com.greencloud.application.agents.server.behaviour.jobexecution.listener.ListenForNewJob;
@@ -34,9 +37,11 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	protected void setup() {
 		super.setup();
+		MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		final Object[] args = getArguments();
 		initializeAgent(args);
-		YellowPagesService.register(this, DFServiceConstants.SA_SERVICE_TYPE, DFServiceConstants.SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
+		YellowPagesService.register(this, DFServiceConstants.SA_SERVICE_TYPE, DFServiceConstants.SA_SERVICE_NAME,
+				this.getOwnerCloudNetworkAgent().getName());
 		addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
 	}
 
@@ -64,8 +69,8 @@ public class ServerAgent extends AbstractServerAgent {
 				doDelete();
 			}
 		} else {
-			logger.info(
-					"Incorrect arguments: some parameters for server agent are missing - check the parameters in the documentation");
+			logger.info("Incorrect arguments: some parameters for server agent are missing - "
+					+ "check the parameters in the documentation");
 			doDelete();
 		}
 	}

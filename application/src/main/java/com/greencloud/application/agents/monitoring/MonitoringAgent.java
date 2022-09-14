@@ -1,9 +1,12 @@
 package com.greencloud.application.agents.monitoring;
 
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
+
 import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.monitoring.behaviour.ServeForecastWeather;
 import com.greencloud.application.behaviours.ReceiveGUIController;
@@ -21,6 +24,7 @@ public class MonitoringAgent extends AbstractMonitoringAgent {
 	@Override
 	protected void setup() {
 		super.setup();
+		MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		addBehaviour(new ReceiveGUIController(this, Collections.singletonList(new ServeForecastWeather(this))));
 	}
 
