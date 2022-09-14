@@ -44,18 +44,18 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 			final String startDate = formatToDate(clientAgent.getStart());
 			final String endDate = formatToDate(clientAgent.getEnd());
 
-			return containerController.createNewAgent(clientAgent.getName(), "agents.client.ClientAgent",
+			return containerController.createNewAgent(clientAgent.getName(), "com.greencloud.application.agents.client.ClientAgent",
 					new Object[] { startDate, endDate, clientAgent.getPower(), clientAgent.getJobId() });
 		} else if (agentArgs instanceof ServerAgentArgs serverAgent) {
-			return containerController.createNewAgent(serverAgent.getName(), "agents.server.ServerAgent",
+			return containerController.createNewAgent(serverAgent.getName(), "com.greencloud.application.agents.server.ServerAgent",
 					new Object[] { serverAgent.getOwnerCloudNetwork(), serverAgent.getPrice(),
 							serverAgent.getMaximumCapacity() });
 		} else if (agentArgs instanceof CloudNetworkArgs cloudNetworkAgent) {
 			return containerController.createNewAgent(cloudNetworkAgent.getName(),
-					"agents.cloudnetwork.CloudNetworkAgent", new Object[] {});
+					"com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent", new Object[] {});
 		} else if (agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent) {
 			return containerController.createNewAgent(greenEnergyAgent.getName(),
-					"agents.greenenergy.GreenEnergyAgent",
+					"com.greencloud.application.agents.greenenergy.GreenEnergyAgent",
 					new Object[] { greenEnergyAgent.getMonitoringAgent(),
 							greenEnergyAgent.getOwnerSever(),
 							greenEnergyAgent.getMaximumCapacity(),
@@ -65,7 +65,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 							greenEnergyAgent.getEnergyType() });
 		} else if (agentArgs instanceof MonitoringAgentArgs monitoringAgent) {
 			return containerController.createNewAgent(monitoringAgent.getName(),
-					"agents.monitoring.MonitoringAgent",
+					"com.greencloud.application.agents.monitoring.MonitoringAgent",
 					new Object[] {});
 		}
 		return null;

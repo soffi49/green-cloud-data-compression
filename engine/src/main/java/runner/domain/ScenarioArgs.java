@@ -2,13 +2,13 @@ package runner.domain;
 
 import static java.util.stream.Stream.concat;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-
-import org.jetbrains.annotations.Nullable;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 /**
  * Arguments of the entire scenario
@@ -33,11 +33,11 @@ public class ScenarioArgs implements Serializable {
 	/**
 	 * Scenario constructor.
 	 *
-	 * @param clientAgentsArgs       list of client agents
-	 * @param cloudNetworkAgentsArgs list of cloud network agents
-	 * @param serverAgentsArgs       list of server agents
-	 * @param monitoringAgentsArgs   list of monitoring agents
-	 * @param greenEnergyAgentsArgs  list of green energy source agents
+	 * @param clientAgentsArgs       list of client com.greencloud.application.agents
+	 * @param cloudNetworkAgentsArgs list of cloud network com.greencloud.application.agents
+	 * @param serverAgentsArgs       list of server com.greencloud.application.agents
+	 * @param monitoringAgentsArgs   list of monitoring com.greencloud.application.agents
+	 * @param greenEnergyAgentsArgs  list of green energy source com.greencloud.application.agents
 	 */
 	public ScenarioArgs(List<ImmutableClientAgentArgs> clientAgentsArgs,
 			List<ImmutableCloudNetworkArgs> cloudNetworkAgentsArgs,
@@ -94,7 +94,7 @@ public class ScenarioArgs implements Serializable {
 	/**
 	 * Method concatenates the scenario arguments into one stream
 	 *
-	 * @return stream of all scenario's agents' arguments
+	 * @return stream of all scenario's com.greencloud.application.agents' arguments
 	 */
 	public List<AgentArgs> getAgentsArgs() {
 		var serverArgs = serverAgentsArgs.stream().map(AgentArgs.class::cast);

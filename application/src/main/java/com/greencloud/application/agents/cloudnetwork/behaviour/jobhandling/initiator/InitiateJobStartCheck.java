@@ -1,0 +1,86 @@
+package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator;
+
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
+import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog;
+import com.greencloud.application.domain.job.Job;
+import com.greencloud.application.domain.job.JobStatusEnum;
+import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
+import com.greencloud.application.messages.domain.factory.JobStatusMessageFactory;
+
+import jade.core.Agent;
+import jade.lang.acl.ACLMessage;
+import jade.proto.AchieveREInitiator;
+
+/**
+ * Behaviour retrieves the job start status from the server agent
+ */
+public class InitiateJobStartCheck extends AchieveREInitiator {
+
+	private static final Logger logger = LoggerFactory.getLogger(InitiateJobStartCheck.class);
+
+	private final CloudNetworkAgent myCloudNetwork;
+	private final String guid;
+	private final String jobId;
+
+	/**
+	 * Behaviour constructor
+	 *
+	 * @param agent agent executing the behaviour
+	 * @param msg   request that is to be sent to the server agent
+	 * @param jobId unique identifier of the job of interest
+	 */
+	public InitiateJobStartCheck(Agent agent, ACLMessage msg, String jobId) {
+		super(agent, msg);
+		this.myCloudNetwork = (CloudNetworkAgent) agent;
+		this.jobId = jobId;
+		this.guid = myCloudNetwork.getName();
+	}
+
+	/**
+	 * Method handles the AGREE message informing that the request is being processed by the server
+	 *
+	 * @param agree server agreement message
+	 */
+	@Override
+	protected void handleAgree(ACLMessage agree) {
+		logger.info(JobHandlingInitiatorLog.JOB_STATUS_IS_CHECKED_LOG, guid, jobId);
+	}
+
+	/**
+	 * Method handles the INFORM message confirming that the job execution has started.
+	 * It sends the confirmation to the client
+	 *
+	 * @param inform server inform message
+	 */
+	@Override
+	protected void handleInform(ACLMessage inform) {
+		final Job job = myCloudNetwork.manage().getJobById(jobId);
+		if (Objects.nonNull(job) && !myCloudNetwork.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+			logger.info(JobHandlingInitiatorLog.JOB_HAS_STARTED_LOG, guid, jobId);
+
+			myCloudNetwork.getNetworkJobs().replace(myCloudNetwork.manage().getJobById(jobId), JobStatusEnum.IN_PROGRESS);
+			myCloudNetwork.manage().incrementStartedJobs(jobId);
+			myAgent.send(JobStatusMessageFactory.prepareJobStatusMessageForClient(job.getClientIdentifier(), MessageProtocolConstants.STARTED_JOB_PROTOCOL));
+		}
+	}
+
+	/**
+	 * Method handles the FAILURE message informing that the job execution has not started.
+	 * It sends the delay message to the client
+	 *
+	 * @param failure failure message
+	 */
+	@Override
+	protected void handleFailure(ACLMessage failure) {
+		final Job job = myCloudNetwork.manage().getJobById(jobId);
+		if (Objects.nonNull(job) && !myCloudNetwork.getNetworkJobs().get(job).equals(JobStatusEnum.IN_PROGRESS)) {
+			logger.error(JobHandlingInitiatorLog.JOB_HAS_NOT_STARTED_LOG, guid, jobId);
+			myAgent.send(JobStatusMessageFactory.prepareJobStatusMessageForClient(job.getClientIdentifier(), MessageProtocolConstants.DELAYED_JOB_PROTOCOL));
+		}
+	}
+}
