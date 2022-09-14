@@ -1,5 +1,12 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.listener;
 
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_CONFIRMED_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_JOB_FINISHED_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_CONFIRMATION_TEMPLATE;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.mapper.JsonMapper.getMapper;
+import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareFinishMessage;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -11,16 +18,12 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.handler.HandleSourceJobTransfer;
-import com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog;
-import com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.mapper.JsonMapper;
-import com.greencloud.application.messages.domain.factory.JobStatusMessageFactory;
-import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -36,7 +39,6 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
 
 	private final MessageTemplate messageTemplate;
 	private final ServerAgent myServerAgent;
-	private final String guid;
 	private final JobInstanceIdentifier jobToTransfer;
 	private final ACLMessage greenSourceRequest;
 
@@ -52,7 +54,6 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
 			ACLMessage greenSourceRequest) {
 		super(agent);
 		this.myServerAgent = agent;
-		this.guid = agent.getName();
 		this.greenSourceRequest = greenSourceRequest;
 		this.jobToTransfer = jobInstanceId;
 		this.messageTemplate = createListenerTemplate(jobInstanceId);
@@ -60,8 +61,8 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
 
 	private static MessageTemplate createListenerTemplate(final JobInstanceIdentifier jobInstanceId) {
 		try {
-			final String expectedContent = JsonMapper.getMapper().writeValueAsString(jobInstanceId);
-			return and(MatchContent(expectedContent), PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_CONFIRMATION_TEMPLATE);
+			final String expectedContent = getMapper().writeValueAsString(jobInstanceId);
+			return and(MatchContent(expectedContent), SOURCE_JOB_TRANSFER_CONFIRMATION_TEMPLATE);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
@@ -78,11 +79,12 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
 
 		if (Objects.nonNull(inform)) {
 			final String jobId = jobToTransfer.getJobId();
+			MDC.put(MDC_JOB_ID, jobId);
 			if (Objects.nonNull(myServerAgent.manage().getJobById(jobId))) {
-				logger.info(PowerShortageServerListenerLog.GS_TRANSFER_CONFIRMED_LOG, guid, jobId);
+				logger.info(GS_TRANSFER_CONFIRMED_LOG, jobId);
 				handleJobTransfer(inform);
 			} else {
-				logger.info(PowerShortageServerListenerLog.GS_TRANSFER_JOB_FINISHED_LOG, guid);
+				logger.info(GS_TRANSFER_JOB_FINISHED_LOG);
 				handleJobFinish(jobId, inform.getSender());
 			}
 		} else {
@@ -93,14 +95,14 @@ public class ListenForSourceJobTransferConfirmation extends CyclicBehaviour {
 	private void handleJobTransfer(final ACLMessage inform) {
 		final AID greenSourceSender = greenSourceRequest.getSender();
 		displayMessageArrow(myServerAgent, greenSourceSender);
-		myServerAgent.send(ReplyMessageFactory.prepareReply(greenSourceRequest.createReply(), jobToTransfer, INFORM));
+		myServerAgent.send(prepareReply(greenSourceRequest.createReply(), jobToTransfer, INFORM));
 		myAgent.addBehaviour(HandleSourceJobTransfer.createFor(myServerAgent, jobToTransfer, inform.getSender()));
 	}
 
 	private void handleJobFinish(final String jobId, final AID responseSender) {
-		final ACLMessage finishJobMessage = JobStatusMessageFactory.prepareFinishMessage(jobId, jobToTransfer.getStartTime(),
+		final ACLMessage finishJobMessage = prepareFinishMessage(jobId, jobToTransfer.getStartTime(),
 				List.of(responseSender));
-		final ACLMessage failTransferMessage = ReplyMessageFactory.prepareReply(greenSourceRequest.createReply(), jobToTransfer, FAILURE);
+		final ACLMessage failTransferMessage = prepareReply(greenSourceRequest.createReply(), jobToTransfer, FAILURE);
 
 		displayMessageArrow(myServerAgent, responseSender);
 		myServerAgent.send(finishJobMessage);

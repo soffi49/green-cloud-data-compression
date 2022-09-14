@@ -1,11 +1,14 @@
 package com.greencloud.application.agents.cloudnetwork;
 
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
 
 import java.util.Collections;
 import java.util.List;
+
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.behaviour.df.FindServerAgents;
 import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.ListenForClientsJob;
@@ -30,6 +33,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 	@Override
 	protected void setup() {
 		super.setup();
+		MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		initializeAgent();
 		addBehaviour(new ReceiveGUIController(this, prepareBehaviours()));
 	}

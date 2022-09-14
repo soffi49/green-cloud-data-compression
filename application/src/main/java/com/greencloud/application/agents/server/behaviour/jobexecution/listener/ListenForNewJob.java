@@ -1,11 +1,18 @@
 package com.greencloud.application.agents.server.behaviour.jobexecution.listener;
 
+import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
 
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.jobexecution.initiator.InitiatePowerDeliveryForJob;
@@ -14,10 +21,6 @@ import com.greencloud.application.agents.server.behaviour.jobexecution.listener.
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.application.messages.MessagingUtils;
-import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
-import com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory;
-import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -30,7 +33,6 @@ public class ListenForNewJob extends CyclicBehaviour {
 	private static final Logger logger = LoggerFactory.getLogger(ListenForNewJob.class);
 
 	private ServerAgent myServerAgent;
-	private String guid;
 
 	/**
 	 * Method casts the agent to the ServerAgent.
@@ -39,7 +41,6 @@ public class ListenForNewJob extends CyclicBehaviour {
 	public void onStart() {
 		super.onStart();
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -53,7 +54,8 @@ public class ListenForNewJob extends CyclicBehaviour {
 		final ACLMessage message = myAgent.receive(JobHandlingMessageTemplates.NEW_JOB_CFP_TEMPLATE);
 
 		if (Objects.nonNull(message)) {
-			final Job job = MessagingUtils.readMessageContent(message, Job.class);
+			final Job job = readMessageContent(message, Job.class);
+			MDC.put(MDC_JOB_ID, job.getJobId());
 			final int availableCapacity = myServerAgent.manage()
 					.getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null);
 			final boolean validJobConditions = job.getPower() <= availableCapacity &&
@@ -63,9 +65,9 @@ public class ListenForNewJob extends CyclicBehaviour {
 			if (validJobConditions) {
 				initiateNegotiationWithPowerSources(job, message);
 			} else {
-				logger.info(JobHandlingListenerLog.SERVER_NEW_JOB_LACK_OF_POWER_LOG, guid);
+				logger.info(JobHandlingListenerLog.SERVER_NEW_JOB_LACK_OF_POWER_LOG);
 				displayMessageArrow(myServerAgent, message.getSender());
-				myAgent.send(ReplyMessageFactory.prepareRefuseReply(message.createReply()));
+				myAgent.send(prepareRefuseReply(message.createReply()));
 			}
 		} else {
 			block();
@@ -73,12 +75,13 @@ public class ListenForNewJob extends CyclicBehaviour {
 	}
 
 	private void initiateNegotiationWithPowerSources(final Job job, final ACLMessage cnaMessage) {
-		logger.info(JobHandlingListenerLog.SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG, guid);
+		MDC.put(MDC_JOB_ID, job.getJobId());
+		logger.info(SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG);
 		myServerAgent.getServerJobs().putIfAbsent(job, JobStatusEnum.PROCESSING);
 		myServerAgent.tookJobIntoProcessing();
 
-		final ACLMessage cfp = CallForProposalMessageFactory.createCallForProposal(JobMapper.mapJobToPowerJob(job),
-				myServerAgent.getOwnedGreenSources(), MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL);
+		final ACLMessage cfp = createCallForProposal(JobMapper.mapJobToPowerJob(job),
+				myServerAgent.getOwnedGreenSources(), SERVER_JOB_CFP_PROTOCOL);
 
 		displayMessageArrow(myServerAgent, myServerAgent.getOwnedGreenSources());
 		myAgent.addBehaviour(new InitiatePowerDeliveryForJob(myAgent, cfp, cnaMessage.createReply(), job));

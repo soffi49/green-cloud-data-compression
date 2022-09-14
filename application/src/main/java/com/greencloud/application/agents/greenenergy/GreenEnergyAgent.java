@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.greenenergy;
 
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.GS_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.GS_SERVICE_TYPE;
@@ -9,6 +10,7 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;
@@ -39,6 +41,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 	@Override
 	protected void setup() {
 		super.setup();
+		MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		final Object[] args = getArguments();
 		initializeAgent(args);
 		register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());

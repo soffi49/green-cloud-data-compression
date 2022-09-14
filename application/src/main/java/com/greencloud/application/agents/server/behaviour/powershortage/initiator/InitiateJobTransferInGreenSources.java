@@ -6,7 +6,16 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.i
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NONE_AVAILABLE_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG;
 import static com.greencloud.application.agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.application.domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
 import static com.greencloud.application.messages.MessagingUtils.rejectJobOffers;
+import static com.greencloud.application.messages.MessagingUtils.retrieveProposals;
+import static com.greencloud.application.messages.MessagingUtils.retrieveValidMessages;
+import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
+import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
 
 import java.time.Instant;
@@ -16,20 +25,16 @@ import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferConfirmation;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.domain.job.PowerJob;
 import com.greencloud.application.domain.powershortage.PowerShortageJob;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.application.messages.MessagingUtils;
-import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
-import com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants;
-import com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory;
 import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
 
 import jade.core.AID;
@@ -46,7 +51,6 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 	private static final Logger logger = LoggerFactory.getLogger(InitiateJobTransferInGreenSources.class);
 
 	private final ServerAgent myServerAgent;
-	private final String guid;
 	private final PowerJob jobToTransfer;
 	private final JobInstanceIdentifier jobToTransferInstance;
 	private final Instant powerShortageStart;
@@ -68,7 +72,6 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 			final Instant powerShortageStart) {
 		super(agent, powerRequest);
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myAgent.getName();
 		this.jobToTransfer = jobToTransfer;
 		this.greenSourceRequest = greenSourceRequest;
 		this.powerShortageStart = powerShortageStart;
@@ -84,16 +87,16 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 	 */
 	@Override
 	protected void handleAllResponses(Vector responses, Vector acceptances) {
-		final List<ACLMessage> proposals = MessagingUtils.retrieveProposals(responses);
+		final List<ACLMessage> proposals = retrieveProposals(responses);
 
 		if (responses.isEmpty()) {
-			logger.info(GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG, guid);
+			logger.info(GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG);
 			handleTransferFailure();
 		} else if (proposals.isEmpty()) {
-			logger.info(GS_TRANSFER_NONE_AVAILABLE_LOG, guid, jobToTransfer.getJobId());
+			logger.info(GS_TRANSFER_NONE_AVAILABLE_LOG, jobToTransfer.getJobId());
 			forwardRequestToCloudNetwork();
 		} else {
-			final List<ACLMessage> validProposals = MessagingUtils.retrieveValidMessages(proposals, GreenSourceData.class);
+			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
 			if (!validProposals.isEmpty()) {
 				final ACLMessage chosenOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
 				initiateTransferForGreenSource(jobToTransfer.getJobId(), chosenOffer);
@@ -107,7 +110,7 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 	private void forwardRequestToCloudNetwork() {
 		final PowerShortageJob jobTransfer = JobMapper.mapToPowerShortageJob(jobToTransfer, powerShortageStart);
 		final AID cloudNetwork = myServerAgent.getOwnerCloudNetworkAgent();
-		final ACLMessage transferMessage = PowerShortageMessageFactory.preparePowerShortageTransferRequest(jobTransfer, cloudNetwork);
+		final ACLMessage transferMessage = preparePowerShortageTransferRequest(jobTransfer, cloudNetwork);
 		displayMessageArrow(myServerAgent, cloudNetwork);
 		myServerAgent.addBehaviour(
 				new InitiateJobTransferInCloudNetwork(myServerAgent, transferMessage, greenSourceRequest,
@@ -115,14 +118,15 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 	}
 
 	private void initiateTransferForGreenSource(final String jobId, final ACLMessage chosenOffer) {
-		logger.info(GS_TRANSFER_CHOSEN_GS_LOG, guid, jobId, chosenOffer.getSender().getLocalName());
+		MDC.put(MDC_JOB_ID, jobId);
+		logger.info(GS_TRANSFER_CHOSEN_GS_LOG, jobId, chosenOffer.getSender().getLocalName());
 
 		displayMessageArrow(myServerAgent, chosenOffer.getSender());
 		myServerAgent.addBehaviour(
 				new ListenForSourceJobTransferConfirmation(myServerAgent, jobToTransferInstance,
 						greenSourceRequest));
 		myAgent.send(ReplyMessageFactory.prepareAcceptReplyWithProtocol(chosenOffer.createReply(),
-				jobToTransferInstance, MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));
+				jobToTransferInstance, POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));
 	}
 
 	private void handleInvalidProposals(final List<ACLMessage> proposals) {
@@ -137,16 +141,17 @@ public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
 					.getAvailableCapacity(jobToTransfer.getStartTime(), jobToTransfer.getEndTime(),
 							jobToTransferInstance, BACK_UP_POWER);
 
+			MDC.put(MDC_JOB_ID, jobToTransfer.getJobId());
 			if (availableBackUpPower < jobToTransfer.getPower()) {
-				logger.info(GS_TRANSFER_FAIL_NO_BACK_UP_LOG, guid, jobToTransfer.getJobId());
-				myServerAgent.getServerJobs().replace(job, JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE);
+				logger.info(GS_TRANSFER_FAIL_NO_BACK_UP_LOG, jobToTransfer.getJobId());
+				myServerAgent.getServerJobs().replace(job, ON_HOLD_SOURCE_SHORTAGE);
 			} else {
-				logger.info(GS_TRANSFER_FAIL_BACK_UP_LOG, guid, jobToTransfer.getJobId());
-				myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+				logger.info(GS_TRANSFER_FAIL_BACK_UP_LOG, jobToTransfer.getJobId());
+				myServerAgent.getServerJobs().replace(job, IN_PROGRESS_BACKUP_ENERGY);
 			}
 			myServerAgent.manage().updateServerGUI();
 			displayMessageArrow(myServerAgent, greenSourceRequest.getSender());
-			myServerAgent.send(ReplyMessageFactory.prepareReply(greenSourceRequest.createReply(), PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE,
+			myServerAgent.send(prepareReply(greenSourceRequest.createReply(), NO_SOURCES_AVAILABLE_CAUSE_MESSAGE,
 					ACLMessage.FAILURE));
 		}
 	}

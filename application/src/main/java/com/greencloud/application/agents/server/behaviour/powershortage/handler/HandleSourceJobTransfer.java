@@ -1,6 +1,10 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.handler;
 
+import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.GS_TRANSFER_EXECUTION_LOG;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
 import java.time.Instant;
 import java.util.Date;
@@ -9,14 +13,12 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusEnum;
-import com.greencloud.application.messages.domain.factory.JobStatusMessageFactory;
-import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -31,7 +33,6 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	private static final Logger logger = LoggerFactory.getLogger(HandleSourceJobTransfer.class);
 
 	private final ServerAgent myServerAgent;
-	private final String guid;
 	private final JobInstanceIdentifier jobInstanceId;
 	private final AID newGreenSource;
 
@@ -46,7 +47,6 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 			AID newGreenSource) {
 		super(myAgent, transferTime);
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myAgent.getName();
 		this.jobInstanceId = jobInstanceId;
 		this.newGreenSource = newGreenSource;
 	}
@@ -61,8 +61,8 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	 */
 	public static HandleSourceJobTransfer createFor(final ServerAgent serverAgent,
 			final JobInstanceIdentifier jobInstanceId, final AID newGreenSource) {
-		final Instant transferTime = TimeUtils.getCurrentTime().isAfter(jobInstanceId.getStartTime()) ?
-				TimeUtils.getCurrentTime() :
+		final Instant transferTime = getCurrentTime().isAfter(jobInstanceId.getStartTime()) ?
+				getCurrentTime() :
 				jobInstanceId.getStartTime();
 		return new HandleSourceJobTransfer(serverAgent, Date.from(transferTime), jobInstanceId,
 				newGreenSource);
@@ -76,7 +76,8 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	protected void onWake() {
 		final Job jobToExecute = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
 		if (Objects.nonNull(jobToExecute)) {
-			logger.info(PowerShortageServerHandlerLog.GS_TRANSFER_EXECUTION_LOG, guid);
+			MDC.put(MDC_JOB_ID, jobToExecute.getJobId());
+			logger.info(GS_TRANSFER_EXECUTION_LOG);
 			myServerAgent.getGreenSourceForJobMap().replace(jobToExecute.getJobId(), newGreenSource);
 			myServerAgent.getServerJobs().replace(jobToExecute, JobStatusEnum.IN_PROGRESS);
 			startJobExecutionInNewGreenSource(jobToExecute);
@@ -84,7 +85,7 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	}
 
 	private void startJobExecutionInNewGreenSource(final Job jobToExecute) {
-		final ACLMessage startedJobMessage = JobStatusMessageFactory.prepareJobStartedMessage(jobToExecute.getJobId(),
+		final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(),
 				jobToExecute.getStartTime(), List.of(newGreenSource));
 		displayMessageArrow(myServerAgent, newGreenSource);
 		myAgent.send(startedJobMessage);

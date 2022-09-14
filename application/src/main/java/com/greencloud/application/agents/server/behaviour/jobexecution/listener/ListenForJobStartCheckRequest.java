@@ -2,6 +2,7 @@ package com.greencloud.application.agents.server.behaviour.jobexecution.listener
 
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.JOB_START_STATUS_RECEIVED_REQUEST_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.JOB_STATUS_REQUEST_TEMPLATE;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -11,6 +12,7 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.Job;
@@ -28,7 +30,6 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 	private static final Logger logger = LoggerFactory.getLogger(ListenForJobStartCheckRequest.class);
 
 	private ServerAgent myServerAgent;
-	private String guid;
 
 	/**
 	 * Method casts the abstract agent to agent of type Server Agent
@@ -37,7 +38,6 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 	public void onStart() {
 		super.onStart();
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -50,8 +50,10 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 
 		if (Objects.nonNull(request)) {
 			final String jobId = request.getContent();
-			myServerAgent.send(ReplyMessageFactory.prepareStringReply(request.createReply(), "REQUEST PROCESSING", AGREE));
-			logger.info(JOB_START_STATUS_RECEIVED_REQUEST_LOG, guid, jobId);
+			myServerAgent.send(
+					ReplyMessageFactory.prepareStringReply(request.createReply(), "REQUEST PROCESSING", AGREE));
+			MDC.put(MDC_JOB_ID, jobId);
+			logger.info(JOB_START_STATUS_RECEIVED_REQUEST_LOG, jobId);
 			final Map.Entry<Job, JobStatusEnum> jobInstance = myServerAgent.manage().getCurrentJobInstance(jobId);
 			myServerAgent.send(createReplyWithJobStatus(request, jobInstance));
 		} else {

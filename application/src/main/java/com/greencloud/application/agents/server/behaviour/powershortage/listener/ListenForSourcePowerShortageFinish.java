@@ -1,23 +1,25 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.listener;
 
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.mapper.JsonMapper.getMapper;
+import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageFinishInformation;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
 import java.util.EnumSet;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog;
-import com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates;
 import com.greencloud.application.domain.job.Job;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.application.mapper.JsonMapper;
-import com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory;
-import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -34,7 +36,6 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 			JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE);
 
 	private ServerAgent myServerAgent;
-	private String guid;
 
 	/**
 	 * Method casts the abstract agent to agent of type Server Agent
@@ -43,7 +44,6 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 	public void onStart() {
 		super.onStart();
 		this.myServerAgent = (ServerAgent) myAgent;
-		this.guid = myServerAgent.getName();
 	}
 
 	/**
@@ -52,17 +52,17 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 	 */
 	@Override
 	public void action() {
-		final ACLMessage inform = myAgent.receive(
-				PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE);
+		final ACLMessage inform = myAgent.receive(SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE);
 
 		if (Objects.nonNull(inform)) {
 			final Job job = getJobFromMessage(inform);
 
 			if (Objects.nonNull(job) && POWER_SHORTAGE_STATUSES.contains(myServerAgent.getServerJobs().get(job))) {
-				logger.info(PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG, guid, job.getJobId());
+				MDC.put(MDC_JOB_ID, job.getJobId());
+				logger.info(GS_SHORTAGE_FINISH_LOG, job.getJobId());
 				final AID cloudNetwork = myServerAgent.getOwnerCloudNetworkAgent();
 				final ACLMessage informationToCNA =
-						PowerShortageMessageFactory.preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job), cloudNetwork);
+						preparePowerShortageFinishInformation(JobMapper.mapToJobInstanceId(job), cloudNetwork);
 
 				myServerAgent.getServerJobs().replace(job, getNewJobStatus(job));
 				myServerAgent.manage().updateServerGUI();
@@ -76,7 +76,7 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 
 	private Job getJobFromMessage(final ACLMessage message) {
 		try {
-			final JobInstanceIdentifier jobInstanceIdentifier = JsonMapper.getMapper().readValue(message.getContent(),
+			final JobInstanceIdentifier jobInstanceIdentifier = getMapper().readValue(message.getContent(),
 					JobInstanceIdentifier.class);
 			return myServerAgent.manage().getJobByIdAndStartDate(jobInstanceIdentifier);
 		} catch (Exception e) {
@@ -86,7 +86,7 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 	}
 
 	private JobStatusEnum getNewJobStatus(final Job job) {
-		return job.getStartTime().isAfter(TimeUtils.getCurrentTime()) ?
+		return job.getStartTime().isAfter(getCurrentTime()) ?
 				JobStatusEnum.ACCEPTED :
 				JobStatusEnum.IN_PROGRESS;
 	}

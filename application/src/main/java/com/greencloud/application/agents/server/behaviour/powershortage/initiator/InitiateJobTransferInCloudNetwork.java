@@ -1,7 +1,23 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.initiator;
 
+import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PROCESSING_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_BACKUP_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_HOLD_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_HOLD_SOURCE_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_REFUSE_LOG;
+import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_SUCCESSFUL_LOG;
 import static com.greencloud.application.agents.server.domain.ServerPowerSourceType.BACK_UP_POWER;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.application.domain.job.JobStatusEnum.ON_HOLD;
+import static com.greencloud.application.domain.job.JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
+import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
+import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareFinishMessage;
+import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.GUIUtils.displayMessageArrow;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -10,18 +26,11 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog;
 import com.greencloud.application.domain.job.Job;
-import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
-import com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants;
-import com.greencloud.application.messages.domain.factory.JobStatusMessageFactory;
-import com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory;
-import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
-import com.greencloud.application.utils.TimeUtils;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -37,7 +46,6 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private final ServerAgent myServerAgent;
 	private final PowerShortageJob jobToTransfer;
 	private final ACLMessage greenSourceRequest;
-	private final String guid;
 
 	/**
 	 * Behaviours constructor
@@ -53,7 +61,6 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 			final PowerShortageJob jobToTransfer) {
 		super(agent, transferMessage);
 		this.myServerAgent = agent;
-		this.guid = myServerAgent.getLocalName();
 		this.jobToTransfer = jobToTransfer;
 		this.greenSourceRequest = greenSourceRequest;
 	}
@@ -67,8 +74,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	 */
 	@Override
 	protected void handleAgree(ACLMessage agree) {
-		logger.info(PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PROCESSING_LOG,
-				guid, myServerAgent.getOwnerCloudNetworkAgent().getLocalName(),
+		logger.info(CNA_JOB_TRANSFER_PROCESSING_LOG, myServerAgent.getOwnerCloudNetworkAgent().getLocalName(),
 				jobToTransfer.getJobInstanceId().getJobId());
 	}
 
@@ -81,8 +87,8 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	 */
 	@Override
 	protected void handleRefuse(ACLMessage refuse) {
-		logger.info(PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_REFUSE_LOG,
-				guid, myServerAgent.getOwnerCloudNetworkAgent().getLocalName(),
+		MDC.put(MDC_JOB_ID, jobToTransfer.getJobInstanceId().getJobId());
+		logger.info(CNA_JOB_TRANSFER_REFUSE_LOG, myServerAgent.getOwnerCloudNetworkAgent().getLocalName(),
 				jobToTransfer.getJobInstanceId().getJobId());
 		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToTransfer.getJobInstanceId());
 		if (Objects.nonNull(job)) {
@@ -102,7 +108,8 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	protected void handleInform(ACLMessage inform) {
 		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobToTransfer.getJobInstanceId());
 		if (nonNull(job)) {
-			logger.info(PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_SUCCESSFUL_LOG, guid, jobToTransfer.getJobInstanceId().getJobId());
+			MDC.put(MDC_JOB_ID, job.getJobId());
+			logger.info(CNA_JOB_TRANSFER_SUCCESSFUL_LOG, jobToTransfer.getJobInstanceId().getJobId());
 			informGreenSourceUponJobFinish(job, null);
 			updateServerStateUponJobFinish(job);
 		}
@@ -129,23 +136,22 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private void informGreenSourceUponJobFinish(final Job job, final String refuseCause) {
 		if (isNull(greenSourceRequest) || nonNull(refuseCause)) {
 			final List<AID> receivers = List.of(myServerAgent.getGreenSourceForJobMap().get(job.getJobId()));
-			final ACLMessage finishJobMessage = JobStatusMessageFactory.prepareFinishMessage(job.getJobId(), job.getStartTime(), receivers);
+			final ACLMessage finishJobMessage = prepareFinishMessage(job.getJobId(), job.getStartTime(), receivers);
 			displayMessageArrow(myServerAgent, receivers);
 			myServerAgent.send(finishJobMessage);
 
 			if (nonNull(greenSourceRequest)) {
-				myServerAgent.send(
-						ReplyMessageFactory.prepareReply(greenSourceRequest.createReply(), refuseCause, ACLMessage.FAILURE));
+				myServerAgent.send(prepareReply(greenSourceRequest.createReply(), refuseCause, ACLMessage.FAILURE));
 			}
 		} else {
 			displayMessageArrow(myServerAgent, greenSourceRequest.getSender());
-			myServerAgent.send(ReplyMessageFactory.prepareReply(greenSourceRequest.createReply(), PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE,
+			myServerAgent.send(prepareReply(greenSourceRequest.createReply(), TRANSFER_SUCCESSFUL_MESSAGE,
 					ACLMessage.INFORM));
 		}
 	}
 
 	private void updateServerStateUponJobFinish(final Job job) {
-		if (job.getStartTime().isBefore(TimeUtils.getCurrentTime())) {
+		if (job.getStartTime().isBefore(getCurrentTime())) {
 			myServerAgent.manage().incrementFinishedJobs(job.getJobId());
 		}
 		if (myServerAgent.manage().isJobUnique(job.getJobId())) {
@@ -159,12 +165,11 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 		if (isNull(greenSourceRequest)) {
 			final AID receiver = myServerAgent.getGreenSourceForJobMap().get(jobId);
 			displayMessageArrow(myServerAgent, receiver);
-			myServerAgent.send(PowerShortageMessageFactory.prepareJobPowerShortageInformation(jobToTransfer, receiver,
-					MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL));
+			myServerAgent.send(prepareJobPowerShortageInformation(jobToTransfer, receiver,
+					SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL));
 		} else {
 			displayMessageArrow(myServerAgent, greenSourceRequest.getSender());
-			myServerAgent.send(
-					ReplyMessageFactory.prepareReply(greenSourceRequest.createReply(), failureCause, ACLMessage.FAILURE));
+			myServerAgent.send(prepareReply(greenSourceRequest.createReply(), failureCause, ACLMessage.FAILURE));
 		}
 	}
 
@@ -174,15 +179,16 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 				myServerAgent.manage().getAvailableCapacity(job.getStartTime(), job.getEndTime(),
 						jobToTransfer.getJobInstanceId(), BACK_UP_POWER);
 
+		MDC.put(MDC_JOB_ID, jobId);
 		if (isNull(greenSourceRequest)) {
-			logger.info(PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_HOLD_LOG, guid, jobId);
-			myServerAgent.getServerJobs().replace(job, JobStatusEnum.ON_HOLD);
+			logger.info(CNA_JOB_TRANSFER_PUT_ON_HOLD_LOG, jobId);
+			myServerAgent.getServerJobs().replace(job, ON_HOLD);
 		} else if (availableBackUpPower <= job.getPower()) {
-			logger.info(PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_HOLD_SOURCE_LOG, guid, jobId);
-			myServerAgent.getServerJobs().replace(job, JobStatusEnum.ON_HOLD_SOURCE_SHORTAGE);
+			logger.info(CNA_JOB_TRANSFER_PUT_ON_HOLD_SOURCE_LOG, jobId);
+			myServerAgent.getServerJobs().replace(job, ON_HOLD_SOURCE_SHORTAGE);
 		} else {
-			logger.info(PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_BACKUP_LOG, guid, jobId);
-			myServerAgent.getServerJobs().replace(job, JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY);
+			logger.info(CNA_JOB_TRANSFER_PUT_ON_BACKUP_LOG, jobId);
+			myServerAgent.getServerJobs().replace(job, IN_PROGRESS_BACKUP_ENERGY);
 		}
 		myServerAgent.manage().updateServerGUI();
 	}
