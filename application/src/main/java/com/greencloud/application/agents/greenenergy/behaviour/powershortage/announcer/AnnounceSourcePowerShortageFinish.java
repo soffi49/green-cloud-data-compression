@@ -66,7 +66,8 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 				}
 			});
 		}
-		myGreenAgent.setMaximumCapacity(myGreenAgent.getInitialMaximumCapacity());
+		myGreenAgent.manageGreenPower()
+				.setCurrentMaximumCapacity(myGreenAgent.manageGreenPower().getInitialMaximumCapacity());
 	}
 
 	private Behaviour prepareVerificationBehaviour(final PowerJob affectedJob) {

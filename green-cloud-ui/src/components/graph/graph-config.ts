@@ -1,4 +1,4 @@
-import { iconPause, iconBattery, iconWeather, iconNetwork } from "@assets"
+import { iconPause, iconBattery, iconWeather } from "@assets"
 import React from "react"
 
 const COMMON_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -42,10 +42,6 @@ const CNA_STYLESHEET: Array<cytoscape.Stylesheet> = [
             width: "60",
             height: "60",
             shape: "barrel",
-            "background-image": iconNetwork,
-            "background-image-opacity": 0.8,
-            "background-image-containment": "inside",
-            "background-fit": 'contain',
         }
     },
     {

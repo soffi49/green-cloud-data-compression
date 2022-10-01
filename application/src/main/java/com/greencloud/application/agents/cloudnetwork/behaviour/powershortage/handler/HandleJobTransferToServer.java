@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.domain.job.Job;
+import com.greencloud.application.domain.job.ClientJob;
 import com.greencloud.application.domain.powershortage.PowerShortageJob;
 
 import jade.core.AID;
@@ -69,7 +69,7 @@ public class HandleJobTransferToServer extends WakerBehaviour {
 	 */
 	@Override
 	protected void onWake() {
-		final Job jobToExecute = myCloudNetworkAgent.manage().getJobById(jobId);
+		final ClientJob jobToExecute = myCloudNetworkAgent.manage().getJobById(jobId);
 		if (Objects.nonNull(jobToExecute)) {
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(SERVER_TRANSFER_EXECUTE_TRANSFER_LOG, jobId, newServer.getLocalName());

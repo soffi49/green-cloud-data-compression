@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.domain.job.Job;
+import com.greencloud.application.domain.job.ClientJob;
 import com.greencloud.application.domain.job.JobStatusEnum;
 import com.gui.agents.CloudNetworkAgentNode;
 
@@ -55,7 +55,7 @@ public class CloudNetworkStateManagement {
 	 * @param jobId job identifier
 	 * @return job
 	 */
-	public Job getJobById(final String jobId) {
+	public ClientJob getJobById(final String jobId) {
 		return cloudNetworkAgent.getNetworkJobs().keySet().stream()
 				.filter(job -> job.getJobId().equals(jobId))
 				.findFirst()

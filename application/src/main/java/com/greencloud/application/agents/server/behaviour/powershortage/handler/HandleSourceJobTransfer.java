@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.domain.job.Job;
+import com.greencloud.application.domain.job.ClientJob;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusEnum;
 
@@ -74,7 +74,7 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	 */
 	@Override
 	protected void onWake() {
-		final Job jobToExecute = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+		final ClientJob jobToExecute = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
 		if (Objects.nonNull(jobToExecute)) {
 			MDC.put(MDC_JOB_ID, jobToExecute.getJobId());
 			logger.info(GS_TRANSFER_EXECUTION_LOG);
@@ -84,7 +84,7 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 		}
 	}
 
-	private void startJobExecutionInNewGreenSource(final Job jobToExecute) {
+	private void startJobExecutionInNewGreenSource(final ClientJob jobToExecute) {
 		final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(),
 				jobToExecute.getStartTime(), List.of(newGreenSource));
 		displayMessageArrow(myServerAgent, newGreenSource);

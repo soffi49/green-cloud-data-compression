@@ -1,6 +1,5 @@
 package com.greencloud.application.agents.greenenergy;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,7 +7,6 @@ import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.greenenergy.domain.GreenEnergySourceTypeEnum;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyStateManagement;
 import com.greencloud.application.agents.greenenergy.management.GreenPowerManagement;
-import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.domain.job.PowerJob;
 import com.greencloud.commons.location.Location;
@@ -46,23 +44,6 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 		this.pricePerPowerUnit = pricePerPowerUnit;
 	}
 
-	public Double getCapacity(MonitoringData weather, Instant startTime) {
-		final double availablePower = greenPowerManagement.getAvailablePower(weather, startTime);
-		return availablePower > getMaximumCapacity() ? getMaximumCapacity() : availablePower;
-	}
-
-	public int getMaximumCapacity() {
-		return this.greenPowerManagement.getCurrentMaximumCapacity();
-	}
-
-	public void setMaximumCapacity(int maximumCapacity) {
-		this.greenPowerManagement.setCurrentMaximumCapacity(maximumCapacity);
-	}
-
-	public int getInitialMaximumCapacity() {
-		return this.greenPowerManagement.getInitialMaximumCapacity();
-	}
-
 	public Map<PowerJob, JobStatusEnum> getPowerJobs() {
 		return powerJobs;
 	}
@@ -93,5 +74,9 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
 	public GreenEnergyStateManagement manage() {
 		return stateManagement;
+	}
+
+	public GreenPowerManagement manageGreenPower() {
+		return greenPowerManagement;
 	}
 }

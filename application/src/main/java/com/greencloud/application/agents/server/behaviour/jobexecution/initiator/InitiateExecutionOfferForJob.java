@@ -13,11 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.domain.job.Job;
+import com.greencloud.application.domain.job.ClientJob;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusEnum;
 import com.greencloud.application.domain.job.JobWithProtocol;
-import com.greencloud.application.messages.MessagingUtils;
 import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
 
 import jade.core.Agent;
@@ -77,7 +76,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 	protected void handleRejectProposal(final ACLMessage reject_proposal) {
 		final JobInstanceIdentifier jobInstanceId = readMessageContent(reject_proposal,
 				JobInstanceIdentifier.class);
-		final Job job = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
+		final ClientJob job = myServerAgent.manage().getJobByIdAndStartDate(jobInstanceId);
 		myServerAgent.getGreenSourceForJobMap().remove(jobInstanceId.getJobId());
 		myServerAgent.getServerJobs().remove(job);
 		displayMessageArrow(myServerAgent, replyMessage.getAllReceiver());
