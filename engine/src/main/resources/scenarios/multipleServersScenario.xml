@@ -12,23 +12,23 @@
 	</monitoringAgentsArgs>
 	<greenEnergyAgentsArgs>
 		<greenenergyAgent>
-			<name>WindFarm2</name>
+			<name>WindFarm1</name>
 			<monitoringAgent>Weather1</monitoringAgent>
 			<ownerSever>Server1</ownerSever>
 			<latitude>52</latitude>
 			<longitude>20</longitude>
 			<pricePerPowerUnit>5</pricePerPowerUnit>
-			<maximumCapacity>20000</maximumCapacity>
+			<maximumCapacity>200</maximumCapacity>
 			<energyType>WIND</energyType>
 		</greenenergyAgent>
 		<greenenergyAgent>
-			<name>WindFarm1</name>
+			<name>WindFarm2</name>
 			<monitoringAgent>Weather2</monitoringAgent>
 			<ownerSever>Server2</ownerSever>
 			<latitude>52</latitude>
 			<longitude>20</longitude>
 			<pricePerPowerUnit>5</pricePerPowerUnit>
-			<maximumCapacity>20000</maximumCapacity>
+			<maximumCapacity>200</maximumCapacity>
 			<energyType>WIND</energyType>
 		</greenenergyAgent>
 		<greenenergyAgent>
@@ -38,7 +38,7 @@
 			<latitude>52</latitude>
 			<longitude>20</longitude>
 			<pricePerPowerUnit>5</pricePerPowerUnit>
-			<maximumCapacity>20000</maximumCapacity>
+			<maximumCapacity>200</maximumCapacity>
 			<energyType>WIND</energyType>
 		</greenenergyAgent>
 	</greenEnergyAgentsArgs>
@@ -46,19 +46,19 @@
 		<serverAgentsArgs>
 			<name>Server1</name>
 			<ownerCloudNetwork>CNA</ownerCloudNetwork>
-			<maximumCapacity>50000</maximumCapacity>
+			<maximumCapacity>500</maximumCapacity>
 			<price>10.5</price>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server2</name>
 			<ownerCloudNetwork>CNA</ownerCloudNetwork>
-			<maximumCapacity>50000</maximumCapacity>
+			<maximumCapacity>500</maximumCapacity>
 			<price>15.5</price>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server3</name>
 			<ownerCloudNetwork>CNA</ownerCloudNetwork>
-			<maximumCapacity>50000</maximumCapacity>
+			<maximumCapacity>500</maximumCapacity>
 			<price>15.5</price>
 		</serverAgentsArgs>
 	</serverAgentsArgs>
