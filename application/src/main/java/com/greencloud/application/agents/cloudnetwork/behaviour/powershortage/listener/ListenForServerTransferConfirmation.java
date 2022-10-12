@@ -102,7 +102,7 @@ public class ListenForServerTransferConfirmation extends MsgReceiver {
 				myCloudNetworkAgent.send(replyToServerRequest);
 				myCloudNetworkAgent.addBehaviour(
 						HandleJobTransferToServer.createFor(myCloudNetworkAgent, powerShortageJob, server));
-			} else if (msg.getPerformative() == FAILURE) {
+			} else {
 				MDC.put(MDC_JOB_ID, powerShortageJob.getJobInstanceId().getJobId());
 				logger.info(SERVER_TRANSFER_FAILED_LOG, powerShortageJob.getJobInstanceId().getJobId());
 
