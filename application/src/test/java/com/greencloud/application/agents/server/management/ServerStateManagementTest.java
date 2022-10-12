@@ -1,5 +1,7 @@
 package com.greencloud.application.agents.server.management;
 
+import static com.greencloud.application.domain.job.JobStatusEnum.BACK_UP_POWER_STATUSES;
+import static com.greencloud.application.domain.job.JobStatusEnum.GREEN_ENERGY_STATUSES;
 import static com.greencloud.application.domain.job.JobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
 import static com.greencloud.application.domain.job.JobStatusEnum.ON_HOLD_TRANSFER;
 import static java.time.Instant.parse;
@@ -36,7 +38,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.agents.server.domain.ServerPowerSourceType;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.domain.ImmutableGreenSourceData;
 import com.greencloud.application.domain.job.ClientJob;
@@ -137,7 +138,7 @@ class ServerStateManagementTest {
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00.000Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage()
-				.getAvailableCapacity(startTime, endTime, null, ServerPowerSourceType.BACK_UP_POWER);
+				.getAvailableCapacity(startTime, endTime, null, BACK_UP_POWER_STATUSES);
 
 		assertThat(availableCapacity).isEqualTo(188);
 	}
@@ -148,7 +149,7 @@ class ServerStateManagementTest {
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00.000Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage()
-				.getAvailableCapacity(startTime, endTime, null, ServerPowerSourceType.GREEN_ENERGY);
+				.getAvailableCapacity(startTime, endTime, null, GREEN_ENERGY_STATUSES);
 
 		assertThat(availableCapacity).isEqualTo(173);
 	}
@@ -168,7 +169,7 @@ class ServerStateManagementTest {
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage().getAvailableCapacity(startTime, endTime, null, null);
 
-		assertThat(availableCapacity).isEqualTo(143);
+		assertThat(availableCapacity).isEqualTo(153);
 	}
 
 	@Test
@@ -261,52 +262,24 @@ class ServerStateManagementTest {
 	@Test
 	@DisplayName("Test increment started unique job")
 	void testIncrementStartedUniqueJob() {
-		final String jobId = "1";
-
-		serverAgent.manage().incrementStartedJobs(jobId);
-		assertThat(MOCK_MANAGEMENT.getStartedJobsInstances().get()).isEqualTo(1);
-	}
-
-	@Test
-	@DisplayName("Test increment started non unique job")
-	void testIncrementStartedNonUniqueJob() {
-		final ClientJob jobProcessing = ImmutableClientJob.builder()
+		final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder()
 				.jobId("1")
-				.clientIdentifier("Client1")
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.power(10)
+				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
 				.build();
-		serverAgent.getServerJobs().put(jobProcessing, JobStatusEnum.IN_PROGRESS);
-		final String jobId = "1";
 
-		serverAgent.manage().incrementStartedJobs(jobId);
+		serverAgent.manage().incrementStartedJobs(jobInstanceId);
 		assertThat(MOCK_MANAGEMENT.getStartedJobsInstances().get()).isEqualTo(1);
 	}
 
 	@Test
 	@DisplayName("Test increment finished unique job")
 	void testIncrementFinishedUniqueJob() {
-		final String jobId = "1";
-
-		serverAgent.manage().incrementFinishedJobs(jobId);
-		assertThat(MOCK_MANAGEMENT.getFinishedJobsInstances().get()).isEqualTo(1);
-	}
-
-	@Test
-	@DisplayName("Test increment finished non unique job")
-	void testIncrementFinishedNonUniqueJob() {
-		final ClientJob jobProcessing = ImmutableClientJob.builder()
+		final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder()
 				.jobId("1")
-				.clientIdentifier("Client1")
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.power(10)
+				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
 				.build();
-		serverAgent.getServerJobs().put(jobProcessing, JobStatusEnum.IN_PROGRESS);
-		final String jobId = "1";
 
-		serverAgent.manage().incrementFinishedJobs(jobId);
+		serverAgent.manage().incrementFinishedJobs(jobInstanceId);
 		assertThat(MOCK_MANAGEMENT.getFinishedJobsInstances().get()).isEqualTo(1);
 	}
 
