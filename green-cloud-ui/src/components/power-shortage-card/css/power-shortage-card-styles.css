@@ -47,3 +47,11 @@
 .inactive-button:active {
     background-color: var(--red-3);
 }
+
+.event-title {
+    font-size: var(--font-size-4);
+    display: block;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    font-weight: 400;
+}
