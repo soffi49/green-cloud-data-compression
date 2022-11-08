@@ -64,15 +64,16 @@ const handleSetActive = (state, msg) => {
     if (agent) {
         agent.isActive = msg.data
 
-        if (agent.type === AGENT_TYPES.SERVER) {
-            state.agents.connections
-                .filter(connection => connection.data.type === 'unidirected')
-                .forEach(connection => {
-                    if (connection.data.source === agent.name || connection.data.target === agent.name) {
-                        connection.state = agent.isActive ? 'active' : 'inactive'
-                    }
-                })
-        }
+        state.agents.connections
+            .forEach(connection => {
+                if (connection.data.source === agent.name || connection.data.target === agent.name) {
+                    const secondAgent = connection.data.source === agent.name ?
+                        getAgentByName(state.agents.agents, connection.data.target) :
+                        getAgentByName(state.agents.agents, connection.data.source)
+                    console.log(secondAgent)
+                    connection.state = agent.isActive && secondAgent.isActive ? 'active' : 'inactive'
+                }
+            })
     }
 }
 
@@ -134,27 +135,6 @@ const handleRegisterAgent = (state, msg) => {
     }
 }
 
-const handleArrowDisplay = (state, msg) => {
-    msg.data.forEach((target) => {
-        const id = [msg.agentName, target].join('-')
-        const connection = state.agents.connections.find(el => el.data.id === id)
-
-        if (connection) {
-            connection.state = 'active'
-        }
-    })
-}
-
-const handleArrowHide = (state, msg) => {
-    msg.data.forEach((target) => {
-        const id = [msg.agentName, target].join('-')
-        const connection = state.agents.connections.find(el => el.data.id === id)
-
-        if (connection)
-            connection.state = 'inactive'
-    })
-}
-
 module.exports = {
     MESSAGE_HANDLERS: {
         INCREMENT_FINISHED_JOBS: handleIncrementFinishJobs,
@@ -171,8 +151,6 @@ module.exports = {
         SET_CLIENT_NUMBER: handleSetClientNumber,
         SET_CLIENT_JOB_STATUS: handleSetClientJobStatus,
         SET_SERVER_BACK_UP_TRAFFIC: handleSetBackUpTraffic,
-        REGISTER_AGENT: handleRegisterAgent,
-        DISPLAY_MESSAGE_ARROW: handleArrowDisplay,
-        HIDE_MESSAGE_ARROW: handleArrowHide
+        REGISTER_AGENT: handleRegisterAgent
     }
 }
