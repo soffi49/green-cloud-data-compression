@@ -13,10 +13,12 @@ import static com.greencloud.application.domain.job.JobStatusEnum.JOB_ON_HOLD_ST
 import static com.greencloud.application.domain.job.JobStatusEnum.RUNNING_JOB_STATUSES;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceIdWithRealTime;
+import static com.greencloud.application.utils.AlgorithmUtils.computeIncorrectMaximumValProbability;
 import static com.greencloud.application.utils.AlgorithmUtils.getMinimalAvailablePowerDuringTimeStamp;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
+import static java.lang.Math.min;
 import static java.util.Objects.nonNull;
 
 import java.time.Instant;
@@ -238,6 +240,22 @@ public class GreenEnergyStateManagement {
 		return availablePower <= 0 ?
 				Optional.empty() :
 				Optional.of(availablePower);
+	}
+
+	/**
+	 * Method retrieves combined weather prediction error and the available power calculation error
+	 * It was assumed that the smallest time interval unit is equal 10 min
+	 *
+	 * @param job job of interest
+	 * @return entire power calculation error
+	 */
+	public double computeCombinedPowerError(final PowerJob job) {
+		final Instant realJobStartTime = convertToRealTime(job.getStartTime());
+		final Instant realJobEndTime = convertToRealTime(job.getEndTime());
+		final double availablePowerError = computeIncorrectMaximumValProbability(realJobStartTime, realJobEndTime,
+				INTERVAL_LENGTH_MIN);
+
+		return min(1, availablePowerError + greenEnergyAgent.getWeatherPredictionError());
 	}
 
 	/**

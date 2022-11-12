@@ -1,9 +1,12 @@
 package com.greencloud.application.utils;
 
+import static com.greencloud.application.agents.greenenergy.domain.GreenEnergyAgentConstants.SUB_INTERVAL_ERROR;
 import static com.greencloud.application.utils.TimeUtils.divideIntoSubIntervals;
 import static com.greencloud.application.utils.domain.JobWithTime.TimeType.START_TIME;
+import static java.lang.Math.max;
 import static java.util.Objects.nonNull;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -144,6 +147,24 @@ public class AlgorithmUtils {
 			sums.addAll(newSums);
 		});
 		return result.get().subList;
+	}
+
+	/**
+	 * Method computes the probability that the computed maximum value is incorrect (it was assumed that the smallest time interval is equal to 10 min)
+	 *
+	 * @param startTime      start time of the interval (in real time)
+	 * @param endTime        end time of the interval (in real time)
+	 * @param intervalLength length of single sub-interval in minutes
+	 * @return margin of error
+	 */
+	public static double computeIncorrectMaximumValProbability(final Instant startTime, final Instant endTime,
+			final long intervalLength) {
+		final Set<Instant> subIntervals = divideIntoSubIntervals(startTime, endTime, intervalLength * MILLIS_IN_MIN);
+		final long sampleSize = (long) subIntervals.size() - 1;
+		final double populationSize = (double) Duration.between(startTime, endTime).toMinutes() / 10;
+
+		return SUB_INTERVAL_ERROR + max(1 - sampleSize / populationSize, 0);
+
 	}
 
 	private static <T extends PowerJob> Deque<Map.Entry<Instant, Integer>> getPowerForJobIntervals(
