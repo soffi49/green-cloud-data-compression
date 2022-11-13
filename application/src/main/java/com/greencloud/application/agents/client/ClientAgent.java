@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.greencloud.application.agents.client.behaviour.df.FindCloudNetworkAgents;
+import com.greencloud.application.agents.client.behaviour.df.FindSchedulerAgent;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.initiator.InitiateNewJobAnnouncement;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.listener.ListenForJobUpdate;
 import com.greencloud.application.domain.job.ClientJob;
@@ -43,7 +43,6 @@ public class ClientAgent extends AbstractClientAgent {
 		final Object[] args = getArguments();
 
 		if (Objects.nonNull(args) && args.length == 5) {
-			initializeAgent();
 			final ClientJob jobToBeExecuted = initializeAgentJob(args);
 			MDC.put(MDC_JOB_ID, jobToBeExecuted.getJobId());
 			connectToGui(this);
@@ -62,10 +61,6 @@ public class ClientAgent extends AbstractClientAgent {
 	protected void takeDown() {
 		logger.info("I'm finished. Bye!");
 		super.takeDown();
-	}
-
-	private void initializeAgent() {
-		this.chosenCloudNetworkAgent = null;
 	}
 
 	private ClientJob initializeAgentJob(final Object[] arguments) {
@@ -118,11 +113,8 @@ public class ClientAgent extends AbstractClientAgent {
 
 	private List<Behaviour> prepareStartingBehaviour(final ClientJob job) {
 		var startingBehaviour = new SequentialBehaviour(this);
-		startingBehaviour.addSubBehaviour(new FindCloudNetworkAgents());
-		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this, null, job));
-		return List.of(
-				new ListenForJobUpdate(this, job),
-				startingBehaviour
-		);
+		startingBehaviour.addSubBehaviour(new FindSchedulerAgent());
+		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this, job));
+		return List.of(new ListenForJobUpdate(this), startingBehaviour);
 	}
 }

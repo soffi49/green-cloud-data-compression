@@ -217,4 +217,16 @@ public class JobMapper {
 				.startTime(startTime)
 				.build();
 	}
+
+	/**
+	 * @param jobId     job identifier
+	 * @param startTime job instance start time
+	 * @return JobInstanceIdentifier
+	 */
+	public static JobInstanceIdentifier mapToJobInstanceId(final String jobId, final Instant startTime) {
+		return ImmutableJobInstanceIdentifier.builder()
+				.jobId(jobId)
+				.startTime(startTime)
+				.build();
+	}
 }
