@@ -42,7 +42,7 @@ public class ClientAgent extends AbstractClientAgent {
 		super.setup();
 		final Object[] args = getArguments();
 
-		if (Objects.nonNull(args) && args.length == 4) {
+		if (Objects.nonNull(args) && args.length == 5) {
 			initializeAgent();
 			final ClientJob jobToBeExecuted = initializeAgentJob(args);
 			MDC.put(MDC_JOB_ID, jobToBeExecuted.getJobId());
@@ -72,6 +72,7 @@ public class ClientAgent extends AbstractClientAgent {
 		try {
 			final Instant startTime = TimeUtils.convertToInstantTime(arguments[0].toString());
 			final Instant endTime = TimeUtils.convertToInstantTime(arguments[1].toString());
+			final Instant deadline = TimeUtils.convertToInstantTime(arguments[2].toString());
 			final Instant currentTime = TimeUtils.getCurrentTimeMinusError();
 			if (startTime.isBefore(currentTime) || endTime.isBefore(currentTime)) {
 				logger.error("The job execution dates cannot be before current time!");
@@ -81,14 +82,19 @@ public class ClientAgent extends AbstractClientAgent {
 				logger.error("The job execution end date cannot be before job execution start date!");
 				doDelete();
 			}
-			prepareSimulatedTimes(startTime, endTime);
+			if (deadline.isBefore(endTime)) {
+				logger.error("The job deadline cannot be before job execution end time!");
+				doDelete();
+			}
+			prepareSimulatedTimes(startTime, endTime, deadline);
 			logger.info("[{}] Job simulation time: from {} to {}", this.getName(), simulatedJobStart, simulatedJobEnd);
 			return ImmutableClientJob.builder()
 					.clientIdentifier(getAID().getName())
 					.startTime(getSimulatedJobStart())
 					.endTime(getSimulatedJobEnd())
-					.power(Integer.parseInt(arguments[2].toString()))
-					.jobId(arguments[3].toString())
+					.deadline(getSimulatedDeadline())
+					.power(Integer.parseInt(arguments[3].toString()))
+					.jobId(arguments[4].toString())
 					.build();
 		} catch (IncorrectTaskDateException e) {
 			logger.error(e.getMessage());
@@ -100,12 +106,14 @@ public class ClientAgent extends AbstractClientAgent {
 		return null;
 	}
 
-	private void prepareSimulatedTimes(final Instant startTime, final Instant endTime) {
+	private void prepareSimulatedTimes(final Instant startTime, final Instant endTime, final Instant deadline) {
 		final Instant currentTime = getCurrentTime();
 		final long expectedJobStart = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, startTime));
 		final long expectedJobEnd = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, endTime));
+		final long expectedJobDeadline = convertToSimulationTime(ChronoUnit.SECONDS.between(currentTime, deadline));
 		setSimulatedJobStart(currentTime.plus(expectedJobStart, ChronoUnit.MILLIS));
 		setSimulatedJobEnd(currentTime.plus(expectedJobEnd, ChronoUnit.MILLIS));
+		setSimulatedDeadline(currentTime.plus(expectedJobDeadline, ChronoUnit.MILLIS));
 	}
 
 	private List<Behaviour> prepareStartingBehaviour(final ClientJob job) {
