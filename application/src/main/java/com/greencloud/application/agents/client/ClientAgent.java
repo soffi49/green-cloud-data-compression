@@ -81,7 +81,8 @@ public class ClientAgent extends AbstractClientAgent {
 				doDelete();
 			}
 			prepareSimulatedTimes(startTime, endTime, deadline);
-			logger.info("[{}] Job simulation time: from {} to {}", this.getName(), simulatedJobStart, simulatedJobEnd);
+			logger.info("[{}] Job simulation time: from {} to {} (deadline: {})", this.getName(), simulatedJobStart,
+					simulatedJobEnd, simulatedDeadline);
 			return ImmutableClientJob.builder()
 					.clientIdentifier(getAID().getName())
 					.startTime(getSimulatedJobStart())
