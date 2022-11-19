@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.AbstractAgent;
+import com.greencloud.application.agents.server.management.ServerConfigManagement;
 import com.greencloud.application.agents.server.management.ServerStateManagement;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.commons.job.ClientJob;
@@ -28,6 +29,7 @@ import jade.lang.acl.ACLMessage;
 public abstract class AbstractServerAgent extends AbstractAgent {
 
 	protected transient ServerStateManagement stateManagement;
+	protected transient ServerConfigManagement configManagement;
 	protected int initialMaximumCapacity;
 	protected int currentMaximumCapacity;
 	protected double pricePerHour;
@@ -60,13 +62,15 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	private int compareGreenSourceOffers(final ACLMessage offer1, final ACLMessage offer2) {
 		GreenSourceData greenSource1;
 		GreenSourceData greenSource2;
+		int weight1 = this.manageConfig().getWeightsForGreenSourcesMap().get(offer1.getSender());
+		int weight2 = this.manageConfig().getWeightsForGreenSourcesMap().get(offer2.getSender());
 		try {
 			greenSource1 = getMapper().readValue(offer1.getContent(), GreenSourceData.class);
 			greenSource2 = getMapper().readValue(offer2.getContent(), GreenSourceData.class);
 		} catch (JsonProcessingException e) {
 			return Integer.MAX_VALUE;
 		}
-		double powerDifference = greenSource1.getAvailablePowerInTime() - greenSource2.getAvailablePowerInTime();
+		double powerDifference = greenSource1.getAvailablePowerInTime() * weight1 - greenSource2.getAvailablePowerInTime() * weight2;
 		int errorDifference = (int) (greenSource1.getPowerPredictionError() - greenSource2.getPowerPredictionError());
 		return (int) (errorDifference != 0 ?
 				MAX_AVAILABLE_POWER_DIFFERENCE.isValidValue((long) powerDifference) ?
@@ -109,6 +113,10 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 
 	public ServerStateManagement manage() {
 		return stateManagement;
+	}
+
+	public ServerConfigManagement manageConfig() {
+		return configManagement;
 	}
 
 	public void tookJobIntoProcessing() {
