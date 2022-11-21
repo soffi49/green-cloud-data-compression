@@ -12,6 +12,8 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.commons.job.JobResultType.ACCEPTED;
+import static com.greencloud.commons.job.JobResultType.FAILED;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
 import java.util.Objects;
@@ -68,6 +70,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 		if (Objects.nonNull(jobInstance)) {
 			final int availableCapacity = myServerAgent.manage()
 					.getAvailableCapacity(jobInstance.getStartTime(), jobInstance.getEndTime(), null, null);
+			myServerAgent.manage().incrementJobCounter(jobInstanceId, ACCEPTED);
 			myServerAgent.getServerJobs().replace(jobInstance, ACCEPTED_BY_SERVER);
 
 			if (jobInstance.getPower() > availableCapacity) {
@@ -107,6 +110,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 		logger.info(SERVER_OFFER_ACCEPT_PROPOSAL_FAILURE_LOG, jobInstance.getJobId());
 		myServerAgent.getServerJobs().remove(jobInstance);
 		myServerAgent.getGreenSourceForJobMap().remove(jobInstance.getJobId());
+		myServerAgent.manage().incrementJobCounter(jobInstanceId, FAILED);
 
 		myServerAgent.send(prepareReply(replyMessage, jobInstanceId, REJECT_PROPOSAL));
 		myServerAgent.send(prepareFailureReply(cnaAccept.createReply(), jobInstanceId, responseProtocol));
