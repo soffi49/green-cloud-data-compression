@@ -5,6 +5,7 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.l
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.REFUSE;
 
@@ -28,6 +29,7 @@ import com.greencloud.application.mapper.JsonMapper;
 import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
 import com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory;
 import com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory;
+import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
 import com.greencloud.commons.job.ClientJob;
 import com.greencloud.commons.job.PowerJob;
 
@@ -67,8 +69,8 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 			final PowerShortageJob affectedJob = readMessageContent(transferRequest);
 
 			if (Objects.nonNull(affectedJob)) {
-				final ClientJob originalJob = myServerAgent.manage()
-						.getJobByIdAndStartDate(affectedJob.getJobInstanceId());
+				final ClientJob originalJob = getJobByIdAndStartDate(affectedJob.getJobInstanceId(),
+						myServerAgent.getServerJobs());
 
 				if (Objects.nonNull(originalJob)) {
 					final PowerJob powerJob = createJobTransferInstance(affectedJob, originalJob);
@@ -125,7 +127,7 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 	}
 
 	private void schedulePowerShortageHandling(final PowerShortageJob jobTransfer, final ACLMessage transferRequest) {
-		final ClientJob job = myServerAgent.manage().getJobByIdAndStartDate(jobTransfer.getJobInstanceId());
+		final ClientJob job = getJobByIdAndStartDate(jobTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
 		if (Objects.nonNull(job)) {
 			myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
 			myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(Collections.singletonList(job),

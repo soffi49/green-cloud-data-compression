@@ -43,19 +43,6 @@ public class SchedulerStateManagement {
 	}
 
 	/**
-	 * Method retrieves the job based on the given id
-	 *
-	 * @param jobId unique job identifier
-	 * @return Job
-	 */
-	public ClientJob getJobById(final String jobId) {
-		return schedulerAgent.getClientJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId))
-				.findFirst()
-				.orElse(null);
-	}
-
-	/**
 	 * Method postpones the job execution by substituting the previous instance with the one
 	 * having adjusted time frames
 	 *

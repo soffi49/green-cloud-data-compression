@@ -21,6 +21,7 @@ import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobFinishMessage;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForCNA;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
+import static com.greencloud.application.utils.JobUtils.isJobUnique;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
 import static com.greencloud.commons.job.JobResultType.ACCEPTED;
@@ -141,68 +142,6 @@ public class ServerStateManagement {
 
 		serverAgent.addBehaviour(
 				new InitiateJobTransferInCloudNetwork(serverAgent, transferMessage, request, jobTransfer));
-	}
-
-	/**
-	 * Method returns the instance of the job for current time
-	 *
-	 * @param jobId unique job identifier
-	 * @return pair of job and current status
-	 */
-	public Map.Entry<ClientJob, JobStatusEnum> getCurrentJobInstance(final String jobId) {
-		final Instant currentTime = getCurrentTime();
-		return serverAgent.getServerJobs().entrySet().stream().filter(jobEntry -> {
-			final ClientJob job = jobEntry.getKey();
-			return job.getJobId().equals(jobId) && (
-					(job.getStartTime().isBefore(currentTime) && job.getEndTime().isAfter(currentTime))
-					|| job.getEndTime().equals(currentTime));
-		}).findFirst().orElse(null);
-	}
-
-	/**
-	 * Method retrieves the job by the job id and star time from job map
-	 *
-	 * @param jobId     job identifier
-	 * @param startTime job start time
-	 * @return job
-	 */
-	public ClientJob getJobByIdAndStartDate(final String jobId, final Instant startTime) {
-		return serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getStartTime().equals(startTime)).findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Method retrieves the job by the job instance id
-	 *
-	 * @param jobInstanceId job instance identifier
-	 * @return job
-	 */
-	public ClientJob getJobByIdAndStartDate(final JobInstanceIdentifier jobInstanceId) {
-		return serverAgent.getServerJobs().keySet().stream()
-				.filter(job -> job.getJobId().equals(jobInstanceId.getJobId()) && job.getStartTime()
-						.equals(jobInstanceId.getStartTime())).findFirst().orElse(null);
-	}
-
-	/**
-	 * Method retrieves the job based on the given id
-	 *
-	 * @param jobId unique job identifier
-	 * @return Job
-	 */
-	public ClientJob getJobById(final String jobId) {
-		return serverAgent.getServerJobs().keySet().stream().filter(job -> job.getJobId().equals(jobId)).findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Method verifies if there is only 1 instance of the given job
-	 *
-	 * @param jobId unique job identifier
-	 * @return boolean
-	 */
-	public boolean isJobUnique(final String jobId) {
-		return filter(serverAgent.getServerJobs().keySet(), job -> job.getJobId().equals(jobId)).size() == 1;
 	}
 
 	/**
@@ -353,7 +292,7 @@ public class ServerStateManagement {
 	private void updateStateAfterJobIsDone(final ClientJob jobToBeDone, JobResultType jobResultType) {
 		final JobInstanceIdentifier jobInstance = mapToJobInstanceId(jobToBeDone);
 		incrementJobCounter(jobInstance, jobResultType);
-		if (isJobUnique(jobToBeDone.getJobId())) {
+		if (isJobUnique(jobToBeDone.getJobId(), serverAgent.getServerJobs())) {
 			serverAgent.getGreenSourceForJobMap().remove(jobToBeDone.getJobId());
 			updateClientNumberGUI();
 		}
