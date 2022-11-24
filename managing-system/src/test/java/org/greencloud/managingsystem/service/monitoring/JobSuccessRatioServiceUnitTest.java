@@ -1,4 +1,4 @@
-package service.monitoring;
+package org.greencloud.managingsystem.service.monitoring;
 
 import static com.database.knowledge.domain.agent.DataType.CLIENT_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
-import org.greencloud.managingsystem.service.monitoring.JobSuccessRatioService;
-import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -118,12 +116,12 @@ class JobSuccessRatioServiceUnitTest {
 	@ParameterizedTest
 	@MethodSource("parametersForSuccessRatioTest")
 	@DisplayName("Test is job success ratio correct for components")
-	void testIsComponentJobSuccessRatioCorrect(AdaptationGoal goal, boolean result) {
+	void testIsComponentJobSuccessRatioCorrect(AdaptationGoal goal) {
 		doReturn(goal).when(mockMonitoringService).getAdaptationGoal(GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO);
 		doReturn(prepareComponentData()).when(mockDatabase).readMonitoringDataForDataTypes(
 				eq(NETWORK_AGENT_DATA_TYPES), anyInt());
 
-		assertThat(jobSuccessRatioService.evaluateComponentSuccessRatio()).isEqualTo(result);
+		assertThat(jobSuccessRatioService.evaluateComponentSuccessRatio()).isFalse();
 	}
 
 	private List<AgentData> prepareClientData() {

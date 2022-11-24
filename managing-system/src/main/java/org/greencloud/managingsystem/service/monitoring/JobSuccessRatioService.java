@@ -17,7 +17,6 @@ import static org.greencloud.managingsystem.service.monitoring.logs.ManagingAgen
 import static org.greencloud.managingsystem.service.monitoring.logs.ManagingAgentMonitoringLog.SUCCESS_RATIO_UNSATISFIED_COMPONENT_LOG;
 
 import java.util.List;
-import java.util.Objects;
 
 import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.service.AbstractManagingService;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.client.ClientMonitoringData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
-import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.greencloud.commons.job.JobStatusEnum;
 
@@ -68,7 +66,6 @@ public class JobSuccessRatioService extends AbstractManagingService {
 					.writeSystemQualityData(MAXIMIZE_JOB_SUCCESS_RATIO.getAdaptationGoalId(), currentSuccessRatio);
 		}
 		jobSuccessRatio.set(aggregatedSuccessRatio);
-
 		return false;
 	}
 
@@ -86,22 +83,24 @@ public class JobSuccessRatioService extends AbstractManagingService {
 			logger.info(READ_SUCCESS_RATIO_NETWORK_DATA_YET_LOG);
 			return true;
 		}
-
-		return componentsData.stream()
-				.allMatch(component -> {
-					final double successRatio = readSuccessRatioForNetworkComponent(component);
-					boolean result =
-							successRatio == DATA_NOT_AVAILABLE_INDICATOR || isSuccessRatioWithinBound(successRatio);
-					if (!result) {
-						final String name = component.aid().split("@")[0];
-						logger.info(SUCCESS_RATIO_UNSATISFIED_COMPONENT_LOG, name, successRatio);
-					}
-					return result;
-				});
+		return componentsData.stream().allMatch(this::verifySuccessRatioForComponent);
 	}
 
 	public double getJobSuccessRatio() {
 		return jobSuccessRatio.get();
+	}
+
+	private boolean verifySuccessRatioForComponent(final AgentData component) {
+		final double successRatio = readSuccessRatioForNetworkComponent(component);
+		boolean result = successRatio == DATA_NOT_AVAILABLE_INDICATOR || managingAgent.monitor()
+				.isQualityInBounds(successRatio, MAXIMIZE_JOB_SUCCESS_RATIO);
+
+		if (!result) {
+			final String name = component.aid().split("@")[0];
+			logger.info(SUCCESS_RATIO_UNSATISFIED_COMPONENT_LOG, name, successRatio);
+		}
+
+		return result;
 	}
 
 	//TODO add more components after their data retrieving will be implemented
@@ -135,12 +134,5 @@ public class JobSuccessRatioService extends AbstractManagingService {
 				.filter(data -> data.getIsFinished() && data.getCurrentJobStatus().equals(JobStatusEnum.FAILED))
 				.count();
 		return 1 - ((double) failCount / allCount);
-	}
-
-	private boolean isSuccessRatioWithinBound(final double successRatio) {
-		final AdaptationGoal goal = managingAgent.monitor().getAdaptationGoal(MAXIMIZE_JOB_SUCCESS_RATIO);
-		return goal.isAboveThreshold() ?
-				successRatio >= goal.threshold() :
-				successRatio <= goal.threshold();
 	}
 }
