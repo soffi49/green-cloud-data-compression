@@ -1,8 +1,13 @@
 package org.greencloud.managingsystem.service.analyzer;
 
-import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_COMPONENT;
-import static com.database.knowledge.domain.action.AdaptationActionEnum.RECONFIGURE;
-import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationActions;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_GREEN_SOURCE;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_SERVER;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIO;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_ERROR;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_PERCENTAGE;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIO;
+import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.ADD_COMPONENT;
+import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.RECONFIGURE;
 import static com.database.knowledge.domain.agent.DataType.CLIENT_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
@@ -13,6 +18,7 @@ import static com.greencloud.commons.job.JobStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.job.JobStatusEnum.PROCESSED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -21,14 +27,12 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.greencloud.managingsystem.service.planner.PlannerService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -55,17 +59,18 @@ class AnalyzerServiceDatabaseTest {
 	private TimescaleDatabase database;
 
 	private AnalyzerService analyzerService;
+	private PlannerService plannerService;
 
 	@BeforeEach
 	void init() {
-		database = new TimescaleDatabase();
+		database = spy(new TimescaleDatabase());
 		database.initDatabase();
 
 		mockManagingAgent = spy(ManagingAgent.class);
 		mockAgentNode = mock(ManagingAgentNode.class);
 		analyzerService = new AnalyzerService(mockManagingAgent);
 		var monitoringService = new MonitoringService(mockManagingAgent);
-		var plannerService = new PlannerService(mockManagingAgent);
+		plannerService = spy(new PlannerService(mockManagingAgent));
 
 		doReturn(mockAgentNode).when(mockManagingAgent).getAgentNode();
 		doReturn(database).when(mockAgentNode).getDatabaseClient();
@@ -84,34 +89,32 @@ class AnalyzerServiceDatabaseTest {
 	}
 
 	@Test
-	@Disabled
 	@DisplayName("Test analyzer triggering")
 	void testTrigger() {
-		var expectedQualityMap = getAdaptationActions().stream()
-				.collect(Collectors.toMap(action -> action, (action) -> 0.0D));
-
 		analyzerService.trigger(GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verify(mockManagingAgent).getSystemQualityThreshold();
 		verify(database).readAdaptationActions();
-		verify(mockManagingAgent).plan().trigger(expectedQualityMap);
+		verify(mockManagingAgent).plan();
+		verify(plannerService).trigger(argThat(
+				adaptationActionDoubleMap -> adaptationActionDoubleMap.values().stream().allMatch(val -> val == 0)));
 	}
 
 	@Test
 	@DisplayName("Test getting adaptation actions for goal")
 	void testGetAdaptationActionsForGoal() {
 		var expectedResult = List.of(
-				new AdaptationAction(1, "Add Server",
+				new AdaptationAction(1, ADD_SERVER,
 						ADD_COMPONENT, MAXIMIZE_JOB_SUCCESS_RATIO),
-				new AdaptationAction(2, "Increase job deadline priority",
+				new AdaptationAction(2, INCREASE_DEADLINE_PRIO,
 						RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
-				new AdaptationAction(3, "Increase job power priority",
+				new AdaptationAction(3, INCREASE_POWER_PRIO,
 						RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
-				new AdaptationAction(4, "Increase Green Source selection chance",
+				new AdaptationAction(4, INCREASE_GREEN_SOURCE_PERCENTAGE,
 						RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
-				new AdaptationAction(5, "Increase Green Source weather prediction error",
+				new AdaptationAction(5, INCREASE_GREEN_SOURCE_ERROR,
 						RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
-				new AdaptationAction(7, "Add Green Source",
+				new AdaptationAction(7, ADD_GREEN_SOURCE,
 						ADD_COMPONENT, MAXIMIZE_JOB_SUCCESS_RATIO));
 
 		var result = analyzerService.getAdaptationActionsForGoal(MAXIMIZE_JOB_SUCCESS_RATIO);
