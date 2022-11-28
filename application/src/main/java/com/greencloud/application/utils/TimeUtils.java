@@ -194,11 +194,18 @@ public class TimeUtils {
 	}
 
 	/**
+	 * Method resets mocked CLOCK
+	 */
+	public static void resetMockClock() {
+		CLOCK = Clock.systemDefaultZone();
+	}
+
+	/**
 	 * Method sets the system start time to the current time
 	 */
 	public static void setSystemStartTime() {
 		if (Objects.isNull(SYSTEM_START_TIME)) {
-			SYSTEM_START_TIME = Instant.now();
+			SYSTEM_START_TIME = getCurrentTime();
 		}
 	}
 

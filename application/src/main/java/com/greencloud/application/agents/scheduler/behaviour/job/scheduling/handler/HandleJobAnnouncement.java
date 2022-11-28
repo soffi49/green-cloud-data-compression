@@ -8,6 +8,7 @@ import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentC
 import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentConstants.JOB_PROCESSING_TIME_ADJUSTMENT;
 import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentConstants.SEND_NEXT_JOB_TIMEOUT;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
 import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
 import static com.greencloud.application.mapper.JobMapper.mapToJobWithNewTime;
@@ -85,7 +86,7 @@ public class HandleJobAnnouncement extends TickerBehaviour {
 			return;
 		}
 
-		logger.info(ANNOUNCE_JOB_CNA_LOG, adjustedJob.getJobId());
+		logger.info(ANNOUNCE_JOB_CNA_LOG, mapToJobInstanceId(adjustedJob));
 		final ACLMessage cfp = createCallForProposal(adjustedJob, myScheduler.getAvailableCloudNetworks(),
 				SCHEDULER_JOB_CFP_PROTOCOL);
 		final ACLMessage clientMessage = prepareJobStatusMessageForClient(adjustedJob.getClientIdentifier(),
@@ -102,10 +103,10 @@ public class HandleJobAnnouncement extends TickerBehaviour {
 		final Instant newAdjustedStart = getCurrentTime().plusMillis(JOB_PROCESSING_TIME_ADJUSTMENT);
 		final Instant newAdjustedEnd = newAdjustedStart.plusMillis(jobDuration);
 
-		if (job.getStartTime().isBefore(newAdjustedStart)) {
+		if (job.getStartTime().isAfter(newAdjustedStart)) {
 			return job;
 		}
-		if (newAdjustedEnd.isAfter(job.getDeadline().plusMillis(JOB_PROCESSING_DEADLINE_ADJUSTMENT))) {
+		if (newAdjustedEnd.isAfter(job.getDeadline().minusMillis(JOB_PROCESSING_DEADLINE_ADJUSTMENT))) {
 			logger.info(JOB_EXECUTION_AFTER_DEADLINE_LOG, job.getJobId());
 			myScheduler.getClientJobs().remove(job);
 			myScheduler.send(
