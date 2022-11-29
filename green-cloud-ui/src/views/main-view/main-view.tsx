@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react'
 import { styles } from './main-view-style'
 import {
-   StatisticsPanel,
    Banner,
-   NetworkPanel,
+   AgentSystemPanel,
    GraphPanel,
    AdaptationPanel,
 } from '@components'
@@ -26,8 +25,7 @@ const MainView = () => {
          <Banner />
          <div style={styles.contentContainer}>
             <div style={styles.leftContentContainer}>
-               <NetworkPanel />
-               <StatisticsPanel />
+               <AgentSystemPanel />
             </div>
             <GraphPanel />
             <div style={styles.rightContentContainer}>
