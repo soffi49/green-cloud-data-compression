@@ -23,4 +23,9 @@ public interface ServerMonitoringData extends NetworkComponentMonitoringData {
 	 * @return current back up power usage
 	 */
 	double getCurrentBackUpPowerUsage();
+
+	/**
+	 * @return information wether serve is disabled
+	 */
+	boolean isDisabled();
 }

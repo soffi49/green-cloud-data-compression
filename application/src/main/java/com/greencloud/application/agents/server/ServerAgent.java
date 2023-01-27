@@ -1,6 +1,7 @@
 package com.greencloud.application.agents.server;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 
 import java.util.List;
@@ -63,6 +64,7 @@ public class ServerAgent extends AbstractServerAgent {
 			this.configManagement = new ServerConfigManagement(this);
 			this.adaptationManagement = new ServerAdaptationManagement(this);
 			this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+			this.isDisabled = false;
 			try {
 				this.manageConfig().setPricePerHour(Double.parseDouble(args[1].toString()));
 				this.currentMaximumCapacity = Integer.parseInt(args[2].toString());
@@ -113,7 +115,9 @@ public class ServerAgent extends AbstractServerAgent {
 			return adaptationManagement()
 					.changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
 		}
-
+		if (adaptationAction.getAction() == DISABLE_SERVER) {
+			return adaptationManagement().disableServer();
+		}
 		return false;
 	}
 }

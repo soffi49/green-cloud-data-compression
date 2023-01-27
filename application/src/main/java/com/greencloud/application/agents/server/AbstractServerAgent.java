@@ -33,6 +33,8 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	protected transient ServerAdaptationManagement adaptationManagement;
 	protected int initialMaximumCapacity;
 	protected int currentMaximumCapacity;
+
+	protected boolean isDisabled;
 	protected volatile AtomicLong currentlyProcessing;
 	protected volatile ConcurrentMap<ClientJob, ExecutionJobStatusEnum> serverJobs;
 	protected Map<String, AID> greenSourceForJobMap;
@@ -111,6 +113,10 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 		return greenSourceForJobMap;
 	}
 
+	public boolean isDisabled() { return isDisabled; }
+
+	public void disable() { isDisabled = true; }
+
 	public ServerStateManagement manage() {
 		return stateManagement;
 	}
@@ -132,6 +138,6 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	}
 
 	public boolean canTakeIntoProcessing() {
-		return currentlyProcessing.get() < manageConfig().getJobProcessingLimit();
+		return currentlyProcessing.get() < manageConfig().getJobProcessingLimit() && !isDisabled();
 	}
 }

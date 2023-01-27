@@ -9,6 +9,7 @@ import static com.database.knowledge.domain.action.AdaptationActionEnum.DISCONNE
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_ERROR;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIORITY;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.*;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.ADD_COMPONENT;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.RECONFIGURE;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.REMOVE_COMPONENT;
@@ -24,6 +25,7 @@ import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceConnectionParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
+import com.greencloud.commons.managingsystem.planner.DisableServerActionParameters;
 import com.greencloud.commons.managingsystem.planner.IncreaseDeadlinePriorityParameters;
 import com.greencloud.commons.managingsystem.planner.IncreaseJobDivisionPriorityParameters;
 
@@ -45,7 +47,8 @@ public final class AdaptationActionsDefinitions {
 			new AdaptationAction(7, DECREASE_GREEN_SOURCE_ERROR, RECONFIGURE, MINIMIZE_USED_BACKUP_POWER),
 			new AdaptationAction(8, ADD_GREEN_SOURCE, ADD_COMPONENT, MINIMIZE_USED_BACKUP_POWER),
 			// DISTRIBUTE TRAFFIC EVENLY
-			new AdaptationAction(9, DISCONNECT_GREEN_SOURCE, REMOVE_COMPONENT, DISTRIBUTE_TRAFFIC_EVENLY)
+			new AdaptationAction(9, DISCONNECT_GREEN_SOURCE, REMOVE_COMPONENT, DISTRIBUTE_TRAFFIC_EVENLY),
+			new AdaptationAction(10, DISABLE_SERVER, RECONFIGURE, DISTRIBUTE_TRAFFIC_EVENLY)
 
 	);
 
@@ -57,7 +60,8 @@ public final class AdaptationActionsDefinitions {
 					DISCONNECT_GREEN_SOURCE, ChangeGreenSourceConnectionParameters.class,
 					CHANGE_GREEN_SOURCE_WEIGHT, ChangeGreenSourceWeights.class,
 					INCREASE_DEADLINE_PRIORITY, IncreaseDeadlinePriorityParameters.class,
-					INCREASE_POWER_PRIORITY, IncreaseJobDivisionPriorityParameters.class
+					INCREASE_POWER_PRIORITY, IncreaseJobDivisionPriorityParameters.class,
+					DISABLE_SERVER, DisableServerActionParameters.class
 			);
 
 	private AdaptationActionsDefinitions() {
