@@ -45,9 +45,9 @@ const PowerShortageEvent = ({ event, label, agentName, triggerPowerShortage }: P
    }
 
    function handlePowerShortageTrigger() {
-      if ((typeof inputVal === 'undefined' || inputVal < 0) && event?.state === EventState.ACTIVE) {
+      if (typeof inputVal === 'undefined' && event?.state === EventState.ACTIVE) {
          toast.dismiss()
-         toast.info('The new maximum capacity must be specified and be at leats 0!')
+         toast.info('The new maximum capacity must be specified!')
       } else {
          const message = event?.state === EventState.ACTIVE ? 'triggered' : 'finished'
          toast.dismiss()
