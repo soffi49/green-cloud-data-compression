@@ -1,5 +1,6 @@
 package com.greencloud.commons.scenario;
 
+import static java.util.Objects.isNull;
 import static java.util.stream.Stream.concat;
 
 import java.io.Serializable;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.greencloud.commons.args.agent.AgentArgs;
@@ -60,13 +63,6 @@ public class ScenarioStructureArgs implements Serializable {
 		this.serverAgentsArgs = new ArrayList<>(serverAgentsArgs);
 		this.monitoringAgentsArgs = new ArrayList<>(monitoringAgentsArgs);
 		this.greenEnergyAgentsArgs = new ArrayList<>(greenEnergyAgentsArgs);
-	}
-
-	public ScenarioStructureArgs(List<CloudNetworkArgs> cloudNetworkAgentsArgs, List<ServerAgentArgs> serverAgentsArgs,
-			List<GreenEnergyAgentArgs> greenEnergyAgentsArgs) {
-		this.cloudNetworkAgentsArgs = cloudNetworkAgentsArgs;
-		this.serverAgentsArgs = serverAgentsArgs;
-		this.greenEnergyAgentsArgs = greenEnergyAgentsArgs;
 	}
 
 	public List<CloudNetworkArgs> getCloudNetworkAgentsArgs() {
@@ -132,6 +128,22 @@ public class ScenarioStructureArgs implements Serializable {
 				.map(this::getGreenSourcesForServerAgent)
 				.flatMap(Collection::stream)
 				.toList();
+	}
+
+	/**
+	 * Method retrieves name of parent CNA for server with given name
+	 *
+	 * @param serverName name of the Server
+	 * @return name of CNA or null if not found
+	 */
+	@Nullable
+	public String getParentCNAForServer(final String serverName) {
+		var serverArgs = serverAgentsArgs.stream()
+				.filter(server -> server.getName().equals(serverName.split("@")[0]))
+				.findFirst()
+				.orElse(null);
+
+		return isNull(serverArgs) ? null : serverArgs.getOwnerCloudNetwork();
 	}
 
 	/**
