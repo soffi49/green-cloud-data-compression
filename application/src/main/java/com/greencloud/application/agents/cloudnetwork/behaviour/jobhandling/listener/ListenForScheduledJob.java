@@ -58,7 +58,7 @@ public class ListenForScheduledJob extends CyclicBehaviour {
 	private void sendCallForProposalToServers(final ClientJob job, final ACLMessage message) {
 		MDC.put(MDC_JOB_ID, job.getJobId());
 		logger.info(SEND_CFP_NEW_LOG, job.getJobId());
-		final ACLMessage cfp = createCallForProposal(job, myCloudNetworkAgent.getOwnedServers(),
+		final ACLMessage cfp = createCallForProposal(job, myCloudNetworkAgent.getOwnedActiveServers(),
 				CNA_JOB_CFP_PROTOCOL);
 
 		myCloudNetworkAgent.getNetworkJobs().put(job, ExecutionJobStatusEnum.PROCESSING);

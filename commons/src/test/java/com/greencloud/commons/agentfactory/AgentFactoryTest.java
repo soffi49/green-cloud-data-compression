@@ -73,16 +73,15 @@ class AgentFactoryTest {
 
 	@Test
 	void testCreatingGreenSourceNullParameters() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-			factory.createGreenEnergyAgent(null
-					, "testServer"
-					, 52
-					, 52
-					, 200
-					, 1
-					, 0.0
-					, GreenEnergySourceTypeEnum.SOLAR);
-		});
+		Exception exception = assertThrows(IllegalArgumentException.class, () ->
+				factory.createGreenEnergyAgent(null
+						, "testServer"
+						, 52
+						, 52
+						, 200
+						, 1
+						, 0.0
+						, GreenEnergySourceTypeEnum.SOLAR));
 
 		assertThat(exception.getMessage()).isEqualTo("monitoringAgentName and ownerServerName should not be null");
 	}

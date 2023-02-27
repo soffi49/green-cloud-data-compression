@@ -65,6 +65,7 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 	 * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void handleAllResponses(final Vector responses, final Vector acceptances) {
 		final List<ACLMessage> proposals = retrieveProposals(responses);
 
@@ -85,12 +86,13 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 				final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
 				final ServerData chosenServerData = MessagingUtils.readMessageContent(chosenServerOffer,
 						ServerData.class);
+				final double availablePower =
+						myCloudNetworkAgent.getMaximumCapacity() - myCloudNetworkAgent.manage().getCurrentPowerInUse();
 
 				logger.info(CHOSEN_SERVER_FOR_JOB_LOG, job.getJobId(), chosenServerOffer.getSender().getName());
 
 				final ACLMessage reply = chosenServerOffer.createReply();
-				final ACLMessage offer = makeJobOfferForClient(chosenServerData,
-						myCloudNetworkAgent.manage().getCurrentPowerInUse(), replyMessage);
+				final ACLMessage offer = makeJobOfferForClient(chosenServerData, availablePower, replyMessage);
 
 				myCloudNetworkAgent.getServerForJobMap().put(job.getJobId(), chosenServerOffer.getSender());
 				myCloudNetworkAgent.addBehaviour(new InitiateMakingNewJobOffer(myCloudNetworkAgent, offer, reply));

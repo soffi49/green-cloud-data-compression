@@ -35,6 +35,7 @@ import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
 
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
+import jade.lang.acl.ACLMessage;
 
 /**
  * Agent representing the Server Agent which executes the clients' jobs
@@ -64,7 +65,6 @@ public class ServerAgent extends AbstractServerAgent {
 			this.configManagement = new ServerConfigManagement(this);
 			this.adaptationManagement = new ServerAdaptationManagement(this);
 			this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-			this.isDisabled = false;
 			try {
 				this.manageConfig().setPricePerHour(Double.parseDouble(args[1].toString()));
 				this.currentMaximumCapacity = Integer.parseInt(args[2].toString());
@@ -76,7 +76,7 @@ public class ServerAgent extends AbstractServerAgent {
 			}
 		} else {
 			logger.info("Incorrect arguments: some parameters for server agent are missing - "
-						+ "check the parameters in the documentation");
+					+ "check the parameters in the documentation");
 			doDelete();
 		}
 	}
@@ -112,12 +112,17 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
 		if (adaptationAction.getAction() == CHANGE_GREEN_SOURCE_WEIGHT) {
-			return adaptationManagement()
+			return adapt()
 					.changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
 		}
-		if (adaptationAction.getAction() == DISABLE_SERVER) {
-			return adaptationManagement().disableServer();
-		}
 		return false;
+	}
+
+	@Override
+	public void executeAction(final AdaptationAction adaptationAction,
+			final AdaptationActionParameters actionParameters, final ACLMessage adaptationMessage) {
+		if (adaptationAction.getAction() == DISABLE_SERVER) {
+			adapt().disableServer(adaptationMessage);
+		}
 	}
 }

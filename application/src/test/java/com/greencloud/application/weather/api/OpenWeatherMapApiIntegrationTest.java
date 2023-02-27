@@ -1,5 +1,5 @@
 package com.greencloud.application.weather.api;
 
-public class OpenWeatherMapApiIntegrationTest {
-	//TODO
+//TODO Add integration tests
+class OpenWeatherMapApiIntegrationTest {
 }

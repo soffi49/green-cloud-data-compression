@@ -35,8 +35,8 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	protected int currentMaximumCapacity;
 
 	protected boolean isDisabled;
-	protected volatile AtomicLong currentlyProcessing;
-	protected volatile ConcurrentMap<ClientJob, ExecutionJobStatusEnum> serverJobs;
+	protected AtomicLong currentlyProcessing;
+	protected ConcurrentMap<ClientJob, ExecutionJobStatusEnum> serverJobs;
 	protected Map<String, AID> greenSourceForJobMap;
 	protected Map<AID, Boolean> ownedGreenSources;
 	protected AID ownerCloudNetworkAgent;
@@ -116,6 +116,7 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	public boolean isDisabled() { return isDisabled; }
 
 	public void disable() { isDisabled = true; }
+	public void enable() { isDisabled = false; }
 
 	public ServerStateManagement manage() {
 		return stateManagement;
@@ -125,7 +126,7 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 		return configManagement;
 	}
 
-	public ServerAdaptationManagement adaptationManagement() {
+	public ServerAdaptationManagement adapt() {
 		return adaptationManagement;
 	}
 

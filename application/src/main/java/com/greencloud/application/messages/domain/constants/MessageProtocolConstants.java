@@ -22,10 +22,13 @@ public class MessageProtocolConstants {
 	 * 								   	  it should deactivate given green source
 	 * DISCONNECT_GREEN_SOURCE_PROTOCOL	- protocol used in messages sent by the Green Source informing Server that
 	 * 								   	  it remove given green source connection
+	 * DISABLE_SERVER_PROTOCOL	  		- protocol used in messages sent by the Server informing CNA that
+	 *  								  the given Server is disabled
 	 */
 	public static final String CONNECT_GREEN_SOURCE_PROTOCOL = "CONNECT_GREEN_SOURCE_PROTOCOL";
 	public static final String DEACTIVATE_GREEN_SOURCE_PROTOCOL = "DEACTIVATE_GREEN_SOURCE_PROTOCOL";
 	public static final String DISCONNECT_GREEN_SOURCE_PROTOCOL = "DISCONNECT_GREEN_SOURCE_PROTOCOL";
+	public static final String DISABLE_SERVER_PROTOCOL = "DISABLE_SERVER_PROTOCOL";
 
 	/**
 	 * Call for proposals protocols

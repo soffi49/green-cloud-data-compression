@@ -14,4 +14,7 @@ public class ServerManagementLog {
 			"Started job instance {}. Number of started job instances is {} out of {} accepted.";
 	public static final String COUNT_JOB_FINISH_LOG =
 			"Finished job instance {}. Number of finished job instances is {} out of {} started.";
+
+	// ADAPTATION MANAGEMENT LOG MESSAGES
+	public static final String DISABLE_SERVER_LOG = "Disabling Server and informing CNA {}.";
 }

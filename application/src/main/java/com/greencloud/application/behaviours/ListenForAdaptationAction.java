@@ -5,7 +5,7 @@ import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
-import static com.greencloud.commons.managingsystem.executor.ExecutorMessageTemplates.EXECUTE_ACTION_REQUEST;
+import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_REQUEST;
 import static java.util.Objects.nonNull;
 
 import com.database.knowledge.domain.action.AdaptationActionEnum;

@@ -25,6 +25,11 @@ public interface ServerMonitoringData extends NetworkComponentMonitoringData {
 	double getCurrentBackUpPowerUsage();
 
 	/**
+	 * @return number of jobs accepted by the server
+	 */
+	int getServerJobs();
+
+	/**
 	 * @return information weather serve is disabled
 	 */
 	boolean isDisabled();

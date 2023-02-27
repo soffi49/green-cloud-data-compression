@@ -29,6 +29,7 @@ import static com.greencloud.commons.job.JobResultType.ACCEPTED;
 import static com.greencloud.commons.job.JobResultType.FAILED;
 import static com.greencloud.commons.job.JobResultType.FINISH;
 import static com.greencloud.commons.job.JobResultType.STARTED;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 
 import java.time.Instant;
@@ -48,6 +49,7 @@ import org.slf4j.MDC;
 import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.agents.server.behaviour.adaptation.CompleteServerDisabling;
 import com.greencloud.application.agents.server.behaviour.jobexecution.handler.HandleJobFinish;
 import com.greencloud.application.agents.server.behaviour.jobexecution.handler.HandleJobStart;
 import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInCloudNetwork;
@@ -130,7 +132,6 @@ public class ServerStateManagement {
 							getCurrentTime())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			supplyJobsWithBackupPower(jobsWithinTimeStamp);
 		}
-		updateServerGUI();
 	}
 
 	/**
@@ -180,7 +181,7 @@ public class ServerStateManagement {
 		serverAgent.setCurrentMaximumCapacity(newMaximumCapacity);
 
 		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
-		if (Objects.nonNull(serverAgentNode)) {
+		if (nonNull(serverAgentNode)) {
 			serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity(),
 					getCurrentPowerInUseForServer());
 		}
@@ -234,7 +235,7 @@ public class ServerStateManagement {
 	public void updateServerGUI() {
 		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
 
-		if (Objects.nonNull(serverAgentNode)) {
+		if (nonNull(serverAgentNode)) {
 			final double successRatio = getJobSuccessRatio(jobCounters.get(ACCEPTED), jobCounters.get(FAILED));
 
 			serverAgentNode.updateMaximumCapacity(serverAgent.getCurrentMaximumCapacity(),
@@ -256,7 +257,7 @@ public class ServerStateManagement {
 	public void updateClientNumberGUI() {
 		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
 
-		if (Objects.nonNull(serverAgentNode)) {
+		if (nonNull(serverAgentNode)) {
 			serverAgentNode.updateClientNumber(getClientNumber());
 		}
 	}
@@ -284,28 +285,30 @@ public class ServerStateManagement {
 				.collect(toSet());
 	}
 
-	public ConcurrentMap<JobResultType, Long> getJobCounters() {
-		return jobCounters;
-	}
-
-	private void writeStateToDatabase() {
+	/**
+	 * Method sends an update of the state of the server in the database
+	 */
+	public void writeStateToDatabase() {
 		final double powerInUse = getCurrentPowerInUseForServer();
 		final double trafficOverall = serverAgent.getCurrentMaximumCapacity() == 0 ?
-				0 :
-				powerInUse / serverAgent.getCurrentMaximumCapacity();
+				0 : powerInUse / serverAgent.getCurrentMaximumCapacity();
 		final double backUpPowerOverall = serverAgent.getCurrentMaximumCapacity() == 0 ?
-				0 :
-				((double) getCurrentBackUpPowerInUseForServer()) / serverAgent.getCurrentMaximumCapacity();
+				0 : ((double) getCurrentBackUpPowerInUseForServer()) / serverAgent.getCurrentMaximumCapacity();
 
 		final ServerMonitoringData serverMonitoringData = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(serverAgent.getCurrentMaximumCapacity())
 				.currentTraffic(trafficOverall)
 				.availablePower((double) serverAgent.getCurrentMaximumCapacity() - powerInUse)
 				.currentBackUpPowerUsage(backUpPowerOverall)
+				.serverJobs(serverAgent.getServerJobs().size() - getOnHoldJobsCount())
 				.successRatio(getJobSuccessRatio(jobCounters.get(ACCEPTED), jobCounters.get(FAILED)))
 				.isDisabled(serverAgent.isDisabled())
 				.build();
 		serverAgent.writeMonitoringData(SERVER_MONITORING, serverMonitoringData);
+	}
+
+	public ConcurrentMap<JobResultType, Long> getJobCounters() {
+		return jobCounters;
 	}
 
 	private void sendFinishInformation(final ClientJob jobToFinish, final boolean informCNA) {
@@ -332,6 +335,10 @@ public class ServerStateManagement {
 			updateClientNumberGUI();
 		}
 		serverAgent.getServerJobs().remove(jobToBeDone);
+
+		if (serverAgent.isDisabled() && serverAgent.getServerJobs().size() == 0) {
+			serverAgent.addBehaviour(new CompleteServerDisabling());
+		}
 		updateServerGUI();
 	}
 

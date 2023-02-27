@@ -43,7 +43,7 @@ class OfferMessageFactoryUnitTest {
 				.availablePower(100)
 				.servicePrice(50.0)
 				.build();
-		final double powerInUse = 50;
+		final double availablePower = 50;
 
 		final ACLMessage replyMessage = new ACLMessage(CFP);
 		replyMessage.addReceiver(mockScheduler);
@@ -54,9 +54,9 @@ class OfferMessageFactoryUnitTest {
 		final String expectedContent =
 				"{\"jobId\":\"1\","
 						+ "\"priceForJob\":50.0,"
-						+ "\"powerInUse\":50.0}";
+						+ "\"availablePower\":50.0}";
 
-		final ACLMessage result = makeJobOfferForClient(serverData, powerInUse, replyMessage);
+		final ACLMessage result = makeJobOfferForClient(serverData, availablePower, replyMessage);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		assertThat(result.getProtocol()).isEqualTo(SCHEDULER_JOB_CFP_PROTOCOL);
@@ -64,7 +64,9 @@ class OfferMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo("C805691330_Scheduler_1671062222359_0");
 		assertThat(result.getPerformative()).isEqualTo(PROPOSE);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).allMatch(aid -> aid.equals(mockScheduler));
+		assertThat(receiverIt)
+				.isNotEmpty()
+				.allMatch(aid -> aid.equals(mockScheduler));
 	}
 
 	@Test
@@ -112,7 +114,9 @@ class OfferMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo("C805691330_CNA_1671062222359_0");
 		assertThat(result.getPerformative()).isEqualTo(PROPOSE);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).allMatch(aid -> aid.equals(mockCNA));
+		assertThat(receiverIt)
+				.isNotEmpty()
+				.allMatch(aid -> aid.equals(mockCNA));
 	}
 
 	@Test
@@ -149,6 +153,8 @@ class OfferMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo("C805691330_Server_1671062222359_0");
 		assertThat(result.getPerformative()).isEqualTo(PROPOSE);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).allMatch(aid -> aid.equals(mockServer));
+		assertThat(receiverIt)
+				.isNotEmpty()
+				.allMatch(aid -> aid.equals(mockServer));
 	}
 }

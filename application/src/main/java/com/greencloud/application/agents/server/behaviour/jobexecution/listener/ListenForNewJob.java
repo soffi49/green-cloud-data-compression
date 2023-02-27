@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.server.behaviour.jobexecution.listener;
 
+import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LACK_OF_POWER_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
@@ -20,7 +21,6 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.jobexecution.initiator.InitiatePowerDeliveryForJob;
-import com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog;
 import com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates;
 import com.greencloud.application.mapper.JobMapper;
 import com.greencloud.commons.job.ClientJob;
@@ -65,12 +65,12 @@ public class ListenForNewJob extends CyclicBehaviour {
 					.getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null);
 			final boolean validJobConditions =
 					job.getPower() <= availableCapacity && !myServerAgent.getServerJobs().containsKey(job)
-					&& myServerAgent.canTakeIntoProcessing();
+							&& myServerAgent.canTakeIntoProcessing();
 
 			if (validJobConditions) {
 				initiateNegotiationWithPowerSources(job, message);
 			} else {
-				logger.info(JobHandlingListenerLog.SERVER_NEW_JOB_LACK_OF_POWER_LOG);
+				logger.info(SERVER_NEW_JOB_LACK_OF_POWER_LOG);
 				myAgent.send(prepareRefuseReply(message.createReply()));
 			}
 		} else {
