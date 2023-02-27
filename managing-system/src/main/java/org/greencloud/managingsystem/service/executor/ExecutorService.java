@@ -4,13 +4,12 @@ import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.yellowpages.YellowPagesService.search;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
-import static com.greencloud.commons.managingsystem.executor.ExecutorMessageTemplates.ANNOUNCE_NETWORK_CHANGE_PROTOCOL;
-import static com.greencloud.commons.managingsystem.executor.ExecutorMessageTemplates.EXECUTE_ACTION_PROTOCOL;
+import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.ANNOUNCE_NETWORK_CHANGE_PROTOCOL;
+import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Optional.empty;
 import static org.greencloud.managingsystem.agent.behaviour.executor.VerifyAdaptationActionResult.createForSystemAction;
-import static org.greencloud.managingsystem.domain.ManagingSystemConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static org.greencloud.managingsystem.service.executor.logs.ManagingAgentExecutorLog.EXECUTING_ADAPTATION_ACTION_LOG;
 
 import java.util.List;
@@ -70,10 +69,6 @@ public class ExecutorService extends AbstractManagingService {
 		final AdaptationAction actionToBeExecuted = getAdaptationAction(adaptationPlan.getAdaptationActionEnum());
 		final Map<GoalEnum, Double> initialGoalQualities = managingAgent.monitor().getCurrentGoalQualities();
 
-		if(initialGoalQualities.values().stream().anyMatch(val -> val == DATA_NOT_AVAILABLE_INDICATOR)) {
-			throw new IllegalStateException("The data for all goals should be present!");
-		}
-
 		logger.info(EXECUTING_ADAPTATION_ACTION_LOG, actionToBeExecuted.getAction());
 
 		if (adaptationPlan instanceof SystemPlan systemAdaptationPlan) {
@@ -113,6 +108,7 @@ public class ExecutorService extends AbstractManagingService {
 				systemAdaptationPlan.getAdaptationActionEnum(), initialGoalQualities,
 				systemAdaptationPlan.enablePlanAction()));
 	}
+
 	private List<AgentController> createAgents(SystemPlan systemAdaptationPlan) {
 		List<AgentArgs> args = systemAdaptationPlan.getSystemAdaptationActionParameters().getAgentsArguments();
 		managingAgent.move().addAgentsToStructure(args);

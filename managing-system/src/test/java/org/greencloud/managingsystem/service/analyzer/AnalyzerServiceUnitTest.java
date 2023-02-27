@@ -1,7 +1,7 @@
 package org.greencloud.managingsystem.service.analyzer;
 
-import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_SERVER;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.RECONFIGURE;
 import static com.database.knowledge.domain.goal.GoalEnum.DISTRIBUTE_TRAFFIC_EVENLY;
 import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
@@ -26,6 +26,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 
+import com.database.knowledge.domain.action.ActionResult;
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.database.knowledge.domain.systemquality.SystemQuality;
@@ -40,12 +41,18 @@ class AnalyzerServiceUnitTest {
 	private static Stream<Arguments> parametersForQualityCalculationTest() {
 		final AdaptationAction action1 =
 				new AdaptationAction(1, CONNECT_GREEN_SOURCE, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO,
-						Map.of(MAXIMIZE_JOB_SUCCESS_RATIO, 0.3, MINIMIZE_USED_BACKUP_POWER, 0.5,
-								DISTRIBUTE_TRAFFIC_EVENLY, 0.4), true, 1);
+						Map.of(
+								MAXIMIZE_JOB_SUCCESS_RATIO, new ActionResult(0.3, 1),
+								MINIMIZE_USED_BACKUP_POWER, new ActionResult(0.5, 1),
+								DISTRIBUTE_TRAFFIC_EVENLY, new ActionResult(0.4, 1)
+						), true, 1);
 		final AdaptationAction action2 =
 				new AdaptationAction(2, ADD_SERVER, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO,
-						Map.of(MAXIMIZE_JOB_SUCCESS_RATIO, 0.7, MINIMIZE_USED_BACKUP_POWER, 0.4,
-								DISTRIBUTE_TRAFFIC_EVENLY, 0.3), true, 1);
+						Map.of(
+								MAXIMIZE_JOB_SUCCESS_RATIO, new ActionResult(0.7, 1),
+								MINIMIZE_USED_BACKUP_POWER, new ActionResult(0.4, 1),
+								DISTRIBUTE_TRAFFIC_EVENLY, new ActionResult(0.3, 1)
+						), true, 1);
 
 		return Stream.of(
 				Arguments.of(action1, 0.34),

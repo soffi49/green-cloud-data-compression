@@ -5,6 +5,7 @@ import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static java.util.stream.Collectors.toMap;
 import static org.greencloud.managingsystem.agent.behaviour.executor.logs.ManagingExecutorLog.VERIFY_ACTION_END_LOG;
 import static org.greencloud.managingsystem.agent.behaviour.executor.logs.ManagingExecutorLog.VERIFY_ACTION_START_LOG;
+import static org.greencloud.managingsystem.domain.ManagingSystemConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.SYSTEM_ADAPTATION_PLAN_VERIFY_DELAY;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.VERIFY_ADAPTATION_ACTION_DELAY_IN_SECONDS;
 
@@ -109,14 +110,17 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 	}
 
 	private Map<GoalEnum, Double> getActionResults() {
-		return Arrays.stream(GoalEnum.values()).collect(toMap(goal -> goal, this::getGoalQualityDelta));
+		return Arrays.stream(GoalEnum.values())
+				.filter(goal -> initialGoalQualities.get(goal) != DATA_NOT_AVAILABLE_INDICATOR)
+				.collect(toMap(goal -> goal, this::getGoalQualityDelta));
 	}
 
 	private double getGoalQualityDelta(GoalEnum goalEnum) {
 		final int elapsedTime = (int) Duration.between(actionExecutionTime, getCurrentTime()).toSeconds();
+		final double initialGoalQuality = initialGoalQualities.get(goalEnum);
 		final double currentGoalQuality = myManagingAgent.monitor().getGoalService(goalEnum)
 				.computeCurrentGoalQuality(elapsedTime);
 
-		return currentGoalQuality - initialGoalQualities.get(goalEnum);
+		return currentGoalQuality - initialGoalQuality;
 	}
 }

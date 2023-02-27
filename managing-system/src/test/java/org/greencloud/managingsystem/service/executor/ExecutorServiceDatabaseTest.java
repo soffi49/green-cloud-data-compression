@@ -122,12 +122,6 @@ class ExecutorServiceDatabaseTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhereNoGoalQualityData() {
-		// when & then
-		assertThrows(IllegalStateException.class, () -> executorService.executeAdaptationAction(adaptationPlan));
-	}
-
-	@Test
 	void shouldCorrectlyExecuteSystemAdaptationPlan() {
 		// given
 		initializeData();
