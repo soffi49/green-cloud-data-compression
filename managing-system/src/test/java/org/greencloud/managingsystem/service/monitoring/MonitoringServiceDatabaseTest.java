@@ -2,8 +2,10 @@ package org.greencloud.managingsystem.service.monitoring;
 
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
+import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static java.time.Instant.now;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
@@ -26,6 +28,7 @@ import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.HealthCheck;
 import com.database.knowledge.domain.agent.greensource.GreenSourceMonitoringData;
 import com.database.knowledge.domain.agent.greensource.ImmutableGreenSourceMonitoringData;
+import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
 import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.gui.agents.ManagingAgentNode;
@@ -112,6 +115,89 @@ class MonitoringServiceDatabaseTest {
 				.as("Result has size equal to 4")
 				.hasSize(4)
 				.containsExactlyInAnyOrderEntriesOf(expectedMap);
+
+	}
+
+	@Test
+	@DisplayName("Test getting average traffic for network components for empty set")
+	void testGetAverageTrafficForNetworkComponentForEmptySet() {
+		assertThat(monitoringService.getAverageTrafficForNetworkComponent(emptyList(), SERVER_MONITORING)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("Test getting average traffic for network components for distinct data set")
+	void testGetAverageTrafficForNetworkComponentForDistinctDataSet() {
+		var mockData1 = ImmutableServerMonitoringData.builder()
+				.currentMaximumCapacity(100)
+				.currentTraffic(0.6)
+				.serverJobs(10)
+				.successRatio(0.9)
+				.availablePower(30D)
+				.currentBackUpPowerUsage(0.4)
+				.isDisabled(false)
+				.build();
+		var mockData2 = ImmutableServerMonitoringData.builder()
+				.currentMaximumCapacity(100)
+				.currentTraffic(0.8)
+				.successRatio(0.9)
+				.serverJobs(10)
+				.availablePower(30D)
+				.currentBackUpPowerUsage(0.4)
+				.isDisabled(false)
+				.build();
+
+		database.writeMonitoringData("test_server1", SERVER_MONITORING, mockData1);
+		database.writeMonitoringData("test_server2", SERVER_MONITORING, mockData2);
+
+		var result = monitoringService.getAverageTrafficForNetworkComponent(List.of("test_server1", "test_server2"),
+				SERVER_MONITORING);
+
+		assertThat(result)
+				.hasSize(2)
+				.containsExactlyInAnyOrderEntriesOf(Map.of("test_server1", 0.6, "test_server2", 0.8));
+	}
+
+	@Test
+	@DisplayName("Test getting average traffic for network components for many rows data set")
+	void testGetAverageTrafficForNetworkComponentForManyRowsDataSet() {
+		var mockData1 = ImmutableServerMonitoringData.builder()
+				.currentMaximumCapacity(100)
+				.currentTraffic(0.6)
+				.successRatio(0.9)
+				.serverJobs(10)
+				.availablePower(30D)
+				.currentBackUpPowerUsage(0.4)
+				.isDisabled(false)
+				.build();
+		var mockData2 = ImmutableServerMonitoringData.builder()
+				.currentMaximumCapacity(100)
+				.currentTraffic(0.8)
+				.successRatio(0.9)
+				.serverJobs(10)
+				.availablePower(30D)
+				.currentBackUpPowerUsage(0.4)
+				.isDisabled(false)
+				.build();
+		var mockData3 = ImmutableServerMonitoringData.builder()
+				.currentMaximumCapacity(100)
+				.currentTraffic(0.5)
+				.successRatio(0.9)
+				.serverJobs(10)
+				.availablePower(30D)
+				.currentBackUpPowerUsage(0.4)
+				.isDisabled(false)
+				.build();
+
+		database.writeMonitoringData("test_server1", SERVER_MONITORING, mockData1);
+		database.writeMonitoringData("test_server2", SERVER_MONITORING, mockData2);
+		database.writeMonitoringData("test_server2", SERVER_MONITORING, mockData3);
+
+		var result = monitoringService.getAverageTrafficForNetworkComponent(List.of("test_server1", "test_server2"),
+				SERVER_MONITORING);
+
+		assertThat(result)
+				.hasSize(2)
+				.containsExactlyInAnyOrderEntriesOf(Map.of("test_server1", 0.6, "test_server2", 0.65));
 
 	}
 

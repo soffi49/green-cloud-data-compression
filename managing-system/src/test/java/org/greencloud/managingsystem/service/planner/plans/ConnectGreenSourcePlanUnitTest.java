@@ -1,10 +1,14 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
+import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
+import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static com.greencloud.commons.agent.AgentType.SERVER;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -156,7 +160,7 @@ class ConnectGreenSourcePlanUnitTest {
 		doReturn(Map.of(
 				"test_server1@192.168.56.1:6996/JADE", 0.95,
 				"test_server2@192.168.56.1:6996/JADE", 0.98
-		)).when(connectGreenSourcePlan).getAverageTrafficForServers(aliveAgents);
+		)).when(mockMonitoring).getAverageTrafficForNetworkComponent(aliveAgents, SERVER_MONITORING);
 
 		assertThat(connectGreenSourcePlan.getServersForCNA("test_cna", aliveAgents)).isEmpty();
 	}
@@ -167,10 +171,10 @@ class ConnectGreenSourcePlanUnitTest {
 		var testServerList = List.of("test_server1", "test_server2");
 
 		doReturn(testServerList).when(mockStructure).getServersForCloudNetworkAgent("test_cna");
-		doReturn(Collections.emptyMap()).when(connectGreenSourcePlan)
-				.getAverageTrafficForServers(Collections.emptyList());
+		doReturn(Collections.emptyMap()).when(mockMonitoring)
+				.getAverageTrafficForNetworkComponent(emptyList(), SERVER_MONITORING);
 
-		assertThat(connectGreenSourcePlan.getServersForCNA("test_cna", Collections.emptyList())).isEmpty();
+		assertThat(connectGreenSourcePlan.getServersForCNA("test_cna", emptyList())).isEmpty();
 	}
 
 	@Test
@@ -183,7 +187,7 @@ class ConnectGreenSourcePlanUnitTest {
 		doReturn(Map.of(
 				"test_server1@192.168.56.1:6996/JADE", 0.7,
 				"test_server2@192.168.56.1:6996/JADE", 0.98
-		)).when(connectGreenSourcePlan).getAverageTrafficForServers(aliveAgents);
+		)).when(mockMonitoring).getAverageTrafficForNetworkComponent(aliveAgents, SERVER_MONITORING);
 
 		assertThat(connectGreenSourcePlan.getServersForCNA("test_cna", aliveAgents))
 				.hasSize(1)
@@ -229,9 +233,10 @@ class ConnectGreenSourcePlanUnitTest {
 		doReturn(Map.of(
 				"test_gs1@192.168.56.1:6996/JADE", 0.6,
 				"test_gs2@192.168.56.1:6996/JADE", 0.9
-		)).when(connectGreenSourcePlan)
-				.getAverageTrafficForSources(argThat(t -> t.containsAll(List.of("test_gs1@192.168.56.1:6996/JADE",
-						"test_gs2@192.168.56.1:6996/JADE"))));
+		)).when(mockMonitoring)
+				.getAverageTrafficForNetworkComponent(
+						argThat(t -> t.containsAll(List.of("test_gs1@192.168.56.1:6996/JADE",
+								"test_gs2@192.168.56.1:6996/JADE"))), eq(GREEN_SOURCE_MONITORING));
 
 		assertThat(connectGreenSourcePlan.getGreenSourcesForCNA("test_cna", aliveAgents)).isEmpty();
 	}
@@ -255,9 +260,10 @@ class ConnectGreenSourcePlanUnitTest {
 		doReturn(Map.of(
 				"test_gs1@192.168.56.1:6996/JADE", 0.4,
 				"test_gs2@192.168.56.1:6996/JADE", 0.9
-		)).when(connectGreenSourcePlan)
-				.getAverageTrafficForSources(argThat(t -> t.containsAll(List.of("test_gs1@192.168.56.1:6996/JADE",
-						"test_gs2@192.168.56.1:6996/JADE"))));
+		)).when(mockMonitoring)
+				.getAverageTrafficForNetworkComponent(
+						argThat(t -> t.containsAll(List.of("test_gs1@192.168.56.1:6996/JADE",
+								"test_gs2@192.168.56.1:6996/JADE"))), eq(GREEN_SOURCE_MONITORING));
 
 		assertThat(connectGreenSourcePlan.getGreenSourcesForCNA("test_cna", aliveAgents))
 				.hasSize(1)
@@ -289,12 +295,13 @@ class ConnectGreenSourcePlanUnitTest {
 		doReturn(Map.of(
 				"test_server1@192.168.56.1:6996/JADE", 0.7,
 				"test_server2@192.168.56.1:6996/JADE", 0.98
-		)).when(connectGreenSourcePlan).getAverageTrafficForServers(List.of(
+		)).when(mockMonitoring).getAverageTrafficForNetworkComponent(List.of(
 				"test_server1@192.168.56.1:6996/JADE",
-				"test_server2@192.168.56.1:6996/JADE"));
+				"test_server2@192.168.56.1:6996/JADE"), SERVER_MONITORING);
 		doReturn(Map.of(
 				"test_server3@192.168.56.1:6996/JADE", 0.6
-		)).when(connectGreenSourcePlan).getAverageTrafficForServers(List.of("test_server3@192.168.56.1:6996/JADE"));
+		)).when(mockMonitoring).getAverageTrafficForNetworkComponent(List.of("test_server3@192.168.56.1:6996/JADE"),
+				SERVER_MONITORING);
 
 		var expectedMap = Map.of(
 				"test_cna1", List.of(new AgentsTraffic("test_server1@192.168.56.1:6996/JADE", 0.7)),
@@ -339,12 +346,14 @@ class ConnectGreenSourcePlanUnitTest {
 		doReturn(Map.of(
 				"test_gs1@192.168.56.1:6996/JADE", 0.9,
 				"test_gs2@192.168.56.1:6996/JADE", 0.4
-		)).when(connectGreenSourcePlan)
-				.getAverageTrafficForSources(argThat(t -> t.containsAll(List.of("test_gs1@192.168.56.1:6996/JADE",
-						"test_gs2@192.168.56.1:6996/JADE"))));
+		)).when(mockMonitoring)
+				.getAverageTrafficForNetworkComponent(
+						argThat(t -> t.containsAll(List.of("test_gs1@192.168.56.1:6996/JADE",
+								"test_gs2@192.168.56.1:6996/JADE"))), eq(GREEN_SOURCE_MONITORING));
 		doReturn(Map.of(
 				"test_gs4@192.168.56.1:6996/JADE", 0.3
-		)).when(connectGreenSourcePlan).getAverageTrafficForSources(List.of("test_gs4@192.168.56.1:6996/JADE"));
+		)).when(mockMonitoring).getAverageTrafficForNetworkComponent(List.of("test_gs4@192.168.56.1:6996/JADE"),
+				GREEN_SOURCE_MONITORING);
 
 		var expectedMap = Map.of(
 				"test_cna1", Set.of(new AgentsGreenPower("test_gs2@192.168.56.1:6996/JADE", 0.4)),

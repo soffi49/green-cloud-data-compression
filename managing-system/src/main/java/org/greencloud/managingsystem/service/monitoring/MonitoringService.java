@@ -35,6 +35,7 @@ import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.HealthCheck;
 import com.database.knowledge.domain.agent.MonitoringData;
+import com.database.knowledge.domain.agent.NetworkComponentMonitoringData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
 import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.database.knowledge.domain.goal.GoalEnum;
@@ -297,6 +298,20 @@ public class MonitoringService extends AbstractManagingService {
 		agentsWithRecordsMap.putAll(agentsWithNoRecords);
 
 		return agentsWithRecordsMap;
+	}
+
+	/**
+	 * Method returns map containing agent names and corresponding average traffic values
+	 *
+	 * @param agentAIDs list of AIDs of agents of interest
+	 * @param dataType  type of data to retrieve
+	 * @return map of agents and assigned to them averaged traffic data
+	 */
+	public Map<String, Double> getAverageTrafficForNetworkComponent(final List<String> agentAIDs,
+			final DataType dataType) {
+		final ToDoubleFunction<AgentData> getTrafficForServer =
+				data -> ((NetworkComponentMonitoringData) data.monitoringData()).getCurrentTraffic();
+		return getAverageValuesForAgents(dataType, agentAIDs, getTrafficForServer);
 	}
 
 	@VisibleForTesting
