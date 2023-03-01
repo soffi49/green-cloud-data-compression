@@ -21,14 +21,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.planner.plans.domain.AgentsTraffic;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.GreenSourceMonitoringData;
-import com.database.knowledge.domain.agent.server.ServerMonitoringData;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
@@ -108,10 +106,8 @@ public class DisconnectGreenSourcePlan extends AbstractPlan {
 		final List<String> serverAIDs = greenSourcesWithServers.get(selectedGreenSource).stream()
 				.map(server -> new AID(server, AID.ISGUID).getName()).toList();
 
-		final ToDoubleFunction<AgentData> getServerTraffic =
-				agentData -> ((ServerMonitoringData) agentData.monitoringData()).getCurrentTraffic();
 		final String selectedServer = managingAgent.monitor()
-				.getAverageValuesForAgents(SERVER_MONITORING, serverAIDs, getServerTraffic)
+				.getAverageTrafficForNetworkComponent(serverAIDs, SERVER_MONITORING)
 				.entrySet().stream()
 				.min(comparingDouble(Map.Entry::getValue))
 				.orElseThrow()
@@ -180,10 +176,8 @@ public class DisconnectGreenSourcePlan extends AbstractPlan {
 	}
 
 	private List<AgentsTraffic> getAverageTrafficForGreenSources(final List<String> greenSourcesForDisconnection) {
-		final ToDoubleFunction<AgentData> getGreenSourceTraffic = agentData ->
-				((GreenSourceMonitoringData) agentData.monitoringData()).getCurrentTraffic();
 		return managingAgent.monitor()
-				.getAverageValuesForAgents(GREEN_SOURCE_MONITORING, greenSourcesForDisconnection, getGreenSourceTraffic)
+				.getAverageTrafficForNetworkComponent(greenSourcesForDisconnection, GREEN_SOURCE_MONITORING)
 				.entrySet().stream()
 				.map(entry -> new AgentsTraffic(entry.getKey(), entry.getValue()))
 				.toList();

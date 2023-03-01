@@ -82,7 +82,7 @@ public class AnalyzerService extends AbstractManagingService {
 
 	@VisibleForTesting
 	protected double computeQualityOfAdaptationAction(final AdaptationAction action) {
-		return action.getActionResults().entrySet().stream()
+		return action.getActionResultDifferences().entrySet().stream()
 				.mapToDouble(result ->
 						managingAgent.monitor().getAdaptationGoal(result.getKey()).weight() * result.getValue())
 				.sum();

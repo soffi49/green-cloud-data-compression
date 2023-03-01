@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.greenenergy.behaviour.adaptation;
 
-import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationSourceLog.DEACTIVATION_FAILED_LOG;
-import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationSourceLog.DEACTIVATION_FINISH_REMAIN_JOBS_LOG;
-import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationSourceLog.DEACTIVATION_SUCCEEDED_LOG;
-import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationSourceLog.INITIATE_GREEN_SOURCE_DISCONNECTION_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.DEACTIVATION_FAILED_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.DEACTIVATION_FINISH_REMAIN_JOBS_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.DEACTIVATION_SUCCEEDED_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.INITIATE_GREEN_SOURCE_DISCONNECTION_LOG;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static jade.lang.acl.ACLMessage.REQUEST;

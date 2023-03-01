@@ -5,9 +5,10 @@ import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.util.Collections.max;
 import static java.util.Map.Entry.comparingByValue;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -28,69 +29,100 @@ import jade.core.AID;
  */
 public class DisableServerPlan extends AbstractPlan {
 
-	private final Predicate<AgentData> canServerBeDisabled = agentData -> {
-		var serverMonitoringData = (ServerMonitoringData) agentData.monitoringData();
-		return serverMonitoringData.getCurrentTraffic() == 0 && !serverMonitoringData.isDisabled();
-	};
-	private List<AgentData> idleServers;
+	private static final double TRAFFIC_THRESHOLD = 0.2;
+	private static final double SERVER_JOBS_NO_THRESHOLDS = 15;
+
+	private final Map<String, Integer> idleServers;
 
 	public DisableServerPlan(ManagingAgent managingAgent) {
 		super(DISABLE_SERVER, managingAgent);
-		idleServers = new ArrayList<>();
+		idleServers = new HashMap<>();
 	}
 
 	/**
 	 * Method verifies if the plan is executable. The plan is executable if:
-	 * 1. there are some idle servers in the system (servers that current traffic is equal to zero)
+	 * 1. there are some idle servers in the system (i.e. servers which traffic as well as number
+	 * of planned jobs is below corresponding thresholds)
 	 * 2. those servers haven't been yet disabled
+	 * 3. the parent CNA of those Servers have more than 1 Server
 	 *
 	 * @return boolean information if the plan is executable in current conditions
 	 */
 	@Override
 	public boolean isPlanExecutable() {
-		final List<AgentData> serverMonitoring = managingAgent.getAgentNode().getDatabaseClient().
+		final List<AgentData> serverData = managingAgent.getAgentNode().getDatabaseClient().
 				readLastMonitoringDataForDataTypes(List.of(SERVER_MONITORING));
 
-		idleServers = serverMonitoring.stream()
-				.filter(canServerBeDisabled)
-				.toList();
+		// get names of servers which average traffic is within given threshold
+		final List<String> serversWithTrafficInBounds = getServersWithinTrafficThreshold(serverData);
+
+		// consider servers that comply with all constraints
+		idleServers.putAll(serverData.stream()
+				.filter(server -> canServerBeDisabled(serversWithTrafficInBounds).test(server))
+				.collect(toMap(AgentData::aid,
+						data -> ((ServerMonitoringData) data.monitoringData()).getCurrentMaximumCapacity())));
+
+		// consider servers which has not registered any data in database (i.e. did not accept any jobs)
+		idleServers.putAll(getServersNotInDatabase(serverData));
+
+		// remove servers which parent CNA contains only 1 server
+		idleServers.entrySet().removeIf(server -> parentCNAWithOneServer().test(server.getKey()));
 
 		return !idleServers.isEmpty();
 	}
 
 	/**
-	 * Method chooses the idle server to disable. The server is chosen based on the following criteria:
+	 * Method chooses the idle server to disable.
+	 * The server is chosen based on the following criteria:
 	 * 1. The server with the highest maximum capacity
 	 *
 	 * @return Constructed plan
 	 */
 	@Override
 	public AbstractPlan constructAdaptationPlan() {
-		final Map<String, Integer> consideredServers = idleServers.stream()
-				.collect(toMap(AgentData::aid, data -> getServerCurrentMaxCapacity().applyAsInt(data)));
+		final String chosenServer = max(idleServers.entrySet(), comparingByValue()).getKey();
 
-		// consider also servers which has not registered any data in database (i.e. did not accept any jobs)
-		consideredServers.putAll(getAgentsNotInDatabase(idleServers));
-
-		final String chosenServer = max(consideredServers.entrySet(), comparingByValue()).getKey();
 		targetAgent = new AID(chosenServer, AID.ISGUID);
-
 		actionParameters = ImmutableDisableServerActionParameters.builder().build();
 
 		return this;
 	}
 
-	private Map<String, Integer> getAgentsNotInDatabase(List<AgentData> agentDataFromDatabase) {
+	private List<String> getServersWithinTrafficThreshold(final List<AgentData> agentDataFromDatabase) {
+		final List<String> aliveServers = managingAgent.monitor()
+				.getAliveAgentsIntersection(SERVER, agentDataFromDatabase.stream().map(AgentData::aid).toList());
+
+		return managingAgent.monitor()
+				.getAverageTrafficForNetworkComponent(aliveServers, SERVER_MONITORING).entrySet().stream()
+				.filter(entry -> entry.getValue() <= TRAFFIC_THRESHOLD)
+				.map(Map.Entry::getKey)
+				.toList();
+	}
+
+	private Predicate<AgentData> canServerBeDisabled(final List<String> serversToConsider) {
+		return agentData -> {
+			var serverMonitoringData = (ServerMonitoringData) agentData.monitoringData();
+			return serverMonitoringData.getServerJobs() <= SERVER_JOBS_NO_THRESHOLDS
+					&& !serverMonitoringData.isDisabled()
+					&& serversToConsider.contains(agentData.aid());
+		};
+	}
+
+	private Predicate<String> parentCNAWithOneServer() {
+		return server -> {
+			var cna = managingAgent.getGreenCloudStructure().getParentCNAForServer(server);
+			return isNull(cna) ||
+					managingAgent.getGreenCloudStructure().getServersForCloudNetworkAgent(cna).size() == 1;
+		};
+	}
+
+	private Map<String, Integer> getServersNotInDatabase(List<AgentData> agentDataFromDatabase) {
 		final List<String> consideredServers = managingAgent.getGreenCloudStructure().getServerAgentsArgs().stream()
 				.map(AgentArgs::getName).toList();
 		final List<String> aliveServers = managingAgent.monitor().getAliveAgentsIntersection(SERVER, consideredServers);
 
 		return managingAgent.monitor().getAgentsNotPresentInTheDatabase(agentDataFromDatabase, aliveServers).stream()
 				.collect(toMap(aid -> aid, aid -> getServerMaxCapacity().applyAsInt(aid)));
-	}
-
-	private ToIntFunction<AgentData> getServerCurrentMaxCapacity() {
-		return serverData -> ((ServerMonitoringData) serverData.monitoringData()).getCurrentMaximumCapacity();
 	}
 
 	private ToIntFunction<String> getServerMaxCapacity() {

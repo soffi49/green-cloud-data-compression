@@ -31,7 +31,7 @@ import jade.core.Location;
  * Class containing adaptation plan which realizes the action of adding new server to the system
  */
 public class AddServerPlan extends SystemPlan {
-	protected static final double TRAFFIC_LOAD_THRESHOLD = 0.8;
+	protected static final double TRAFFIC_LOAD_THRESHOLD = 0.6;
 
 	private List<AgentData> serversData;
 

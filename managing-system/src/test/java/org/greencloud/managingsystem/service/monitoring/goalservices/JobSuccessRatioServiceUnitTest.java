@@ -148,6 +148,7 @@ class JobSuccessRatioServiceUnitTest {
 	private List<AgentData> prepareComponentData() {
 		final ServerMonitoringData data1 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(100)
+				.serverJobs(10)
 				.currentTraffic(0.7)
 				.availablePower(30D)
 				.successRatio(0.9)
@@ -156,6 +157,7 @@ class JobSuccessRatioServiceUnitTest {
 				.build();
 		final ServerMonitoringData data2 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(100)
+				.serverJobs(10)
 				.currentTraffic(0.7)
 				.availablePower(30D)
 				.successRatio(0.75)
@@ -164,6 +166,7 @@ class JobSuccessRatioServiceUnitTest {
 				.build();
 		final ServerMonitoringData data3 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(100)
+				.serverJobs(10)
 				.currentTraffic(0.7)
 				.availablePower(30D)
 				.successRatio(0D)

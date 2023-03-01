@@ -1,8 +1,6 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.AVAILABLE_GREEN_ENERGY;
-import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
-import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -55,81 +53,6 @@ class ConnectGreenSourcePlanDatabaseTest {
 		database.close();
 	}
 
-	@Test
-	@DisplayName("Test getting average traffic for servers for empty set")
-	void testGetAverageTrafficForServersForEmptySet() {
-		assertThat(connectGreenSourcePlan.getAverageTrafficForServers(emptyList())).isEmpty();
-	}
-
-	@Test
-	@DisplayName("Test getting average traffic for servers for distinct data set")
-	void testGetAverageTrafficForServersForDistinctDataSet() {
-		var mockData1 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
-				.currentTraffic(0.6)
-				.successRatio(0.9)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
-				.isDisabled(false)
-				.build();
-		var mockData2 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
-				.currentTraffic(0.8)
-				.successRatio(0.9)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
-				.isDisabled(false)
-				.build();
-
-		database.writeMonitoringData("test_server1", SERVER_MONITORING, mockData1);
-		database.writeMonitoringData("test_server2", SERVER_MONITORING, mockData2);
-
-		var result = connectGreenSourcePlan.getAverageTrafficForServers(List.of("test_server1", "test_server2"));
-
-		assertThat(result)
-				.hasSize(2)
-				.containsExactlyInAnyOrderEntriesOf(Map.of("test_server1", 0.6, "test_server2", 0.8));
-	}
-
-	@Test
-	@DisplayName("Test getting average traffic for servers for many rows data set")
-	void testGetAverageTrafficForServersForManyRowsDataSet() {
-		var mockData1 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
-				.currentTraffic(0.6)
-				.successRatio(0.9)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
-				.isDisabled(false)
-				.build();
-		var mockData2 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
-				.currentTraffic(0.8)
-				.successRatio(0.9)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
-				.isDisabled(false)
-				.build();
-		var mockData3 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
-				.currentTraffic(0.5)
-				.successRatio(0.9)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
-				.isDisabled(false)
-				.build();
-
-		database.writeMonitoringData("test_server1", SERVER_MONITORING, mockData1);
-		database.writeMonitoringData("test_server2", SERVER_MONITORING, mockData2);
-		database.writeMonitoringData("test_server2", SERVER_MONITORING, mockData3);
-
-		var result = connectGreenSourcePlan.getAverageTrafficForServers(List.of("test_server1", "test_server2"));
-
-		assertThat(result)
-				.hasSize(2)
-				.containsExactlyInAnyOrderEntriesOf(Map.of("test_server1", 0.6, "test_server2", 0.65));
-
-	}
 
 	@Test
 	@DisplayName("Test getting average power for sources for empty set")
@@ -169,72 +92,6 @@ class ConnectGreenSourcePlanDatabaseTest {
 		assertThat(result)
 				.hasSize(2)
 				.containsExactlyInAnyOrderEntriesOf(Map.of("test_gs1", 0.5, "test_gs2", 0.9));
-
-	}
-
-	@Test
-	@DisplayName("Test getting average traffic for sources for empty set")
-	void testGetAverageTrafficForSourcesForEmptySet() {
-		assertThat(connectGreenSourcePlan.getAverageTrafficForSources(emptyList())).isEmpty();
-	}
-
-	@Test
-	@DisplayName("Test getting average traffic for sources for distinct data set")
-	void testGetAverageTrafficForSourcesForDistinctDataSet() {
-		var mockData1 = ImmutableGreenSourceMonitoringData.builder()
-				.currentTraffic(0.6)
-				.successRatio(0.8)
-				.weatherPredictionError(0.02)
-				.isBeingDisconnected(false)
-				.build();
-		var mockData2 = ImmutableGreenSourceMonitoringData.builder()
-				.currentTraffic(0.4)
-				.successRatio(0.8)
-				.weatherPredictionError(0.02)
-				.isBeingDisconnected(true)
-				.build();
-
-		database.writeMonitoringData("test_gs1", GREEN_SOURCE_MONITORING, mockData1);
-		database.writeMonitoringData("test_gs2", GREEN_SOURCE_MONITORING, mockData2);
-
-		var result = connectGreenSourcePlan.getAverageTrafficForSources(List.of("test_gs1", "test_gs2"));
-
-		assertThat(result)
-				.hasSize(2)
-				.containsExactlyInAnyOrderEntriesOf(Map.of("test_gs1", 0.6, "test_gs2", 0.4));
-	}
-
-	@Test
-	@DisplayName("Test getting average traffic for sources for many rows data set")
-	void testGetAverageTrafficForSourcesForManyRowsDataSet() {
-		var mockData1 = ImmutableGreenSourceMonitoringData.builder()
-				.currentTraffic(0.6)
-				.successRatio(0.8)
-				.weatherPredictionError(0.02)
-				.isBeingDisconnected(false)
-				.build();
-		var mockData2 = ImmutableGreenSourceMonitoringData.builder()
-				.currentTraffic(0.4)
-				.successRatio(0.8)
-				.weatherPredictionError(0.02)
-				.isBeingDisconnected(true)
-				.build();
-		var mockData3 = ImmutableGreenSourceMonitoringData.builder()
-				.currentTraffic(0.5)
-				.successRatio(0.8)
-				.weatherPredictionError(0.02)
-				.isBeingDisconnected(false)
-				.build();
-
-		database.writeMonitoringData("test_gs1", GREEN_SOURCE_MONITORING, mockData1);
-		database.writeMonitoringData("test_gs2", GREEN_SOURCE_MONITORING, mockData2);
-		database.writeMonitoringData("test_gs2", GREEN_SOURCE_MONITORING, mockData3);
-
-		var result = connectGreenSourcePlan.getAverageTrafficForSources(List.of("test_gs1", "test_gs2"));
-
-		assertThat(result)
-				.hasSize(2)
-				.containsExactlyInAnyOrderEntriesOf(Map.of("test_gs1", 0.6, "test_gs2", 0.45));
 
 	}
 }

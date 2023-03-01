@@ -26,8 +26,6 @@ import org.greencloud.managingsystem.service.planner.plans.domain.AgentsTraffic;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.AvailableGreenEnergy;
-import com.database.knowledge.domain.agent.greensource.GreenSourceMonitoringData;
-import com.database.knowledge.domain.agent.server.ServerMonitoringData;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.managingsystem.planner.ImmutableChangeGreenSourceConnectionParameters;
@@ -39,7 +37,7 @@ import jade.core.AID;
  */
 public class ConnectGreenSourcePlan extends AbstractPlan {
 
-	private static final double SERVER_TRAFFIC_THRESHOLD = 0.8;
+	private static final double SERVER_TRAFFIC_THRESHOLD = 0.7;
 	private static final double GREEN_SOURCE_TRAFFIC_THRESHOLD = 0.5;
 	private static final double GREEN_SOURCE_POWER_THRESHOLD = 0.7;
 
@@ -191,7 +189,8 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 		final List<String> aliveServersForCNA = managingAgent.monitor()
 				.getAliveAgentsIntersection(aliveServers, serversForCNA);
 
-		return getAverageTrafficForServers(aliveServersForCNA).entrySet().stream()
+		return managingAgent.monitor().getAverageTrafficForNetworkComponent(aliveServersForCNA, SERVER_MONITORING)
+				.entrySet().stream()
 				.filter(server -> server.getValue() <= SERVER_TRAFFIC_THRESHOLD)
 				.map(entry -> new AgentsTraffic(entry.getKey(), entry.getValue()))
 				.toList();
@@ -205,9 +204,11 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 
 		final List<String> aliveSourcesForServer = managingAgent.monitor()
 				.getAliveAgentsIntersection(aliveGreenSources, greenSourcesForCNA);
-		final List<String> sourcesWithEnoughPower = getSourcesWithEnoughPower(aliveSourcesForServer);
 
-		return getAverageTrafficForSources(sourcesWithEnoughPower).entrySet().stream()
+		return managingAgent.monitor()
+				.getAverageTrafficForNetworkComponent(getSourcesWithEnoughPower(aliveSourcesForServer),
+						GREEN_SOURCE_MONITORING)
+				.entrySet().stream()
 				.filter(greenSource -> greenSource.getValue() <= GREEN_SOURCE_TRAFFIC_THRESHOLD)
 				.map(entry -> new AgentsGreenPower(entry.getKey(), entry.getValue()))
 				.collect(toSet());
@@ -221,27 +222,11 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 	}
 
 	@VisibleForTesting
-	protected Map<String, Double> getAverageTrafficForSources(final List<String> aliveSourcesForServer) {
-		final ToDoubleFunction<AgentData> getTrafficForGreenSource =
-				data -> ((GreenSourceMonitoringData) data.monitoringData()).getCurrentTraffic();
-		return managingAgent.monitor()
-				.getAverageValuesForAgents(GREEN_SOURCE_MONITORING, aliveSourcesForServer, getTrafficForGreenSource);
-	}
-
-	@VisibleForTesting
 	protected Map<String, Double> getAveragePowerForSources(final List<String> aliveSourcesForServer) {
 		final ToDoubleFunction<AgentData> getPowerForGreenSource =
 				data -> ((AvailableGreenEnergy) data.monitoringData()).availablePowerPercentage();
 		return managingAgent.monitor()
 				.getAverageValuesForAgents(AVAILABLE_GREEN_ENERGY, aliveSourcesForServer, getPowerForGreenSource);
-	}
-
-	@VisibleForTesting
-	protected Map<String, Double> getAverageTrafficForServers(final List<String> aliveServersForCNA) {
-		final ToDoubleFunction<AgentData> getTrafficForServer =
-				data -> ((ServerMonitoringData) data.monitoringData()).getCurrentTraffic();
-		return managingAgent.monitor()
-				.getAverageValuesForAgents(SERVER_MONITORING, aliveServersForCNA, getTrafficForServer);
 	}
 
 	@VisibleForTesting

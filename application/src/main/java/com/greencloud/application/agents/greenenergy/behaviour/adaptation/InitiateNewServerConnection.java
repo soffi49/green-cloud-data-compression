@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.greenenergy.behaviour.adaptation;
 
-import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationSourceLog.CONNECTION_FAILED_LOG;
-import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationSourceLog.CONNECTION_SUCCEEDED_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.CONNECTION_FAILED_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.CONNECTION_SUCCEEDED_LOG;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
 

@@ -5,11 +5,11 @@ import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_SERV
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DECREASE_GREEN_SOURCE_ERROR;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DISCONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_ERROR;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIORITY;
-import static com.database.knowledge.domain.action.AdaptationActionEnum.*;
 import static java.util.Objects.nonNull;
 import static org.greencloud.managingsystem.service.planner.logs.ManagingAgentPlannerLog.CONSTRUCTING_PLAN_FOR_ACTION_LOG;
 import static org.greencloud.managingsystem.service.planner.logs.ManagingAgentPlannerLog.COULD_NOT_CONSTRUCT_PLAN_LOG;
@@ -18,17 +18,18 @@ import static org.greencloud.managingsystem.service.planner.logs.ManagingAgentPl
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.service.AbstractManagingService;
-import org.greencloud.managingsystem.service.planner.plans.*;
 import org.greencloud.managingsystem.service.planner.plans.AbstractPlan;
 import org.greencloud.managingsystem.service.planner.plans.AddGreenSourcePlan;
 import org.greencloud.managingsystem.service.planner.plans.AddServerPlan;
 import org.greencloud.managingsystem.service.planner.plans.ChangeGreenSourceWeightPlan;
 import org.greencloud.managingsystem.service.planner.plans.ConnectGreenSourcePlan;
 import org.greencloud.managingsystem.service.planner.plans.DecrementGreenSourceErrorPlan;
+import org.greencloud.managingsystem.service.planner.plans.DisableServerPlan;
 import org.greencloud.managingsystem.service.planner.plans.DisconnectGreenSourcePlan;
 import org.greencloud.managingsystem.service.planner.plans.IncreaseDeadlinePriorityPlan;
 import org.greencloud.managingsystem.service.planner.plans.IncreaseJobDivisionPowerPriorityPlan;
@@ -71,7 +72,7 @@ public class PlannerService extends AbstractManagingService {
 		final AdaptationAction bestAction = selectBestAction(executableActions);
 		final AbstractPlan selectedPlan = getPlanForAdaptationAction(bestAction);
 		final boolean isPlanConstructed = nonNull(selectedPlan)
-										  && nonNull(selectedPlan.constructAdaptationPlan());
+				&& nonNull(selectedPlan.constructAdaptationPlan());
 
 		if (!isPlanConstructed) {
 			logger.info(COULD_NOT_CONSTRUCT_PLAN_LOG);
@@ -82,10 +83,13 @@ public class PlannerService extends AbstractManagingService {
 		managingAgent.execute().executeAdaptationAction(selectedPlan);
 	}
 
-
 	@VisibleForTesting
 	protected AdaptationAction selectBestAction(final Map<AdaptationAction, Double> adaptationActions) {
+		final Predicate<AdaptationAction> actionFilter = action ->
+				adaptationActions.keySet().stream().noneMatch(key -> key.getRuns() == 0) || action.getRuns() == 0;
+
 		return adaptationActions.entrySet().stream()
+				.filter(action -> actionFilter.test(action.getKey()))
 				.max(Comparator.comparingDouble(Map.Entry::getValue))
 				.orElse(adaptationActions.entrySet().stream().findFirst().orElseThrow())
 				.getKey();

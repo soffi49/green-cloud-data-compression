@@ -1,6 +1,7 @@
 package com.greencloud.application.agents.cloudnetwork;
 
-import java.util.ArrayList;
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 	protected Map<ClientJob, ExecutionJobStatusEnum> networkJobs;
 	protected Map<String, AID> serverForJobMap;
 	protected AtomicLong completedJobs;
-	protected List<AID> ownedServers;
+	protected Map<AID, Boolean> ownedServers;
 	protected AID scheduler;
 
 	AbstractCloudNetworkAgent() {
@@ -46,7 +47,7 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 		serverForJobMap = new HashMap<>();
 		networkJobs = new HashMap<>();
 		completedJobs = new AtomicLong(0L);
-		ownedServers = new ArrayList<>();
+		ownedServers = new HashMap<>();
 	}
 
 	public Map<String, AID> getServerForJobMap() {
@@ -61,13 +62,27 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 		return completedJobs.incrementAndGet();
 	}
 
-	public List<AID> getOwnedServers() {
+	public Map<AID, Boolean> getOwnedServers() {
 		return ownedServers;
 	}
 
 	public void setOwnedServers(Collection<AID> ownedServers) {
+		var serversToAdd = ownedServers.stream().collect(toMap(aid -> aid, aid -> true));
+
 		this.ownedServers.clear();
-		this.ownedServers.addAll(ownedServers);
+		this.ownedServers.putAll(serversToAdd);
+	}
+
+	/**
+	 * Method retrieves list of owned servers that are active
+	 *
+	 * @return list of server AIDs
+	 */
+	public List<AID> getOwnedActiveServers() {
+		return ownedServers.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.toList();
 	}
 
 	public AID getScheduler() {

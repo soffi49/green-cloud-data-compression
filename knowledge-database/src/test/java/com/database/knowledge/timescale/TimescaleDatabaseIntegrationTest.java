@@ -151,19 +151,18 @@ class TimescaleDatabaseIntegrationTest {
 	@Test
 	void shouldSuccessfullySaveDataToDatabase() {
 		// given
-		String aid = "test_agent";
-		DataType dataType = PROCESSED_API_REQUEST;
-		MonitoringData monitoringData = ImmutableProcessedApiRequest.builder()
+		final String aid = "test_agent";
+		final MonitoringData monitoringData = ImmutableProcessedApiRequest.builder()
 				.callType("testCallType")
 				.requestedTimeslot("testTimeslot")
 				.requestedType("testRequestType")
 				.build();
 
 		// when
-		database.writeMonitoringData(aid, dataType, monitoringData);
+		database.writeMonitoringData(aid, PROCESSED_API_REQUEST, monitoringData);
 
 		// then
-		List<AgentData> result = database.readMonitoringData();
+		final List<AgentData> result = database.readMonitoringData();
 
 		// then
 		assertThat(result)
@@ -270,7 +269,7 @@ class TimescaleDatabaseIntegrationTest {
 		assertThat(updatedAction.getRuns())
 				.as("action number of runs should be equal to number of updates")
 				.isEqualTo(actionResults.size());
-		assertThat(updatedAction.getActionResults())
+		assertThat(updatedAction.getActionResultDifferences())
 				.as("final action results should have the expected values")
 				.usingRecursiveComparison()
 				.isEqualTo(expectedActionResults);
@@ -295,7 +294,7 @@ class TimescaleDatabaseIntegrationTest {
 		assertThat(releasedAction.getRuns())
 				.as("action number of runs should be equal to number of updates")
 				.isEqualTo(1);
-		assertThat(releasedAction.getActionResults())
+		assertThat(releasedAction.getActionResultDifferences())
 				.as("final action results should have the expected values")
 				.usingRecursiveComparison()
 				.isEqualTo(actionResults);
@@ -479,7 +478,11 @@ class TimescaleDatabaseIntegrationTest {
 				.as("Result should contain correct data type and aid")
 				.allMatch((data) -> data.dataType().equals(WEATHER_SHORTAGES) && aidOfInterest.contains(data.aid()))
 				.as("Result should contain correct data")
-				.allMatch((data) -> expectedContent.contains(data.monitoringData()));
+				.map(AgentData::monitoringData)
+				.allSatisfy(data ->
+						assertThat(data).isInstanceOfSatisfying(WeatherShortages.class,
+								shortage -> assertThat(expectedContent).contains(shortage))
+				);
 	}
 
 	@Test
@@ -488,28 +491,32 @@ class TimescaleDatabaseIntegrationTest {
 				.successRatio(0.5)
 				.currentBackUpPowerUsage(0.4)
 				.currentMaximumCapacity(30)
-				.currentTraffic(10)
+				.currentTraffic(0.1)
+				.availablePower(20D)
 				.isDisabled(false)
 				.build();
 		final ServerMonitoringData data2 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.6)
 				.currentBackUpPowerUsage(0.5)
 				.currentMaximumCapacity(30)
-				.currentTraffic(10)
+				.currentTraffic(0.1)
+				.availablePower(20D)
 				.isDisabled(false)
 				.build();
 		final ServerMonitoringData data3 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.7)
 				.currentBackUpPowerUsage(0.6)
 				.currentMaximumCapacity(30)
-				.currentTraffic(10)
+				.currentTraffic(0.1)
+				.availablePower(20D)
 				.isDisabled(false)
 				.build();
 		final ServerMonitoringData data4 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.8)
 				.currentBackUpPowerUsage(0.7)
 				.currentMaximumCapacity(30)
-				.currentTraffic(10)
+				.currentTraffic(0.1)
+				.availablePower(20D)
 				.isDisabled(false)
 				.build();
 		database.writeMonitoringData("test_aid1", SERVER_MONITORING, data1);
@@ -577,6 +584,7 @@ class TimescaleDatabaseIntegrationTest {
 		final ServerMonitoringData data3 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(100)
 				.currentTraffic(0.7)
+				.availablePower(30D)
 				.successRatio(0.8)
 				.currentBackUpPowerUsage(0.7)
 				.isDisabled(false)

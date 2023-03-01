@@ -114,6 +114,7 @@ class TrafficDistributionServiceTest {
 	private List<AgentData> prepareServerData() {
 		final ServerMonitoringData data1 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(150)
+				.serverJobs(10)
 				.currentTraffic(1.0 / 3.0)
 				.availablePower(100D)
 				.currentBackUpPowerUsage(0.0)
@@ -122,6 +123,7 @@ class TrafficDistributionServiceTest {
 				.build();
 		final ServerMonitoringData data2 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(200)
+				.serverJobs(10)
 				.currentTraffic(0.25)
 				.availablePower(150D)
 				.currentBackUpPowerUsage(0.0)
@@ -130,6 +132,7 @@ class TrafficDistributionServiceTest {
 				.build();
 		final ServerMonitoringData data3 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(250)
+				.serverJobs(10)
 				.currentTraffic(0.2)
 				.availablePower(200D)
 				.currentBackUpPowerUsage(0.0)
@@ -138,6 +141,7 @@ class TrafficDistributionServiceTest {
 				.build();
 		final ServerMonitoringData data4 = ImmutableServerMonitoringData.builder()
 				.currentMaximumCapacity(300)
+				.serverJobs(10)
 				.currentTraffic(0.25)
 				.availablePower(225D)
 				.currentBackUpPowerUsage(0.0)

@@ -4,6 +4,9 @@ import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static jade.lang.acl.ACLMessage.PROPOSE;
+import static java.util.Objects.isNull;
+
+import java.security.InvalidParameterException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
@@ -27,15 +30,15 @@ public class OfferMessageFactory {
 	 * Method used in making the proposal message containing the offer made by the Cloud Network Agent
 	 * for client
 	 *
-	 * @param server       data sent by the server which will execute the job
-	 * @param replyMessage reply message as which the job offer is to be sent
-	 * @param powerInUse   current power in use in given network segment
+	 * @param server         data sent by the server which will execute the job
+	 * @param replyMessage   reply message as which the job offer is to be sent
+	 * @param availablePower current available power for given network segment
 	 * @return proposal ACLMessage
 	 */
-	public static ACLMessage makeJobOfferForClient(final ServerData server, final double powerInUse,
+	public static ACLMessage makeJobOfferForClient(final ServerData server, final double availablePower,
 			final ACLMessage replyMessage) {
 		final PricedJob pricedJob = ImmutablePricedJob.builder()
-				.powerInUse(powerInUse)
+				.availablePower(availablePower)
 				.jobId(server.getJobId())
 				.priceForJob(server.getServicePrice())
 				.build();
@@ -62,6 +65,11 @@ public class OfferMessageFactory {
 			final String jobId,
 			final ACLMessage replyMessage) {
 		final ClientJob job = getJobById(jobId, serverAgent.getServerJobs());
+
+		if (isNull(job)) {
+			throw new InvalidParameterException("Job with id " + jobId + " not found in server!");
+		}
+
 		final int availablePower = serverAgent.manage()
 				.getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null);
 		final ImmutableServerData jobOffer = ImmutableServerData.builder()

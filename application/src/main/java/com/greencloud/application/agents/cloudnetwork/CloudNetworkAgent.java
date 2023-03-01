@@ -11,7 +11,8 @@ import java.util.List;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.behaviour.df.FindSchedulerAndServerAgents;
-import com.greencloud.application.agents.cloudnetwork.behaviour.df.NetworkChangeListener;
+import com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.ListenForNetworkChange;
+import com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.ListenForServerDisabling;
 import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.ListenForCloudNetworkJobCancellation;
 import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.ListenForJobStatusChange;
 import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.ListenForScheduledJob;
@@ -55,7 +56,8 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 		parallelBehaviour.addSubBehaviour(new ListenForJobStatusChange());
 		parallelBehaviour.addSubBehaviour(new ListenForServerJobTransferRequest());
 		parallelBehaviour.addSubBehaviour(new ListenForCloudNetworkJobCancellation());
-		parallelBehaviour.addSubBehaviour(new NetworkChangeListener());
+		parallelBehaviour.addSubBehaviour(new ListenForNetworkChange());
+		parallelBehaviour.addSubBehaviour(new ListenForServerDisabling(this));
 		return Collections.singletonList(parallelBehaviour);
 	}
 

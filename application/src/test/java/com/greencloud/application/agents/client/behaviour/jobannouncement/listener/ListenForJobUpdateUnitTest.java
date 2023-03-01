@@ -13,6 +13,7 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.SCHEDULED_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.utils.TimeUtils.postponeTime;
+import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.commons.job.ClientJobStatusEnum.DELAYED;
 import static com.greencloud.commons.job.ClientJobStatusEnum.FAILED;
 import static com.greencloud.commons.job.ClientJobStatusEnum.IN_PROGRESS;
@@ -20,6 +21,7 @@ import static com.greencloud.commons.job.ClientJobStatusEnum.ON_BACK_UP;
 import static com.greencloud.commons.job.ClientJobStatusEnum.ON_HOLD;
 import static com.greencloud.commons.job.ClientJobStatusEnum.PROCESSED;
 import static com.greencloud.commons.job.ClientJobStatusEnum.SCHEDULED;
+import static java.time.Instant.now;
 import static java.time.Instant.parse;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -53,6 +55,7 @@ import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.application.domain.job.ImmutableJobTimeFrames;
 import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.commons.job.ClientJobStatusEnum;
+import com.greencloud.commons.message.MessageBuilder;
 import com.gui.agents.ClientAgentNode;
 import com.gui.controller.GuiController;
 
@@ -100,10 +103,10 @@ class ListenForJobUpdateUnitTest {
 				.startTime(parse("2022-01-01T13:30:00.000Z"))
 				.build(), parse("2022-01-01T13:30:00.000Z"));
 
-		ACLMessage message = new ACLMessage();
-		message.setConversationId(conversationId);
-		message.setContent(getMapper().writeValueAsString(messageContent));
-		return message;
+		return MessageBuilder.builder()
+				.withConversationId(conversationId)
+				.withObjectContent(messageContent)
+				.build();
 	}
 
 	@BeforeEach
@@ -206,6 +209,7 @@ class ListenForJobUpdateUnitTest {
 	void shouldCorrectlyProcessPostponedJob() {
 		// given
 		var message = mock(ACLMessage.class);
+		setSystemStartTime(now());
 		when(message.getConversationId()).thenReturn(POSTPONED_JOB_ID);
 		when(message.getContent()).thenReturn(JOB_ID);
 		when(clientAgent.receive(CLIENT_JOB_UPDATE_TEMPLATE)).thenReturn(message);
@@ -225,6 +229,7 @@ class ListenForJobUpdateUnitTest {
 	void shouldCorrectlyProcessPostponedJobPart() {
 		// given
 		var message = mock(ACLMessage.class);
+		setSystemStartTime(now());
 		when(message.getConversationId()).thenReturn(POSTPONED_JOB_ID);
 		when(message.getContent()).thenReturn(JOB_PART_ID);
 		when(clientAgent.isSplit()).thenReturn(true);
@@ -253,6 +258,7 @@ class ListenForJobUpdateUnitTest {
 				.newJobStart(START_TIME.plus(10, MINUTES))
 				.newJobEnd(END_TIME.plus(10, MINUTES))
 				.build();
+		setSystemStartTime(now());
 		when(message.getConversationId()).thenReturn(RE_SCHEDULED_JOB_ID);
 		when(message.getContent()).thenReturn(getMapper().writeValueAsString(timeframes));
 		when(clientAgent.receive(CLIENT_JOB_UPDATE_TEMPLATE)).thenReturn(message);
@@ -277,6 +283,7 @@ class ListenForJobUpdateUnitTest {
 				.newJobStart(START_TIME.plus(10, MINUTES))
 				.newJobEnd(END_TIME.plus(10, MINUTES))
 				.build();
+		setSystemStartTime(now());
 		when(message.getConversationId()).thenReturn(RE_SCHEDULED_JOB_ID);
 		when(message.getContent()).thenReturn(getMapper().writeValueAsString(timeframes));
 		when(clientAgent.isSplit()).thenReturn(true);

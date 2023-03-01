@@ -1,8 +1,9 @@
 package com.database.knowledge.domain.action;
 
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.database.knowledge.domain.goal.GoalEnum;
 
@@ -15,24 +16,25 @@ public class AdaptationAction {
 	private final AdaptationActionEnum action;
 	private final GoalEnum goal;
 	// describes delta for each adaptation goal value that given action caused
-	private final Map<GoalEnum, Double> actionResults;
+	private final Map<GoalEnum, ActionResult> actionResults;
 	private final Boolean isAvailable;
-	private Integer runs;
 	private final AdaptationActionTypeEnum type;
+	private Integer runs;
 
-	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type, GoalEnum goal) {
+	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type,
+			GoalEnum goal) {
 		this.actionId = actionId;
 		this.action = action;
 		this.type = type;
 		this.goal = goal;
-		this.actionResults = Arrays.stream(GoalEnum.values())
-				.collect(Collectors.toMap(goalEnum -> goalEnum, goalEnum -> 0.0D));
+		this.actionResults = stream(GoalEnum.values())
+				.collect(toMap(goalEnum -> goalEnum, goalEnum -> new ActionResult(0.0D, 0)));
 		this.isAvailable = true;
 		this.runs = 0;
 	}
 
 	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type,
-			GoalEnum goal, Map<GoalEnum, Double> actionResults, Boolean isAvailable, Integer runs) {
+			GoalEnum goal, Map<GoalEnum, ActionResult> actionResults, Boolean isAvailable, Integer runs) {
 		this.actionId = actionId;
 		this.action = action;
 		this.type = type;
@@ -54,8 +56,18 @@ public class AdaptationAction {
 		return goal;
 	}
 
-	public Map<GoalEnum, Double> getActionResults() {
+	public Map<GoalEnum, ActionResult> getActionResults() {
 		return actionResults;
+	}
+
+	/**
+	 * Method returns the average differences in qualities associated with each of the actions
+	 *
+	 * @return map of actions along with corresponding quality differences
+	 */
+	public Map<GoalEnum, Double> getActionResultDifferences() {
+		return actionResults.entrySet().stream()
+				.collect(toMap(Map.Entry::getKey, result -> result.getValue().diff()));
 	}
 
 	/**
@@ -66,11 +78,13 @@ public class AdaptationAction {
 	 * @param newActionResults new action results provided by Managing Agent when saved to database
 	 */
 	public void mergeActionResults(Map<GoalEnum, Double> newActionResults) {
-		Arrays.stream(GoalEnum.values()).forEach(goalEnum -> {
+		newActionResults.forEach((goalEnum, diff) -> {
 			if (runs == 0) {
-				actionResults.put(goalEnum, newActionResults.get(goalEnum));
+				actionResults.put(goalEnum, new ActionResult(diff, 1));
 			} else {
-				actionResults.put(goalEnum, getUpdatedGoalChange(goalEnum, newActionResults));
+				var actionResult = actionResults.get(goalEnum);
+				actionResults.put(goalEnum,
+						new ActionResult(getUpdatedGoalChange(actionResult, diff), actionResult.runs() + 1));
 			}
 		});
 	}
@@ -96,8 +110,8 @@ public class AdaptationAction {
 		this.runs += 1;
 	}
 
-	private double getUpdatedGoalChange(GoalEnum goal, Map<GoalEnum, Double> newActionResults) {
-		return (actionResults.get(goal) * runs + newActionResults.get(goal)) / (runs + 1);
+	private double getUpdatedGoalChange(final ActionResult actionResult, final Double newDiff) {
+		return (actionResult.diff() * actionResult.runs() + newDiff) / (actionResult.runs() + 1);
 	}
 
 	@Override

@@ -115,6 +115,8 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 	}
 
 	private List<AID> getRemainingServers(final AID serverSender) {
-		return myCloudNetworkAgent.getOwnedServers().stream().filter(server -> !server.equals(serverSender)).toList();
+		return myCloudNetworkAgent.getOwnedActiveServers().stream()
+				.filter(server -> !server.equals(serverSender))
+				.toList();
 	}
 }

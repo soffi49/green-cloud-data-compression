@@ -16,6 +16,12 @@
 	<packaging>jar</packaging>
 	<name>engine</name>
 
+	<properties>
+		<junit-jupiter.version>5.9.0</junit-jupiter.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+	</properties>
+
 	<dependencies>
 		<!-- JADE Dependencies-->
 		<dependency>
@@ -95,6 +101,11 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M9</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.2.2</version>
 				<configuration>
@@ -110,6 +121,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>

@@ -28,5 +28,5 @@ public interface PricedJob {
 	/**
 	 * @return power in use for given CNA
 	 */
-	double getPowerInUse();
+	double getAvailablePower();
 }

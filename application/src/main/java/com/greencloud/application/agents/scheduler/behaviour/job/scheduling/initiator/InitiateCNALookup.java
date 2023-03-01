@@ -62,6 +62,7 @@ public class InitiateCNALookup extends ContractNetInitiator {
 	 *                    Cloud Network Agent
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void handleAllResponses(final Vector responses, final Vector acceptances) {
 		final List<ACLMessage> proposals = retrieveProposals(responses);
 		MDC.put(MDC_JOB_ID, job.getJobId());
@@ -117,7 +118,7 @@ public class InitiateCNALookup extends ContractNetInitiator {
 			final PricedJob cna1 = readMessageContent(cnaOffer1, PricedJob.class);
 			final PricedJob cna2 = readMessageContent(cnaOffer2, PricedJob.class);
 
-			double powerDifference = cna1.getPowerInUse() - cna2.getPowerInUse();
+			double powerDifference = cna2.getAvailablePower() - cna1.getAvailablePower();
 			int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());
 			return MAX_TRAFFIC_DIFFERENCE.isValidIntValue((int) powerDifference) ?
 					priceDifference :
