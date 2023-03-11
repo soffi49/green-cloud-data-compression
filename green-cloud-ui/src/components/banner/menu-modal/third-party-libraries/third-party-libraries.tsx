@@ -8,20 +8,13 @@ interface Props {
 }
 
 const ThirdPartyLibraries = ({ isOpen, setIsOpen }: Props) => {
-   const {
-      thirdPartyField,
-      collapseHeader,
-      collapseContent,
-      modalStyle,
-      contentRecord,
-      licenseTable,
-      headerRecord,
-   } = styles
+   const { thirdPartyField, collapseHeader, collapseContent, modalStyle, contentRecord, licenseTable, headerRecord } =
+      styles
 
    const generateThirdPartyFields = () =>
-      USED_LIBRARIES.sort((a, b) =>
-         a.framework.toLowerCase().localeCompare(b.framework.toLowerCase())
-      ).map((field) => generateThirdPartyField(field))
+      USED_LIBRARIES.sort((a, b) => a.framework.toLowerCase().localeCompare(b.framework.toLowerCase())).map((field) =>
+         generateThirdPartyField(field)
+      )
 
    const generateThirdPartyField = (library: ThirdParty) => {
       return (

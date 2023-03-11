@@ -8,6 +8,7 @@ interface Props {
    triggerStyle?: React.CSSProperties
    triggerClosedStyle?: React.CSSProperties
    wrapperStyle?: React.CSSProperties
+   contentStyle?: React.CSSProperties
    children?: React.ReactNode | React.ReactNode[]
 }
 
@@ -19,16 +20,26 @@ interface Props {
  * @param {React.CSSProperties}[triggerStyle] - optional additional trigger style
  * @param {React.CSSProperties}[triggerClosedStyle] - optional additional style for closed trigger
  * @param {React.CSSProperties}[wrapperStyle] - optional additional style for the collapse wrapper
+ * @param {React.CSSProperties}[contentStyle] - optional additional style for the collapse content
  * @param {React.ReactNode | React.ReactNode[]}[children] - content of the collapse
  * @returns JSX Element
  */
-const Collapse = ({ title, titleClosed, triggerStyle, triggerClosedStyle, wrapperStyle, children }: Props) => {
+const Collapse = ({
+   title,
+   titleClosed,
+   triggerStyle,
+   triggerClosedStyle,
+   wrapperStyle,
+   contentStyle,
+   children,
+}: Props) => {
    const { collapseStyle, collapseContentStyle } = styles
    const [isOpen, setIsOpen] = useState(false)
 
    const styleTrigger = { ...collapseStyle, ...triggerStyle }
    const styleTriggerClosed = triggerClosedStyle ? { ...collapseStyle, ...triggerClosedStyle } : styleTrigger
    const styleCollapse = !isOpen ? styleTriggerClosed : styleTrigger
+   const styleContent = { ...collapseContentStyle, ...contentStyle }
 
    const trigger = (
       <>
@@ -47,7 +58,7 @@ const Collapse = ({ title, titleClosed, triggerStyle, triggerClosedStyle, wrappe
             onOpen: () => setIsOpen(true),
          }}
       >
-         <div style={collapseContentStyle}>{children}</div>
+         <div style={styleContent}>{children}</div>
       </Collapsible>
    )
 }

@@ -1,10 +1,4 @@
-import {
-   agentsActions,
-   AppDispatch,
-   cloudNetworkActions,
-   RootState,
-   selectConnectionState,
-} from '@store'
+import { agentsActions, AppDispatch, cloudNetworkActions, RootState, selectConnectionState } from '@store'
 import { connect } from 'react-redux'
 import { MenuModal } from './menu-modal'
 
@@ -14,13 +8,10 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
    return {
-      resetCloudNetwork: () =>
-         dispatch(cloudNetworkActions.resetCloudNetwork()),
+      resetCloudNetwork: () => dispatch(cloudNetworkActions.resetCloudNetwork()),
       resetAgents: () => dispatch(agentsActions.resetAgents()),
-      closeServerConnection: () =>
-         dispatch(cloudNetworkActions.closeServerConnection()),
-      openServerConnection: () =>
-         dispatch(cloudNetworkActions.openServerConnection()),
+      closeServerConnection: () => dispatch(cloudNetworkActions.closeServerConnection()),
+      openServerConnection: () => dispatch(cloudNetworkActions.openServerConnection()),
    }
 }
 

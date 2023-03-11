@@ -18,11 +18,7 @@ const TopBanner = () => {
       <div style={styles.parentContainer}>
          <div style={styles.banerContent}>
             <div style={styles.logoContainer}>
-               <img
-                  style={styles.bannerCloudIcon}
-                  src={iconCloud}
-                  alt="Cloud icon"
-               />
+               <img style={styles.bannerCloudIcon} src={iconCloud} alt="Cloud icon" />
                <span style={styles.bannerText}>{header.toUpperCase()}</span>
             </div>
             <div>
@@ -30,13 +26,7 @@ const TopBanner = () => {
                   {...{
                      buttonClassName: 'menu-button',
                      setIsOpen: setIsMenuOpen,
-                     title: (
-                        <img
-                           style={styles.bannerMenuIcon}
-                           src={iconMenu}
-                           alt="Menu icon"
-                        />
-                     ),
+                     title: <img style={styles.bannerMenuIcon} src={iconMenu} alt="Menu icon" />,
                   }}
                />
             </div>

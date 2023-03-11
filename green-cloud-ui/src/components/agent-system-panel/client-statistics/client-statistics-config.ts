@@ -1,4 +1,5 @@
-import { Agent, JobStatus } from '@types'
+import { JobStatus } from '@types'
+import { SelectOption } from 'components/common'
 
 export const CLIENT_STATISTICS = [
    { key: 'jobId', label: 'Job identifier' },
@@ -29,23 +30,19 @@ export const CLIENTS_ORDER = [
    JobStatus.FAILED.toString(),
 ]
 
-export interface AgentOption {
-   value: Agent | null
-   label: string
-}
+export const INITIAL_JOB_SPLIT_SELECT_OPTIONS: SelectOption[] = [
+   { value: 'JOBS SPLIT TO PARTS', label: 'JOBS SPLIT TO PARTS', isSelected: false },
+   { value: 'JOBS EXECUTED AS WHOLE', label: 'JOBS SPLIT TO PARTS', isSelected: false },
+]
 
-export interface GroupedAgentOption {
-   label: string
-   options: AgentOption[]
-}
-
-export interface JobStatusSelect {
-   jobStatus: string
-   isSelected: boolean
+export const ALL_STATUS: SelectOption = {
+   value: 'SELECT ALL STATUSES',
+   label: 'SELECT ALL STATUSES',
+   isSelected: false,
 }
 
 export const convertJobStatus = (status: string) => status.replaceAll('_', ' ')
 
 export const JOB_STATUS_MAP = Object.keys(JobStatus).map((key) => {
-   return { jobStatus: convertJobStatus(key), isSelected: true }
+   return { value: convertJobStatus(key), label: convertJobStatus(key), isSelected: true }
 })
