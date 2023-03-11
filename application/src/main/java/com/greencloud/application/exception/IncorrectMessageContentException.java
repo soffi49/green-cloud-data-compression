@@ -4,7 +4,7 @@ import static com.greencloud.application.exception.domain.ExceptionMessages.INCO
 
 import java.io.Serial;
 
-public class IncorrectMessageContentException extends RuntimeException{
+public class IncorrectMessageContentException extends RuntimeException {
 
 	@Serial
 	private static final long serialVersionUID = -6101862598975601339L;

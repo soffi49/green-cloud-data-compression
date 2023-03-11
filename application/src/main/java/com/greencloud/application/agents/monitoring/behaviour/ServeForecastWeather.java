@@ -5,14 +5,11 @@ import static com.greencloud.application.agents.monitoring.behaviour.templates.W
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.BAD_STUB_DATA;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.OFFLINE_MODE;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.STUB_DATA;
-import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
-import static jade.lang.acl.ACLMessage.INFORM;
-import static jade.lang.acl.ACLMessage.REFUSE;
+import static com.greencloud.application.messages.domain.factory.PowerCheckMessageFactory.prepareWeatherDataResponse;
 import static java.lang.Math.max;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 
@@ -59,7 +56,7 @@ public class ServeForecastWeather extends CyclicBehaviour {
 			final MonitoringData data = isPeriodicCheck ?
 					getWeatherDataForPeriodicCheck(message) :
 					getWeatherForecast(message);
-			final ACLMessage response = prepareResponseMessage(data, message);
+			final ACLMessage response = prepareWeatherDataResponse(data, message);
 
 			monitoringAgent.send(response);
 		} else {
@@ -87,16 +84,4 @@ public class ServeForecastWeather extends CyclicBehaviour {
 		}
 	}
 
-	private ACLMessage prepareResponseMessage(final MonitoringData data, final ACLMessage message) {
-		final ACLMessage response = message.createReply();
-		response.setPerformative(INFORM);
-		try {
-			response.setContent(getMapper().writeValueAsString(data));
-		} catch (IOException e) {
-			e.printStackTrace();
-			response.setPerformative(REFUSE);
-		}
-		response.setConversationId(message.getConversationId());
-		return response;
-	}
 }

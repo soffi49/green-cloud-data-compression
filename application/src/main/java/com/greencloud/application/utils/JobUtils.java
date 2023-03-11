@@ -1,13 +1,17 @@
 package com.greencloud.application.utils;
 
 import static com.greencloud.application.common.constant.DataConstant.DATA_NOT_AVAILABLE_INDICATOR;
+import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED_JOB_STATUSES;
 import static com.greencloud.commons.job.ExecutionJobStatusEnum.RUNNING_JOB_STATUSES;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -171,6 +175,32 @@ public class JobUtils {
 	public static Date calculateExpectedJobEndTime(final PowerJob job) {
 		final Instant endDate = getCurrentTime().isAfter(job.getEndTime()) ? getCurrentTime() : job.getEndTime();
 		return Date.from(endDate.plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS));
+	}
+
+	/**
+	 * Method retrieves list of time instances based on jobs' time-frames.
+	 * It includes also job that is not in the processed job map.
+	 *
+	 * @param additionalJob - job that is to be included apart from jobs in the map
+	 * @param jobMap        map of the jobs
+	 * @return list of time instances
+	 */
+	public static <T extends PowerJob> List<Instant> getTimetableOfJobs(final T additionalJob,
+			final Map<T, ExecutionJobStatusEnum> jobMap) {
+		var validJobs = jobMap.entrySet().stream()
+				.filter(entry -> ACCEPTED_JOB_STATUSES.contains(entry.getValue()))
+				.map(Map.Entry::getKey)
+				.toList();
+
+		return Stream.concat(
+						Stream.of(
+								convertToRealTime(additionalJob.getStartTime()),
+								convertToRealTime(additionalJob.getEndTime())),
+						Stream.concat(
+								validJobs.stream().map(job -> convertToRealTime(job.getStartTime())),
+								validJobs.stream().map(job -> convertToRealTime(job.getEndTime()))))
+				.distinct()
+				.toList();
 	}
 
 	/**

@@ -28,11 +28,10 @@ class PowerCheckMessageFactoryUnitTest {
 
 		final GreenEnergyAgent mockGreenEnergy = mock(GreenEnergyAgent.class);
 		doReturn(mockMonitoring).when(mockGreenEnergy).getMonitoringAgent();
+		doReturn(ImmutableLocation.builder().latitude(10.0).longitude(20.0).build()).when(
+				mockGreenEnergy).getLocation();
+		doReturn(0.04).when(mockGreenEnergy).getWeatherPredictionError();
 
-		final GreenSourceWeatherData mockData = ImmutableGreenSourceWeatherData.builder()
-				.location(ImmutableLocation.builder().latitude(10.0).longitude(20.0).build())
-				.predictionError(0.04)
-				.build();
 		final String conversationId = PERIODIC_WEATHER_CHECK_PROTOCOL;
 		final String protocol = PERIODIC_WEATHER_CHECK_PROTOCOL;
 
@@ -40,7 +39,7 @@ class PowerCheckMessageFactoryUnitTest {
 				"{\"location\":{\"latitude\":10.0,\"longitude\":20.0},"
 						+ "\"predictionError\":0.04}";
 
-		final ACLMessage result = preparePowerCheckRequest(mockGreenEnergy, mockData, conversationId, protocol);
+		final ACLMessage result = preparePowerCheckRequest(mockGreenEnergy, null, conversationId, protocol);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		assertThat(result.getProtocol()).isEqualTo(protocol);

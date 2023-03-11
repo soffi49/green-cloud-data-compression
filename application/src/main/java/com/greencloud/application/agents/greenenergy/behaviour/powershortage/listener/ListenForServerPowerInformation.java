@@ -1,5 +1,8 @@
 package com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener;
 
+import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.RE_SUPPLY_FAILURE_JOB_NOT_FOUND_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.RE_SUPPLY_FAILURE_NO_POWER_JOB_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.RE_SUPPLY_JOB_WITH_GREEN_ENERGY_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_JOB_RE_SUPPLY_REQUEST_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_JOB_RE_SUPPLY_REQUEST_NOT_FOUND_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_FAILURE_NOT_FOUND_LOG;
@@ -8,7 +11,9 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_FINISH_NOT_FOUND_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_START_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.WEATHER_UNAVAILABLE_RE_SUPPLY_JOB_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.templates.PowerShortageSourceMessageTemplates.SERVER_POWER_SHORTAGE_INFORMATION_TEMPLATE;
+import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData.createWeatherRequest;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
@@ -16,32 +21,41 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NOT_ENOUGH_GREEN_POWER_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.PROCESSING_RE_SUPPLY_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.RE_SUPPLY_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.WEATHER_UNAVAILABLE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
 import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
+import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_PLANNED;
 import static jade.lang.acl.ACLMessage.AGREE;
+import static jade.lang.acl.ACLMessage.FAILURE;
+import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.application.agents.greenenergy.behaviour.weathercheck.listener.ListenForWeatherData;
-import com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData;
+import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.powershortage.PowerShortageJob;
+import com.greencloud.application.exception.IncorrectMessageContentException;
 import com.greencloud.commons.job.ExecutionJobStatusEnum;
 import com.greencloud.commons.job.ServerJob;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
@@ -129,9 +143,8 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 		if (Objects.nonNull(jobToPutOnHold)) {
 			final boolean hasStarted = isJobStarted(jobToPutOnHold, myGreenEnergyAgent.getServerJobs());
 			logger.info(SERVER_POWER_SHORTAGE_FAILURE_PUT_ON_HOLD_LOG, jobInstanceId.getJobId());
-			myGreenEnergyAgent.getServerJobs()
-					.replace(jobToPutOnHold,
-							hasStarted ? ExecutionJobStatusEnum.ON_HOLD : ExecutionJobStatusEnum.ON_HOLD_PLANNED);
+			myGreenEnergyAgent.getServerJobs().replace(jobToPutOnHold,
+					hasStarted ? ExecutionJobStatusEnum.ON_HOLD : ExecutionJobStatusEnum.ON_HOLD_PLANNED);
 			myGreenEnergyAgent.manage().updateGreenSourceGUI();
 		} else {
 			logger.info(SERVER_POWER_SHORTAGE_FAILURE_NOT_FOUND_LOG, jobInstanceId.getJobId());
@@ -146,20 +159,53 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 		MDC.put(MDC_JOB_ID, jobInstanceId.getJobId());
 		if (Objects.nonNull(jobToCheck)) {
 			logger.info(SERVER_JOB_RE_SUPPLY_REQUEST_LOG, jobInstanceId.getJobId());
-			myGreenEnergyAgent.send(prepareStringReply(request.createReply(), PROCESSING_RE_SUPPLY_MESSAGE, AGREE));
 
-			final SequentialBehaviour verificationBehaviour = new SequentialBehaviour();
-			verificationBehaviour.addSubBehaviour(new RequestWeatherData(myGreenEnergyAgent,
-					SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL,
-					SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL,
-					jobToCheck));
-			verificationBehaviour.addSubBehaviour(new ListenForWeatherData(myGreenEnergyAgent,
-					jobToCheck, SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL, SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL,
-					verificationBehaviour, request.createReply()));
-			myGreenEnergyAgent.addBehaviour(verificationBehaviour);
+			final ACLMessage reply = request.createReply();
+
+			myGreenEnergyAgent.send(prepareStringReply(reply, PROCESSING_RE_SUPPLY_MESSAGE, AGREE));
+			myGreenEnergyAgent.addBehaviour(
+					createWeatherRequest(myGreenEnergyAgent, SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL,
+							getResponseHandler(jobToCheck, reply), getRequestRefuseHandler(jobToCheck, reply),
+							jobToCheck));
 		} else {
 			logger.info(SERVER_JOB_RE_SUPPLY_REQUEST_NOT_FOUND_LOG, jobInstanceId.getJobId());
 			myGreenEnergyAgent.send(prepareStringReply(request.createReply(), JOB_NOT_FOUND_CAUSE_MESSAGE, REFUSE));
 		}
+	}
+
+	private BiConsumer<MonitoringData, IncorrectMessageContentException> getResponseHandler(final ServerJob job,
+			final ACLMessage reply) {
+		return (data, e) -> {
+			final Optional<Double> availablePower = myGreenEnergyAgent.manage()
+					.getAvailablePowerForJob(job, data, false);
+
+			MDC.put(MDC_JOB_ID, job.getJobId());
+			if (availablePower.isEmpty() || job.getPower() > availablePower.get()) {
+				var power = availablePower.orElse(0D);
+				logger.info(RE_SUPPLY_FAILURE_NO_POWER_JOB_LOG, job.getPower(), power, job.getJobId());
+				myGreenEnergyAgent.send(prepareReply(reply, NOT_ENOUGH_GREEN_POWER_CAUSE_MESSAGE, FAILURE));
+			} else {
+				if (myGreenEnergyAgent.getServerJobs().containsKey(job)) {
+					logger.info(RE_SUPPLY_JOB_WITH_GREEN_ENERGY_LOG, job.getJobId());
+
+					myGreenEnergyAgent.getServerJobs().replace(job, ON_HOLD, IN_PROGRESS);
+					myGreenEnergyAgent.getServerJobs().replace(job, ON_HOLD_PLANNED, ACCEPTED);
+					myGreenEnergyAgent.manage().updateGreenSourceGUI();
+
+					myGreenEnergyAgent.send(prepareReply(reply, RE_SUPPLY_SUCCESSFUL_MESSAGE, INFORM));
+				} else {
+					logger.info(RE_SUPPLY_FAILURE_JOB_NOT_FOUND_LOG, job.getJobId());
+					myGreenEnergyAgent.send(prepareReply(reply, JOB_NOT_FOUND_CAUSE_MESSAGE, FAILURE));
+				}
+			}
+		};
+	}
+
+	private Runnable getRequestRefuseHandler(final ServerJob job, final ACLMessage reply) {
+		return () -> {
+			MDC.put(MDC_JOB_ID, job.getJobId());
+			logger.info(WEATHER_UNAVAILABLE_RE_SUPPLY_JOB_LOG, job.getJobId());
+			myGreenEnergyAgent.send(prepareReply(reply, WEATHER_UNAVAILABLE_CAUSE_MESSAGE, FAILURE));
+		};
 	}
 }

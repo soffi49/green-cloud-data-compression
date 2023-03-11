@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.database.knowledge.domain.agent.greensource.WeatherShortages;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
+import com.greencloud.application.agents.greenenergy.behaviour.weathercheck.monitor.ReportWeatherShortages;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyStateManagement;
 import com.gui.agents.GreenEnergyAgentNode;
 

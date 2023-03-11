@@ -24,7 +24,17 @@ public class PowerShortageSourceListenerLog {
 			"Job {} to put on hold was not found";
 
 	// RE-SUPPLYING JOB WITH GREEN ENERGY LOG MESSAGES
-	public static final String SERVER_JOB_RE_SUPPLY_REQUEST_LOG = "Verifying if job {} can be supplied with green energy";
-	public static final String SERVER_JOB_RE_SUPPLY_REQUEST_NOT_FOUND_LOG = "Job {} is no longer existing in given green energy source";
+	public static final String SERVER_JOB_RE_SUPPLY_REQUEST_LOG =
+			"Verifying if job {} can be supplied with green energy";
+	public static final String SERVER_JOB_RE_SUPPLY_REQUEST_NOT_FOUND_LOG =
+			"Job {} is no longer existing in given green energy source";
+	public static final String WEATHER_UNAVAILABLE_RE_SUPPLY_JOB_LOG =
+			"The data for the job is not available. Job {} cannot be supplied with green energy";
+	public static final String RE_SUPPLY_FAILURE_NO_POWER_JOB_LOG =
+			"There is not enough available power (needed {}, have {}). Job {} cannot be supplied with green energy";
+	public static final String RE_SUPPLY_FAILURE_JOB_NOT_FOUND_LOG =
+			"Job {} cannot be supplied with green energy - job not found";
+	public static final String RE_SUPPLY_JOB_WITH_GREEN_ENERGY_LOG =
+			"Job {} is being supplied again using the green energy";
 
 }

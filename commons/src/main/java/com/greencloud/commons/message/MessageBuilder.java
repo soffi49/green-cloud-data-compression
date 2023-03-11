@@ -2,6 +2,7 @@ package com.greencloud.commons.message;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +18,7 @@ public class MessageBuilder {
 			.registerModules(new GuavaModule())
 			.registerModule(new JavaTimeModule());
 
-	private final ACLMessage aclMessage;
+	private ACLMessage aclMessage;
 
 	private MessageBuilder() {
 		aclMessage = new ACLMessage();
@@ -27,22 +28,22 @@ public class MessageBuilder {
 		return new MessageBuilder();
 	}
 
-	public MessageBuilder withMessageProtocol(String messageProtocol) {
+	public MessageBuilder withMessageProtocol(final String messageProtocol) {
 		this.aclMessage.setProtocol(messageProtocol);
 		return this;
 	}
 
-	public MessageBuilder withConversationId(String conversationId) {
+	public MessageBuilder withConversationId(final String conversationId) {
 		this.aclMessage.setConversationId(conversationId);
 		return this;
 	}
 
-	public MessageBuilder withStringContent(String content) {
+	public MessageBuilder withStringContent(final String content) {
 		this.aclMessage.setContent(content);
 		return this;
 	}
 
-	public MessageBuilder withObjectContent(Object content) {
+	public MessageBuilder withObjectContent(final Object content) {
 		try {
 			this.aclMessage.setContent(MAPPER.writeValueAsString(content));
 		} catch (JsonProcessingException e) {
@@ -51,18 +52,32 @@ public class MessageBuilder {
 		return this;
 	}
 
-	public MessageBuilder withPerformative(Integer performative) {
+	public MessageBuilder withObjectContent(final Object content, final Consumer<Exception> errorHandler) {
+		try {
+			this.aclMessage.setContent(MAPPER.writeValueAsString(content));
+		} catch (JsonProcessingException e) {
+			errorHandler.accept(e);
+		}
+		return this;
+	}
+
+	public MessageBuilder withPerformative(final Integer performative) {
 		this.aclMessage.setPerformative(performative);
 		return this;
 	}
 
-	public MessageBuilder withReceivers(AID... aids) {
+	public MessageBuilder withReceivers(final AID... aids) {
 		Arrays.stream(aids).forEach(aclMessage::addReceiver);
 		return this;
 	}
 
-	public MessageBuilder withReceivers(Collection<AID> aids) {
+	public MessageBuilder withReceivers(final Collection<AID> aids) {
 		aids.forEach(aclMessage::addReceiver);
+		return this;
+	}
+
+	public MessageBuilder copy(final ACLMessage message) {
+		aclMessage = (ACLMessage) message.clone();
 		return this;
 	}
 

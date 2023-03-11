@@ -5,7 +5,6 @@ import static com.greencloud.application.yellowpages.YellowPagesService.register
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.MDC;
@@ -22,7 +21,6 @@ import com.greencloud.application.agents.cloudnetwork.management.CloudNetworkSta
 import com.greencloud.application.behaviours.ReceiveGUIController;
 
 import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 
 /**
@@ -51,14 +49,13 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 	}
 
 	private List<Behaviour> prepareBehaviours() {
-		final ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
-		parallelBehaviour.addSubBehaviour(prepareStartingBehaviour());
-		parallelBehaviour.addSubBehaviour(new ListenForJobStatusChange());
-		parallelBehaviour.addSubBehaviour(new ListenForServerJobTransferRequest());
-		parallelBehaviour.addSubBehaviour(new ListenForCloudNetworkJobCancellation());
-		parallelBehaviour.addSubBehaviour(new ListenForNetworkChange());
-		parallelBehaviour.addSubBehaviour(new ListenForServerDisabling(this));
-		return Collections.singletonList(parallelBehaviour);
+		return List.of(
+				prepareStartingBehaviour(),
+				new ListenForJobStatusChange(),
+				new ListenForServerJobTransferRequest(),
+				new ListenForCloudNetworkJobCancellation(), new ListenForNetworkChange(),
+				new ListenForServerDisabling(this)
+		);
 	}
 
 	private SequentialBehaviour prepareStartingBehaviour() {

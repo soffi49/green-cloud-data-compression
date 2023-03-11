@@ -1,16 +1,30 @@
 package com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request;
 
+import static com.database.knowledge.domain.agent.DataType.AVAILABLE_GREEN_ENERGY;
+import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData.createWeatherRequest;
+import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.NO_POWER_DROP_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.PERIODIC_CHECK_SENT_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.POWER_DROP_LOG;
+import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.WEATHER_UNAVAILABLE_LOG;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
+import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.WEATHER_CAUSE;
+import static java.util.Objects.nonNull;
+
+import java.time.Instant;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.database.knowledge.domain.agent.greensource.AvailableGreenEnergy;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.application.agents.greenenergy.behaviour.weathercheck.listener.ListenForWeatherData;
+import com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
 import com.greencloud.application.agents.greenenergy.domain.GreenEnergyAgentConstants;
+import com.greencloud.application.domain.MonitoringData;
+import com.greencloud.application.exception.IncorrectMessageContentException;
 
-import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 
 /**
@@ -38,13 +52,44 @@ public class RequestWeatherPeriodically extends TickerBehaviour {
 	@Override
 	protected void onTick() {
 		logger.info(PERIODIC_CHECK_SENT_LOG);
-		final SequentialBehaviour sequentialBehaviour = new SequentialBehaviour();
-		sequentialBehaviour.addSubBehaviour(
-				new RequestWeatherData(myGreenEnergyAgent, PERIODIC_WEATHER_CHECK_PROTOCOL,
-						PERIODIC_WEATHER_CHECK_PROTOCOL, null));
-		sequentialBehaviour.addSubBehaviour(
-				new ListenForWeatherData(myGreenEnergyAgent, null, PERIODIC_WEATHER_CHECK_PROTOCOL,
-						PERIODIC_WEATHER_CHECK_PROTOCOL, sequentialBehaviour, null));
-		myAgent.addBehaviour(sequentialBehaviour);
+		myAgent.addBehaviour(createWeatherRequest(myGreenEnergyAgent, PERIODIC_WEATHER_CHECK_PROTOCOL,
+				getResponseHandler(), getResponseRefuseHandler()));
+	}
+
+	private BiConsumer<MonitoringData, IncorrectMessageContentException> getResponseHandler() {
+		return (data, e) -> {
+
+			if (nonNull(e)) {
+				e.printStackTrace();
+				logger.info(WEATHER_UNAVAILABLE_LOG, getCurrentTime());
+				return;
+			}
+
+			final Instant time = getCurrentTime();
+			final double availablePower = myGreenEnergyAgent.manage().getAvailablePower(convertToRealTime(time), data)
+					.orElse(-1.0);
+
+			if (availablePower < 0 && !myGreenEnergyAgent.getServerJobs().isEmpty()) {
+				logger.info(POWER_DROP_LOG, time);
+				myAgent.addBehaviour(new AnnounceSourcePowerShortage(myGreenEnergyAgent, null, time, availablePower,
+						WEATHER_CAUSE));
+				myGreenEnergyAgent.manage().getWeatherShortagesCounter().getAndIncrement();
+			} else {
+				logger.info(NO_POWER_DROP_LOG, time);
+			}
+			reportAvailableEnergyData(myGreenEnergyAgent.manageGreenPower().getAvailablePower(data, time));
+		};
+	}
+
+	private Runnable getResponseRefuseHandler() {
+		return () -> logger.info(WEATHER_UNAVAILABLE_LOG, getCurrentTime());
+	}
+
+	private void reportAvailableEnergyData(final double availablePower) {
+		final double currentMaximumCapacity = myGreenEnergyAgent.manageGreenPower().getCurrentMaximumCapacity();
+		final double availableGreenEnergyPercentage =
+				currentMaximumCapacity == 0 ? 0 : availablePower / currentMaximumCapacity;
+		final AvailableGreenEnergy greenEnergy = new AvailableGreenEnergy(availableGreenEnergyPercentage);
+		myGreenEnergyAgent.writeMonitoringData(AVAILABLE_GREEN_ENERGY, greenEnergy);
 	}
 }

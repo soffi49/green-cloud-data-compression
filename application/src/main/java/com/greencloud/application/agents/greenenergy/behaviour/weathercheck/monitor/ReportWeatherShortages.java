@@ -1,4 +1,4 @@
-package com.greencloud.application.agents.greenenergy.behaviour.monitor;
+package com.greencloud.application.agents.greenenergy.behaviour.weathercheck.monitor;
 
 import static com.database.knowledge.domain.agent.DataType.SHORTAGES;
 import static com.database.knowledge.domain.agent.DataType.WEATHER_SHORTAGES;
@@ -28,7 +28,7 @@ public class ReportWeatherShortages extends TickerBehaviour {
 	}
 
 	@Override
-	protected void onTick() {
+	public void onTick() {
 		if (myGreenEnergyAgent.manage().getWeatherShortagesCounter().get() > 0) {
 			int shortages = myGreenEnergyAgent.manage().getWeatherShortagesCounter().getAndSet(0);
 			WeatherShortages weatherShortages = new WeatherShortages(shortages, REPORT_SHORTAGE_PERIOD);

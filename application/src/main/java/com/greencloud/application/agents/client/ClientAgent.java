@@ -109,6 +109,9 @@ public class ClientAgent extends AbstractClientAgent {
 		var startingBehaviour = new SequentialBehaviour(this);
 		startingBehaviour.addSubBehaviour(new FindSchedulerAgent());
 		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this, job));
-		return List.of(new ListenForJobUpdate(this), startingBehaviour);
+		return List.of(
+				new ListenForJobUpdate(this),
+				startingBehaviour
+		);
 	}
 }

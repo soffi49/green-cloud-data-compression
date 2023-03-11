@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.behaviour.cancellation.ListenForGreenEnergyJobCancellation;
-import com.greencloud.application.agents.greenenergy.behaviour.monitor.ReportWeatherShortages;
+import com.greencloud.application.agents.greenenergy.behaviour.weathercheck.monitor.ReportWeatherShortages;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyStatus;

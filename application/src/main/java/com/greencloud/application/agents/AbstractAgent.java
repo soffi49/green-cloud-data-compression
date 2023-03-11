@@ -17,6 +17,8 @@ import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
 
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
@@ -29,6 +31,8 @@ public abstract class AbstractAgent extends Agent {
 	protected AgentType agentType;
 	private GuiController guiController;
 	private AbstractAgentNode agentNode;
+
+	private ParallelBehaviour mainBehaviour;
 
 	protected AbstractAgent() {
 	}
@@ -53,6 +57,15 @@ public abstract class AbstractAgent extends Agent {
 		super.clean(ok);
 	}
 
+	@Override
+	public void addBehaviour(Behaviour b) {
+		if(Objects.nonNull(mainBehaviour)) {
+			mainBehaviour.addSubBehaviour(b);
+		} else {
+			super.addBehaviour(b);
+		}
+	}
+
 	public AgentType getAgentType() {
 		return agentType;
 	}
@@ -71,6 +84,10 @@ public abstract class AbstractAgent extends Agent {
 
 	public void setGuiController(GuiController guiController) {
 		this.guiController = guiController;
+	}
+
+	public void setMainBehaviour(ParallelBehaviour mainBehaviour) {
+		this.mainBehaviour = mainBehaviour;
 	}
 
 	public void writeMonitoringData(DataType dataType, MonitoringData monitoringData) {
