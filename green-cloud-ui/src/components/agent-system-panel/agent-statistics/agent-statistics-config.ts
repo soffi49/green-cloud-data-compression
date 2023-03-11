@@ -1,11 +1,4 @@
-import {
-   Agent,
-   AgentType,
-   CloudNetworkAgent,
-   GreenEnergyAgent,
-   MonitoringAgent,
-   ServerAgent,
-} from '@types'
+import { Agent, AgentType, CloudNetworkAgent, GreenEnergyAgent, MonitoringAgent, ServerAgent } from '@types'
 
 const CLOUD_NETWORK_STATISTICS_STATE = [
    { key: 'connectedServers', label: 'Number of connected servers' },
@@ -65,9 +58,7 @@ const GREEN_SOURCE_STATISTICS_QUALITY = [
    { key: 'weatherPredictionError', label: 'Current weather prediction error' },
 ]
 
-const MONITORING_STATISTICS = [
-   { key: 'greenEnergyAgent', label: 'Connected Green Energy Source' },
-]
+const MONITORING_STATISTICS = [{ key: 'greenEnergyAgent', label: 'Connected Green Energy Source' }]
 
 const mapCloudNetworkAgentFields = (agent: CloudNetworkAgent) => {
    const connectedServers = agent.serverAgents.length
@@ -99,17 +90,11 @@ export const MAP_TYPE = {
 export const getStatisticsMapForAgent = (agent: Agent, type?: string) => {
    switch (agent.type) {
       case AgentType.CLOUD_NETWORK:
-         return type === MAP_TYPE.QUALITY
-            ? CLOUD_NETWORK_STATISTICS_QUALITY
-            : CLOUD_NETWORK_STATISTICS_STATE
+         return type === MAP_TYPE.QUALITY ? CLOUD_NETWORK_STATISTICS_QUALITY : CLOUD_NETWORK_STATISTICS_STATE
       case AgentType.SERVER:
-         return type === MAP_TYPE.QUALITY
-            ? SERVER_STATISTICS_QUALITY
-            : SERVER_STATISTICS_STATE
+         return type === MAP_TYPE.QUALITY ? SERVER_STATISTICS_QUALITY : SERVER_STATISTICS_STATE
       case AgentType.GREEN_ENERGY:
-         return type === MAP_TYPE.QUALITY
-            ? GREEN_SOURCE_STATISTICS_QUALITY
-            : GREEN_SOURCE_STATISTICS_STATE
+         return type === MAP_TYPE.QUALITY ? GREEN_SOURCE_STATISTICS_QUALITY : GREEN_SOURCE_STATISTICS_STATE
       case AgentType.MONITORING:
          return MONITORING_STATISTICS
       default:
@@ -130,9 +115,4 @@ export const getAgentFields = (agent: Agent) => {
    }
 }
 
-export const PERCENTAGE_VALUES = [
-   'traffic',
-   'backUpTraffic',
-   'successRatio',
-   'weatherPredictionError',
-]
+export const PERCENTAGE_VALUES = ['traffic', 'backUpTraffic', 'successRatio', 'weatherPredictionError']

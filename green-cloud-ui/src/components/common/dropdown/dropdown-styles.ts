@@ -1,12 +1,21 @@
 import { StylesConfig, ThemeConfig, Theme } from 'react-select'
-import { AgentOption } from '../../client-statistics-config'
+import { SelectOption } from './dropdown-config'
 
 interface Styles {
-   select: StylesConfig<AgentOption>
+   select: StylesConfig<SelectOption>
    selectTheme: ThemeConfig
+   headerStyle: React.CSSProperties
 }
 
 export const styles: Styles = {
+   headerStyle: {
+      fontSize: 'var(--font-size-4)',
+      fontFamily: 'var(--font-1)',
+      color: 'var(--gray-3)',
+      fontWeight: 500,
+      paddingLeft: '5px',
+      paddingBottom: '10px',
+   },
    select: {
       container: (styles: any) => ({
          ...styles,
@@ -22,6 +31,11 @@ export const styles: Styles = {
          fontSize: 'var(--font-size-2)',
          fontFamily: 'var(--font-1)',
          textTransform: 'uppercase',
+      }),
+      multiValueLabel: (styles: any) => ({
+         ...styles,
+         fontFamily: 'var(--font-1)',
+         fontSize: 'var(--font-size-7)',
       }),
       groupHeading: (styles: any) => ({
          ...styles,

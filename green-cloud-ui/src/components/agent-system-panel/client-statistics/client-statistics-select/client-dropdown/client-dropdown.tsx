@@ -1,17 +1,8 @@
-import { styles } from './client-dropdown-styles'
-import Select, { SingleValue } from 'react-select'
+import { MultiValue, SingleValue } from 'react-select'
 import { ClientAgent } from '@types'
-import { useMemo, useState } from 'react'
-import {
-   AgentOption,
-   CLIENTS_ORDER,
-   GroupedAgentOption,
-} from '../../client-statistics-config'
-import { FilterOptionOption } from 'react-select/dist/declarations/src/filters'
-import {
-   convertJobStatus,
-   JobStatusSelect,
-} from '../../client-statistics-config'
+import { useMemo } from 'react'
+import { convertJobStatus, CLIENTS_ORDER } from '../../client-statistics-config'
+import { Dropdown, GroupedOption, SelectOption } from 'components/common'
 
 const selectPlaceholder = 'Provide client name'
 const selectNoOption = 'Client not found'
@@ -19,9 +10,10 @@ const selectNoClients = 'Client list is empty'
 
 interface Props {
    selectedClient: ClientAgent | null
-   changeSelectedClient: (client: SingleValue<AgentOption>) => void
+   changeSelectedClient: (client: SingleValue<SelectOption>) => void
    clients: ClientAgent[]
-   jobStatusMap: JobStatusSelect[]
+   jobStatusMap: SelectOption[]
+   splitFilter: boolean | null
 }
 
 /**
@@ -30,27 +22,19 @@ interface Props {
  * @param {ClientAgent | null}[selectedAgent] - currently selected client
  * @param {func}[changeSelectedClient] - function used to update currently selected client
  * @param {ClientAgent[]}[clients] - all clients
- * @param {JobStatusSelect[]}[jobStatusMap] - map of relevant job statuses
+ * @param {SelectOption[]}[jobStatusMap] - map of relevant job statuses
+ * @param {boolean | null}[splitFilter] - boolean used in filtering dropwdown based on job split
  * @returns JSX Element
  */
-const ClientDropdown = ({
-   selectedClient,
-   changeSelectedClient,
-   clients,
-   jobStatusMap,
-}: Props) => {
-   const [isFocus, setIsFocus] = useState(false)
-   const { select, selectTheme } = styles
+const ClientDropdown = ({ selectedClient, changeSelectedClient, clients, jobStatusMap, splitFilter }: Props) => {
    const filteredClientsForJobs = () =>
       clients.filter(
          (client) =>
-            jobStatusMap.find(
-               (job) =>
-                  job.jobStatus === convertJobStatus(client.status.toString())
-            )?.isSelected
+            jobStatusMap.find((job) => job.value === convertJobStatus(client.status.toString()))?.isSelected &&
+            (splitFilter === null || client.isSplit === splitFilter)
       )
 
-   const aggregateOptions = (prev: GroupedAgentOption[], curr: ClientAgent) => {
+   const aggregateOptions = (prev: GroupedOption[], curr: ClientAgent) => {
       const currJob = curr.status.toString()
       const clientName = curr.name.toUpperCase()
       const prevGroup = prev.find((opt) => opt.label === currJob)
@@ -64,59 +48,36 @@ const ClientDropdown = ({
       return prev
    }
 
-   const sortClients = (
-      clientA: GroupedAgentOption,
-      clientB: GroupedAgentOption
-   ) =>
-      CLIENTS_ORDER.indexOf(clientA.label) -
-      CLIENTS_ORDER.indexOf(clientB.label)
+   const sortClients = (clientA: GroupedOption, clientB: GroupedOption) =>
+      CLIENTS_ORDER.indexOf(clientA.label) - CLIENTS_ORDER.indexOf(clientB.label)
 
    const selectData = useMemo(
       () =>
          filteredClientsForJobs()
-            .reduce(
-               (prev, curr) => aggregateOptions(prev, curr),
-               [] as GroupedAgentOption[]
-            )
+            .reduce((prev, curr) => aggregateOptions(prev, curr), [] as GroupedOption[])
             .sort((a, b) => sortClients(a, b)),
       [clients, jobStatusMap]
    )
 
-   const customFilter = (
-      option: FilterOptionOption<AgentOption>,
-      inputValue: string
-   ) => option.label.includes(inputValue.toUpperCase())
+   const handleOnChange = (value: SingleValue<SelectOption> | MultiValue<SelectOption>) =>
+      changeSelectedClient(value as SingleValue<SelectOption>)
 
-   const handleOnChange = (value: SingleValue<AgentOption>) => {
-      setIsFocus(false)
-      changeSelectedClient(value)
-   }
-
-   const handleNoOption = () =>
-      clients.length !== 0 ? selectNoOption : selectNoClients
+   const handleNoOption = () => (clients.length !== 0 ? selectNoOption : selectNoClients)
 
    return (
-      <Select
-         value={{
-            value: selectedClient,
-            label: !isFocus ? selectedClient?.name ?? '' : '',
+      <Dropdown
+         {...{
+            value: {
+               value: selectedClient,
+               label: selectedClient?.name ?? '',
+            },
+            onChange: handleOnChange,
+            placeholder: selectPlaceholder,
+            noOptionsMessage: handleNoOption,
+            options: selectData,
+            isMulti: false,
+            header: 'SELECT CLIENT',
          }}
-         onFocus={() => setIsFocus(true)}
-         onBlur={() => setIsFocus(false)}
-         onChange={handleOnChange}
-         placeholder={selectPlaceholder}
-         noOptionsMessage={handleNoOption}
-         styles={select}
-         theme={selectTheme}
-         options={selectData}
-         maxMenuHeight={150}
-         minMenuHeight={0}
-         isSearchable={true}
-         isClearable={true}
-         isMulti={false}
-         menuPortalTarget={document.getElementById('root')}
-         menuPosition={'fixed'}
-         filterOption={customFilter}
       />
    )
 }

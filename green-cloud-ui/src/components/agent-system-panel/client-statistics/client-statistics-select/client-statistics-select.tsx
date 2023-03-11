@@ -2,14 +2,11 @@ import { styles } from './client-statistics-select-styles'
 import { SingleValue } from 'react-select'
 import { ClientAgent } from '@types'
 import { useEffect, useState } from 'react'
-import {
-   AgentOption,
-   JobStatusSelect,
-   JOB_STATUS_MAP,
-} from '../client-statistics-config'
+import { JOB_STATUS_MAP } from '../client-statistics-config'
 import StatusFilterBox from '../../../agent-system-panel/client-statistics/client-statistics-select/status-filter-box/status-filter-box'
 import ClientDropdown from '../../../agent-system-panel/client-statistics/client-statistics-select/client-dropdown/client-dropdown'
 import Collapse from 'components/common/collapse/collapse'
+import { SelectOption } from 'components/common'
 
 interface Props {
    clients: ClientAgent[]
@@ -25,14 +22,10 @@ const collapseClose = 'Display Client Selector'
  *
  * @returns JSX Element
  */
-const ClientStatisticsSelect = ({
-   clients,
-   selectedClient,
-   setSelectedClient,
-}: Props) => {
+const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient }: Props) => {
    const { collapseStyle, collapseOpenStyle, collapseCloseStyle } = styles
-   const [jobStatusMap, setJobStatusMap] =
-      useState<JobStatusSelect[]>(JOB_STATUS_MAP)
+   const [jobStatusMap, setJobStatusMap] = useState<SelectOption[]>(JOB_STATUS_MAP)
+   const [splitFilter, setSplitFilter] = useState<boolean | null>(null)
 
    const styleOpen = { ...collapseStyle, ...collapseOpenStyle }
    const styleClosed = { ...collapseStyle, ...collapseCloseStyle }
@@ -43,7 +36,7 @@ const ClientStatisticsSelect = ({
       }
    }, [clients])
 
-   const changeSelectedClient = (value: SingleValue<AgentOption>) => {
+   const changeSelectedClient = (value: SingleValue<SelectOption>) => {
       setSelectedClient(value?.label ?? null)
    }
 
@@ -56,10 +49,8 @@ const ClientStatisticsSelect = ({
             triggerClosedStyle: styleClosed,
          }}
       >
-         <StatusFilterBox {...{ jobStatusMap, setJobStatusMap }} />
-         <ClientDropdown
-            {...{ selectedClient, clients, jobStatusMap, changeSelectedClient }}
-         />
+         <StatusFilterBox {...{ jobStatusMap, setJobStatusMap, setSplitFilter }} />
+         <ClientDropdown {...{ selectedClient, clients, jobStatusMap, changeSelectedClient, splitFilter }} />
       </Collapse>
    )
 }

@@ -11,8 +11,7 @@ import ClientSplitJobModal from '../../agent-system-panel/client-statistics/clie
 import ClientJobDurationModal from './client-job-duration-modal/client-job-duration-modal'
 import { convertUnixToTime } from 'utils/time-utils'
 
-const description =
-   'Select client from the list to diplay current job statistics'
+const description = 'Select client from the list to diplay current job statistics'
 
 interface Props {
    clients: ClientAgent[]
@@ -25,11 +24,7 @@ interface Props {
  *
  * @returns JSX Element
  */
-export const ClientPanel = ({
-   clients,
-   selectedClient,
-   setSelectedClient,
-}: Props) => {
+export const ClientPanel = ({ clients, selectedClient, setSelectedClient }: Props) => {
    const [isOpen, setIsOpen] = useState(false)
    const [isDurationOpen, setIsDurationOpen] = useState(false)
    const { clientContent, clientStatistics } = styles
@@ -50,9 +45,7 @@ export const ClientPanel = ({
                durationMap: selectedClient.durationMap as any,
             }[key]
             const value = getClientValue(key, clientVal)
-            const property = ['status', 'durationMap'].includes(key)
-               ? 'valueObject'
-               : 'value'
+            const property = ['status', 'durationMap'].includes(key) ? 'valueObject' : 'value'
 
             return <DetailsField {...{ label, [property]: value, key }} />
          })
@@ -75,9 +68,7 @@ export const ClientPanel = ({
          )
       }
       if (key === 'start' || key === 'end') {
-         return typeof clientVal === 'number'
-            ? convertUnixToTime(clientVal)
-            : clientVal
+         return typeof clientVal === 'number' ? convertUnixToTime(clientVal) : clientVal
       }
       return clientVal
    }
@@ -137,9 +128,7 @@ export const ClientPanel = ({
 
    return (
       <div style={clientContent}>
-         <ClientStatisticsSelect
-            {...{ clients, selectedClient, setSelectedClient }}
-         />
+         <ClientStatisticsSelect {...{ clients, selectedClient, setSelectedClient }} />
          {!selectedClient || clients.length === 0 ? (
             <SubtitleContainer text={description} />
          ) : (
