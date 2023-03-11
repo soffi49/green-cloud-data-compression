@@ -53,7 +53,8 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 				prepareStartingBehaviour(),
 				new ListenForJobStatusChange(),
 				new ListenForServerJobTransferRequest(),
-				new ListenForCloudNetworkJobCancellation(), new ListenForNetworkChange(),
+				new ListenForCloudNetworkJobCancellation(),
+				new ListenForNetworkChange(),
 				new ListenForServerDisabling(this)
 		);
 	}
