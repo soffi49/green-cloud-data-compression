@@ -39,7 +39,7 @@ public abstract class AbstractManagingAgent extends AbstractAgent {
 	 * Default constructor
 	 */
 	protected AbstractManagingAgent() {
-		super.setup();
+		super();
 		agentType = MANAGING;
 	}
 

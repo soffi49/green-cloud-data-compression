@@ -12,9 +12,9 @@ import com.greencloud.application.agents.greenenergy.management.GreenEnergyState
 import com.greencloud.application.agents.greenenergy.management.GreenPowerManagement;
 import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ServerJob;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
+import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.location.Location;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceConnectionParameters;
@@ -34,12 +34,12 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 	protected Location location;
 	protected GreenEnergySourceTypeEnum energyType;
 	protected double pricePerPowerUnit;
-	protected volatile ConcurrentMap<ServerJob, ExecutionJobStatusEnum> serverJobs;
+	protected volatile ConcurrentMap<ServerJob, JobExecutionStatusEnum> serverJobs;
 	protected AID monitoringAgent;
 	protected double weatherPredictionError;
 
 	AbstractGreenEnergyAgent() {
-		super.setup();
+		super();
 		this.serverJobs = new ConcurrentHashMap<>();
 		agentType = AgentType.GREEN_SOURCE;
 	}
@@ -52,7 +52,7 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 		this.pricePerPowerUnit = pricePerPowerUnit;
 	}
 
-	public Map<ServerJob, ExecutionJobStatusEnum> getServerJobs() {
+	public Map<ServerJob, JobExecutionStatusEnum> getServerJobs() {
 		return serverJobs;
 	}
 

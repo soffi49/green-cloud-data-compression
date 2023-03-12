@@ -1,16 +1,21 @@
 package com.greencloud.application.agents;
 
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.commons.agent.AgentType.CLIENT;
+import static java.util.Collections.emptyList;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
 import com.database.knowledge.timescale.TimescaleDatabase;
+import com.greencloud.application.behaviours.ReceiveGUIController;
 import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.gui.agents.AbstractAgentNode;
@@ -35,35 +40,35 @@ public abstract class AbstractAgent extends Agent {
 	private ParallelBehaviour mainBehaviour;
 
 	protected AbstractAgent() {
-	}
-
-	@Override
-	protected void setup() {
-		super.setup();
 		setEnabledO2ACommunication(true, 2);
 	}
 
-	@Override
-	protected void takeDown() {
-		logger.info("I'm finished. Bye!");
-		super.takeDown();
+	/**
+	 * Abstract method used to validate if arguments of the given agent are correct
+	 */
+	protected void validateAgentArguments() {
 	}
 
-	@Override
-	public void clean(boolean ok) {
-		if(!ok && Objects.nonNull(getGuiController()) && !agentType.equals(CLIENT)) {
-			getGuiController().removeAgentNodeFromGraph(getAgentNode());
-		}
-		super.clean(ok);
+	/**
+	 * Abstract method used to initialize given agent data
+	 *
+	 * @param arguments arguments passed by the user
+	 */
+	protected void initializeAgent(final Object[] arguments) {
 	}
 
-	@Override
-	public void addBehaviour(Behaviour b) {
-		if(Objects.nonNull(mainBehaviour)) {
-			mainBehaviour.addSubBehaviour(b);
-		} else {
-			super.addBehaviour(b);
-		}
+	/**
+	 * Abstract method that is used to prepare starting behaviours for given agent
+	 */
+	protected List<Behaviour> prepareStartingBehaviours() {
+		return emptyList();
+	}
+
+	/**
+	 * Abstract method responsible for running starting behaviours
+	 */
+	protected void runStartingBehaviours() {
+		addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviours()));
 	}
 
 	public AgentType getAgentType() {
@@ -103,6 +108,37 @@ public abstract class AbstractAgent extends Agent {
 			ACLMessage adaptationMessage) {
 		// this method can be overwritten in agent types that will be a target to adaptation
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	protected void setup() {
+		MDC.put(MDC_AGENT_NAME, super.getLocalName());
+		initializeAgent(getArguments());
+		validateAgentArguments();
+		runStartingBehaviours();
+	}
+
+	@Override
+	protected void takeDown() {
+		logger.info("I'm finished. Bye!");
+		super.takeDown();
+	}
+
+	@Override
+	public void clean(boolean ok) {
+		if (!ok && Objects.nonNull(getGuiController()) && !agentType.equals(CLIENT)) {
+			getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		}
+		super.clean(ok);
+	}
+
+	@Override
+	public void addBehaviour(Behaviour b) {
+		if (Objects.nonNull(mainBehaviour)) {
+			mainBehaviour.addSubBehaviour(b);
+		} else {
+			super.addBehaviour(b);
+		}
 	}
 
 	@Override

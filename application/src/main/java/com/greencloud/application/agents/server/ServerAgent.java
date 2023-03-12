@@ -1,17 +1,17 @@
 package com.greencloud.application.agents.server;
 
-import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
-import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
+import static com.greencloud.application.yellowpages.YellowPagesService.register;
+import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_NAME;
+import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
+import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
 
 import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-import com.database.knowledge.domain.action.AdaptationAction;
 import com.greencloud.application.agents.server.behaviour.df.SubscribeGreenSourceService;
 import com.greencloud.application.agents.server.behaviour.df.listener.ListenForCloudNetworkInformationRequest;
 import com.greencloud.application.agents.server.behaviour.df.listener.ListenForGreenSourceServiceUpdate;
@@ -27,61 +27,44 @@ import com.greencloud.application.agents.server.management.ServerAdaptationManag
 import com.greencloud.application.agents.server.management.ServerConfigManagement;
 import com.greencloud.application.agents.server.management.ServerStateManagement;
 import com.greencloud.application.behaviours.ListenForAdaptationAction;
-import com.greencloud.application.behaviours.ReceiveGUIController;
-import com.greencloud.application.yellowpages.YellowPagesService;
-import com.greencloud.application.yellowpages.domain.DFServiceConstants;
-import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
-import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
 
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
-import jade.lang.acl.ACLMessage;
 
 /**
- * Agent representing the Server Agent which executes the clients' jobs
+ * Agent representing the Server which executes the clients' jobs
  */
 public class ServerAgent extends AbstractServerAgent {
 
 	private static final Logger logger = LoggerFactory.getLogger(ServerAgent.class);
 
-	/**
-	 * Method run at the agent's start. In initialize the Server Agent based on the given by the user arguments,
-	 * registers it in the DF and then runs the starting behaviours - listening for the job requests
-	 */
 	@Override
-	protected void setup() {
-		super.setup();
-		MDC.put(MDC_AGENT_NAME, super.getLocalName());
-		final Object[] args = getArguments();
-		initializeAgent(args);
-		YellowPagesService.register(this, DFServiceConstants.SA_SERVICE_TYPE, DFServiceConstants.SA_SERVICE_NAME,
-				this.getOwnerCloudNetworkAgent().getName());
-		addBehaviour(new ReceiveGUIController(this, behavioursRunAtStart()));
-	}
-
-	private void initializeAgent(final Object[] args) {
+	protected void initializeAgent(final Object[] args) {
 		if (Objects.nonNull(args) && args.length == 4) {
 			this.stateManagement = new ServerStateManagement(this);
 			this.configManagement = new ServerConfigManagement(this);
 			this.adaptationManagement = new ServerAdaptationManagement(this);
 			this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+
 			try {
-				this.manageConfig().setPricePerHour(Double.parseDouble(args[1].toString()));
-				this.currentMaximumCapacity = Integer.parseInt(args[2].toString());
-				this.initialMaximumCapacity = Integer.parseInt(args[2].toString());
-				this.manageConfig().setJobProcessingLimit(Integer.parseInt(args[3].toString()));
+				this.manageConfig().setPricePerHour(parseDouble(args[1].toString()));
+				this.currentMaximumCapacity = parseInt(args[2].toString());
+				this.initialMaximumCapacity = parseInt(args[2].toString());
+				this.manageConfig().setJobProcessingLimit(parseInt(args[3].toString()));
 			} catch (final NumberFormatException e) {
 				logger.info("Some of the arguments are not a number!");
 				doDelete();
 			}
+
+			register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
 		} else {
-			logger.info("Incorrect arguments: some parameters for server agent are missing - "
-					+ "check the parameters in the documentation");
+			logger.info("Incorrect arguments: some parameters for server agent are missing");
 			doDelete();
 		}
 	}
 
-	private List<Behaviour> behavioursRunAtStart() {
+	@Override
+	protected List<Behaviour> prepareStartingBehaviours() {
 		return List.of(
 				SubscribeGreenSourceService.create(this),
 				new ListenForNewJob(),
@@ -107,22 +90,5 @@ public class ServerAgent extends AbstractServerAgent {
 		// restoring default values
 		configManagement.setJobProcessingLimit(20);
 		configManagement.setPricePerHour(20);
-	}
-
-	@Override
-	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
-		if (adaptationAction.getAction() == CHANGE_GREEN_SOURCE_WEIGHT) {
-			return adapt()
-					.changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
-		}
-		return false;
-	}
-
-	@Override
-	public void executeAction(final AdaptationAction adaptationAction,
-			final AdaptationActionParameters actionParameters, final ACLMessage adaptationMessage) {
-		if (adaptationAction.getAction() == DISABLE_SERVER) {
-			adapt().disableServer(adaptationMessage);
-		}
 	}
 }

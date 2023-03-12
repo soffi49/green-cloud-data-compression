@@ -15,11 +15,10 @@ public abstract class AbstractMonitoringAgent extends AbstractAgent {
 	/**
 	 * Default agent constructor
 	 *
-	 * @apiNote weatherManagement - monitoring agent manager used to perform operations connected with
-	 * com.greencloud.application.weather
+	 * @apiNote weatherManagement - monitoring agent manager used to perform operations connected with weather
 	 */
 	AbstractMonitoringAgent() {
-		super.setup();
+		super();
 		this.weatherManagement = new MonitoringWeatherManagement();
 		agentType = AgentType.MONITORING;
 	}

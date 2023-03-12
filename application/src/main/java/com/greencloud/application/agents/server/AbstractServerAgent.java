@@ -1,5 +1,7 @@
 package com.greencloud.application.agents.server;
 
+import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
 import static com.greencloud.application.agents.server.domain.ServerAgentConstants.MAX_AVAILABLE_POWER_DIFFERENCE;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
 
@@ -10,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.database.knowledge.domain.action.AdaptationAction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.server.management.ServerAdaptationManagement;
@@ -17,8 +20,10 @@ import com.greencloud.application.agents.server.management.ServerConfigManagemen
 import com.greencloud.application.agents.server.management.ServerStateManagement;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.commons.agent.AgentType;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
+import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
+import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -36,14 +41,13 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 
 	protected boolean isDisabled;
 	protected AtomicLong currentlyProcessing;
-	protected ConcurrentMap<ClientJob, ExecutionJobStatusEnum> serverJobs;
+	protected ConcurrentMap<ClientJob, JobExecutionStatusEnum> serverJobs;
 	protected Map<String, AID> greenSourceForJobMap;
 	protected Map<AID, Boolean> ownedGreenSources;
 	protected AID ownerCloudNetworkAgent;
 
 	AbstractServerAgent() {
-		super.setup();
-
+		super();
 		serverJobs = new ConcurrentHashMap<>();
 		initialMaximumCapacity = 0;
 		ownedGreenSources = new HashMap<>();
@@ -101,7 +105,7 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 		return ownerCloudNetworkAgent;
 	}
 
-	public Map<ClientJob, ExecutionJobStatusEnum> getServerJobs() {
+	public Map<ClientJob, JobExecutionStatusEnum> getServerJobs() {
 		return serverJobs;
 	}
 
@@ -113,10 +117,17 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 		return greenSourceForJobMap;
 	}
 
-	public boolean isDisabled() { return isDisabled; }
+	public boolean isDisabled() {
+		return isDisabled;
+	}
 
-	public void disable() { isDisabled = true; }
-	public void enable() { isDisabled = false; }
+	public void disable() {
+		isDisabled = true;
+	}
+
+	public void enable() {
+		isDisabled = false;
+	}
 
 	public ServerStateManagement manage() {
 		return stateManagement;
@@ -140,5 +151,22 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 
 	public boolean canTakeIntoProcessing() {
 		return currentlyProcessing.get() < manageConfig().getJobProcessingLimit() && !isDisabled();
+	}
+
+	@Override
+	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
+		if (adaptationAction.getAction() == CHANGE_GREEN_SOURCE_WEIGHT) {
+			return adapt()
+					.changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
+		}
+		return false;
+	}
+
+	@Override
+	public void executeAction(final AdaptationAction adaptationAction,
+			final AdaptationActionParameters actionParameters, final ACLMessage adaptationMessage) {
+		if (adaptationAction.getAction() == DISABLE_SERVER) {
+			adapt().disableServer(adaptationMessage);
+		}
 	}
 }

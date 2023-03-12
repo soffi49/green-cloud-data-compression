@@ -12,8 +12,8 @@ import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.cloudnetwork.management.CloudNetworkConfigManagement;
 import com.greencloud.application.agents.cloudnetwork.management.CloudNetworkStateManagement;
 import com.greencloud.commons.agent.AgentType;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 
@@ -26,14 +26,14 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 	protected transient CloudNetworkConfigManagement configManagement;
 
 	protected double maximumCapacity;
-	protected Map<ClientJob, ExecutionJobStatusEnum> networkJobs;
+	protected Map<ClientJob, JobExecutionStatusEnum> networkJobs;
 	protected Map<String, AID> serverForJobMap;
 	protected AtomicLong completedJobs;
 	protected Map<AID, Boolean> ownedServers;
 	protected AID scheduler;
 
 	AbstractCloudNetworkAgent() {
-		super.setup();
+		super();
 		agentType = AgentType.CNA;
 	}
 
@@ -54,7 +54,7 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 		return serverForJobMap;
 	}
 
-	public Map<ClientJob, ExecutionJobStatusEnum> getNetworkJobs() {
+	public Map<ClientJob, JobExecutionStatusEnum> getNetworkJobs() {
 		return networkJobs;
 	}
 

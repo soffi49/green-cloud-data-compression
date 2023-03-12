@@ -16,8 +16,8 @@ import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
 import com.greencloud.commons.agent.AgentType;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 
 import jade.core.AID;
@@ -28,7 +28,7 @@ import jade.core.AID;
 public abstract class AbstractSchedulerAgent extends AbstractAgent {
 
 	protected PriorityBlockingQueue<ClientJob> jobsToBeExecuted;
-	protected ConcurrentMap<ClientJob, ExecutionJobStatusEnum> clientJobs;
+	protected ConcurrentMap<ClientJob, JobExecutionStatusEnum> clientJobs;
 	protected ConcurrentMap<String, AID> cnaForJobMap;
 	protected List<AID> availableCloudNetworks;
 	protected SchedulerConfigurationManagement configManagement;
@@ -41,7 +41,7 @@ public abstract class AbstractSchedulerAgent extends AbstractAgent {
 	 * Default constructor.
 	 */
 	protected AbstractSchedulerAgent() {
-		super.setup();
+		super();
 		this.clientJobs = new ConcurrentHashMap<>();
 		this.cnaForJobMap = new ConcurrentHashMap<>();
 		this.availableCloudNetworks = new ArrayList<>();
@@ -68,7 +68,7 @@ public abstract class AbstractSchedulerAgent extends AbstractAgent {
 	/**
 	 * @return jobs introduced to the Scheduler Agent
 	 */
-	public ConcurrentMap<ClientJob, ExecutionJobStatusEnum> getClientJobs() {
+	public ConcurrentMap<ClientJob, JobExecutionStatusEnum> getClientJobs() {
 		return clientJobs;
 	}
 
