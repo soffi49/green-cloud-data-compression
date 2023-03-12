@@ -2,18 +2,14 @@ package com.greencloud.application.agents.client.management;
 
 import static com.database.knowledge.domain.agent.DataType.CLIENT_MONITORING;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
-import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.job.ClientJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ClientJobStatusEnum.ON_BACK_UP;
-import static com.greencloud.commons.job.ClientJobStatusEnum.PROCESSED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.SCHEDULED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.PROCESSED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.SCHEDULED;
 import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.toMap;
 
-import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +19,8 @@ import java.util.function.ToLongFunction;
 import com.database.knowledge.domain.agent.client.ClientMonitoringData;
 import com.database.knowledge.domain.agent.client.ImmutableClientMonitoringData;
 import com.greencloud.application.agents.client.ClientAgent;
-import com.greencloud.application.agents.client.domain.JobPart;
-import com.greencloud.application.utils.domain.Timer;
-import com.greencloud.commons.job.ClientJobStatusEnum;
+import com.greencloud.application.agents.client.domain.ClientJobExecution;
+import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 import com.gui.agents.ClientAgentNode;
 
 /**
@@ -33,9 +28,7 @@ import com.gui.agents.ClientAgentNode;
  */
 public class ClientStateManagement {
 
-	protected final Timer timer = new Timer();
-	protected ClientJobStatusEnum currentJobStatus;
-	protected Map<ClientJobStatusEnum, Long> jobStatusDurationMap;
+	private static final List<JobClientStatusEnum> SIMULATION_STATUSES = List.of(SCHEDULED, PROCESSED, CREATED);
 	protected ClientAgent clientAgent;
 
 	/**
@@ -45,22 +38,6 @@ public class ClientStateManagement {
 	 */
 	public ClientStateManagement(final ClientAgent clientAgent) {
 		this.clientAgent = clientAgent;
-		currentJobStatus = CREATED;
-		jobStatusDurationMap = Arrays.stream(ClientJobStatusEnum.values())
-				.collect(toMap(status -> status, status -> 0L));
-		timer.startTimeMeasure(getCurrentTime());
-	}
-
-	/**
-	 * Method updates the job duration map
-	 *
-	 * @param newStatus new job status
-	 */
-	public synchronized void updateJobStatusDuration(final ClientJobStatusEnum newStatus, final Instant time) {
-		final long elapsedTime = timer.stopTimeMeasure(time);
-		timer.startTimeMeasure(time);
-		jobStatusDurationMap.computeIfPresent(currentJobStatus, (key, val) -> val + elapsedTime);
-		currentJobStatus = newStatus;
 	}
 
 	/**
@@ -68,12 +45,12 @@ public class ClientStateManagement {
 	 *
 	 * @param status new status
 	 */
-	public void updateOriginalJobStatus(final ClientJobStatusEnum status) {
+	public void updateOriginalJobStatus(final JobClientStatusEnum status) {
 		if (isOriginalStatusUpdated(status)) {
 			if (Objects.nonNull(clientAgent.getAgentNode())) {
 				((ClientAgentNode) clientAgent.getAgentNode()).updateJobStatus(status);
 			}
-			currentJobStatus = status;
+			clientAgent.getJobExecution().setJobStatus(status);
 		}
 	}
 
@@ -83,8 +60,10 @@ public class ClientStateManagement {
 	 * @param status status to verify
 	 * @return boolean
 	 */
-	public boolean checkIfAllPartsMatchStatus(final ClientJobStatusEnum status) {
-		return clientAgent.getJobParts().values().stream().map(JobPart::getStatus).allMatch(status::equals);
+	public boolean checkIfAllPartsMatchStatus(final JobClientStatusEnum status) {
+		return clientAgent.getJobParts().values().stream()
+				.map(ClientJobExecution::getJobStatus)
+				.allMatch(status::equals);
 	}
 
 	/**
@@ -93,62 +72,48 @@ public class ClientStateManagement {
 	 * @param isFinished flag indicating if the state is final
 	 */
 	public void writeClientData(final boolean isFinished) {
-		var jobDurationMap = getJobStatusDurationMap().entrySet().stream()
+		final Map<JobClientStatusEnum, Long> jobDurationMap = getJobStatusDurationMap().entrySet().stream()
 				.collect(filtering(entry -> List.of(ON_BACK_UP, IN_PROGRESS).contains(entry.getKey()),
 						toMap(Map.Entry::getKey, Map.Entry::getValue)));
-		final ClientMonitoringData data = ImmutableClientMonitoringData.builder()
-				.currentJobStatus(currentJobStatus)
-				.jobStatusDurationMap(jobDurationMap)
-				.isFinished(isFinished)
-				.build();
+
+		final ClientMonitoringData data = ImmutableClientMonitoringData.of(isFinished,
+				clientAgent.getJobExecution().getJobStatus(), jobDurationMap);
 
 		clientAgent.writeMonitoringData(CLIENT_MONITORING, data);
 		updateJobDurationMapGUI();
 	}
 
-	public ClientJobStatusEnum getCurrentJobStatus() {
-		return currentJobStatus;
-	}
-
-	public void setCurrentJobStatus(ClientJobStatusEnum currentJobStatus) {
-		this.currentJobStatus = currentJobStatus;
-	}
-
-	public Timer getTimer() {
-		return timer;
-	}
-
 	private void updateJobDurationMapGUI() {
-		final List<ClientJobStatusEnum> simulationStatuses = List.of(SCHEDULED, PROCESSED, CREATED);
-		final ToLongFunction<Map.Entry<ClientJobStatusEnum, Long>> getRealDuration = entry ->
-				simulationStatuses.contains(entry.getKey()) ? entry.getValue() : convertToRealTime(entry.getValue());
+		final ToLongFunction<Map.Entry<JobClientStatusEnum, Long>> getRealDuration = entry ->
+				SIMULATION_STATUSES.contains(entry.getKey()) ? entry.getValue() : convertToRealTime(entry.getValue());
 
-		var guiJobDurationMap = getJobStatusDurationMap().entrySet().stream()
+		final Map<JobClientStatusEnum, Long> guiJobDurationMap = getJobStatusDurationMap().entrySet().stream()
 				.collect(toMap(Map.Entry::getKey, getRealDuration::applyAsLong));
 
 		((ClientAgentNode) clientAgent.getAgentNode()).updateJobDurationMap(guiJobDurationMap);
 	}
 
-	private Map<ClientJobStatusEnum, Long> getJobStatusDurationMap() {
+	private Map<JobClientStatusEnum, Long> getJobStatusDurationMap() {
 		if (clientAgent.isSplit()) {
-			final Map<ClientJobStatusEnum, Long> result = new EnumMap<>(ClientJobStatusEnum.class);
+			final Map<JobClientStatusEnum, Long> result = new EnumMap<>(JobClientStatusEnum.class);
+
 			clientAgent.getJobParts().values().stream()
-					.map(JobPart::getJobStatusDurationMap)
-					.flatMap(map -> map.entrySet().stream()
-							.map(e -> new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue())))
-					.forEach(entry -> result.merge(entry.getKey(), entry.getValue(), Long::sum));
+					.map(ClientJobExecution::getJobDurationMap)
+					.forEach(jobPartMap -> jobPartMap.forEach((key, value) -> result.merge(key, value, Long::sum)));
+
 			return result;
 		}
-		return jobStatusDurationMap;
+		return clientAgent.getJobExecution().getJobDurationMap();
 	}
 
-	private boolean isOriginalStatusUpdated(final ClientJobStatusEnum status) {
+	private boolean isOriginalStatusUpdated(final JobClientStatusEnum status) {
 		return switch (status) {
 			case SCHEDULED, FINISHED -> checkIfAllPartsMatchStatus(status);
-			case PROCESSED -> currentJobStatus.equals(SCHEDULED);
-			case DELAYED -> currentJobStatus.equals(PROCESSED);
-			case ON_BACK_UP -> List.of(IN_PROGRESS, PROCESSED).contains(currentJobStatus);
-			case IN_PROGRESS -> checkIfAllPartsMatchStatus(IN_PROGRESS) || currentJobStatus.equals(PROCESSED);
+			case PROCESSED -> clientAgent.getJobExecution().getJobStatus().equals(SCHEDULED);
+			case DELAYED -> clientAgent.getJobExecution().getJobStatus().equals(PROCESSED);
+			case ON_BACK_UP -> List.of(IN_PROGRESS, PROCESSED).contains(clientAgent.getJobExecution().getJobStatus());
+			case IN_PROGRESS -> checkIfAllPartsMatchStatus(IN_PROGRESS) || clientAgent.getJobExecution().getJobStatus()
+					.equals(PROCESSED);
 			case ON_HOLD -> true;
 			default -> false;
 		};

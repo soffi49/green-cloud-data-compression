@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.client.behaviour.df;
 
-import static com.greencloud.application.agents.client.domain.ClientAgentConstants.SCHEDULER_AGENT;
+import static com.greencloud.application.agents.client.constants.ClientAgentConstants.SCHEDULER_AGENT;
 import static com.greencloud.application.utils.GUIUtils.announceNewClient;
 import static com.greencloud.application.yellowpages.YellowPagesService.search;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SCHEDULER_SERVICE_TYPE;

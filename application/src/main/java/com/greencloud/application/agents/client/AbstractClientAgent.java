@@ -1,65 +1,42 @@
 package com.greencloud.application.agents.client;
 
-import java.time.Instant;
+import static com.greencloud.commons.agent.AgentType.CLIENT;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import com.greencloud.application.agents.AbstractAgent;
-import com.greencloud.application.agents.client.domain.JobPart;
+import com.greencloud.application.agents.client.domain.ClientJobExecution;
 import com.greencloud.application.agents.client.management.ClientStateManagement;
-import com.greencloud.commons.agent.AgentType;
-import com.greencloud.commons.job.ClientJob;
 
 /**
  * Abstract agent class storing the data regarding Client Agent
  */
 public abstract class AbstractClientAgent extends AbstractAgent {
 
-	protected ClientJob myJob;
-	protected Instant simulatedJobStart;
-	protected Instant simulatedJobEnd;
-	protected Instant simulatedDeadline;
-	protected boolean announced;
-	protected boolean split;
-	protected Map<String, JobPart> jobParts;
 	protected ClientStateManagement clientStateManagement;
 
+	protected ClientJobExecution jobExecution;
+	protected Map<String, ClientJobExecution> jobParts;
+	protected boolean announced;
+	protected boolean split;
+
 	protected AbstractClientAgent() {
-		super.setup();
+		super();
 		jobParts = new HashMap<>();
-		agentType = AgentType.CLIENT;
+		agentType = CLIENT;
 	}
 
-	public ClientJob getMyJob() {
-		return myJob;
+	public ClientStateManagement manage() {
+		return clientStateManagement;
 	}
 
-	public void setMyJob(ClientJob myJob) {
-		this.myJob = myJob;
+	public Map<String, ClientJobExecution> getJobParts() {
+		return jobParts;
 	}
 
-	public Instant getSimulatedJobStart() {
-		return simulatedJobStart;
-	}
-
-	public void setSimulatedJobStart(Instant simulatedJobStart) {
-		this.simulatedJobStart = simulatedJobStart;
-	}
-
-	public Instant getSimulatedJobEnd() {
-		return simulatedJobEnd;
-	}
-
-	public void setSimulatedJobEnd(Instant simulatedJobEnd) {
-		this.simulatedJobEnd = simulatedJobEnd;
-	}
-
-	public Instant getSimulatedDeadline() {
-		return simulatedDeadline;
-	}
-
-	public void setSimulatedDeadline(Instant simulatedDeadline) {
-		this.simulatedDeadline = simulatedDeadline;
+	public ClientJobExecution getJobExecution() {
+		return jobExecution;
 	}
 
 	public void announce() {
@@ -78,11 +55,4 @@ public abstract class AbstractClientAgent extends AbstractAgent {
 		split = true;
 	}
 
-	public Map<String, JobPart> getJobParts() {
-		return jobParts;
-	}
-
-	public ClientStateManagement manage() {
-		return clientStateManagement;
-	}
 }
