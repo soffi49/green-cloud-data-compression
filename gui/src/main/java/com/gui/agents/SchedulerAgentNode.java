@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 import com.greencloud.commons.args.agent.scheduler.ImmutableSchedulerNodeArgs;
 import com.greencloud.commons.args.agent.scheduler.SchedulerAgentArgs;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
 import com.gui.message.ImmutableUpdateJobQueueMessage;

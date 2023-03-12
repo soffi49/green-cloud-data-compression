@@ -10,8 +10,8 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 
 import java.util.List;
@@ -23,9 +23,9 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.logs.JobSchedulingInitiatorLog;
-import com.greencloud.application.domain.job.PricedJob;
+import com.greencloud.application.domain.job.JobWithPrice;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -73,11 +73,11 @@ public class InitiateCNALookup extends ContractNetInitiator {
 		} else if (proposals.isEmpty()) {
 			handleFailure();
 		} else {
-			List<ACLMessage> validProposals = retrieveValidMessages(proposals, PricedJob.class);
+			List<ACLMessage> validProposals = retrieveValidMessages(proposals, JobWithPrice.class);
 
 			if (!validProposals.isEmpty()) {
 				final ACLMessage chosenOffer = chooseCNAToExecuteJob(validProposals);
-				final PricedJob pricedJob = readMessageContent(chosenOffer, PricedJob.class);
+				final JobWithPrice pricedJob = readMessageContent(chosenOffer, JobWithPrice.class);
 				logger.info(JobSchedulingInitiatorLog.SEND_ACCEPT_TO_CLOUD_LOG, chosenOffer.getSender().getName());
 
 				myScheduler.getClientJobs().replace(job, PROCESSING, ACCEPTED);
@@ -115,8 +115,8 @@ public class InitiateCNALookup extends ContractNetInitiator {
 
 	private int compareCNAOffers(final ACLMessage cnaOffer1, final ACLMessage cnaOffer2) {
 		try {
-			final PricedJob cna1 = readMessageContent(cnaOffer1, PricedJob.class);
-			final PricedJob cna2 = readMessageContent(cnaOffer2, PricedJob.class);
+			final JobWithPrice cna1 = readMessageContent(cnaOffer1, JobWithPrice.class);
+			final JobWithPrice cna2 = readMessageContent(cnaOffer2, JobWithPrice.class);
 
 			double powerDifference = cna2.getAvailablePower() - cna1.getAvailablePower();
 			int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());

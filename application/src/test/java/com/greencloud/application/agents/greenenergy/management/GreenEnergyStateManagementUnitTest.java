@@ -5,8 +5,8 @@ import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.application.utils.TimeUtils.useMockTime;
 import static com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum.WIND;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER_PLANNED;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,11 +49,11 @@ import com.greencloud.application.domain.ImmutableMonitoringData;
 import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ImmutableServerJob;
-import com.greencloud.commons.job.JobResultType;
-import com.greencloud.commons.job.PowerJob;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ImmutableServerJob;
+import com.greencloud.commons.domain.job.PowerJob;
+import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -66,7 +66,7 @@ class GreenEnergyStateManagementUnitTest {
 
 	private static final double MOCK_PRICE = 10;
 	private static final int MOCK_CAPACITY = 100;
-	private static Map<ServerJob, ExecutionJobStatusEnum> MOCK_POWER_JOBS;
+	private static Map<ServerJob, JobExecutionStatusEnum> MOCK_POWER_JOBS;
 
 	@Mock
 	private static GreenEnergyAgent mockGreenEnergyAgent;
@@ -94,13 +94,11 @@ class GreenEnergyStateManagementUnitTest {
 	// TESTS
 
 	@ParameterizedTest
-	@EnumSource(JobResultType.class)
+	@EnumSource(JobExecutionResultEnum.class)
 	@DisplayName("Test increment started unique job")
-	void testIncrementCounter(JobResultType type) {
-		final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+	void testIncrementCounter(JobExecutionResultEnum type) {
+		final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.of("1",
+				Instant.parse("2022-01-01T13:30:00.000Z"));
 
 		mockGreenEnergyAgent.manage().incrementJobCounter(jobInstanceId, type);
 		assertThat(MOCK_MANAGEMENT.getJobCounters()).containsEntry(type, 1L);
@@ -124,7 +122,7 @@ class GreenEnergyStateManagementUnitTest {
 				.findFirst().orElse(null);
 
 		mockGreenEnergyAgent.manage().divideServerJobForPowerShortage(Objects.requireNonNull(serverJob), startTime);
-		final ExecutionJobStatusEnum statusAfterUpdate = mockGreenEnergyAgent.getServerJobs().entrySet().stream()
+		final JobExecutionStatusEnum statusAfterUpdate = mockGreenEnergyAgent.getServerJobs().entrySet().stream()
 				.filter(jobEntry -> jobEntry.getKey().equals(serverJob)).map(Map.Entry::getValue).findFirst()
 				.orElse(null);
 
@@ -142,15 +140,15 @@ class GreenEnergyStateManagementUnitTest {
 
 		mockGreenEnergyAgent.manage().divideServerJobForPowerShortage(Objects.requireNonNull(serverJob), startTime);
 
-		final Map<PowerJob, ExecutionJobStatusEnum> updatedJobInstances = mockGreenEnergyAgent.getServerJobs()
+		final Map<PowerJob, JobExecutionStatusEnum> updatedJobInstances = mockGreenEnergyAgent.getServerJobs()
 				.entrySet()
 				.stream()
 				.filter(jobEntry -> jobEntry.getKey().getJobId().equals(serverJob.getJobId()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-		final Map.Entry<PowerJob, ExecutionJobStatusEnum> jobOnHold = updatedJobInstances.entrySet().stream()
+		final Map.Entry<PowerJob, JobExecutionStatusEnum> jobOnHold = updatedJobInstances.entrySet().stream()
 				.filter(jobEntry -> jobEntry.getValue().equals(ON_HOLD_TRANSFER_PLANNED)).findFirst().orElse(null);
-		final Map.Entry<PowerJob, ExecutionJobStatusEnum> jobInProgress = updatedJobInstances.entrySet().stream()
+		final Map.Entry<PowerJob, JobExecutionStatusEnum> jobInProgress = updatedJobInstances.entrySet().stream()
 				.filter(jobEntry -> !jobEntry.getValue().equals(ON_HOLD_TRANSFER_PLANNED)).findFirst().orElse(null);
 
 		assertThat(mockGreenEnergyAgent.getServerJobs()).hasSize(6);
@@ -332,7 +330,7 @@ class GreenEnergyStateManagementUnitTest {
 	 * ServerJob4 -> power: 10,  time: 09:00 - 12:00, status: ON_HOLD
 	 * ServerJob5 -> power: 25, time: 11:00 - 12:00, status: ACCEPTED
 	 */
-	private Map<ServerJob, ExecutionJobStatusEnum> setUpGreenEnergyJobs() {
+	private Map<ServerJob, JobExecutionStatusEnum> setUpGreenEnergyJobs() {
 		final ServerJob mockJob1 = ImmutableServerJob.builder().jobId("1")
 				.server(new AID("test_server", AID.ISGUID))
 				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
@@ -363,12 +361,12 @@ class GreenEnergyStateManagementUnitTest {
 				.endTime(Instant.parse("2022-01-01T12:00:00.000Z"))
 				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
 				.power(25).build();
-		final Map<ServerJob, ExecutionJobStatusEnum> mockJobMap = new HashMap<>();
-		mockJobMap.put(mockJob1, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob2, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob3, ExecutionJobStatusEnum.ON_HOLD_PLANNED);
-		mockJobMap.put(mockJob4, ExecutionJobStatusEnum.ON_HOLD_PLANNED);
-		mockJobMap.put(mockJob5, ExecutionJobStatusEnum.ACCEPTED);
+		final Map<ServerJob, JobExecutionStatusEnum> mockJobMap = new HashMap<>();
+		mockJobMap.put(mockJob1, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob2, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob3, JobExecutionStatusEnum.ON_HOLD_PLANNED);
+		mockJobMap.put(mockJob4, JobExecutionStatusEnum.ON_HOLD_PLANNED);
+		mockJobMap.put(mockJob5, JobExecutionStatusEnum.ACCEPTED);
 		return mockJobMap;
 	}
 

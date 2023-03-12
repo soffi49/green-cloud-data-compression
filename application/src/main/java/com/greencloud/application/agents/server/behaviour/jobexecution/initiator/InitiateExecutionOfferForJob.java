@@ -13,9 +13,9 @@ import static com.greencloud.application.messages.domain.factory.ReplyMessageFac
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED_BY_SERVER;
-import static com.greencloud.commons.job.JobResultType.ACCEPTED;
-import static com.greencloud.commons.job.JobResultType.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_BY_SERVER;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
 import java.util.Objects;
@@ -25,10 +25,11 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.application.domain.job.JobWithProtocol;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -117,7 +118,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 		myServerAgent.getGreenSourceForJobMap().remove(jobInstance.getJobId());
 		myServerAgent.manage().incrementJobCounter(jobInstanceId, FAILED);
 
-		final JobStatusUpdate jobStatusUpdate = new JobStatusUpdate(jobInstanceId, getCurrentTime());
+		final JobStatusUpdate jobStatusUpdate = ImmutableJobStatusUpdate.of(jobInstanceId, getCurrentTime());
 		myServerAgent.send(prepareReply(replyMessage, jobInstanceId, REJECT_PROPOSAL));
 		myServerAgent.send(prepareFailureReply(cnaAccept.createReply(), jobStatusUpdate, responseProtocol));
 	}

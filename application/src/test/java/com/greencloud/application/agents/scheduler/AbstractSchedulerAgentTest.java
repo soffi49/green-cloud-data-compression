@@ -2,19 +2,20 @@ package com.greencloud.application.agents.scheduler;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import java.time.Instant;
-import java.util.Collections;
 
-import com.greencloud.commons.job.ImmutableClientJob;
-import com.gui.agents.SchedulerAgentNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.gui.agents.SchedulerAgentNode;
 
 class AbstractSchedulerAgentTest {
 	SchedulerAgent schedulerAgent;
@@ -47,7 +48,6 @@ class AbstractSchedulerAgentTest {
 
 		assertThat(schedulerAgent.configManagement.getDeadlineWeightPriority()).isEqualTo(0.3333333333333333);
 	}
-
 
 	@Test
 	@DisplayName("Test adding job to the queue - test deadline priority")

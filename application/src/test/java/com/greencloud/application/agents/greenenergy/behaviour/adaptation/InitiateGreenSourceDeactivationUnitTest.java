@@ -29,9 +29,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.domain.GreenSourceDisconnection;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyAdaptationManagement;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ImmutableServerJob;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ImmutableServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -126,7 +126,7 @@ class InitiateGreenSourceDeactivationUnitTest {
 				.getServerToBeDisconnected().getName()).isEqualTo("test_server1");
 	}
 
-	private Map<ServerJob, ExecutionJobStatusEnum> prepareGreenEnergyJobs() {
+	private Map<ServerJob, JobExecutionStatusEnum> prepareGreenEnergyJobs() {
 		final ServerJob mockJob1 = ImmutableServerJob.builder().jobId("1")
 				.server(new AID("test_server1", AID.ISGUID))
 				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
@@ -146,10 +146,10 @@ class InitiateGreenSourceDeactivationUnitTest {
 				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
 				.power(50).build();
 
-		final Map<ServerJob, ExecutionJobStatusEnum> mockJobMap = new HashMap<>();
-		mockJobMap.put(mockJob1, ExecutionJobStatusEnum.ACCEPTED);
-		mockJobMap.put(mockJob2, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob3, ExecutionJobStatusEnum.ON_HOLD_PLANNED);
+		final Map<ServerJob, JobExecutionStatusEnum> mockJobMap = new HashMap<>();
+		mockJobMap.put(mockJob1, JobExecutionStatusEnum.ACCEPTED);
+		mockJobMap.put(mockJob2, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob3, JobExecutionStatusEnum.ON_HOLD_PLANNED);
 		return mockJobMap;
 	}
 }

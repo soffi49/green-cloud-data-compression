@@ -15,9 +15,9 @@ import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.domain.ImmutableGreenSourceData;
 import com.greencloud.application.domain.ImmutableServerData;
 import com.greencloud.application.domain.ServerData;
-import com.greencloud.application.domain.job.ImmutablePricedJob;
-import com.greencloud.application.domain.job.PricedJob;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.ImmutableJobWithPrice;
+import com.greencloud.application.domain.job.JobWithPrice;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.lang.acl.ACLMessage;
 
@@ -37,11 +37,8 @@ public class OfferMessageFactory {
 	 */
 	public static ACLMessage makeJobOfferForClient(final ServerData server, final double availablePower,
 			final ACLMessage replyMessage) {
-		final PricedJob pricedJob = ImmutablePricedJob.builder()
-				.availablePower(availablePower)
-				.jobId(server.getJobId())
-				.priceForJob(server.getServicePrice())
-				.build();
+		final JobWithPrice pricedJob =
+				ImmutableJobWithPrice.of(server.getJobId(), server.getServicePrice(), availablePower);
 		replyMessage.setPerformative(PROPOSE);
 		try {
 			replyMessage.setContent(getMapper().writeValueAsString(pricedJob));

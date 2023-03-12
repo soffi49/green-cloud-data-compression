@@ -29,10 +29,10 @@ import static com.greencloud.application.messages.domain.factory.ReplyMessageFac
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -49,10 +49,10 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -102,7 +102,7 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 	}
 
 	private void handleServerPowerShortageStart(final ACLMessage inform) {
-		final PowerShortageJob powerShortageJob = readMessageContent(inform, PowerShortageJob.class);
+		final JobPowerShortageTransfer powerShortageJob = readMessageContent(inform, JobPowerShortageTransfer.class);
 		MDC.put(MDC_JOB_ID, powerShortageJob.getJobInstanceId().getJobId());
 		final ServerJob affectedJob = getJobByIdAndStartDateAndServer(powerShortageJob.getJobInstanceId(),
 				inform.getSender(), myGreenEnergyAgent.getServerJobs());
@@ -124,7 +124,7 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 
 		if (Objects.nonNull(serverJob)) {
 			logger.info(SERVER_POWER_SHORTAGE_FINISH_CHANGE_LOG, jobInstanceId.getJobId());
-			final ExecutionJobStatusEnum newStatus =
+			final JobExecutionStatusEnum newStatus =
 					isJobStarted(serverJob, myGreenEnergyAgent.getServerJobs()) ? IN_PROGRESS : ACCEPTED;
 			myGreenEnergyAgent.getServerJobs().replace(serverJob, newStatus);
 			myGreenEnergyAgent.manage().updateGreenSourceGUI();
@@ -134,7 +134,7 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 	}
 
 	private void handleServerJobTransferFailure(final ACLMessage inform) {
-		final PowerShortageJob powerShortageJob = readMessageContent(inform, PowerShortageJob.class);
+		final JobPowerShortageTransfer powerShortageJob = readMessageContent(inform, JobPowerShortageTransfer.class);
 		final JobInstanceIdentifier jobInstanceId = powerShortageJob.getJobInstanceId();
 		final ServerJob jobToPutOnHold = getJobByIdAndStartDateAndServer(jobInstanceId, inform.getSender(),
 				myGreenEnergyAgent.getServerJobs());
@@ -144,7 +144,7 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 			final boolean hasStarted = isJobStarted(jobToPutOnHold, myGreenEnergyAgent.getServerJobs());
 			logger.info(SERVER_POWER_SHORTAGE_FAILURE_PUT_ON_HOLD_LOG, jobInstanceId.getJobId());
 			myGreenEnergyAgent.getServerJobs().replace(jobToPutOnHold,
-					hasStarted ? ExecutionJobStatusEnum.ON_HOLD : ExecutionJobStatusEnum.ON_HOLD_PLANNED);
+					hasStarted ? JobExecutionStatusEnum.ON_HOLD : JobExecutionStatusEnum.ON_HOLD_PLANNED);
 			myGreenEnergyAgent.manage().updateGreenSourceGUI();
 		} else {
 			logger.info(SERVER_POWER_SHORTAGE_FAILURE_NOT_FOUND_LOG, jobInstanceId.getJobId());

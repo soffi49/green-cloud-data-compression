@@ -6,6 +6,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object stores the data which allow client to adjust the time frames
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ImmutableJobTimeFrames.class)
 @JsonDeserialize(as = ImmutableJobTimeFrames.class)
 @Value.Immutable
+@ImmutableConfig
 public interface JobTimeFrames {
 
 	/**

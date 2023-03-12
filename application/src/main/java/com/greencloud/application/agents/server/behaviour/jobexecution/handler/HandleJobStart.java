@@ -12,14 +12,14 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.ON_HOLD_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PLANNED_JOB_STATUSES;
-import static com.greencloud.commons.job.JobResultType.STARTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PLANNED_JOB_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 import static java.util.Collections.singletonList;
 
 import java.time.Instant;
@@ -32,8 +32,8 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -121,7 +121,7 @@ public class HandleJobStart extends WakerBehaviour {
 	}
 
 	private void substituteJobStatus() {
-		final ExecutionJobStatusEnum currentStatus = myServerAgent.getServerJobs().get(jobToExecute);
+		final JobExecutionStatusEnum currentStatus = myServerAgent.getServerJobs().get(jobToExecute);
 		final JobInstanceIdentifier jobInstance = mapToJobInstanceId(jobToExecute);
 
 		switch (currentStatus) {

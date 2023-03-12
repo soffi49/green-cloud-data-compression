@@ -6,12 +6,12 @@ import static com.greencloud.application.utils.AlgorithmUtils.nextFibonacci;
 
 import java.time.Duration;
 
-import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.gui.agents.SchedulerAgentNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.agents.scheduler.SchedulerAgent;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.gui.agents.SchedulerAgentNode;
 
 /**
  * Set of utilities used to manage the configuration of scheduler agent
@@ -19,15 +19,14 @@ import com.greencloud.commons.job.ClientJob;
 public class SchedulerConfigurationManagement {
 
 	private static final Logger logger = LoggerFactory.getLogger(SchedulerConfigurationManagement.class);
+	private final int maximumQueueSize;
+	private final int jobSplitThreshold;
+	private final int splittingFactor;
+	private final SchedulerAgent schedulerAgent;
 	private int underlyingDeadlineWeight;
 	private int underlyingPowerWeight;
 	private double deadlineWeightPriority;
 	private double powerWeightPriority;
-	private int maximumQueueSize;
-	private int jobSplitThreshold;
-	private int splittingFactor;
-
-	private SchedulerAgent schedulerAgent;
 
 	/**
 	 * Constructor
@@ -37,8 +36,8 @@ public class SchedulerConfigurationManagement {
 	 * @param maximumQueueSize       maximum queue size
 	 *                               //@param jobSplitThreshold	 job size at which splitting will be triggered, can be adjusted by the ManagingAgent
 	 */
-	public SchedulerConfigurationManagement(SchedulerAgent schedulerAgent, int deadlineWeightPriority, int powerWeightPriority, int maximumQueueSize,
-			int jobSplitThreshold, int splittingFactor) {
+	public SchedulerConfigurationManagement(SchedulerAgent schedulerAgent, int deadlineWeightPriority,
+			int powerWeightPriority, int maximumQueueSize, int jobSplitThreshold, int splittingFactor) {
 		this.schedulerAgent = schedulerAgent;
 		this.underlyingDeadlineWeight = deadlineWeightPriority;
 		this.underlyingPowerWeight = powerWeightPriority;
@@ -108,7 +107,7 @@ public class SchedulerConfigurationManagement {
 		this.deadlineWeightPriority =
 				(double) underlyingDeadlineWeight / (underlyingDeadlineWeight + underlyingPowerWeight);
 		this.powerWeightPriority = (double) underlyingPowerWeight / (underlyingDeadlineWeight + underlyingPowerWeight);
-		if(schedulerAgent.getAgentNode() != null) {
+		if (schedulerAgent.getAgentNode() != null) {
 			((SchedulerAgentNode) schedulerAgent.getAgentNode()).updatePowerPriority(powerWeightPriority);
 			((SchedulerAgentNode) schedulerAgent.getAgentNode()).updateDeadlinePriority(deadlineWeightPriority);
 		}

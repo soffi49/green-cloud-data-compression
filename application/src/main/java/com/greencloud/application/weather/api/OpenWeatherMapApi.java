@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greencloud.application.mapper.JsonMapper;
 import com.greencloud.application.weather.domain.CurrentWeather;
 import com.greencloud.application.weather.domain.Forecast;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.Location;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

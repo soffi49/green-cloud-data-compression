@@ -26,7 +26,7 @@ import org.slf4j.MDC;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.domain.ServerData;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -43,7 +43,7 @@ public class InitiateJobTransferRequest extends ContractNetInitiator {
 
 	private final CloudNetworkAgent myCloudNetworkAgent;
 	private final ACLMessage serverRequest;
-	private final PowerShortageJob jobTransfer;
+	private final JobPowerShortageTransfer jobTransfer;
 
 	/**
 	 * Behaviour constructor.
@@ -56,7 +56,7 @@ public class InitiateJobTransferRequest extends ContractNetInitiator {
 	public InitiateJobTransferRequest(final Agent agent,
 			final ACLMessage cfp,
 			final ACLMessage serverRequest,
-			final PowerShortageJob jobTransfer) {
+			final JobPowerShortageTransfer jobTransfer) {
 		super(agent, cfp);
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
 		this.jobTransfer = jobTransfer;

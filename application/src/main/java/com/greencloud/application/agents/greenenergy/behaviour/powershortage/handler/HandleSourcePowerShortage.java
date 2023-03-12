@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;

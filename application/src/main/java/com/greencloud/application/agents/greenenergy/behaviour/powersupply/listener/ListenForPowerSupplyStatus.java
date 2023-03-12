@@ -9,12 +9,14 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_PLANNED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER_PLANNED;
 import static java.util.Objects.nonNull;
 
 import org.slf4j.Logger;
@@ -24,8 +26,7 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusUpdate;
-import com.greencloud.commons.job.JobResultType;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -57,7 +58,7 @@ public class ListenForPowerSupplyStatus extends CyclicBehaviour {
 		final ACLMessage message = myGreenEnergyAgent.receive(POWER_SUPPLY_STATUS_TEMPLATE);
 		if (nonNull(message)) {
 			final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
-			final JobInstanceIdentifier jobInstanceId = jobStatusUpdate.jobInstance();
+			final JobInstanceIdentifier jobInstanceId = jobStatusUpdate.getJobInstance();
 			final ServerJob serverJob = getJobByIdAndStartDateAndServer(jobInstanceId, message.getSender(),
 					myGreenEnergyAgent.getServerJobs());
 
@@ -78,12 +79,12 @@ public class ListenForPowerSupplyStatus extends CyclicBehaviour {
 		myGreenEnergyAgent.getServerJobs().replace(serverJob, ACCEPTED, IN_PROGRESS);
 		myGreenEnergyAgent.getServerJobs().replace(serverJob, ON_HOLD_PLANNED, ON_HOLD);
 		myGreenEnergyAgent.getServerJobs().replace(serverJob, ON_HOLD_TRANSFER_PLANNED, ON_HOLD_TRANSFER);
-		myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, JobResultType.STARTED);
+		myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, STARTED);
 	}
 
 	private void handlePowerSupplyFinish(final ServerJob serverJob, final JobInstanceIdentifier jobInstance) {
 		if (isJobStarted(serverJob, myGreenEnergyAgent.getServerJobs())) {
-			myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, JobResultType.FINISH);
+			myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, FINISH);
 		}
 		MDC.put(MDC_JOB_ID, serverJob.getJobId());
 		logger.info(FINISH_POWER_SUPPLY_LOG, jobInstance);

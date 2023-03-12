@@ -1,15 +1,6 @@
 package com.greencloud.application.agents.server.behaviour.jobexecution.listener;
 
-import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LACK_OF_POWER_LOG;
-import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
-import static com.greencloud.application.yellowpages.YellowPagesService.search;
-import static com.greencloud.application.yellowpages.domain.DFServiceConstants.GS_SERVICE_TYPE;
-import static java.util.stream.Collectors.toMap;
+import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.NEW_JOB_CFP_TEMPLATE;
 
 import java.util.Map;
 import java.util.Objects;

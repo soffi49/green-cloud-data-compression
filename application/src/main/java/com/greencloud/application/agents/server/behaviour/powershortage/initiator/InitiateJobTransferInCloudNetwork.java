@@ -19,14 +19,14 @@ import static com.greencloud.application.messages.domain.factory.ReplyMessageFac
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.JobUtils.isJobUnique;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.BACK_UP_POWER_STATUSES;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_PLANNED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_SOURCE_SHORTAGE_PLANNED;
-import static com.greencloud.commons.job.JobResultType.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.Objects.isNull;
@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -55,7 +55,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private static final Logger logger = LoggerFactory.getLogger(InitiateJobTransferInCloudNetwork.class);
 
 	private final ServerAgent myServerAgent;
-	private final PowerShortageJob jobToTransfer;
+	private final JobPowerShortageTransfer jobToTransfer;
 	private final ACLMessage greenSourceRequest;
 
 	/**
@@ -69,7 +69,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	public InitiateJobTransferInCloudNetwork(final ServerAgent agent,
 			final ACLMessage transferMessage,
 			final ACLMessage greenSourceRequest,
-			final PowerShortageJob jobToTransfer) {
+			final JobPowerShortageTransfer jobToTransfer) {
 		super(agent, transferMessage);
 		this.myServerAgent = agent;
 		this.jobToTransfer = jobToTransfer;

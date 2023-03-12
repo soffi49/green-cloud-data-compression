@@ -7,15 +7,12 @@ import static com.greencloud.application.agents.cloudnetwork.management.logs.Clo
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.GUIUtils.announceFinishedJob;
 import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
-import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
-import static com.greencloud.commons.job.JobResultType.ACCEPTED;
-import static com.greencloud.commons.job.JobResultType.FAILED;
-import static com.greencloud.commons.job.JobResultType.FINISH;
-import static com.greencloud.commons.job.JobResultType.STARTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 import static java.util.Objects.nonNull;
 
 import java.util.Arrays;
@@ -28,8 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.commons.job.JobResultType;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
 import com.gui.agents.CloudNetworkAgentNode;
 
 /**
@@ -39,11 +35,11 @@ public class CloudNetworkStateManagement {
 
 	private static final Logger logger = LoggerFactory.getLogger(CloudNetworkStateManagement.class);
 	private final CloudNetworkAgent cloudNetworkAgent;
-	private final ConcurrentMap<JobResultType, Long> jobCounters;
+	private final ConcurrentMap<JobExecutionResultEnum, Long> jobCounters;
 
 	public CloudNetworkStateManagement(CloudNetworkAgent cloudNetworkAgent) {
 		this.cloudNetworkAgent = cloudNetworkAgent;
-		this.jobCounters = Arrays.stream(JobResultType.values())
+		this.jobCounters = Arrays.stream(JobExecutionResultEnum.values())
 				.collect(Collectors.toConcurrentMap(result -> result, status -> 0L));
 	}
 
@@ -53,11 +49,10 @@ public class CloudNetworkStateManagement {
 	 * @return current power in use
 	 */
 	public int getCurrentPowerInUse() {
-		return cloudNetworkAgent.getNetworkJobs().keySet()
+		return cloudNetworkAgent.getNetworkJobs().entrySet()
 				.stream()
-				.filter(job -> isJobStarted(job, cloudNetworkAgent.getNetworkJobs()) &&
-						isWithinTimeStamp(job.getStartTime(), job.getEndTime(), getCurrentTime()))
-				.mapToInt(PowerJob::getPower)
+				.filter(job -> job.getValue().equals(IN_PROGRESS))
+				.mapToInt(job -> job.getKey().getPower())
 				.sum();
 	}
 
@@ -67,7 +62,7 @@ public class CloudNetworkStateManagement {
 	 * @param jobId job identifier
 	 * @param type  type of counter to increment
 	 */
-	public void incrementJobCounter(final String jobId, final JobResultType type) {
+	public void incrementJobCounter(final String jobId, final JobExecutionResultEnum type) {
 		MDC.put(MDC_JOB_ID, jobId);
 		jobCounters.computeIfPresent(type, (key, val) -> val += 1);
 
@@ -98,7 +93,7 @@ public class CloudNetworkStateManagement {
 				getCurrentPowerInUse());
 	}
 
-	public Map<JobResultType, Long> getJobCounters() {
+	public Map<JobExecutionResultEnum, Long> getJobCounters() {
 		return jobCounters;
 	}
 

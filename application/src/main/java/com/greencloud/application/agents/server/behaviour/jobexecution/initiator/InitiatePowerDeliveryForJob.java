@@ -21,7 +21,7 @@ import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.messages.MessagingUtils;
 import com.greencloud.application.messages.domain.factory.OfferMessageFactory;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
 import jade.core.Agent;

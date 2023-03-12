@@ -6,14 +6,14 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.greencloud.commons.job.ClientJobStatusEnum;
+import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 
 @JsonSerialize(as = ImmutableSetClientJobDurationMapMessage.class)
 @JsonDeserialize(as = ImmutableSetClientJobDurationMapMessage.class)
 @Value.Immutable
 public interface SetClientJobDurationMapMessage {
 
-	Map<ClientJobStatusEnum, Long> getData();
+	Map<JobClientStatusEnum, Long> getData();
 
 	String getAgentName();
 

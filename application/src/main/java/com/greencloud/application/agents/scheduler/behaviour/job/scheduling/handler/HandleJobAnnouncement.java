@@ -9,8 +9,8 @@ import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentC
 import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentConstants.SEND_NEXT_JOB_TIMEOUT;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static com.greencloud.application.mapper.JobMapper.mapToJobWithNewTime;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.PROCESSING_JOB_ID;
@@ -31,7 +31,7 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.InitiateCNALookup;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.TickerBehaviour;

@@ -7,11 +7,11 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.i
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.BACK_UP_POWER_STATUSES;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_SOURCE_SHORTAGE_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE_PLANNED;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.MessagingUtils.rejectJobOffers;
 import static com.greencloud.application.messages.MessagingUtils.retrieveProposals;
@@ -38,8 +38,8 @@ import com.greencloud.application.agents.server.behaviour.powershortage.listener
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.PowerJob;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;

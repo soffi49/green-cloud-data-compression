@@ -12,14 +12,14 @@ import static jade.lang.acl.ACLMessage.INFORM;
 import java.util.Map;
 import java.util.Objects;
 
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -56,7 +56,7 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 					ReplyMessageFactory.prepareStringReply(request.createReply(), "REQUEST PROCESSING", AGREE));
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(JOB_START_STATUS_RECEIVED_REQUEST_LOG, jobId);
-			final Map.Entry<ClientJob, ExecutionJobStatusEnum> jobInstance = getCurrentJobInstance(jobId,
+			final Map.Entry<ClientJob, JobExecutionStatusEnum> jobInstance = getCurrentJobInstance(jobId,
 					myServerAgent.getServerJobs());
 			myServerAgent.send(createReplyWithJobStatus(request, jobInstance));
 		} else {
@@ -65,7 +65,7 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 	}
 
 	private ACLMessage createReplyWithJobStatus(final ACLMessage message,
-			final Map.Entry<ClientJob, ExecutionJobStatusEnum> jobInstance) {
+			final Map.Entry<ClientJob, JobExecutionStatusEnum> jobInstance) {
 		return Objects.nonNull(jobInstance) && isJobStarted(jobInstance.getValue()) ?
 				ReplyMessageFactory.prepareStringReply(message.createReply(), "JOB STARTED", INFORM) :
 				ReplyMessageFactory.prepareStringReply(message.createReply(), "JOB HAS NOT STARTED", FAILURE);

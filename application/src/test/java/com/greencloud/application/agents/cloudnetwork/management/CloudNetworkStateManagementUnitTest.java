@@ -22,10 +22,10 @@ import org.mockito.junit.jupiter.MockitoSettings;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.utils.TimeUtils;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ImmutableClientJob;
-import com.greencloud.commons.job.JobResultType;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 import com.gui.controller.GuiController;
 
 import jade.core.AID;
@@ -50,7 +50,7 @@ class CloudNetworkStateManagementUnitTest {
 
 	@BeforeEach
 	void init() {
-		Map<ClientJob, ExecutionJobStatusEnum> MOCK_JOBS = setUpCloudNetworkJobs();
+		Map<ClientJob, JobExecutionStatusEnum> MOCK_JOBS = setUpCloudNetworkJobs();
 		var mockAID = mock(AID.class);
 		var mockConfig = mock(CloudNetworkConfigManagement.class);
 
@@ -75,13 +75,13 @@ class CloudNetworkStateManagementUnitTest {
 	@Test
 	@DisplayName("Test increment job counter")
 	void testIncrementJobCounter() {
-		cloudNetworkStateManagement.incrementJobCounter("1", JobResultType.ACCEPTED);
-		cloudNetworkStateManagement.incrementJobCounter("1", JobResultType.FAILED);
-		cloudNetworkStateManagement.incrementJobCounter("1", JobResultType.FAILED);
-		assertThat(cloudNetworkStateManagement.getJobCounters()).containsEntry(JobResultType.FAILED, 2L);
-		assertThat(cloudNetworkStateManagement.getJobCounters()).containsEntry(JobResultType.ACCEPTED, 1L);
-		assertThat(cloudNetworkStateManagement.getJobCounters().get(JobResultType.FINISH)).isZero();
-		assertThat(cloudNetworkStateManagement.getJobCounters().get(JobResultType.STARTED)).isZero();
+		cloudNetworkStateManagement.incrementJobCounter("1", JobExecutionResultEnum.ACCEPTED);
+		cloudNetworkStateManagement.incrementJobCounter("1", JobExecutionResultEnum.FAILED);
+		cloudNetworkStateManagement.incrementJobCounter("1", JobExecutionResultEnum.FAILED);
+		assertThat(cloudNetworkStateManagement.getJobCounters()).containsEntry(JobExecutionResultEnum.FAILED, 2L);
+		assertThat(cloudNetworkStateManagement.getJobCounters()).containsEntry(JobExecutionResultEnum.ACCEPTED, 1L);
+		assertThat(cloudNetworkStateManagement.getJobCounters().get(JobExecutionResultEnum.FINISH)).isZero();
+		assertThat(cloudNetworkStateManagement.getJobCounters().get(JobExecutionResultEnum.STARTED)).isZero();
 	}
 
 	// PREPARING TEST DATA
@@ -94,7 +94,7 @@ class CloudNetworkStateManagementUnitTest {
 	 * Job2 -> power: 20, time: 07:00 - 11:00, status: IN_PROGRESS
 	 * Job3 -> power: 50,  time: 06:00 - 15:00, status: ACCEPTED
 	 */
-	private Map<ClientJob, ExecutionJobStatusEnum> setUpCloudNetworkJobs() {
+	private Map<ClientJob, JobExecutionStatusEnum> setUpCloudNetworkJobs() {
 		final ClientJob mockJob1 = ImmutableClientJob.builder()
 				.jobId("1")
 				.clientIdentifier("Client1")
@@ -119,10 +119,10 @@ class CloudNetworkStateManagementUnitTest {
 				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
 				.power(50)
 				.build();
-		final Map<ClientJob, ExecutionJobStatusEnum> mockJobMap = new HashMap<>();
-		mockJobMap.put(mockJob1, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob2, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob3, ExecutionJobStatusEnum.ACCEPTED);
+		final Map<ClientJob, JobExecutionStatusEnum> mockJobMap = new HashMap<>();
+		mockJobMap.put(mockJob1, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob2, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob3, JobExecutionStatusEnum.ACCEPTED);
 		return mockJobMap;
 	}
 }

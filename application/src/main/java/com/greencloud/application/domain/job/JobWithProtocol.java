@@ -4,8 +4,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-
+import com.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object created for messaging purposes so that the job can be sent together with the
@@ -14,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ImmutableJobWithProtocol.class)
 @JsonDeserialize(as = ImmutableJobWithProtocol.class)
 @Value.Immutable
+@ImmutableConfig
 public interface JobWithProtocol {
 
 	/**

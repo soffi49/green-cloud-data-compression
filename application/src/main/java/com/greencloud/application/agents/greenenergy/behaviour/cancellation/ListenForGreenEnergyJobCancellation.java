@@ -9,10 +9,12 @@ import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_PLANNED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.List.of;
@@ -26,9 +28,8 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.JobResultType;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -41,7 +42,7 @@ public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForGreenEnergyJobCancellation.class);
 
-	private static final List<ExecutionJobStatusEnum> JOB_NOT_STARTED_STATUSES =
+	private static final List<JobExecutionStatusEnum> JOB_NOT_STARTED_STATUSES =
 			of(CREATED, PROCESSING, ACCEPTED, ON_HOLD_PLANNED);
 
 	private GreenEnergyAgent myGreenEnergyAgent;
@@ -80,9 +81,9 @@ public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 		var jobPartStatus = myGreenEnergyAgent.getServerJobs().get(jobPart);
 		myGreenEnergyAgent.manage().removeJob(jobPart);
 		if (!JOB_NOT_STARTED_STATUSES.contains(jobPartStatus)) {
-			myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), JobResultType.FINISH);
+			myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), FINISH);
 		}
-		myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), JobResultType.FAILED);
+		myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), FAILED);
 		MDC.put(MDC_JOB_ID, jobPart.getJobId());
 		logger.info(CANCELLED_JOB_PART_LOG);
 		myGreenEnergyAgent.manage().updateGreenSourceGUI();

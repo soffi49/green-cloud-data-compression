@@ -12,8 +12,8 @@ import static jade.lang.acl.ACLMessage.REQUEST;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.message.MessageBuilder;
 
 import jade.core.AID;
@@ -31,7 +31,7 @@ public class PowerShortageMessageFactory {
 	 * @param receiver         receivers of the message
 	 * @return request ACLMessage
 	 */
-	public static ACLMessage preparePowerShortageTransferRequest(final PowerShortageJob powerShortageJob,
+	public static ACLMessage preparePowerShortageTransferRequest(final JobPowerShortageTransfer powerShortageJob,
 			final AID receiver) {
 		final ACLMessage message = new ACLMessage(REQUEST);
 		try {

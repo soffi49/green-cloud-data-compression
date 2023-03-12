@@ -6,8 +6,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-
+import com.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object stores the data which allow to identify two instances of the job with the same jobId
@@ -15,6 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as = ImmutableJobInstanceIdentifier.class)
 @JsonDeserialize(as = ImmutableJobInstanceIdentifier.class)
 @Value.Immutable
+@ImmutableConfig
 public interface JobInstanceIdentifier {
 
 	/**

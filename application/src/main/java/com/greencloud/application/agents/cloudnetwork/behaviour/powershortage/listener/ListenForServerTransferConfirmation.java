@@ -26,7 +26,7 @@ import org.slf4j.MDC;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler.HandleJobTransferToServer;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -42,11 +42,11 @@ public class ListenForServerTransferConfirmation extends MsgReceiver {
 
 	private final CloudNetworkAgent myCloudNetworkAgent;
 	private final ACLMessage replyMessage;
-	private final PowerShortageJob powerShortageJob;
+	private final JobPowerShortageTransfer powerShortageJob;
 	private final AID server;
 
 	private ListenForServerTransferConfirmation(final Agent agent, final MessageTemplate template,
-			final ACLMessage replyMessage, final PowerShortageJob powerShortageJob, final AID server) {
+			final ACLMessage replyMessage, final JobPowerShortageTransfer powerShortageJob, final AID server) {
 		super(agent, template, TRANSFER_EXPIRATION_TIME + currentTimeMillis(), null, null);
 		this.replyMessage = replyMessage;
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
@@ -63,14 +63,14 @@ public class ListenForServerTransferConfirmation extends MsgReceiver {
 	 * @param server           server to which the job is transferred
 	 */
 	public static ListenForServerTransferConfirmation createFor(final Agent agent, final ACLMessage replyMessage,
-			final PowerShortageJob powerShortageJob, final AID server) {
+			final JobPowerShortageTransfer powerShortageJob, final AID server) {
 		final MessageTemplate template = and(SERVER_JOB_TRANSFER_CONFIRMATION_TEMPLATE,
 				MatchContent(getExpectedContent(powerShortageJob)));
 		return new ListenForServerTransferConfirmation(agent, template, replyMessage, powerShortageJob,
 				server);
 	}
 
-	private static String getExpectedContent(final PowerShortageJob powerShortageJob) {
+	private static String getExpectedContent(final JobPowerShortageTransfer powerShortageJob) {
 		try {
 			final Instant startTime = powerShortageJob.getJobInstanceId().getStartTime()
 					.isAfter(powerShortageJob.getPowerShortageStart()) ?

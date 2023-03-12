@@ -1,11 +1,10 @@
 package com.greencloud.application.agents.client.management;
 
-import static com.greencloud.commons.job.ClientJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.FINISHED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ClientJobStatusEnum.ON_BACK_UP;
-import static com.greencloud.commons.job.ClientJobStatusEnum.PROCESSED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.SCHEDULED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.PROCESSED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.SCHEDULED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doNothing;
@@ -29,7 +28,7 @@ import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.client.ClientMonitoringData;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.greencloud.application.agents.client.ClientAgent;
-import com.greencloud.application.agents.client.domain.JobPart;
+import com.greencloud.application.agents.client.domain.ClientJobExecution;
 import com.gui.agents.ClientAgentNode;
 
 import jade.core.AID;
@@ -46,6 +45,8 @@ class ClientStateManagementDatabaseTest {
 	private static ClientAgentNode mockNode;
 	@Mock
 	private static ClientStateManagement mockClientManagement;
+	@Mock
+	private static ClientJobExecution originalJob;
 	private TimescaleDatabase database;
 
 	@BeforeEach
@@ -61,6 +62,7 @@ class ClientStateManagementDatabaseTest {
 		doReturn(mockAID).when(mockClient).getAID();
 		doReturn("ClientMock").when(mockAID).getName();
 		doReturn(database).when(mockNode).getDatabaseClient();
+		doReturn(originalJob).when(mockClient).getJobExecution();
 		doNothing().when(mockNode).updateJobDurationMap(anyMap());
 	}
 
@@ -72,12 +74,12 @@ class ClientStateManagementDatabaseTest {
 	@Test
 	@DisplayName("Test writing client data to database - no job split")
 	void testWriteClientDataNoSplit() {
-		mockClientManagement.setCurrentJobStatus(IN_PROGRESS);
-		mockClientManagement.jobStatusDurationMap = Map.of(
+		originalJob.setJobStatus(IN_PROGRESS);
+		originalJob.setJobDurationMap(Map.of(
 				ON_BACK_UP, 100L,
 				PROCESSED, 50L,
 				SCHEDULED, 200L
-		);
+		));
 		doReturn(false).when(mockClient).isSplit();
 
 		mockClientManagement.writeClientData(false);
@@ -98,7 +100,7 @@ class ClientStateManagementDatabaseTest {
 	@Test
 	@DisplayName("Test writing client data to database - with split")
 	void testWriteClientDataWithSplit() {
-		mockClientManagement.setCurrentJobStatus(FINISHED);
+		originalJob.setJobStatus(FINISHED);
 		doReturn(true).when(mockClient).isSplit();
 		prepareJobParts();
 
@@ -119,11 +121,11 @@ class ClientStateManagementDatabaseTest {
 	}
 
 	private void prepareJobParts() {
-		final JobPart jobPart1 = spy(new JobPart(null,null,null,null,null));
-		final JobPart jobPart2 = spy(new JobPart(null,null,null,null,null));
+		final ClientJobExecution jobPart1 = spy(new ClientJobExecution(null, null, null, null, null));
+		final ClientJobExecution jobPart2 = spy(new ClientJobExecution(null, null, null, null, null));
 
-		doReturn(Map.of(IN_PROGRESS, 100L, ON_BACK_UP, 50L)).when(jobPart1).getJobStatusDurationMap();
-		doReturn(Map.of(IN_PROGRESS, 200L, ON_BACK_UP, 150L)).when(jobPart2).getJobStatusDurationMap();
+		doReturn(Map.of(IN_PROGRESS, 100L, ON_BACK_UP, 50L)).when(jobPart1).getJobDurationMap();
+		doReturn(Map.of(IN_PROGRESS, 200L, ON_BACK_UP, 150L)).when(jobPart2).getJobDurationMap();
 
 		doReturn(Map.of("1#1", jobPart1, "1#2", jobPart2)).when(mockClient).getJobParts();
 	}

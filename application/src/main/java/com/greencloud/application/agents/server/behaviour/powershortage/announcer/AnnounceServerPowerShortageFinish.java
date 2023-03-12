@@ -13,10 +13,13 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.BACK_UP_POWER_STATUSES;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
 
 import java.util.List;
 import java.util.Map;
@@ -29,8 +32,8 @@ import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.mapper.JobMapper;
 import com.greencloud.application.utils.TimeUtils;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
@@ -104,9 +107,8 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	}
 
 	private void supplyJobWithBackUpPower(final ClientJob job) {
-		final boolean hasJobStarted = myServerAgent.getServerJobs().get(job)
-				.equals(ExecutionJobStatusEnum.ON_HOLD);
-		final ExecutionJobStatusEnum status = hasJobStarted ?
+		final boolean hasJobStarted = myServerAgent.getServerJobs().get(job).equals(ON_HOLD);
+		final JobExecutionStatusEnum status = hasJobStarted ?
 				IN_PROGRESS_BACKUP_ENERGY :
 				IN_PROGRESS_BACKUP_ENERGY_PLANNED;
 		myServerAgent.getServerJobs().replace(job, status);
@@ -119,9 +121,7 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 
 	private void supplyJobWithGreenEnergy(final ClientJob job, final JobInstanceIdentifier jobInstance) {
 		final boolean hasStarted = isJobStarted(job, myServerAgent.getServerJobs());
-		final ExecutionJobStatusEnum newStatus = hasStarted ?
-				ExecutionJobStatusEnum.ACCEPTED :
-				ExecutionJobStatusEnum.IN_PROGRESS;
+		final JobExecutionStatusEnum newStatus = hasStarted ? ACCEPTED : IN_PROGRESS;
 		myServerAgent.getServerJobs().replace(job, newStatus);
 
 		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
@@ -139,7 +139,7 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 
 	private List<ClientJob> getJobsOnHold() {
 		return myServerAgent.getServerJobs().entrySet().stream()
-				.filter(job -> (job.getValue().equals(ExecutionJobStatusEnum.ON_HOLD_PLANNED) || job.getValue().equals(ON_HOLD))
+				.filter(job -> (job.getValue().equals(ON_HOLD_PLANNED) || job.getValue().equals(ON_HOLD))
 						&& job.getKey().getEndTime().isAfter(TimeUtils.getCurrentTime()))
 				.map(Map.Entry::getKey)
 				.toList();

@@ -26,7 +26,7 @@ import com.greencloud.application.agents.greenenergy.management.GreenPowerManage
 import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.utils.domain.JobWithTime;
 import com.greencloud.application.utils.domain.SubJobList;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.PowerJob;
 
 /**
  * Service used to perform operations using already existing, implemented algorithms

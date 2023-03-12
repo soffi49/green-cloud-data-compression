@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -56,7 +56,7 @@ public class HandleJobTransferToServer extends WakerBehaviour {
 	 * @return behaviour which transfer the jobs between servers
 	 */
 	public static HandleJobTransferToServer createFor(final CloudNetworkAgent cloudNetworkAgent,
-			final PowerShortageJob powerShortageJob, AID newServer) {
+			final JobPowerShortageTransfer powerShortageJob, AID newServer) {
 		final Instant transferTime = getCurrentTime().isAfter(powerShortageJob.getPowerShortageStart()) ?
 				getCurrentTime() :
 				powerShortageJob.getPowerShortageStart();

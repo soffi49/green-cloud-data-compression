@@ -4,6 +4,7 @@ import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REFUSE;
+import static java.time.Instant.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -13,7 +14,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.quality.Strictness.LENIENT;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -32,8 +32,8 @@ import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ImmutablePowerJob;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.ImmutablePowerJob;
+import com.greencloud.commons.domain.job.PowerJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -83,10 +83,8 @@ class MessagingUtilsUnitTest {
 	@DisplayName("Test reject job offers except chosen one which is null")
 	void testRejectJobOffers() {
 		final AbstractAgent mockAgent = mock(ClientAgent.class);
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final List<ACLMessage> messages = prepareMessages();
 		MessagingUtils.rejectJobOffers(mockAgent, jobInstance, null, messages);
 
@@ -99,10 +97,8 @@ class MessagingUtilsUnitTest {
 	@DisplayName("Test reject job offers except chosen one which is not null")
 	void testRejectJobOffersWithChosen() {
 		final AbstractAgent mockAgent = mock(ClientAgent.class);
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final List<ACLMessage> messages = prepareMessages();
 		MessagingUtils.rejectJobOffers(mockAgent, jobInstance, messages.get(0), messages);
 
@@ -136,10 +132,8 @@ class MessagingUtilsUnitTest {
 	@Test
 	@DisplayName("Test retrieve valid proposal (with valid one)")
 	void testRetrieveValidProposals() throws JsonProcessingException {
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final ACLMessage msg = new ACLMessage(PROPOSE);
 		msg.setContent(getMapper().writeValueAsString(jobInstance));
 
@@ -151,10 +145,8 @@ class MessagingUtilsUnitTest {
 	@Test
 	@DisplayName("Test retrieve valid proposal (with invalid one)")
 	void testRetrieveValidProposalsInvalid() throws JsonProcessingException {
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final ACLMessage msg = new ACLMessage(PROPOSE);
 		msg.setContent(getMapper().writeValueAsString(jobInstance));
 
@@ -164,10 +156,8 @@ class MessagingUtilsUnitTest {
 	@Test
 	@DisplayName("Test read message content (successful)")
 	void testReadMessageContent() throws JsonProcessingException {
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final ACLMessage msg = new ACLMessage(PROPOSE);
 		msg.setContent(getMapper().writeValueAsString(jobInstance));
 
@@ -178,10 +168,8 @@ class MessagingUtilsUnitTest {
 	@Test
 	@DisplayName("Test read message content (unsuccessful)")
 	void testReadMessageContentInvalid() throws JsonProcessingException {
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final ACLMessage msg = new ACLMessage(PROPOSE);
 		msg.setContent(getMapper().writeValueAsString(jobInstance));
 
@@ -192,14 +180,10 @@ class MessagingUtilsUnitTest {
 	@Test
 	@DisplayName("Test read message list content (successful)")
 	void testReadMessageListContent() throws JsonProcessingException {
-		final JobInstanceIdentifier jobInstance1 = ImmutableJobInstanceIdentifier.builder()
-				.jobId("2")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
-		final JobInstanceIdentifier jobInstance2 = ImmutableJobInstanceIdentifier.builder()
-				.jobId("2")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance1 = ImmutableJobInstanceIdentifier.of("2",
+				parse("2022-01-01T11:00:00.000Z"));
+		final JobInstanceIdentifier jobInstance2 = ImmutableJobInstanceIdentifier.of("2",
+				parse("2022-01-01T11:00:00.000Z"));
 		final ACLMessage msg = new ACLMessage(PROPOSE);
 		msg.setContent(getMapper().writeValueAsString(List.of(jobInstance1, jobInstance2)));
 
@@ -211,16 +195,14 @@ class MessagingUtilsUnitTest {
 	@Test
 	@DisplayName("Test read message list content (unsuccessful)")
 	void testReadMessageListContentInvalid() throws JsonProcessingException {
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T11:00:00.000Z"));
 		final PowerJob powerJob = ImmutablePowerJob.builder()
 				.jobId("1")
 				.power(50)
-				.deadline(Instant.parse("2022-01-01T15:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:00:00.000Z"))
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
+				.deadline(parse("2022-01-01T15:00:00.000Z"))
+				.endTime(parse("2022-01-01T13:00:00.000Z"))
+				.startTime(parse("2022-01-01T11:00:00.000Z"))
 				.build();
 		final ACLMessage msg = new ACLMessage(PROPOSE);
 		msg.setContent(getMapper().writeValueAsString(List.of(jobInstance, powerJob)));

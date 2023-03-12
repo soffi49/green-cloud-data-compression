@@ -1,36 +1,36 @@
 package com.greencloud.application.agents.scheduler.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import java.time.Instant;
 
-import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.gui.agents.SchedulerAgentNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.gui.agents.SchedulerAgentNode;
 
 class SchedulerConfigManagementUnitTest {
 
-	private ClientJob mockJob = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
+	private final ClientJob mockJob = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
 			.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
 			.deadline(Instant.parse("2022-01-01T12:00:00.000Z")).power(100).build();
 
 	private SchedulerConfigurationManagement schedulerConfigManagement;
-	private SchedulerAgent mockSchedulerAgent;
-	private SchedulerAgentNode mockSchedulerAgentNode;
 
 	@BeforeEach
 	void setUp() {
-		mockSchedulerAgent = spy(SchedulerAgent.class);
-		mockSchedulerAgentNode = mock(SchedulerAgentNode.class);
+		SchedulerAgent mockSchedulerAgent = spy(SchedulerAgent.class);
+		SchedulerAgentNode mockSchedulerAgentNode = mock(SchedulerAgentNode.class);
 		doReturn(mockSchedulerAgentNode).when(mockSchedulerAgent).getAgentNode();
-		schedulerConfigManagement = new SchedulerConfigurationManagement(mockSchedulerAgent,1, 1, 100, 1000, 2);
+		schedulerConfigManagement = new SchedulerConfigurationManagement(mockSchedulerAgent, 1, 1, 100, 1000, 2);
 	}
 
 	@Test

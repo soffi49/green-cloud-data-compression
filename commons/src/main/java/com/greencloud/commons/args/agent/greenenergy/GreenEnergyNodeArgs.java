@@ -5,7 +5,7 @@ import org.immutables.value.Value;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.greencloud.commons.args.agent.AgentArgs;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.Location;
 
 @JsonDeserialize(as = ImmutableGreenEnergyNodeArgs.class)
 @JsonSerialize(as = ImmutableGreenEnergyNodeArgs.class)

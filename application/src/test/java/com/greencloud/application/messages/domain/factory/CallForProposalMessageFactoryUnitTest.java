@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
-import com.greencloud.commons.job.ImmutablePowerJob;
+import com.greencloud.commons.domain.job.ImmutablePowerJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -33,9 +33,9 @@ class CallForProposalMessageFactoryUnitTest {
 
 		return Stream.of(
 				arguments(
-						ImmutableJobInstanceIdentifier.builder().jobId("1")
-								.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-								.build(), List.of(aid1), "TEST_PROTOCOL1",
+						ImmutableJobInstanceIdentifier.of("1", Instant.parse("2022-01-01T13:30:00.000Z")),
+						List.of(aid1),
+						"TEST_PROTOCOL1",
 						"{\"jobId\":\"1\",\"startTime\":1641043800.000000000}"),
 				arguments(
 						ImmutablePowerJob.builder().jobId("1").deadline(Instant.parse("2022-01-01T15:30:00.000Z"))

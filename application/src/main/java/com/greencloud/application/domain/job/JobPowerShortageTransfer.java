@@ -1,4 +1,4 @@
-package com.greencloud.application.domain.powershortage;
+package com.greencloud.application.domain.job;
 
 import java.time.Instant;
 
@@ -6,17 +6,16 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.greencloud.application.domain.job.JobInstanceIdentifier;
-
-
+import com.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object stores the data necessary to perform job transfer
  */
-@JsonSerialize(as = ImmutablePowerShortageJob.class)
-@JsonDeserialize(as = ImmutablePowerShortageJob.class)
+@JsonSerialize(as = ImmutableJobPowerShortageTransfer.class)
+@JsonDeserialize(as = ImmutableJobPowerShortageTransfer.class)
 @Value.Immutable
-public interface PowerShortageJob {
+@ImmutableConfig
+public interface JobPowerShortageTransfer {
 
 	/**
 	 * @return unique job identifier

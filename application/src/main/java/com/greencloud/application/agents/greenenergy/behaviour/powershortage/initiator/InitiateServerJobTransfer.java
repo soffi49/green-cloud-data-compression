@@ -11,16 +11,16 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_PLANNED;
-import static com.greencloud.commons.job.JobResultType.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;

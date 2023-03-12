@@ -10,22 +10,21 @@ import static com.greencloud.application.messages.domain.factory.PowerShortageMe
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
+import static java.time.Instant.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-
-import java.time.Instant;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
+import com.greencloud.application.domain.job.ImmutableJobPowerShortageTransfer;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.powershortage.ImmutablePowerShortageJob;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -38,13 +37,9 @@ class PowerShortageMessageFactoryUnitTest {
 		final AID mockReceiver = mock(AID.class);
 		doReturn("test_receiver").when(mockReceiver).getName();
 
-		final PowerShortageJob mockPowerShortageJob = ImmutablePowerShortageJob.builder()
-				.powerShortageStart(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.jobInstanceId(ImmutableJobInstanceIdentifier.builder()
-						.jobId("1")
-						.startTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-						.build())
-				.build();
+		final JobPowerShortageTransfer mockPowerShortageJob = ImmutableJobPowerShortageTransfer.of(
+				ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T14:30:00.000Z")),
+				parse("2022-01-01T13:30:00.000Z"));
 
 		final String expectedContent =
 				"{\"jobInstanceId\":{\"jobId\":\"1\",\"startTime\":1641047400.000000000},"
@@ -67,9 +62,9 @@ class PowerShortageMessageFactoryUnitTest {
 
 		final ClientJob mockJob = ImmutableClientJob.builder()
 				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T16:30:00.000Z"))
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T16:30:00.000Z"))
 				.clientIdentifier("test_client")
 				.power(10)
 				.build();
@@ -91,10 +86,8 @@ class PowerShortageMessageFactoryUnitTest {
 		final AID mockReceiver = mock(AID.class);
 		doReturn("test_receiver").when(mockReceiver).getName();
 
-		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T13:30:00.000Z"));
 		final String protocol = POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 
 		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
@@ -117,10 +110,8 @@ class PowerShortageMessageFactoryUnitTest {
 		doReturn("test_cloud").when(mockCloud).getName();
 		doReturn(mockCloud).when(mockServer).getOwnerCloudNetworkAgent();
 
-		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T13:30:00.000Z"));
 		final String protocol = CONFIRMED_TRANSFER_PROTOCOL;
 
 		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";

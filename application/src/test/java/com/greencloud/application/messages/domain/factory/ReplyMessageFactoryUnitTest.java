@@ -44,10 +44,8 @@ class ReplyMessageFactoryUnitTest {
 	@DisplayName("Test prepare reply")
 	void testPrepareReply() {
 		final int performative = REFUSE;
-		final JobInstanceIdentifier content = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		final JobInstanceIdentifier content = ImmutableJobInstanceIdentifier.of("1",
+				Instant.parse("2022-01-01T13:30:00.000Z"));
 
 		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
 
@@ -119,10 +117,8 @@ class ReplyMessageFactoryUnitTest {
 	@Test
 	@DisplayName("Test prepare accept reply with protocol")
 	void testPrepareAcceptReplyWithProtocol() {
-		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.of("1",
+				Instant.parse("2022-01-01T13:30:00.000Z"));
 		final String protocol = SERVER_JOB_CFP_PROTOCOL;
 		MOCK_REQUEST.setPerformative(CFP);
 
@@ -143,16 +139,12 @@ class ReplyMessageFactoryUnitTest {
 	@Test
 	@DisplayName("Test prepare failure reply message")
 	void testPrepareFailureReply() {
-		var content = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		var content = ImmutableJobInstanceIdentifier.of("1", Instant.parse("2022-01-01T13:30:00.000Z"));
 
 		var result = prepareFailureReply(MOCK_REQUEST, content, "TEST_PROTOCOL");
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
-
 
 		assertThat(result.getPerformative()).isEqualTo(FAILURE);
 		assertThat(result.getContent()).isEqualTo(expectedContent);

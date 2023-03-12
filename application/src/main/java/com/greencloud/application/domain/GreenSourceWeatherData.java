@@ -4,10 +4,10 @@ import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.Location;
 
 /**
- * Object storing the data passed by the Green Source in the com.greencloud.application.weather query message
+ * Object storing the data passed by the Green Source in the weather query message
  */
 @JsonSerialize(as = ImmutableGreenSourceWeatherData.class)
 @JsonDeserialize(as = ImmutableGreenSourceWeatherData.class)
@@ -15,7 +15,7 @@ import com.greencloud.commons.location.Location;
 public interface GreenSourceWeatherData {
 
 	/**
-	 * @return location for which the com.greencloud.application.weather is to be retrieved
+	 * @return location for which the weather is to be retrieved
 	 */
 	Location getLocation();
 

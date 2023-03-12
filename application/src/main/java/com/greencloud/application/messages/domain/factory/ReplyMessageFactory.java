@@ -96,10 +96,7 @@ public class ReplyMessageFactory {
 	 */
 	public static ACLMessage prepareAcceptReplyWithProtocol(final ACLMessage replyMessage,
 			final JobInstanceIdentifier jobInstanceId, final String protocol) {
-		final JobWithProtocol pricedJob = ImmutableJobWithProtocol.builder()
-				.jobInstanceIdentifier(jobInstanceId)
-				.replyProtocol(protocol)
-				.build();
+		final JobWithProtocol pricedJob = ImmutableJobWithProtocol.of(jobInstanceId, protocol);
 		replyMessage.setPerformative(ACCEPT_PROPOSAL);
 		try {
 			replyMessage.setContent(getMapper().writeValueAsString(pricedJob));

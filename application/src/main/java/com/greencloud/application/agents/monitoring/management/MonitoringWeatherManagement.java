@@ -25,7 +25,7 @@ import com.greencloud.application.weather.api.OpenWeatherMapApi;
 import com.greencloud.application.weather.cache.WeatherCache;
 import com.greencloud.application.weather.domain.AbstractWeather;
 import com.greencloud.application.weather.domain.FutureWeather;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.Location;
 
 /**
  * Set of methods used in weather management

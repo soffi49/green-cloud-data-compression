@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -75,7 +75,7 @@ public class HandleServerPowerShortage extends WakerBehaviour {
 	protected void onWake() {
 		affectedJobs.forEach(job -> {
 			if (myServerAgent.getServerJobs().containsKey(job)) {
-				final ExecutionJobStatusEnum jobStatus = myServerAgent.getServerJobs().get(job);
+				final JobExecutionStatusEnum jobStatus = myServerAgent.getServerJobs().get(job);
 				final String jobId = job.getJobId();
 				MDC.put(MDC_JOB_ID, job.getJobId());
 				switch (jobStatus) {

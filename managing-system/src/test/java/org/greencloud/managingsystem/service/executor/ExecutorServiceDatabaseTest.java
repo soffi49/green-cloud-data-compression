@@ -6,9 +6,9 @@ import static com.database.knowledge.domain.agent.DataType.CLOUD_NETWORK_MONITOR
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
-import static com.greencloud.commons.job.ClientJobStatusEnum.FINISHED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ClientJobStatusEnum.ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
 import static jade.core.AID.ISGUID;
 import static java.util.Collections.emptyList;
 import static org.greencloud.managingsystem.service.common.TestAdaptationPlanFactory.getTestAdaptationPlan;

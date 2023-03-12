@@ -3,23 +3,25 @@ package com.greencloud.application.agents.server.behaviour.powershortage.listene
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.POWER_SHORTAGE_SOURCE_STATUSES;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.application.utils.JobUtils.isJobStarted;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.POWER_SHORTAGE_SOURCE_STATUSES;
 
 import java.util.Objects;
 
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -78,9 +80,7 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 		}
 	}
 
-	private ExecutionJobStatusEnum getNewJobStatus(final ClientJob job) {
-		return isJobStarted(job, myServerAgent.getServerJobs()) ?
-				ExecutionJobStatusEnum.ACCEPTED :
-				ExecutionJobStatusEnum.IN_PROGRESS;
+	private JobExecutionStatusEnum getNewJobStatus(final ClientJob job) {
+		return isJobStarted(job, myServerAgent.getServerJobs()) ? ACCEPTED : IN_PROGRESS;
 	}
 }

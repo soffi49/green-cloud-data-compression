@@ -19,15 +19,16 @@ import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED_JOB_STATUSES;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACTIVE_JOB_STATUSES;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.JOB_ON_HOLD_STATUSES;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER_PLANNED;
-import static com.greencloud.commons.job.JobResultType.ACCEPTED;
-import static com.greencloud.commons.job.JobResultType.FAILED;
-import static com.greencloud.commons.job.JobResultType.FINISH;
-import static com.greencloud.commons.job.JobResultType.STARTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_JOB_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACTIVE_JOB_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.JOB_ON_HOLD_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 import static java.lang.Math.min;
 import static java.util.Objects.nonNull;
 
@@ -52,9 +53,9 @@ import com.greencloud.application.agents.greenenergy.behaviour.powersupply.handl
 import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.JobResultType;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
+import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
+import com.greencloud.commons.domain.job.ServerJob;
 import com.gui.agents.GreenEnergyAgentNode;
 
 import jade.core.AID;
@@ -66,7 +67,7 @@ public class GreenEnergyStateManagement {
 
 	private static final Logger logger = LoggerFactory.getLogger(GreenEnergyStateManagement.class);
 
-	private final ConcurrentMap<JobResultType, Long> jobCounters;
+	private final ConcurrentMap<JobExecutionResultEnum, Long> jobCounters;
 	private final GreenEnergyAgent greenEnergyAgent;
 	private final AtomicInteger shortagesAccumulator;
 	private final AtomicInteger weatherShortagesCounter;
@@ -80,7 +81,7 @@ public class GreenEnergyStateManagement {
 		this.greenEnergyAgent = greenEnergyAgent;
 		this.shortagesAccumulator = new AtomicInteger(0);
 		this.weatherShortagesCounter = new AtomicInteger(0);
-		this.jobCounters = Arrays.stream(JobResultType.values())
+		this.jobCounters = Arrays.stream(JobExecutionResultEnum.values())
 				.collect(Collectors.toConcurrentMap(status -> status, status -> 0L));
 	}
 
@@ -90,7 +91,7 @@ public class GreenEnergyStateManagement {
 	 * @param jobInstanceId job identifier
 	 * @param type          type of counter to increment
 	 */
-	public void incrementJobCounter(final JobInstanceIdentifier jobInstanceId, final JobResultType type) {
+	public void incrementJobCounter(final JobInstanceIdentifier jobInstanceId, final JobExecutionResultEnum type) {
 		MDC.put(MDC_JOB_ID, jobInstanceId.getJobId());
 		jobCounters.computeIfPresent(type, (key, val) -> val += 1);
 
@@ -142,7 +143,7 @@ public class GreenEnergyStateManagement {
 		if (powerShortageStart.isAfter(serverJob.getStartTime())) {
 			final ServerJob affectedServerJobInstance = mapToJobNewStartTime(serverJob, powerShortageStart);
 			final ServerJob notAffectedServerJobInstance = mapToJobNewEndTime(serverJob, powerShortageStart);
-			final ExecutionJobStatusEnum currentJobStatus = greenEnergyAgent.getServerJobs().get(serverJob);
+			final JobExecutionStatusEnum currentJobStatus = greenEnergyAgent.getServerJobs().get(serverJob);
 
 			greenEnergyAgent.getServerJobs().remove(serverJob);
 			greenEnergyAgent.getServerJobs().put(affectedServerJobInstance, ON_HOLD_TRANSFER_PLANNED);
@@ -154,7 +155,7 @@ public class GreenEnergyStateManagement {
 			updateGreenSourceGUI();
 			return affectedServerJobInstance;
 		} else {
-			final ExecutionJobStatusEnum jobStatus = isJobStarted(serverJob, greenEnergyAgent.getServerJobs()) ?
+			final JobExecutionStatusEnum jobStatus = isJobStarted(serverJob, greenEnergyAgent.getServerJobs()) ?
 					ON_HOLD_TRANSFER : ON_HOLD_TRANSFER_PLANNED;
 			greenEnergyAgent.getServerJobs().replace(serverJob, jobStatus);
 			updateGreenSourceGUI();
@@ -172,7 +173,7 @@ public class GreenEnergyStateManagement {
 	 */
 	public synchronized Optional<Double> getAvailablePowerForJob(final ServerJob serverJob,
 			final MonitoringData weather, final boolean isNewJob) {
-		final Set<ExecutionJobStatusEnum> jobStatuses = isNewJob ? ACCEPTED_JOB_STATUSES : ACTIVE_JOB_STATUSES;
+		final Set<JobExecutionStatusEnum> jobStatuses = isNewJob ? ACCEPTED_JOB_STATUSES : ACTIVE_JOB_STATUSES;
 		final Set<ServerJob> serverJobsOfInterest = greenEnergyAgent.getServerJobs().entrySet().stream()
 				.filter(job -> jobStatuses.contains(job.getValue()))
 				.map(Map.Entry::getKey)
@@ -238,7 +239,7 @@ public class GreenEnergyStateManagement {
 	 */
 	public int getCurrentPowerInUseForGreenSource() {
 		return greenEnergyAgent.getServerJobs().entrySet().stream()
-				.filter(job -> job.getValue().equals(ExecutionJobStatusEnum.IN_PROGRESS))
+				.filter(job -> job.getValue().equals(IN_PROGRESS))
 				.mapToInt(job -> job.getKey().getPower())
 				.sum();
 	}
@@ -298,7 +299,7 @@ public class GreenEnergyStateManagement {
 		return shortagesAccumulator;
 	}
 
-	public ConcurrentMap<JobResultType, Long> getJobCounters() {
+	public ConcurrentMap<JobExecutionResultEnum, Long> getJobCounters() {
 		return jobCounters;
 	}
 

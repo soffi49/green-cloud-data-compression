@@ -24,8 +24,8 @@ import com.greencloud.application.weather.domain.FutureWeather;
 import com.greencloud.application.weather.domain.ImmutableCurrentWeather;
 import com.greencloud.application.weather.domain.ImmutableForecast;
 import com.greencloud.application.weather.domain.ImmutableFutureWeather;
-import com.greencloud.commons.location.ImmutableLocation;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.ImmutableLocation;
+import com.greencloud.commons.domain.location.Location;
 
 class WeatherCacheUnitTest {
 

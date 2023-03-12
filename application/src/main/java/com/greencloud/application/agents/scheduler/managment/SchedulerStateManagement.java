@@ -6,10 +6,10 @@ import static com.greencloud.application.agents.scheduler.managment.logs.Schedul
 import static com.greencloud.application.agents.scheduler.managment.logs.SchedulerManagementLog.JOB_TIME_ADJUSTED_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToClientJobRealTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
 import static com.greencloud.application.mapper.JobMapper.mapToJobWithNewTime;
 import static com.greencloud.application.utils.TimeUtils.postponeTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 
 import java.time.Instant;
 import java.util.LinkedList;
@@ -18,13 +18,13 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import com.greencloud.application.agents.scheduler.behaviour.job.cancellation.InitiateJobCancellation;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 import com.gui.agents.SchedulerAgentNode;
 
 import jade.core.behaviours.Behaviour;
@@ -134,7 +134,7 @@ public class SchedulerStateManagement {
 	}
 
 	private List<String> getJobsToRemove(final ClientJob job) {
-		final Predicate<Map.Entry<ClientJob, ExecutionJobStatusEnum>> shouldRemoveJob =
+		final Predicate<Map.Entry<ClientJob, JobExecutionStatusEnum>> shouldRemoveJob =
 				jobEntry -> jobEntry.getKey().equals(job) || (isJobIdEqual(job).test(jobEntry.getKey())
 						&& List.of(CREATED, PROCESSING).contains(jobEntry.getValue()));
 

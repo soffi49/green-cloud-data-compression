@@ -26,9 +26,9 @@ import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.exception.IncorrectMessageContentException;
 import com.greencloud.application.messages.domain.factory.OfferMessageFactory;
 import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.PowerJob;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
+import com.greencloud.commons.domain.job.PowerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;

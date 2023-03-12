@@ -6,8 +6,8 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.POSTPONED_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,15 +35,15 @@ import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.ListenForJobUpdate;
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
-import com.greencloud.application.domain.job.JobStatusUpdate;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.lang.acl.ACLMessage;
 
 @ExtendWith(MockitoExtension.class)
 class ListenForJobUpdateUnitTest {
 
-	private static ObjectMapper objectMapper = getMapper();
+	private static final ObjectMapper objectMapper = getMapper();
 
 	@Mock
 	SchedulerAgent schedulerAgent;
@@ -60,11 +60,8 @@ class ListenForJobUpdateUnitTest {
 
 	@BeforeEach
 	void init() throws JsonProcessingException {
-		var jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("jobId")
-				.startTime(now())
-				.build();
-		var jobStatusUpdate = new JobStatusUpdate(jobInstance, now());
+		var jobInstance = ImmutableJobInstanceIdentifier.of("jobId", now());
+		var jobStatusUpdate = ImmutableJobStatusUpdate.of(jobInstance, now());
 		when(schedulerAgent.receive(JOB_UPDATE_TEMPLATE)).thenReturn(message);
 		when(message.getContent()).thenReturn(objectMapper.writeValueAsString(jobStatusUpdate));
 		when(clientJob.getJobId()).thenReturn("jobId");

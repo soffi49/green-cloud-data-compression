@@ -6,7 +6,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 import com.gui.message.domain.Message;
 
 @JsonSerialize(as = ImmutableUpdateJobQueueMessage.class)

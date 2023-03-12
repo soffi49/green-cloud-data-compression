@@ -9,7 +9,7 @@ import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.domain.ImmutableGreenSourceForecastData;
 import com.greencloud.application.domain.ImmutableGreenSourceWeatherData;
 import com.greencloud.application.domain.MonitoringData;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.message.MessageBuilder;
 
 import jade.lang.acl.ACLMessage;

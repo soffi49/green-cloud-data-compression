@@ -8,7 +8,7 @@ import java.util.Optional;
 import com.greencloud.application.weather.domain.AbstractWeather;
 import com.greencloud.application.weather.domain.CurrentWeather;
 import com.greencloud.application.weather.domain.Forecast;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.Location;
 
 /**
  * Class represents a com.greencloud.application.weather cache storing com.greencloud.application.weather forecast for given location

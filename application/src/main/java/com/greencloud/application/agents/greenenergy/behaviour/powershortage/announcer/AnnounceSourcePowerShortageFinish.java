@@ -15,8 +15,10 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
 import static java.util.Objects.nonNull;
 
 import java.util.List;
@@ -31,8 +33,8 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -105,7 +107,7 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 				logger.info(NO_POWER_LEAVE_ON_HOLD_LOG, job.getJobId());
 			} else {
 				logger.info(CHANGE_JOB_STATUS_LOG, job.getJobId());
-				final ExecutionJobStatusEnum newStatus =
+				final JobExecutionStatusEnum newStatus =
 						isJobStarted(job, myGreenAgent.getServerJobs()) ? IN_PROGRESS : ACCEPTED;
 
 				myGreenAgent.getServerJobs().replace(job, newStatus);
@@ -123,8 +125,8 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 
 	private List<ServerJob> getJobsOnHold() {
 		return myGreenAgent.getServerJobs().entrySet().stream()
-				.filter(job -> (job.getValue().equals(ExecutionJobStatusEnum.ON_HOLD_PLANNED)
-						|| job.getValue().equals(ExecutionJobStatusEnum.ON_HOLD)) &&
+				.filter(job -> (job.getValue().equals(ON_HOLD_PLANNED)
+						|| job.getValue().equals(ON_HOLD)) &&
 						job.getKey().getEndTime().isAfter(getCurrentTime()))
 				.map(Map.Entry::getKey)
 				.toList();

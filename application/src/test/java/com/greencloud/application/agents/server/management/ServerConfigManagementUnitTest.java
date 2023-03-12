@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.server.management;
 
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -22,8 +22,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.GreenSourceData;
 import com.greencloud.application.domain.ImmutableGreenSourceData;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.AID;
 

@@ -22,9 +22,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
@@ -41,7 +41,8 @@ class SchedulerStateManagementUnitTest {
 
 		doReturn(setUpCloudNetworkJobs()).when(mockSchedulerAgent).getClientJobs();
 		doReturn(schedulerStateManagement).when(mockSchedulerAgent).manage();
-		doReturn(new SchedulerConfigurationManagement(mockSchedulerAgent,8, 3, 10, 1000, 1)).when(mockSchedulerAgent).config();
+		doReturn(new SchedulerConfigurationManagement(mockSchedulerAgent, 8, 3, 10, 1000, 1)).when(mockSchedulerAgent)
+				.config();
 	}
 
 	@Test
@@ -77,16 +78,16 @@ class SchedulerStateManagementUnitTest {
 	 * Job1 -> power: 10, time: 08:00 - 10:00, status: PROCESSING,
 	 * Job2 -> power: 20, time: 07:00 - 11:00, status: ACCEPTED
 	 */
-	private ConcurrentMap<ClientJob, ExecutionJobStatusEnum> setUpCloudNetworkJobs() {
+	private ConcurrentMap<ClientJob, JobExecutionStatusEnum> setUpCloudNetworkJobs() {
 		final ClientJob mockJob1 = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
 				.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
 				.deadline(Instant.parse("2022-01-01T20:00:00.000Z")).power(10).build();
 		final ClientJob mockJob2 = ImmutableClientJob.builder().jobId("2").clientIdentifier("Client2")
 				.startTime(Instant.parse("2022-01-01T07:00:00.000Z")).endTime(Instant.parse("2022-01-01T11:00:00.000Z"))
 				.deadline(Instant.parse("2022-01-01T20:00:00.000Z")).power(20).build();
-		final ConcurrentMap<ClientJob, ExecutionJobStatusEnum> mockJobMap = new ConcurrentHashMap<>();
-		mockJobMap.put(mockJob1, ExecutionJobStatusEnum.PROCESSING);
-		mockJobMap.put(mockJob2, ExecutionJobStatusEnum.ACCEPTED);
+		final ConcurrentMap<ClientJob, JobExecutionStatusEnum> mockJobMap = new ConcurrentHashMap<>();
+		mockJobMap.put(mockJob1, JobExecutionStatusEnum.PROCESSING);
+		mockJobMap.put(mockJob2, JobExecutionStatusEnum.ACCEPTED);
 		return mockJobMap;
 	}
 }

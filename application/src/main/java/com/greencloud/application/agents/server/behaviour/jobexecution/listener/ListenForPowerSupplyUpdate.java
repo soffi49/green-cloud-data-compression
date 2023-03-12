@@ -8,6 +8,7 @@ import static com.greencloud.application.agents.server.behaviour.jobexecution.li
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_FAILURE_INFORM_CNA_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_FAILURE_INFORM_CNA_TRANSFER_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_FINISHED_MANUALLY_LOG;
+import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.POWER_SUPPLY_UPDATE_TEMPLATE;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.CONFIRMED_JOB_ID;
@@ -22,8 +23,10 @@ import static com.greencloud.application.utils.GUIUtils.announceBookedJob;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.JobUtils.isJobUnique;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PLANNED_JOB_STATUSES;
-import static com.greencloud.commons.job.JobResultType.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PLANNED_JOB_STATUSES;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -35,11 +38,10 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.jobexecution.handler.HandleJobStart;
-import com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -88,11 +90,11 @@ public class ListenForPowerSupplyUpdate extends CyclicBehaviour {
 
 	private void handlePowerSupplyManualFinishMessage(final ACLMessage inform) {
 		final ClientJob job = retrieveJobFromMessage(inform);
-		final ExecutionJobStatusEnum statusEnum = isNull(job) ?
+		final JobExecutionStatusEnum statusEnum = isNull(job) ?
 				null :
 				myServerAgent.getServerJobs().getOrDefault(job, null);
 
-		if (nonNull(statusEnum) && statusEnum.equals(ExecutionJobStatusEnum.IN_PROGRESS)) {
+		if (nonNull(statusEnum) && statusEnum.equals(IN_PROGRESS)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
 			logger.debug(SUPPLY_FINISHED_MANUALLY_LOG, job.getClientIdentifier(), job.getClientIdentifier());
 			myServerAgent.manage().finishJobExecution(job, true);

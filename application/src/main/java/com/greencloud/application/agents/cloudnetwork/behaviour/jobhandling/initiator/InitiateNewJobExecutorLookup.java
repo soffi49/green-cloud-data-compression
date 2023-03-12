@@ -24,7 +24,7 @@ import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.cloudnetwork.domain.CloudNetworkAgentConstants;
 import com.greencloud.application.domain.ServerData;
 import com.greencloud.application.messages.MessagingUtils;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;

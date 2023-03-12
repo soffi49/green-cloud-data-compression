@@ -37,8 +37,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.greencloud.application.exception.IncorrectTaskDateException;
-import com.greencloud.commons.job.ImmutablePowerJob;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.ImmutablePowerJob;
+import com.greencloud.commons.domain.job.PowerJob;
 
 class TimeUtilsUnitTest {
 

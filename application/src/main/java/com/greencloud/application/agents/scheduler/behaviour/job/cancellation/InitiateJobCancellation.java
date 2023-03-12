@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.PowerJob;
 import com.greencloud.commons.message.MessageBuilder;
 
 import jade.core.AID;

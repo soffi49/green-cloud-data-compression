@@ -7,11 +7,11 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.DELAYED_JOB_ID;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForScheduler;
 import static com.greencloud.application.utils.JobUtils.getJobById;
-import static com.greencloud.commons.job.JobResultType.STARTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.domain.job.JobStatusUpdate;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -77,7 +77,7 @@ public class InitiateJobStartCheck extends AchieveREInitiator {
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(JOB_HAS_STARTED_LOG, jobId);
 
-			var jobStatusUpdate = new JobStatusUpdate(mapToJobInstanceId(job), jobStart);
+			var jobStatusUpdate = ImmutableJobStatusUpdate.of(mapToJobInstanceId(job), jobStart);
 			myCloudNetwork.getNetworkJobs().replace(getJobById(jobId, myCloudNetwork.getNetworkJobs()), IN_PROGRESS);
 			myCloudNetwork.manage().incrementJobCounter(jobId, STARTED);
 			myAgent.send(prepareJobStatusMessageForScheduler(myCloudNetwork, jobStatusUpdate, STARTED_JOB_ID));
@@ -98,7 +98,7 @@ public class InitiateJobStartCheck extends AchieveREInitiator {
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.error(JOB_HAS_NOT_STARTED_LOG, jobId);
 
-			var jobStatusUpdate = new JobStatusUpdate(mapToJobInstanceId(job), getCurrentTime());
+			var jobStatusUpdate = ImmutableJobStatusUpdate.of(mapToJobInstanceId(job), getCurrentTime());
 			myAgent.send(prepareJobStatusMessageForScheduler(myCloudNetwork, jobStatusUpdate, DELAYED_JOB_ID));
 		}
 	}

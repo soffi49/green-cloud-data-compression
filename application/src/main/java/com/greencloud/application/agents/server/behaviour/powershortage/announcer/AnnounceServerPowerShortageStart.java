@@ -4,7 +4,7 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.a
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_NO_IMPACT_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_TRANSFER_REQUEST_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACTIVE_JOB_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACTIVE_JOB_STATUSES;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
@@ -21,8 +21,8 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInCloudNetwork;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.application.mapper.JobMapper;
 
 import jade.core.AID;
@@ -80,9 +80,9 @@ public class AnnounceServerPowerShortageStart extends OneShotBehaviour {
 				logger.info(POWER_SHORTAGE_START_TRANSFER_REQUEST_LOG, job.getJobId());
 				final ClientJob jobToTransfer = myServerAgent.manage()
 						.divideJobForPowerShortage(job, powerShortageStartTime);
-				final PowerShortageJob originalJobForShortage = JobMapper.mapToPowerShortageJob(job,
+				final JobPowerShortageTransfer originalJobForShortage = JobMapper.mapToPowerShortageJob(job,
 						powerShortageStartTime);
-				final PowerShortageJob jobTransferForShortage = JobMapper.mapToPowerShortageJob(jobToTransfer,
+				final JobPowerShortageTransfer jobTransferForShortage = JobMapper.mapToPowerShortageJob(jobToTransfer,
 						powerShortageStartTime);
 
 				requestJobTransferInCloudNetwork(originalJobForShortage, jobTransferForShortage);
@@ -94,8 +94,8 @@ public class AnnounceServerPowerShortageStart extends OneShotBehaviour {
 		}
 	}
 
-	private void requestJobTransferInCloudNetwork(final PowerShortageJob originalJob,
-			final PowerShortageJob jobToTransfer) {
+	private void requestJobTransferInCloudNetwork(final JobPowerShortageTransfer originalJob,
+			final JobPowerShortageTransfer jobToTransfer) {
 		final AID cloudNetwork = myServerAgent.getOwnerCloudNetworkAgent();
 		final ACLMessage transferMessage = preparePowerShortageTransferRequest(originalJob, cloudNetwork);
 		final Behaviour transferRequest = new InitiateJobTransferInCloudNetwork(myServerAgent, transferMessage, null,
@@ -104,7 +104,7 @@ public class AnnounceServerPowerShortageStart extends OneShotBehaviour {
 		myServerAgent.addBehaviour(transferRequest);
 	}
 
-	private void informGreenSourceAboutPowerShortage(final PowerShortageJob originalJob) {
+	private void informGreenSourceAboutPowerShortage(final JobPowerShortageTransfer originalJob) {
 		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(originalJob.getJobInstanceId().getJobId());
 		final ACLMessage powerShortageInformation = prepareJobPowerShortageInformation(originalJob, greenSource,
 				SERVER_POWER_SHORTAGE_ALERT_PROTOCOL);

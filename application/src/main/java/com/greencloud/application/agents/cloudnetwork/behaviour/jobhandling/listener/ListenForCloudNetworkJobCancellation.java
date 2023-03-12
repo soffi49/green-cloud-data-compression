@@ -5,9 +5,9 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.cancella
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.CANCELLING_JOB_PARTS_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.templates.JobCancellationMessageTemplates.CANCEL_JOB_ANNOUNCEMENT;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 
 import java.util.List;
 
-import com.greencloud.commons.job.JobResultType;
+import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -65,7 +65,7 @@ public class ListenForCloudNetworkJobCancellation extends CyclicBehaviour {
 				myCloudNetworkAgent.getServerForJobMap().remove(jobPart.getJobId());
 				if(!List.of(CREATED, PROCESSING).contains(jobPartStatus)) {
 					if(!jobPartStatus.equals(ACCEPTED)) {
-						myCloudNetworkAgent.manage().incrementJobCounter(jobPart.getJobId(), JobResultType.FINISH);
+						myCloudNetworkAgent.manage().incrementJobCounter(jobPart.getJobId(), JobExecutionResultEnum.FINISH);
 					} else {
 						myCloudNetworkAgent.getGuiController().updateAllJobsCountByValue(-1);
 					}

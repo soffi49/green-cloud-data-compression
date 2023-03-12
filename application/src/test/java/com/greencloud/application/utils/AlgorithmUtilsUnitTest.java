@@ -35,10 +35,10 @@ import com.greencloud.application.agents.greenenergy.management.GreenPowerManage
 import com.greencloud.application.domain.ImmutableMonitoringData;
 import com.greencloud.application.domain.ImmutableWeatherData;
 import com.greencloud.application.domain.MonitoringData;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
-import com.greencloud.commons.job.ImmutablePowerJob;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ImmutablePowerJob;
+import com.greencloud.commons.domain.job.PowerJob;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
@@ -53,6 +53,23 @@ class AlgorithmUtilsUnitTest {
 	private GreenPowerManagement POWER_MANAGEMENT;
 
 	// GETTING MAXIMUM POWER WITHIN TIMESTAMP TESTS
+
+	private static Stream<Arguments> prepareKendallTauTest() {
+		final List<Instant> time = List.of(
+				Instant.parse("2021-10-01T08:30:00Z"),
+				Instant.parse("2021-09-01T08:30:00Z"),
+				Instant.parse("2021-08-01T08:30:00Z"),
+				Instant.parse("2021-07-01T08:30:00Z"),
+				Instant.parse("2021-06-01T08:30:00Z"),
+				Instant.parse("2021-06-01T08:30:00Z")
+		);
+
+		return Stream.of(
+				Arguments.of(time, List.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1),
+				Arguments.of(time, List.of(6.0, 5.0, 4.0, 3.0, 2.0, 1.0), 1),
+				Arguments.of(time, List.of(6.0, 5.0, 6.0, 7.0, 2.0, 3.0), 0.35)
+		);
+	}
 
 	@Test
 	@DisplayName("Test maximum capacity calculation for no jobs")
@@ -226,6 +243,8 @@ class AlgorithmUtilsUnitTest {
 		assertThat(result).isEqualTo(15);
 	}
 
+	// GETTING JOBS WITHIN POWER TESTS
+
 	@Test
 	@DisplayName("Test maximum capacity calculation for complicated scenario")
 	void testMaximumCapacityForComplicatedScenario() {
@@ -237,8 +256,6 @@ class AlgorithmUtilsUnitTest {
 
 		assertThat(result).isEqualTo(15);
 	}
-
-	// GETTING JOBS WITHIN POWER TESTS
 
 	private Set<ClientJob> jobsForFirstComplicatedScenario() {
 		final ClientJob mockJob1 = ImmutableClientJob.builder().jobId("1").clientIdentifier("Test Client 1")
@@ -449,6 +466,8 @@ class AlgorithmUtilsUnitTest {
 		assertThat(resultSum).isEqualTo(25);
 	}
 
+	// GETTING MINIMAL AVAILABLE POWER TESTS
+
 	@Test
 	@DisplayName("Jobs within power for power job")
 	void testJobsWithinPowerForPowerJob() {
@@ -478,8 +497,6 @@ class AlgorithmUtilsUnitTest {
 		assertThat(result).hasSize(2);
 		assertTrue(result.containsAll(List.of(mockJob1, mockJob3)));
 	}
-
-	// GETTING MINIMAL AVAILABLE POWER TESTS
 
 	private List<ClientJob> jobsForComplicatedPowerScenario() {
 		final ClientJob mockJob1 = ImmutableClientJob.builder().jobId("1").clientIdentifier("Test Client 1")
@@ -761,6 +778,8 @@ class AlgorithmUtilsUnitTest {
 				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T15:00:00Z")))));
 	}
 
+	// Error calculation tests
+
 	private Set<PowerJob> jobsForComplicatedMinimalPowerScenario() {
 		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
 				.startTime(Instant.parse("2022-01-01T06:30:00Z"))
@@ -801,8 +820,6 @@ class AlgorithmUtilsUnitTest {
 		return Set.of(mockJob1, mockJob2, mockJob3, mockJob4, mockJob5, mockJob6, mockJob7);
 	}
 
-	// Error calculation tests
-
 	private void prepareMockManagement() {
 		MOCK_MONITORING_DATA = ImmutableMonitoringData.builder().addWeatherData(
 				ImmutableWeatherData.builder().cloudCover(5.5).temperature(10.0).windSpeed(20.0).time(MOCK_TIME)
@@ -812,6 +829,8 @@ class AlgorithmUtilsUnitTest {
 		doReturn(MOCK_CAPACITY).when(POWER_MANAGEMENT).getInitialMaximumCapacity();
 		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(), any());
 	}
+
+	// Kendall Tau correlation test
 
 	@Test
 	@DisplayName("Test computing power calculation error for time intervals larger than 10 min")
@@ -823,8 +842,6 @@ class AlgorithmUtilsUnitTest {
 		assertThat(computeIncorrectMaximumValProbability(startTime, endTime, interval)).isEqualTo(0.51,
 				Offset.offset(0D));
 	}
-
-	// Kendall Tau correlation test
 
 	@Test
 	@DisplayName("Test computing power calculation error for time intervals smaller than 10 min")
@@ -842,22 +859,5 @@ class AlgorithmUtilsUnitTest {
 	void testComputeKendallTau(List<Instant> times, List<Double> values, double result) {
 
 		assertThat(AlgorithmUtils.computeKendallTau(times, values)).isCloseTo(result, Offset.offset(0.04));
-	}
-
-	private static Stream<Arguments> prepareKendallTauTest() {
-		final List<Instant> time = List.of(
-				Instant.parse("2021-10-01T08:30:00Z"),
-				Instant.parse("2021-09-01T08:30:00Z"),
-				Instant.parse("2021-08-01T08:30:00Z"),
-				Instant.parse("2021-07-01T08:30:00Z"),
-				Instant.parse("2021-06-01T08:30:00Z"),
-				Instant.parse("2021-06-01T08:30:00Z")
-		);
-
-		return Stream.of(
-				Arguments.of(time, List.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1),
-				Arguments.of(time, List.of(6.0, 5.0, 4.0, 3.0, 2.0, 1.0), 1),
-				Arguments.of(time, List.of(6.0, 5.0, 6.0, 7.0, 2.0, 3.0), 0.35)
-		);
 	}
 }

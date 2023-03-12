@@ -6,7 +6,7 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.factory.OfferMessageFactory.makeGreenEnergyPowerSupplyOffer;
 import static com.greencloud.application.messages.domain.factory.OfferMessageFactory.makeJobOfferForClient;
 import static com.greencloud.application.messages.domain.factory.OfferMessageFactory.makeServerJobOffer;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,8 +24,8 @@ import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.management.ServerStateManagement;
 import com.greencloud.application.domain.ImmutableServerData;
 import com.greencloud.application.domain.ServerData;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;

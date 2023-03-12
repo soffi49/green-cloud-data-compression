@@ -7,8 +7,8 @@ import java.util.Optional;
 
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.ImmutableGreenEnergyNodeArgs;
-import com.greencloud.commons.location.ImmutableLocation;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.ImmutableLocation;
+import com.greencloud.commons.domain.location.Location;
 import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
@@ -38,10 +38,7 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	 */
 	public GreenEnergyAgentNode(GreenEnergyAgentArgs args) {
 		super(args.getName(), parseDouble(args.getMaximumCapacity()));
-		this.location = ImmutableLocation.builder()
-				.latitude(Double.parseDouble(args.getLatitude()))
-				.longitude(Double.parseDouble(args.getLongitude()))
-				.build();
+		this.location = ImmutableLocation.of(parseDouble(args.getLatitude()), parseDouble(args.getLongitude()));
 		this.serverAgent = args.getOwnerSever();
 		this.monitoringAgent = args.getMonitoringAgent();
 		this.energyType = args.getEnergyType();
@@ -81,7 +78,7 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	/**
 	 * Function updates in the GUI the connection state for given server
 	 *
-	 * @param serverName name of the server connected/disconnected to Green Source
+	 * @param serverName  name of the server connected/disconnected to Green Source
 	 * @param isConnected flag indicating if the server should be connected/disconnected
 	 */
 	public void updateServerConnection(final String serverName, final boolean isConnected) {

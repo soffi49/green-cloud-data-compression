@@ -22,8 +22,8 @@ import com.greencloud.application.weather.domain.ImmutableWind;
 import com.greencloud.application.weather.domain.Main;
 import com.greencloud.application.weather.domain.Weather;
 import com.greencloud.application.weather.domain.Wind;
-import com.greencloud.commons.location.ImmutableLocation;
-import com.greencloud.commons.location.Location;
+import com.greencloud.commons.domain.location.ImmutableLocation;
+import com.greencloud.commons.domain.location.Location;
 
 /**
  * Class stores constants used in testing cache methods and classes
@@ -31,7 +31,7 @@ import com.greencloud.commons.location.Location;
 public class CacheTestConstants {
 
 	// MOCK OBJECTS
-	public static final Location MOCK_LOCATION = ImmutableLocation.builder().latitude(10.0).longitude(15.0).build();
+	public static final Location MOCK_LOCATION = ImmutableLocation.of(10.0, 15.0);
 	public static final Instant MOCK_TIME = Instant.parse("2022-01-01T11:00:00.000Z");
 	public static final int MOCK_CNT = 5;
 	public static final Coord MOCK_COORD = ImmutableCoord.builder().lat(10.0).lon(40.0).build();
@@ -65,17 +65,15 @@ public class CacheTestConstants {
 			.visibility(10D)
 			.timestamp(MOCK_TIME)
 			.build();
-
+	public static final Forecast MOCK_FORECAST = ImmutableForecast.builder()
+			.cnt(MOCK_CNT)
+			.list(List.of(MOCK_FUTURE_WEATHER))
+			.build();
 	public static final WeatherData MOCK_WEATHER = ImmutableWeatherData.builder()
 			.cloudCover(MOCK_CLOUD.getAll())
 			.temperature(MOCK_MAIN.getTemp())
 			.time(MOCK_TIME)
 			.windSpeed(MOCK_WIND.getSpeed())
-			.build();
-
-	public static final Forecast MOCK_FORECAST = ImmutableForecast.builder()
-			.cnt(MOCK_CNT)
-			.list(List.of(MOCK_FUTURE_WEATHER))
 			.build();
 
 	private static List<Weather> prepareMockWeatherList() {

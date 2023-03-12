@@ -2,11 +2,11 @@ package org.greencloud.managingsystem.service.monitoring.goalservices;
 
 import static com.database.knowledge.domain.agent.DataType.CLIENT_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
-import static com.greencloud.commons.job.ClientJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.FAILED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.FINISHED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ClientJobStatusEnum.PROCESSED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.PROCESSED;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_TIME_PERIOD;
@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
-import org.greencloud.managingsystem.service.monitoring.goalservices.JobSuccessRatioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

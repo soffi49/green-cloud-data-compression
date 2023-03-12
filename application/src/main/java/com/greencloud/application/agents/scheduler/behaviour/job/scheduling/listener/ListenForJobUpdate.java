@@ -7,12 +7,12 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FINISH_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.POSTPONED_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
+import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
 import static com.greencloud.application.utils.JobUtils.getJobById;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.PROCESSING;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.util.Objects.isNull;
 
 import java.util.Objects;
@@ -23,7 +23,7 @@ import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.domain.job.JobStatusUpdate;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -56,8 +56,8 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 
 		if (Objects.nonNull(message)) {
 			final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
-			MDC.put(MDC_JOB_ID, jobStatusUpdate.jobInstance().getJobId());
-			logger.info(JOB_UPDATE_RECEIVED_LOG, jobStatusUpdate.jobInstance().getJobId());
+			MDC.put(MDC_JOB_ID, jobStatusUpdate.getJobInstance().getJobId());
+			logger.info(JOB_UPDATE_RECEIVED_LOG, jobStatusUpdate.getJobInstance().getJobId());
 			handleJobStatusChange(jobStatusUpdate, message.getConversationId());
 			MDC.clear();
 		} else {
@@ -66,7 +66,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	}
 
 	private void handleJobStatusChange(final JobStatusUpdate jobStatusUpdate, final String type) {
-		final ClientJob job = getJobById(jobStatusUpdate.jobInstance().getJobId(), mySchedulerAgent.getClientJobs());
+		final ClientJob job = getJobById(jobStatusUpdate.getJobInstance().getJobId(), mySchedulerAgent.getClientJobs());
 
 		if (isNull(job)) {
 			// do nothing
@@ -88,8 +88,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	private void handleJobFailure(final JobStatusUpdate jobStatusUpdate, final ClientJob job) {
 		if (mySchedulerAgent.manage().postponeJobExecution(job)) {
 			logger.info(JOB_FAILED_RETRY_LOG, job.getJobId());
-			mySchedulerAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), jobStatusUpdate,
-					POSTPONED_JOB_ID));
+			mySchedulerAgent.send(preparePostponeJobMessageForClient(job));
 		} else {
 			mySchedulerAgent.manage().handleFailedJobCleanUp(job, parent);
 			mySchedulerAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), jobStatusUpdate,

@@ -1,6 +1,7 @@
 package org.greencloud.managingsystem.service.monitoring.goalservices;
 
 import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FAILED;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_AGGREGATED_PERIOD;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.NETWORK_AGENT_DATA_TYPES;
@@ -20,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.NetworkComponentMonitoringData;
 import com.database.knowledge.domain.agent.client.ClientMonitoringData;
-import com.greencloud.commons.job.ClientJobStatusEnum;
 
 /**
  * Service containing methods connected with monitoring system success ratio
@@ -61,7 +61,7 @@ public class JobSuccessRatioService extends AbstractGoalService {
 		final long allCount = clientsData.size();
 		final long failCount = clientsData.stream()
 				.filter(data -> data.getIsFinished() &&
-						data.getCurrentJobStatus().equals(ClientJobStatusEnum.FAILED))
+						data.getCurrentJobStatus().equals(FAILED))
 				.count();
 
 		return 1 - ((double) failCount / allCount);

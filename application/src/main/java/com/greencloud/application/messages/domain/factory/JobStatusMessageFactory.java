@@ -22,12 +22,13 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
 import com.greencloud.application.domain.job.ImmutableJobTimeFrames;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
+import com.greencloud.application.domain.job.JobParts;
 import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.application.domain.job.JobTimeFrames;
-import com.greencloud.application.domain.job.SplitJob;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -78,7 +79,7 @@ public class JobStatusMessageFactory {
 	 * @return inform ACLMessage
 	 */
 	public static ACLMessage prepareJobStatusMessageForClient(final ClientJob job, final String conversationId) {
-		final JobStatusUpdate jobStatusUpdate = new JobStatusUpdate(mapToJobInstanceId(job), getCurrentTime());
+		final JobStatusUpdate jobStatusUpdate = ImmutableJobStatusUpdate.of(mapToJobInstanceId(job), getCurrentTime());
 		return prepareJobStatusMessage(singletonList(new AID(job.getClientIdentifier(), AID.ISGUID)), jobStatusUpdate,
 				conversationId);
 	}
@@ -104,7 +105,7 @@ public class JobStatusMessageFactory {
 	 * @param splitJob jobs created after split
 	 * @return inform ACLMessage
 	 */
-	public static ACLMessage prepareSplitJobMessageForClient(final String client, final SplitJob splitJob) {
+	public static ACLMessage prepareSplitJobMessageForClient(final String client, final JobParts splitJob) {
 		return prepareJobStatusMessage(singletonList(new AID(client, AID.ISGUID)), splitJob, SPLIT_JOB_ID);
 	}
 
@@ -127,11 +128,9 @@ public class JobStatusMessageFactory {
 	 * @return inform ACLMessage
 	 */
 	public static ACLMessage prepareJobAdjustmentMessage(final String client, final ClientJob adjustedJob) {
-		final JobTimeFrames jobTimeFrames = ImmutableJobTimeFrames.builder()
-				.newJobStart(adjustedJob.getStartTime())
-				.newJobEnd(adjustedJob.getEndTime())
-				.jobId(adjustedJob.getJobId())
-				.build();
+		//TODO Add mapper here
+		final JobTimeFrames jobTimeFrames = ImmutableJobTimeFrames.of(adjustedJob.getStartTime(),
+				adjustedJob.getEndTime(), adjustedJob.getJobId());
 		return prepareJobStatusMessage(singletonList(new AID(client, AID.ISGUID)), jobTimeFrames, RE_SCHEDULED_JOB_ID);
 	}
 
@@ -147,7 +146,7 @@ public class JobStatusMessageFactory {
 			final String conversationId, final ServerAgent server) {
 		return prepareJobStatusMessage(
 				singletonList(server.getOwnerCloudNetworkAgent()),
-				new JobStatusUpdate(jobInstanceId, getCurrentTime()),
+				ImmutableJobStatusUpdate.of(jobInstanceId, getCurrentTime()),
 				conversationId);
 	}
 
@@ -163,7 +162,8 @@ public class JobStatusMessageFactory {
 	public static ACLMessage prepareJobFinishMessage(final String jobId, final Instant jobStartTime,
 			final List<AID> receivers) {
 		final JobInstanceIdentifier jobInstanceId = mapToJobInstanceId(jobId, jobStartTime);
-		return prepareJobStatusMessage(receivers, new JobStatusUpdate(jobInstanceId, getCurrentTime()), FINISH_JOB_ID);
+		return prepareJobStatusMessage(receivers, ImmutableJobStatusUpdate.of(jobInstanceId, getCurrentTime()),
+				FINISH_JOB_ID);
 	}
 
 	/**
@@ -177,7 +177,8 @@ public class JobStatusMessageFactory {
 	public static ACLMessage prepareJobStartedMessage(final String jobId, final Instant jobStartTime,
 			final List<AID> receivers) {
 		final JobInstanceIdentifier jobInstanceId = mapToJobInstanceId(jobId, jobStartTime);
-		return prepareJobStatusMessage(receivers, new JobStatusUpdate(jobInstanceId, getCurrentTime()), STARTED_JOB_ID);
+		return prepareJobStatusMessage(receivers, ImmutableJobStatusUpdate.of(jobInstanceId, getCurrentTime()),
+				STARTED_JOB_ID);
 	}
 
 	/**

@@ -1,13 +1,13 @@
 package com.greencloud.application.agents.client.management;
 
-import static com.greencloud.commons.job.ClientJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.DELAYED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.FINISHED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ClientJobStatusEnum.ON_BACK_UP;
-import static com.greencloud.commons.job.ClientJobStatusEnum.ON_HOLD;
-import static com.greencloud.commons.job.ClientJobStatusEnum.PROCESSED;
-import static com.greencloud.commons.job.ClientJobStatusEnum.SCHEDULED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.DELAYED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_HOLD;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.PROCESSED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.SCHEDULED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.doReturn;
@@ -15,11 +15,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.greencloud.commons.job.ClientJobStatusEnum;
 import org.assertj.core.api.Condition;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +32,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import com.greencloud.application.agents.client.ClientAgent;
-import com.greencloud.application.agents.client.domain.JobPart;
+import com.greencloud.application.agents.client.domain.ClientJobExecution;
+import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
@@ -44,6 +43,8 @@ class ClientStateManagementUnitTest {
 	private static ClientAgent mockClient;
 	@Mock
 	private static ClientStateManagement mockClientManagement;
+	@Mock
+	private static ClientJobExecution originalJob;
 
 	static private Stream<Arguments> jobStatusesIncorrect() {
 		return Stream.of(
@@ -85,11 +86,11 @@ class ClientStateManagementUnitTest {
 	@Test
 	@DisplayName("Test update job status duration map")
 	void testUpdateJobStatusDuration() {
-		mockClientManagement.setCurrentJobStatus(PROCESSED);
-		mockClientManagement.getTimer().startTimeMeasure(Instant.parse("2022-01-01T10:00:00.000Z"));
-		mockClientManagement.updateJobStatusDuration(IN_PROGRESS, Instant.parse("2022-01-01T10:00:02.000Z"));
+		originalJob.setJobStatus(PROCESSED);
+		originalJob.getTimer().startTimeMeasure(Instant.parse("2022-01-01T10:00:00.000Z"));
+		originalJob.updateJobStatusDuration(IN_PROGRESS, Instant.parse("2022-01-01T10:00:02.000Z"));
 
-		var result = mockClientManagement.jobStatusDurationMap;
+		var result = originalJob.getJobDurationMap();
 		var notProcessed = result.entrySet().stream()
 				.filter(e -> !e.getKey().equals(PROCESSED))
 				.map(Map.Entry::getValue).toList();
@@ -102,42 +103,42 @@ class ClientStateManagementUnitTest {
 	@ParameterizedTest
 	@MethodSource("jobStatusesIncorrect")
 	@DisplayName("Test update original job status when update should not happen")
-	void testUpdateOriginalJobStatusFail(ClientJobStatusEnum newStatus, ClientJobStatusEnum jobPart1Status,
-                                         ClientJobStatusEnum jobPart2Status, ClientJobStatusEnum currentStatus) {
-		mockClientManagement.setCurrentJobStatus(currentStatus);
+	void testUpdateOriginalJobStatusFail(JobClientStatusEnum newStatus, JobClientStatusEnum jobPart1Status,
+			JobClientStatusEnum jobPart2Status, JobClientStatusEnum currentStatus) {
+		originalJob.setJobStatus(currentStatus);
 		doReturn(Map.of(
-				"1#1", new JobPart(null, jobPart1Status, null, null, null),
-				"1#2", new JobPart(null, jobPart2Status, null, null, null)
+				"1#1", new ClientJobExecution(null, null, null, null, jobPart1Status),
+				"1#2", new ClientJobExecution(null, null, null, null, jobPart2Status)
 		)).when(mockClient).getJobParts();
 
 		mockClientManagement.updateOriginalJobStatus(newStatus);
-		assertThat(mockClientManagement.getCurrentJobStatus()).isNotEqualTo(newStatus);
-		assertThat(mockClientManagement.getCurrentJobStatus()).isEqualTo(currentStatus);
+		assertThat(originalJob.getJobStatus()).isNotEqualTo(newStatus);
+		assertThat(originalJob.getJobStatus()).isEqualTo(currentStatus);
 	}
 
 	@ParameterizedTest
 	@MethodSource("jobStatusesCorrect")
 	@DisplayName("Test update original job status when update should succeed")
-	void testUpdateOriginalJobStatusSucceed(ClientJobStatusEnum newStatus, ClientJobStatusEnum jobPart1Status,
-                                            ClientJobStatusEnum jobPart2Status, ClientJobStatusEnum currentStatus) {
-		mockClientManagement.setCurrentJobStatus(currentStatus);
+	void testUpdateOriginalJobStatusSucceed(JobClientStatusEnum newStatus, JobClientStatusEnum jobPart1Status,
+			JobClientStatusEnum jobPart2Status, JobClientStatusEnum currentStatus) {
+		originalJob.setJobStatus(currentStatus);
 		doReturn(Map.of(
-				"1#1", new JobPart(null, jobPart1Status, null, null, null),
-				"1#2", new JobPart(null, jobPart2Status, null, null, null)
+				"1#1", new ClientJobExecution(null, null, null, null, jobPart1Status),
+				"1#2", new ClientJobExecution(null, null, null, null, jobPart2Status)
 		)).when(mockClient).getJobParts();
 
 		mockClientManagement.updateOriginalJobStatus(newStatus);
-		assertThat(mockClientManagement.getCurrentJobStatus()).isEqualTo(newStatus);
+		assertThat(originalJob.getJobStatus()).isEqualTo(newStatus);
 	}
 
 	@ParameterizedTest
 	@MethodSource("partsCorrectness")
 	@DisplayName("Test check if all parts match given status")
-	void testCheckIfAllPartsMatchStatus(ClientJobStatusEnum statusToCheck, ClientJobStatusEnum jobPart1Status,
-                                        ClientJobStatusEnum jobPart2Status, boolean result) {
+	void testCheckIfAllPartsMatchStatus(JobClientStatusEnum statusToCheck, JobClientStatusEnum jobPart1Status,
+			JobClientStatusEnum jobPart2Status, boolean result) {
 		doReturn(Map.of(
-				"1#1", new JobPart(null, jobPart1Status, null, null, null),
-				"1#2", new JobPart(null, jobPart2Status, null, null, null)
+				"1#1", new ClientJobExecution(null, null, null, null, jobPart1Status),
+				"1#2", new ClientJobExecution(null, null, null, null, jobPart2Status)
 		)).when(mockClient).getJobParts();
 
 		assertThat(mockClientManagement.checkIfAllPartsMatchStatus(statusToCheck)).isEqualTo(result);

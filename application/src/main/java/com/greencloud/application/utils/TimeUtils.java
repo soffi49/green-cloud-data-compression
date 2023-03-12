@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.exception.IncorrectTaskDateException;
-import com.greencloud.commons.job.PowerJob;
+import com.greencloud.commons.domain.job.PowerJob;
 
 /**
  * Service used to perform operations on date and time structures.

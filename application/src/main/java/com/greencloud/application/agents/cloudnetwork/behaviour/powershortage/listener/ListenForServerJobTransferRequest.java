@@ -31,8 +31,8 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.InitiateJobTransferRequest;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -64,7 +64,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 	public void action() {
 		final ACLMessage transferRequest = myAgent.receive(SERVER_JOB_TRANSFER_REQUEST_TEMPLATE);
 		if (Objects.nonNull(transferRequest)) {
-			final PowerShortageJob powerShortageJob = readMessageContent(transferRequest, PowerShortageJob.class);
+			final JobPowerShortageTransfer powerShortageJob = readMessageContent(transferRequest, JobPowerShortageTransfer.class);
 			final JobInstanceIdentifier jobInstance = powerShortageJob.getJobInstanceId();
 			final Instant shortageStartTime = powerShortageJob.getPowerShortageStart();
 			final ClientJob job = getJobById(jobInstance.getJobId(), myCloudNetworkAgent.getNetworkJobs());
@@ -96,7 +96,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 	private void askRemainingServersToTransferJob(final List<AID> remainingServers, final ClientJob originalJob,
 			final Instant shortageStartTime, final ACLMessage originalRequest) {
 		final ClientJob jobToTransfer = prepareJobToTransfer(originalJob, shortageStartTime);
-		final PowerShortageJob newPowerShortageJob = mapToPowerShortageJob(jobToTransfer, shortageStartTime);
+		final JobPowerShortageTransfer newPowerShortageJob = mapToPowerShortageJob(jobToTransfer, shortageStartTime);
 		final ACLMessage cfp = createCallForProposal(jobToTransfer, remainingServers, CNA_JOB_CFP_PROTOCOL);
 		myAgent.addBehaviour(new InitiateJobTransferRequest(myAgent, cfp, originalRequest, newPowerShortageJob));
 	}

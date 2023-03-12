@@ -5,15 +5,15 @@ import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import java.time.Instant;
 
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
+import com.greencloud.application.domain.job.ImmutableJobPowerShortageTransfer;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.powershortage.ImmutablePowerShortageJob;
-import com.greencloud.application.domain.powershortage.PowerShortageJob;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
-import com.greencloud.commons.job.ImmutablePowerJob;
-import com.greencloud.commons.job.ImmutableServerJob;
-import com.greencloud.commons.job.PowerJob;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ImmutablePowerJob;
+import com.greencloud.commons.domain.job.ImmutableServerJob;
+import com.greencloud.commons.domain.job.PowerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.AID;
 
@@ -196,10 +196,7 @@ public class JobMapper {
 	 * @return JobInstanceIdentifier
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final PowerJob powerJob) {
-		return ImmutableJobInstanceIdentifier.builder()
-				.jobId(powerJob.getJobId())
-				.startTime(powerJob.getStartTime())
-				.build();
+		return ImmutableJobInstanceIdentifier.of(powerJob.getJobId(), powerJob.getStartTime());
 	}
 
 	/**
@@ -207,11 +204,8 @@ public class JobMapper {
 	 * @param startTime power shortage start time
 	 * @return PowerShortageJob
 	 */
-	public static PowerShortageJob mapToPowerShortageJob(final ClientJob job, final Instant startTime) {
-		return ImmutablePowerShortageJob.builder()
-				.jobInstanceId(mapToJobInstanceId(job))
-				.powerShortageStart(startTime)
-				.build();
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final ClientJob job, final Instant startTime) {
+		return ImmutableJobPowerShortageTransfer.of(mapToJobInstanceId(job), startTime);
 	}
 
 	/**
@@ -219,12 +213,9 @@ public class JobMapper {
 	 * @param startTime     power shortage start time
 	 * @return PowerShortageJob
 	 */
-	public static PowerShortageJob mapToPowerShortageJob(final JobInstanceIdentifier jobInstanceId,
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final JobInstanceIdentifier jobInstanceId,
 			final Instant startTime) {
-		return ImmutablePowerShortageJob.builder()
-				.jobInstanceId(jobInstanceId)
-				.powerShortageStart(startTime)
-				.build();
+		return ImmutableJobPowerShortageTransfer.of(jobInstanceId, startTime);
 	}
 
 	/**
@@ -232,11 +223,8 @@ public class JobMapper {
 	 * @param startTime power shortage start time
 	 * @return PowerShortageJob
 	 */
-	public static PowerShortageJob mapToPowerShortageJob(final PowerJob job, final Instant startTime) {
-		return ImmutablePowerShortageJob.builder()
-				.jobInstanceId(mapToJobInstanceId(job))
-				.powerShortageStart(startTime)
-				.build();
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final PowerJob job, final Instant startTime) {
+		return ImmutableJobPowerShortageTransfer.of(mapToJobInstanceId(job), startTime);
 	}
 
 	/**
@@ -244,7 +232,7 @@ public class JobMapper {
 	 * @return JobInstanceIdentifier
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final ClientJob job) {
-		return ImmutableJobInstanceIdentifier.builder().jobId(job.getJobId()).startTime(job.getStartTime()).build();
+		return ImmutableJobInstanceIdentifier.of(job.getJobId(), job.getStartTime());
 	}
 
 	/**
@@ -254,10 +242,7 @@ public class JobMapper {
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final JobInstanceIdentifier jobInstanceId,
 			final Instant startTime) {
-		return ImmutableJobInstanceIdentifier.builder()
-				.jobId(jobInstanceId.getJobId())
-				.startTime(startTime)
-				.build();
+		return ImmutableJobInstanceIdentifier.of(jobInstanceId.getJobId(), startTime);
 	}
 
 	/**
@@ -266,9 +251,6 @@ public class JobMapper {
 	 * @return JobInstanceIdentifier
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final String jobId, final Instant startTime) {
-		return ImmutableJobInstanceIdentifier.builder()
-				.jobId(jobId)
-				.startTime(startTime)
-				.build();
+		return ImmutableJobInstanceIdentifier.of(jobId, startTime);
 	}
 }

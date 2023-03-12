@@ -10,8 +10,8 @@ import static com.greencloud.application.messages.domain.factory.ReplyMessageFac
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
-import static com.greencloud.commons.job.JobResultType.FAILED;
-import static com.greencloud.commons.job.JobResultType.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.Objects.nonNull;

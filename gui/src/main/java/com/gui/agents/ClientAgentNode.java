@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.greencloud.commons.args.agent.client.ClientAgentArgs;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ClientJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetClientJobDurationMapMessage;
 import com.gui.message.ImmutableSetClientJobStatusMessage;
@@ -52,7 +52,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 *
 	 * @param clientJobStatusEnum new job status
 	 */
-	public void updateJobStatus(final ClientJobStatusEnum clientJobStatusEnum) {
+	public void updateJobStatus(final JobClientStatusEnum clientJobStatusEnum) {
 		webSocketClient.send(ImmutableSetClientJobStatusMessage.builder()
 				.data(ImmutableJobStatus.builder()
 						.status(clientJobStatusEnum.getStatus())
@@ -84,7 +84,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 *
 	 * @param clientJobStatusEnum new job status
 	 */
-	public void updateJobStatus(final ClientJobStatusEnum clientJobStatusEnum, String jobPartId) {
+	public void updateJobStatus(final JobClientStatusEnum clientJobStatusEnum, String jobPartId) {
 		webSocketClient.send(ImmutableSetClientJobStatusMessage.builder()
 				.data(ImmutableJobStatus.builder()
 						.status(clientJobStatusEnum.getStatus())
@@ -132,7 +132,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 *
 	 * @param durationMap map of job duration
 	 */
-	public void updateJobDurationMap(final Map<ClientJobStatusEnum, Long> durationMap) {
+	public void updateJobDurationMap(final Map<JobClientStatusEnum, Long> durationMap) {
 		webSocketClient.send(ImmutableSetClientJobDurationMapMessage.builder()
 				.data(durationMap)
 				.agentName(agentName)

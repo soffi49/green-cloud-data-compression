@@ -11,8 +11,8 @@ import static com.greencloud.application.messages.domain.factory.PowerShortageMe
 import static com.greencloud.application.utils.AlgorithmUtils.findJobsWithinPower;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.PHYSICAL_CAUSE;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.handler.HandleSourcePowerShortage;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.InitiateServerJobTransfer;
 import com.greencloud.commons.args.event.powershortage.PowerShortageCause;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;

@@ -8,9 +8,9 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobById;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
-import com.greencloud.commons.job.JobResultType;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.commons.job.ClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -62,7 +62,7 @@ public class InitiateMakingNewJobOffer extends ProposeInitiator {
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(ACCEPT_SERVER_PROPOSAL_LOG);
 
-			myCloudNetworkAgent.manage().incrementJobCounter(jobId, JobResultType.ACCEPTED);
+			myCloudNetworkAgent.manage().incrementJobCounter(jobId, ACCEPTED);
 			myAgent.send(
 					prepareAcceptReplyWithProtocol(replyMessage, mapToJobInstanceId(job), SERVER_JOB_CFP_PROTOCOL));
 		}

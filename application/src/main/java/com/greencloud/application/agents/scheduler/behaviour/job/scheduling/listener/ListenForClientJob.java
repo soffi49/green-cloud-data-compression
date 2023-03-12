@@ -6,11 +6,11 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.scheduli
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.QUEUE_THRESHOLD_EXCEEDED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates.JobSchedulingMessageTemplates.NEW_JOB_ANNOUNCEMENT_TEMPLATE;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareSplitJobMessageForClient;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.SCHEDULED_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
+import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareSplitJobMessageForClient;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
 import static java.lang.String.format;
 
 import java.util.List;
@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.greencloud.application.domain.job.SplitJob;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.application.domain.job.ImmutableJobParts;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -81,7 +81,7 @@ public class ListenForClientJob extends CyclicBehaviour {
 
 	private void splitJobAndPutToQueue(ClientJob job, String client) {
 		var jobParts = splitJob(job);
-		var messageContent = new SplitJob(jobParts);
+		var messageContent = ImmutableJobParts.of(jobParts);
 		myScheduler.send(prepareSplitJobMessageForClient(client, messageContent));
 		jobParts.forEach(jobPart -> {
 			myScheduler.getJobParts().put(job.getJobId(), jobPart);

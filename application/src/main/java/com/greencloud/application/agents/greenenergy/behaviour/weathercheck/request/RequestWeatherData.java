@@ -15,7 +15,7 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.domain.MonitoringData;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;

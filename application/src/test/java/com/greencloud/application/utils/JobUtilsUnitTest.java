@@ -6,11 +6,12 @@ import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.application.utils.TimeUtils.useMockTime;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.CREATED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ON_HOLD_TRANSFER;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
 import static java.time.Instant.now;
+import static java.time.Instant.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -35,13 +36,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
-import com.greencloud.commons.job.ImmutableClientJob;
-import com.greencloud.commons.job.ImmutablePowerJob;
-import com.greencloud.commons.job.ImmutableServerJob;
-import com.greencloud.commons.job.PowerJob;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ImmutablePowerJob;
+import com.greencloud.commons.domain.job.ImmutableServerJob;
+import com.greencloud.commons.domain.job.PowerJob;
+import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 
@@ -55,40 +56,29 @@ class JobUtilsUnitTest {
 
 	private static Stream<Arguments> parametersGetByIdAndStart() {
 		return Stream.of(
-				Arguments.of(Instant.parse("2022-01-01T07:00:00.000Z"), "2", true),
-				Arguments.of(Instant.parse("2022-01-01T04:30:00.000Z"), "1", false)
+				Arguments.of(parse("2022-01-01T07:00:00.000Z"), "2", true),
+				Arguments.of(parse("2022-01-01T04:30:00.000Z"), "1", false)
 		);
 	}
 
 	private static Stream<Arguments> parametersGetByIdAndEnd() {
 		return Stream.of(
-				Arguments.of(Instant.parse("2022-01-01T10:00:00.000Z"), "1", true),
-				Arguments.of(Instant.parse("2022-01-01T14:00:00.000Z"), "3", false)
+				Arguments.of(parse("2022-01-01T10:00:00.000Z"), "1", true),
+				Arguments.of(parse("2022-01-01T14:00:00.000Z"), "3", false)
 		);
 	}
 
 	private static Stream<Arguments> parametersGetByIdAndStartInstant() {
-		return Stream.of(Arguments.of(
-				ImmutableJobInstanceIdentifier.builder().startTime(Instant.parse("2022-01-01T07:00:00.000Z")).jobId("2")
-						.build(), true), Arguments.of(
-				ImmutableJobInstanceIdentifier.builder().startTime(Instant.parse("2022-01-01T06:00:00.000Z")).jobId("1")
-						.build(), false));
+		return Stream.of(
+				arguments(ImmutableJobInstanceIdentifier.of("2", parse("2022-01-01T07:00:00.000Z")), true),
+				Arguments.of(ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T06:00:00.000Z")), false));
 	}
 
 	private static Stream<Arguments> parametersGetByIdAndStartAndServer() {
 		return Stream.of(
-				Arguments.of(
-						ImmutableJobInstanceIdentifier.builder().startTime(Instant.parse("2022-01-01T07:00:00.000Z"))
-								.jobId("2")
-								.build(), 2, true),
-				Arguments.of(
-						ImmutableJobInstanceIdentifier.builder().startTime(Instant.parse("2022-01-01T07:00:00.000Z"))
-								.jobId("2")
-								.build(), 1, false),
-				Arguments.of(
-						ImmutableJobInstanceIdentifier.builder().startTime(Instant.parse("2022-01-01T06:00:00.000Z"))
-								.jobId("1")
-								.build(), 1, false));
+				arguments(ImmutableJobInstanceIdentifier.of("2", parse("2022-01-01T07:00:00.000Z")), 2, true),
+				arguments(ImmutableJobInstanceIdentifier.of("2", parse("2022-01-01T07:00:00.000Z")), 1, false),
+				arguments(ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T06:00:00.000Z")), 1, false));
 	}
 
 	private static Stream<Arguments> parametersIsJobUnique() {
@@ -109,8 +99,8 @@ class JobUtilsUnitTest {
 
 	@BeforeEach
 	void setUp() {
-		useMockTime(Instant.parse("2022-01-01T09:00:00.000Z"), ZoneId.of("UTC"));
-		setSystemStartTime(Instant.parse("2022-01-01T05:00:00.000Z"));
+		useMockTime(parse("2022-01-01T09:00:00.000Z"), ZoneId.of("UTC"));
+		setSystemStartTime(parse("2022-01-01T05:00:00.000Z"));
 	}
 
 	// TESTS
@@ -122,9 +112,9 @@ class JobUtilsUnitTest {
 		final ClientJob mockJob1 = ImmutableClientJob.builder()
 				.jobId("1")
 				.clientIdentifier("Client1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10)
 				.build();
 
@@ -137,14 +127,14 @@ class JobUtilsUnitTest {
 	@DisplayName("Test getting power job by id and start time")
 	void testGettingJobByIdAndStartTime(final Instant startTime, final String jobId, final boolean result) {
 		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
 		final PowerJob mockJob2 = ImmutablePowerJob.builder().jobId("2")
-				.startTime(Instant.parse("2022-01-01T07:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T07:00:00.000Z"))
+				.endTime(parse("2022-01-01T11:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(20).build();
 
 		final PowerJob jobResult = JobUtils.getJobByIdAndStartDate(jobId, startTime,
@@ -157,14 +147,14 @@ class JobUtilsUnitTest {
 	@DisplayName("Test getting power job by id and end time")
 	void testGettingJobByIdAndEndTime(final Instant endTime, final String jobId, final boolean result) {
 		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
 		final PowerJob mockJob3 = ImmutablePowerJob.builder().jobId("3")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T12:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T11:00:00.000Z"))
+				.endTime(parse("2022-01-01T12:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(25).build();
 
 		final PowerJob jobResult = JobUtils.getJobByIdAndEndDate(jobId, endTime,
@@ -177,14 +167,14 @@ class JobUtilsUnitTest {
 	@DisplayName("Test getting power job by id and start time instant")
 	void testGettingJobByIdAndStartTimeInstant(final JobInstanceIdentifier jobInstance, final boolean result) {
 		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
 		final PowerJob mockJob2 = ImmutablePowerJob.builder().jobId("2")
-				.startTime(Instant.parse("2022-01-01T07:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T07:00:00.000Z"))
+				.endTime(parse("2022-01-01T11:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(20).build();
 
 		final PowerJob jobResult = JobUtils.getJobByIdAndStartDate(jobInstance,
@@ -203,16 +193,16 @@ class JobUtilsUnitTest {
 		final ServerJob mockJob1 = ImmutableServerJob.builder()
 				.jobId("1")
 				.server(mockServer1)
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
 		final ServerJob mockJob2 = ImmutableServerJob.builder()
 				.jobId("2")
 				.server(mockServer2)
-				.startTime(Instant.parse("2022-01-01T07:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T07:00:00.000Z"))
+				.endTime(parse("2022-01-01T11:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(20).build();
 
 		final AID serverToUse = serverIdx == 1 ? mockServer1 : mockServer2;
@@ -225,11 +215,11 @@ class JobUtilsUnitTest {
 	@DisplayName("Test getting expected job end time for current time before")
 	void testCalculateExpectedJobEndTime() {
 		final PowerJob mockJob = ImmutablePowerJob.builder().jobId("6").power(30)
-				.startTime(Instant.parse("2022-01-01T13:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T13:00:00.000Z"))
+				.endTime(parse("2022-01-01T14:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.build();
-		final Date expectedResult = Date.from(Instant.parse("2022-01-01T14:00:01.000Z"));
+		final Date expectedResult = Date.from(parse("2022-01-01T14:00:01.000Z"));
 
 		final Date result = JobUtils.calculateExpectedJobEndTime(mockJob);
 
@@ -239,14 +229,14 @@ class JobUtilsUnitTest {
 	@Test
 	@DisplayName("Test getting expected job end time for current time after")
 	void testCalculateExpectedJobEndTimeCurrentTimeAfter() {
-		useMockTime(Instant.parse("2022-01-01T19:00:00.000Z"), ZoneId.of("UTC"));
+		useMockTime(parse("2022-01-01T19:00:00.000Z"), ZoneId.of("UTC"));
 
 		final PowerJob mockJob = ImmutablePowerJob.builder().jobId("6").power(30)
-				.startTime(Instant.parse("2022-01-01T13:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T13:00:00.000Z"))
+				.endTime(parse("2022-01-01T14:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.build();
-		final Date expectedResult = Date.from(Instant.parse("2022-01-01T19:00:01.000Z"));
+		final Date expectedResult = Date.from(parse("2022-01-01T19:00:01.000Z"));
 
 		final Date result = JobUtils.calculateExpectedJobEndTime(mockJob);
 
@@ -256,8 +246,8 @@ class JobUtilsUnitTest {
 	@Test
 	@DisplayName("Test getting current job instance not found")
 	void testGettingCurrentJobInstanceNotFound() {
-		useMockTime(Instant.parse("2022-01-01T19:00:00.000Z"), ZoneId.of("UTC"));
-		final Map.Entry<PowerJob, ExecutionJobStatusEnum> result = JobUtils.getCurrentJobInstance("1", setUpMockJobs());
+		useMockTime(parse("2022-01-01T19:00:00.000Z"), ZoneId.of("UTC"));
+		final Map.Entry<PowerJob, JobExecutionStatusEnum> result = JobUtils.getCurrentJobInstance("1", setUpMockJobs());
 
 		assertNull(result);
 	}
@@ -265,33 +255,33 @@ class JobUtilsUnitTest {
 	@Test
 	@DisplayName("Test getting current job instance one instance")
 	void testGettingCurrentJobInstanceOneInstance() {
-		useMockTime(Instant.parse("2022-01-01T14:00:00.000Z"), ZoneId.of("UTC"));
-		final Map.Entry<PowerJob, ExecutionJobStatusEnum> result = JobUtils.getCurrentJobInstance("2", setUpMockJobs());
+		useMockTime(parse("2022-01-01T14:00:00.000Z"), ZoneId.of("UTC"));
+		final Map.Entry<PowerJob, JobExecutionStatusEnum> result = JobUtils.getCurrentJobInstance("2", setUpMockJobs());
 
 		assertNotNull(result);
-		assertThat(result.getKey().getDeadline()).isEqualTo(Instant.parse("2022-01-01T20:00:00.000Z"));
-		assertThat(result.getKey().getEndTime()).isEqualTo(Instant.parse("2022-01-01T15:00:00.000Z"));
+		assertThat(result.getKey().getDeadline()).isEqualTo(parse("2022-01-01T20:00:00.000Z"));
+		assertThat(result.getKey().getEndTime()).isEqualTo(parse("2022-01-01T15:00:00.000Z"));
 	}
 
 	@Test
 	@DisplayName("Test getting current job instance two instances")
 	void testGettingCurrentJobInstanceTwoInstances() {
-		useMockTime(Instant.parse("2022-01-01T12:00:00.000Z"), ZoneId.of("UTC"));
+		useMockTime(parse("2022-01-01T12:00:00.000Z"), ZoneId.of("UTC"));
 		final PowerJob jobProcessing = ImmutablePowerJob.builder()
 				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T10:30:00.000Z"))
+				.endTime(parse("2022-01-01T13:30:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(20)
 				.build();
-		final Map<PowerJob, ExecutionJobStatusEnum> testJobs = setUpMockJobs();
+		final Map<PowerJob, JobExecutionStatusEnum> testJobs = setUpMockJobs();
 		testJobs.put(jobProcessing, IN_PROGRESS);
 
-		final Map.Entry<PowerJob, ExecutionJobStatusEnum> result = JobUtils.getCurrentJobInstance("1", testJobs);
+		final Map.Entry<PowerJob, JobExecutionStatusEnum> result = JobUtils.getCurrentJobInstance("1", testJobs);
 
 		assertNotNull(result);
 		assertThat(result.getKey().getPower()).isEqualTo(20);
-		assertThat(result.getKey().getStartTime()).isEqualTo(Instant.parse("2022-01-01T10:30:00.000Z"));
+		assertThat(result.getKey().getStartTime()).isEqualTo(parse("2022-01-01T10:30:00.000Z"));
 	}
 
 	@ParameterizedTest
@@ -300,12 +290,12 @@ class JobUtilsUnitTest {
 	void testIsJobUnique(final String jobId, final boolean result) {
 		final PowerJob mockJob = ImmutablePowerJob.builder()
 				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T10:30:00.000Z"))
+				.endTime(parse("2022-01-01T13:30:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10)
 				.build();
-		final Map<PowerJob, ExecutionJobStatusEnum> testJobs = setUpMockJobs();
+		final Map<PowerJob, JobExecutionStatusEnum> testJobs = setUpMockJobs();
 		testJobs.put(mockJob, IN_PROGRESS);
 
 		assertThat(JobUtils.isJobUnique(jobId, testJobs)).isEqualTo(result);
@@ -316,20 +306,20 @@ class JobUtilsUnitTest {
 	void testIsJobStartedFromMap() {
 		final PowerJob mockJob = ImmutablePowerJob.builder()
 				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T10:30:00.000Z"))
+				.endTime(parse("2022-01-01T13:30:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10)
 				.build();
 		final PowerJob mockJob2 = ImmutablePowerJob.builder()
 				.jobId("2")
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T10:30:00.000Z"))
+				.endTime(parse("2022-01-01T13:30:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10)
 				.build();
 
-		final Map<PowerJob, ExecutionJobStatusEnum> testJobs = setUpMockJobs();
+		final Map<PowerJob, JobExecutionStatusEnum> testJobs = setUpMockJobs();
 		testJobs.put(mockJob, IN_PROGRESS);
 		testJobs.put(mockJob2, ACCEPTED);
 
@@ -340,7 +330,7 @@ class JobUtilsUnitTest {
 	@ParameterizedTest
 	@MethodSource("parametersIsJobStarted")
 	@DisplayName("Test is job started using statuses")
-	void testIsJobStarted(final ExecutionJobStatusEnum status, final boolean result) {
+	void testIsJobStarted(final JobExecutionStatusEnum status, final boolean result) {
 		assertThat(isJobStarted(status)).isEqualTo(result);
 	}
 
@@ -358,17 +348,17 @@ class JobUtilsUnitTest {
 				.server(mock(AID.class))
 				.jobId("6")
 				.power(30)
-				.startTime(Instant.parse("2022-01-01T13:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T13:00:00.000Z"))
+				.endTime(parse("2022-01-01T14:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.build();
 
 		setSystemStartTime(now());
 		final List<Instant> result = getTimetableOfJobs(mockCandidatePowerJob, setUpMockJobsForTimeTables());
 
 		assertThat(result).hasSize(8)
-				.contains(convertToRealTime(Instant.parse("2022-01-01T13:00:00.000Z")))
-				.contains(convertToRealTime(Instant.parse("2022-01-01T12:00:00.000Z")));
+				.contains(convertToRealTime(parse("2022-01-01T13:00:00.000Z")))
+				.contains(convertToRealTime(parse("2022-01-01T12:00:00.000Z")));
 	}
 
 	@Test
@@ -376,26 +366,26 @@ class JobUtilsUnitTest {
 	void testGetTimetableOfJobsJobInProcessing() {
 		final ServerJob mockCandidatePowerJob = ImmutableServerJob.builder().jobId("6").power(30)
 				.server(mock(AID.class))
-				.startTime(Instant.parse("2022-01-01T13:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T13:00:00.000Z"))
+				.endTime(parse("2022-01-01T14:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.build();
 		final ServerJob jobProcessing = ImmutableServerJob.builder().jobId("10")
 				.server(mock(AID.class))
-				.startTime(Instant.parse("2022-01-01T10:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T10:30:00.000Z"))
+				.endTime(parse("2022-01-01T13:30:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
-		final Map<ServerJob, ExecutionJobStatusEnum> testJobs = setUpMockJobsForTimeTables();
-		testJobs.put(jobProcessing, ExecutionJobStatusEnum.PROCESSING);
+		final Map<ServerJob, JobExecutionStatusEnum> testJobs = setUpMockJobsForTimeTables();
+		testJobs.put(jobProcessing, JobExecutionStatusEnum.PROCESSING);
 
 		setSystemStartTime(now());
 		final List<Instant> result = getTimetableOfJobs(mockCandidatePowerJob, testJobs);
 
 		assertThat(result).hasSize(8)
-				.contains(convertToRealTime(Instant.parse("2022-01-01T13:00:00.000Z")))
-				.contains(convertToRealTime(Instant.parse("2022-01-01T12:00:00.000Z")))
-				.doesNotContain(convertToRealTime(Instant.parse("2022-01-01T13:30:00.000Z")));
+				.contains(convertToRealTime(parse("2022-01-01T13:00:00.000Z")))
+				.contains(convertToRealTime(parse("2022-01-01T12:00:00.000Z")))
+				.doesNotContain(convertToRealTime(parse("2022-01-01T13:30:00.000Z")));
 	}
 
 	// MOCK DATA
@@ -408,32 +398,31 @@ class JobUtilsUnitTest {
 	 * ServerJob2 -> power: 50,  time: 06:00 - 15:00, status: ON_HOLD
 	 * ServerJob3 -> power: 25, time: 11:00 - 12:00, status: ACCEPTED
 	 */
-	private Map<ServerJob, ExecutionJobStatusEnum> setUpMockJobsForTimeTables() {
+	private Map<ServerJob, JobExecutionStatusEnum> setUpMockJobsForTimeTables() {
 		final ServerJob mockJob1 = ImmutableServerJob.builder().jobId("1")
 				.server(mock(AID.class))
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
 		final ServerJob mockJob2 = ImmutableServerJob.builder().jobId("2")
 				.server(mock(AID.class))
-				.startTime(Instant.parse("2022-01-01T06:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T15:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T06:00:00.000Z"))
+				.endTime(parse("2022-01-01T15:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(50).build();
 		final ServerJob mockJob3 = ImmutableServerJob.builder().jobId("3")
 				.server(mock(AID.class))
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T12:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T11:00:00.000Z"))
+				.endTime(parse("2022-01-01T12:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(25).build();
-		final Map<ServerJob, ExecutionJobStatusEnum> mockJobMap = new HashMap<>();
-		mockJobMap.put(mockJob1, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob2, ExecutionJobStatusEnum.ON_HOLD_PLANNED);
-		mockJobMap.put(mockJob3, ExecutionJobStatusEnum.ACCEPTED);
+		final Map<ServerJob, JobExecutionStatusEnum> mockJobMap = new HashMap<>();
+		mockJobMap.put(mockJob1, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob2, JobExecutionStatusEnum.ON_HOLD_PLANNED);
+		mockJobMap.put(mockJob3, JobExecutionStatusEnum.ACCEPTED);
 		return mockJobMap;
 	}
-
 
 	/**
 	 * Class creates mock jobs used in test scenarios.
@@ -443,26 +432,26 @@ class JobUtilsUnitTest {
 	 * PowerJob2 -> power: 50,  time: 06:00 - 15:00, status: ON_HOLD
 	 * PowerJob3 -> power: 25, time: 11:00 - 12:00, status: ACCEPTED
 	 */
-	private Map<PowerJob, ExecutionJobStatusEnum> setUpMockJobs() {
+	private Map<PowerJob, JobExecutionStatusEnum> setUpMockJobs() {
 		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T08:00:00.000Z"))
+				.endTime(parse("2022-01-01T10:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(10).build();
 		final PowerJob mockJob2 = ImmutablePowerJob.builder().jobId("2")
-				.startTime(Instant.parse("2022-01-01T06:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T15:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T06:00:00.000Z"))
+				.endTime(parse("2022-01-01T15:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(50).build();
 		final PowerJob mockJob3 = ImmutablePowerJob.builder().jobId("3")
-				.startTime(Instant.parse("2022-01-01T11:00:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T12:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T20:00:00.000Z"))
+				.startTime(parse("2022-01-01T11:00:00.000Z"))
+				.endTime(parse("2022-01-01T12:00:00.000Z"))
+				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.power(25).build();
-		final Map<PowerJob, ExecutionJobStatusEnum> mockJobMap = new HashMap<>();
-		mockJobMap.put(mockJob1, ExecutionJobStatusEnum.IN_PROGRESS);
-		mockJobMap.put(mockJob2, ExecutionJobStatusEnum.ON_HOLD_PLANNED);
-		mockJobMap.put(mockJob3, ExecutionJobStatusEnum.ACCEPTED);
+		final Map<PowerJob, JobExecutionStatusEnum> mockJobMap = new HashMap<>();
+		mockJobMap.put(mockJob1, JobExecutionStatusEnum.IN_PROGRESS);
+		mockJobMap.put(mockJob2, JobExecutionStatusEnum.ON_HOLD_PLANNED);
+		mockJobMap.put(mockJob3, JobExecutionStatusEnum.ACCEPTED);
 		return mockJobMap;
 	}
 }

@@ -11,8 +11,8 @@ import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 
 import java.util.Objects;
 
@@ -23,8 +23,8 @@ import org.slf4j.MDC;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;
@@ -90,8 +90,8 @@ public class InitiateJobGreenEnergySupply extends AchieveREInitiator {
 		logger.info(SERVER_RE_SUPPLY_SUCCESSFUL_LOG, jobToSupply.getJobId());
 
 		if (myServerAgent.getServerJobs().containsKey(jobToSupply)) {
-			final ExecutionJobStatusEnum jobStatus = myServerAgent.getServerJobs().get(jobToSupply);
-			final ExecutionJobStatusEnum newStatus = getNewJobStatus(jobStatus);
+			final JobExecutionStatusEnum jobStatus = myServerAgent.getServerJobs().get(jobToSupply);
+			final JobExecutionStatusEnum newStatus = getNewJobStatus(jobStatus);
 
 			if (Objects.nonNull(newStatus)) {
 				myServerAgent.getServerJobs().replace(jobToSupply, newStatus);
@@ -113,7 +113,7 @@ public class InitiateJobGreenEnergySupply extends AchieveREInitiator {
 		logger.info(SERVER_RE_SUPPLY_FAILED_LOG, jobToSupply.getJobId(), failure.getContent());
 	}
 
-	private ExecutionJobStatusEnum getNewJobStatus(final ExecutionJobStatusEnum previousStatus) {
+	private JobExecutionStatusEnum getNewJobStatus(final JobExecutionStatusEnum previousStatus) {
 		switch (previousStatus) {
 			case ON_HOLD_SOURCE_SHORTAGE, IN_PROGRESS_BACKUP_ENERGY:
 				myServerAgent.manage()

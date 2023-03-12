@@ -5,7 +5,8 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.job.ExecutionJobStatusEnum.ACCEPTED_JOB_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_JOB_STATUSES;
 
 import java.util.Date;
 
@@ -14,8 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.commons.job.JobResultType;
-import com.greencloud.commons.job.ServerJob;
+import com.greencloud.commons.domain.job.ServerJob;
 
 import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
@@ -58,7 +58,7 @@ public class HandleManualPowerSupplyFinish extends WakerBehaviour {
 			logger.error(MANUAL_POWER_SUPPLY_FINISH_LOG);
 
 			if (isJobStarted(job, myGreenEnergyAgent.getServerJobs())) {
-				myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(job), JobResultType.FINISH);
+				myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FINISH);
 			}
 			myGreenEnergyAgent.manage().removeJob(job);
 			myGreenEnergyAgent.manage().updateGreenSourceGUI();

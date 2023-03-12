@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public interface MonitoringData {
 
 	/**
-	 * Serves as com.greencloud.application.weather timetable that is sent from Monitoring Agent to the Green Source Energy Agent
+	 * Serves as weather timetable that is sent from Monitoring Agent to the Green Source Energy Agent
 	 *
 	 * @return list of {@link MonitoringData}
 	 */

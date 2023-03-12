@@ -48,6 +48,7 @@ public class ReceiveGUIController extends CyclicBehaviour {
 				behaviour.addSubBehaviour(new ListenForAdaptationAction(abstractAgent));
 				abstractAgent.addBehaviour(behaviour);
 				abstractAgent.setMainBehaviour(behaviour);
+				abstractAgent.removeBehaviour(this);
 			}
 			objectCounter++;
 		} else {

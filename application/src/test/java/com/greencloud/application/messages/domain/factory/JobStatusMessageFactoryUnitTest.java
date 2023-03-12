@@ -19,6 +19,7 @@ import static com.greencloud.application.messages.domain.factory.JobStatusMessag
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.useMockTime;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static java.time.Instant.parse;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -40,20 +41,39 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
+import com.greencloud.application.domain.job.ImmutableJobParts;
+import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
+import com.greencloud.application.domain.job.JobParts;
 import com.greencloud.application.domain.job.JobStatusUpdate;
-import com.greencloud.application.domain.job.SplitJob;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ImmutableClientJob;
+import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
 class JobStatusMessageFactoryUnitTest {
 
+	private static Stream<Arguments> parametersForJobStatusUpdateMessage() {
+		var jobInstance = ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T13:30:00.000Z"));
+		var job = ImmutableClientJob.builder()
+				.jobId("1")
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T15:30:00.000Z"))
+				.power(10)
+				.clientIdentifier("test_client")
+				.build();
+
+		return Stream.of(
+				arguments(ImmutableJobStatusUpdate.of(jobInstance, getCurrentTime()), false),
+				arguments(job, true)
+		);
+	}
+
 	@BeforeEach
 	void init() {
-		useMockTime(Instant.parse("2022-01-01T13:30:00.000Z"), ZoneId.of("UTC"));
+		useMockTime(parse("2022-01-01T13:30:00.000Z"), ZoneId.of("UTC"));
 	}
 
 	@Test
@@ -65,10 +85,8 @@ class JobStatusMessageFactoryUnitTest {
 		final ServerAgent server = mock(ServerAgent.class);
 		doReturn(aid).when(server).getOwnerCloudNetworkAgent();
 
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T13:30:00.000Z"));
 		final String expectedResult =
 				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
 						+ "\"changeTime\":1641043800.000000000}";
@@ -113,21 +131,21 @@ class JobStatusMessageFactoryUnitTest {
 		final String client = "test_client";
 		var jobPart1 = ImmutableClientJob.builder()
 				.jobId("1#part1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T15:30:00.000Z"))
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T15:30:00.000Z"))
 				.power(10)
 				.clientIdentifier("test_client")
 				.build();
 		var jobPart2 = ImmutableClientJob.builder()
 				.jobId("1#part2")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T15:30:00.000Z"))
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T15:30:00.000Z"))
 				.power(10)
 				.clientIdentifier("test_client")
 				.build();
-		final SplitJob content = new SplitJob(List.of(jobPart1, jobPart2));
+		final JobParts content = ImmutableJobParts.of(List.of(jobPart1, jobPart2));
 
 		final ACLMessage result = prepareSplitJobMessageForClient(client, content);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
@@ -153,9 +171,9 @@ class JobStatusMessageFactoryUnitTest {
 		final String client = "test_client";
 		var jobPart1 = ImmutableClientJob.builder()
 				.jobId("1#part1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T15:30:00.000Z"))
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T15:30:00.000Z"))
 				.power(10)
 				.clientIdentifier("test_client")
 				.build();
@@ -180,9 +198,9 @@ class JobStatusMessageFactoryUnitTest {
 		final CloudNetworkAgent mockCloudNetwork = mock(CloudNetworkAgent.class);
 		doReturn(mockScheduler).when(mockCloudNetwork).getScheduler();
 
-		final JobStatusUpdate jobStatusUpdate = new JobStatusUpdate(ImmutableJobInstanceIdentifier.builder()
-				.jobId("1").startTime(Instant.parse("2022-01-01T13:30:00.000Z")).build(),
-				Instant.parse("2022-01-01T13:30:00.000Z"));
+		final JobStatusUpdate jobStatusUpdate = ImmutableJobStatusUpdate.of(
+				ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T13:30:00.000Z")),
+				parse("2022-01-01T13:30:00.000Z"));
 		final String conversationId = FINISH_JOB_ID;
 
 		final ACLMessage result = prepareJobStatusMessageForScheduler(mockCloudNetwork, jobStatusUpdate,
@@ -197,7 +215,7 @@ class JobStatusMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo(conversationId);
 		assertThat(result.getPerformative()).isEqualTo(INFORM);
 		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).allMatch(aid1 -> "test_scheduler".equals(aid1.getName()));
+		assertThat(receiverIt).allMatch(aid1 -> "test_scheduler" .equals(aid1.getName()));
 	}
 
 	@Test
@@ -208,9 +226,9 @@ class JobStatusMessageFactoryUnitTest {
 
 		final ClientJob mockJob = ImmutableClientJob.builder()
 				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T16:30:00.000Z"))
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T16:30:00.000Z"))
 				.clientIdentifier("test_client")
 				.power(10)
 				.build();
@@ -238,7 +256,7 @@ class JobStatusMessageFactoryUnitTest {
 		final AID aid = mock(AID.class);
 		doReturn("Sender").when(aid).getName();
 		final String id = "1";
-		final Instant start = Instant.parse("2022-01-01T13:30:00.000Z");
+		final Instant start = parse("2022-01-01T13:30:00.000Z");
 
 		final String expectedResult =
 				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
@@ -260,7 +278,7 @@ class JobStatusMessageFactoryUnitTest {
 		final AID aid = mock(AID.class);
 		doReturn("Sender").when(aid).getName();
 		final String id = "1";
-		final Instant start = Instant.parse("2022-01-01T13:30:00.000Z");
+		final Instant start = parse("2022-01-01T13:30:00.000Z");
 
 		final String expectedResult =
 				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
@@ -282,10 +300,8 @@ class JobStatusMessageFactoryUnitTest {
 		final AID aid = mock(AID.class);
 		doReturn("Sender").when(aid).getName();
 
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.of("1",
+				parse("2022-01-01T13:30:00.000Z"));
 		final String expectedResult = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
 
 		final ACLMessage result = JobStatusMessageFactory.prepareManualFinishMessageForServer(jobInstance, aid);
@@ -317,9 +333,9 @@ class JobStatusMessageFactoryUnitTest {
 		final String client = "test_client";
 		final ClientJob adjustedJob = ImmutableClientJob.builder()
 				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T16:30:00.000Z"))
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.endTime(parse("2022-01-01T14:30:00.000Z"))
+				.deadline(parse("2022-01-01T16:30:00.000Z"))
 				.clientIdentifier("test_client")
 				.power(10)
 				.build();
@@ -333,25 +349,5 @@ class JobStatusMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo(RE_SCHEDULED_JOB_ID);
 		assertThat(result.getContent()).isEqualTo(expectedResult);
 		assertThat(receiverIt).anyMatch(aid1 -> client.equals(aid1.getName()));
-	}
-
-	private static Stream<Arguments> parametersForJobStatusUpdateMessage() {
-		var jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.build();
-		var job = ImmutableClientJob.builder()
-				.jobId("1")
-				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
-				.endTime(Instant.parse("2022-01-01T14:30:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T15:30:00.000Z"))
-				.power(10)
-				.clientIdentifier("test_client")
-				.build();
-
-		return Stream.of(
-				arguments(new JobStatusUpdate(jobInstance, getCurrentTime()), false),
-				arguments(job, true)
-		);
 	}
 }
