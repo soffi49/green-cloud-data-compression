@@ -4,15 +4,20 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandli
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.INCORRECT_PROPOSAL_FORMAT_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVER_AVAILABLE_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVER_RESPONSES_LOG;
+import static com.greencloud.application.agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
+import static com.greencloud.application.messages.MessagingUtils.isMessageContentValid;
+import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.MessagingUtils.rejectJobOffers;
-import static com.greencloud.application.messages.MessagingUtils.retrieveProposals;
 import static com.greencloud.application.messages.domain.factory.OfferMessageFactory.makeJobOfferForClient;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
 
-import java.util.List;
 import java.util.Vector;
 
 import org.slf4j.Logger;
@@ -21,9 +26,7 @@ import org.slf4j.MDC;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.agents.cloudnetwork.domain.CloudNetworkAgentConstants;
 import com.greencloud.application.domain.ServerData;
-import com.greencloud.application.messages.MessagingUtils;
 import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.Agent;
@@ -40,6 +43,7 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 	private final ACLMessage replyMessage;
 	private final CloudNetworkAgent myCloudNetworkAgent;
 	private final ClientJob job;
+	private ACLMessage bestProposal;
 
 	/**
 	 * Behaviour constructor.
@@ -59,16 +63,14 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 
 	/**
 	 * Method waits for all Server Agent responses.
-	 * It chooses the Server Agent for job execution and rejects the remaining ones.
+	 * Upon receiving all response it responds with PROPOSE to the scheduler if there is
+	 * a server with the best proposal or with REFUSE otherwise.
 	 *
 	 * @param responses   retrieved responses from Server Agents
 	 * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	protected void handleAllResponses(final Vector responses, final Vector acceptances) {
-		final List<ACLMessage> proposals = retrieveProposals(responses);
-
 		if (!myCloudNetworkAgent.getNetworkJobs().containsKey(job)) {
 			return;
 		}
@@ -77,29 +79,46 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 		if (responses.isEmpty()) {
 			logger.info(NO_SERVER_RESPONSES_LOG);
 			handleRejectedJob();
-		} else if (proposals.isEmpty()) {
+		} else if (isNull(bestProposal)) {
 			logger.info(NO_SERVER_AVAILABLE_LOG);
 			handleRejectedJob();
 		} else {
-			final List<ACLMessage> validProposals = MessagingUtils.retrieveValidMessages(proposals, ServerData.class);
-			if (!validProposals.isEmpty()) {
-				final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
-				final ServerData chosenServerData = MessagingUtils.readMessageContent(chosenServerOffer,
-						ServerData.class);
+			if (isMessageContentValid(bestProposal, ServerData.class)) {
+				final ServerData chosenServerData = readMessageContent(bestProposal, ServerData.class);
 				final double availablePower =
 						myCloudNetworkAgent.getMaximumCapacity() - myCloudNetworkAgent.manage().getCurrentPowerInUse();
 
-				logger.info(CHOSEN_SERVER_FOR_JOB_LOG, job.getJobId(), chosenServerOffer.getSender().getName());
+				logger.info(CHOSEN_SERVER_FOR_JOB_LOG, job.getJobId(), bestProposal.getSender().getName());
 
-				final ACLMessage reply = chosenServerOffer.createReply();
+				final ACLMessage reply = bestProposal.createReply();
 				final ACLMessage offer = makeJobOfferForClient(chosenServerData, availablePower, replyMessage);
 
-				myCloudNetworkAgent.getServerForJobMap().put(job.getJobId(), chosenServerOffer.getSender());
+				myCloudNetworkAgent.getServerForJobMap().put(job.getJobId(), bestProposal.getSender());
 				myCloudNetworkAgent.addBehaviour(new InitiateMakingNewJobOffer(myCloudNetworkAgent, offer, reply));
-				rejectJobOffers(myCloudNetworkAgent, mapToJobInstanceId(job), chosenServerOffer, proposals);
 			} else {
-				handleInvalidResponses(proposals);
+				handleInvalidResponse(bestProposal);
 			}
+		}
+	}
+
+	/**
+	 * Method verifies if newly received proposal is better than the current best one
+	 *
+	 * @param propose     received proposal
+	 * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
+	 */
+	@Override
+	protected void handlePropose(final ACLMessage propose, final Vector acceptances) {
+		if (isNull(bestProposal)) {
+			bestProposal = propose;
+			return;
+		}
+		if (compareServerOffers(bestProposal, propose) < 0) {
+			myCloudNetworkAgent.send(
+					prepareReply(bestProposal.createReply(), mapToJobInstanceId(job), REJECT_PROPOSAL));
+			bestProposal = propose;
+		} else {
+			myCloudNetworkAgent.send(prepareReply(propose.createReply(), mapToJobInstanceId(job), REJECT_PROPOSAL));
 		}
 	}
 
@@ -109,15 +128,10 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 		myAgent.send(prepareRefuseReply(replyMessage));
 	}
 
-	private void handleInvalidResponses(final List<ACLMessage> proposals) {
+	private void handleInvalidResponse(final ACLMessage proposal) {
 		logger.info(INCORRECT_PROPOSAL_FORMAT_LOG);
-		rejectJobOffers(myCloudNetworkAgent, mapToJobInstanceId(job), null, proposals);
+		rejectJobOffers(myCloudNetworkAgent, mapToJobInstanceId(job), null, singletonList(proposal));
 		myAgent.send(prepareRefuseReply(replyMessage));
-	}
-
-	private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {
-
-		return serverOffers.stream().min(this::compareServerOffers).orElseThrow();
 	}
 
 	private int compareServerOffers(final ACLMessage serverOffer1, final ACLMessage serverOffer2) {
@@ -134,8 +148,6 @@ public class InitiateNewJobExecutorLookup extends ContractNetInitiator {
 		int powerDifference = (server2.getAvailablePower() * weight2) - (server1.getAvailablePower() * weight1);
 		int priceDifference = (int) ((server1.getServicePrice() * 1 / weight1) - (server2.getServicePrice() * 1
 				/ weight2));
-		return CloudNetworkAgentConstants.MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ?
-				priceDifference :
-				powerDifference;
+		return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? priceDifference : powerDifference;
 	}
 }

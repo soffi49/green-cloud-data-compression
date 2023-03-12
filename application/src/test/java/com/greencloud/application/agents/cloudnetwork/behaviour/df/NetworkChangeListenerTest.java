@@ -10,9 +10,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +45,10 @@ class NetworkChangeListenerTest {
 
 	MockedStatic<YellowPagesService> yellowPagesService;
 
+	private static AID aid(String serverName) {
+		return new AID(serverName, AID.ISGUID);
+	}
+
 	@BeforeEach
 	void init() {
 		yellowPagesService = mockStatic(YellowPagesService.class);
@@ -61,7 +65,7 @@ class NetworkChangeListenerTest {
 	@Test
 	void shouldCorrectlyHandleNewlyAddedServers() {
 		// given
-		var ownedServers = new HashMap<>(Map.of(aid("server1"), true, aid("server2"), true));
+		var ownedServers = new ConcurrentHashMap<>(Map.of(aid("server1"), true, aid("server2"), true));
 		var servers = Set.of(aid("server1"), aid("server2"), aid("server3"));
 		when(cloudNetworkAgent.getOwnedServers()).thenReturn(ownedServers);
 		yellowPagesService.when(() -> YellowPagesService.search(any(), eq(SA_SERVICE_TYPE), any())).
@@ -82,7 +86,8 @@ class NetworkChangeListenerTest {
 	@Test
 	void shouldCorrectlyHandleRemovedServers() {
 		// given
-		var ownedServers = new HashMap<>(Map.of(aid("server1"), true, aid("server2"), true, aid("server3"), true));
+		var ownedServers = new ConcurrentHashMap<>(
+				Map.of(aid("server1"), true, aid("server2"), true, aid("server3"), true));
 		var servers = Set.of(aid("server1"));
 		when(cloudNetworkAgent.getOwnedServers()).thenReturn(ownedServers);
 		yellowPagesService.when(() -> YellowPagesService.search(any(), eq(SA_SERVICE_TYPE), any())).
@@ -98,9 +103,5 @@ class NetworkChangeListenerTest {
 				.hasSize(1)
 				.usingRecursiveFieldByFieldElementComparator()
 				.containsExactlyInAnyOrderElementsOf(servers);
-	}
-
-	private static AID aid(String serverName) {
-		return new AID(serverName, AID.ISGUID);
 	}
 }

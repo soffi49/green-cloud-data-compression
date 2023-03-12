@@ -16,6 +16,7 @@ import static com.greencloud.application.utils.JobUtils.isJobUnique;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_BY_SERVER_JOB_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_JOB_STATUSES;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
@@ -364,11 +365,15 @@ public class ServerStateManagement {
 	private int getJobCount() {
 		return serverAgent.getServerJobs().entrySet().stream()
 				.filter(job -> isJobStarted(job.getValue()))
-				.map(Map.Entry::getKey).map(ClientJob::getJobId).collect(toSet()).size();
+				.map(Map.Entry::getKey).map(ClientJob::getJobId)
+				.collect(toSet()).size();
 	}
 
 	private int getClientNumber() {
-		return serverAgent.getGreenSourceForJobMap().size();
+		return serverAgent.getServerJobs().entrySet().stream()
+				.filter(job -> ACCEPTED_JOB_STATUSES.contains(job.getValue()))
+				.map(Map.Entry::getKey).map(ClientJob::getJobId)
+				.collect(toSet()).size();
 	}
 
 	private int getCurrentPowerInUseForServer() {

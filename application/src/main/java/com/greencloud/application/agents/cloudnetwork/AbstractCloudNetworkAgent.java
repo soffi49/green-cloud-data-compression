@@ -3,9 +3,10 @@ package com.greencloud.application.agents.cloudnetwork;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.greencloud.application.agents.AbstractAgent;
@@ -26,10 +27,10 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 	protected transient CloudNetworkConfigManagement configManagement;
 
 	protected double maximumCapacity;
-	protected Map<ClientJob, JobExecutionStatusEnum> networkJobs;
-	protected Map<String, AID> serverForJobMap;
+	protected ConcurrentMap<ClientJob, JobExecutionStatusEnum> networkJobs;
+	protected ConcurrentMap<String, AID> serverForJobMap;
 	protected AtomicLong completedJobs;
-	protected Map<AID, Boolean> ownedServers;
+	protected ConcurrentMap<AID, Boolean> ownedServers;
 	protected AID scheduler;
 
 	AbstractCloudNetworkAgent() {
@@ -44,17 +45,17 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 	protected void setup() {
 		super.setup();
 
-		serverForJobMap = new HashMap<>();
-		networkJobs = new HashMap<>();
+		serverForJobMap = new ConcurrentHashMap<>();
+		networkJobs = new ConcurrentHashMap<>();
 		completedJobs = new AtomicLong(0L);
-		ownedServers = new HashMap<>();
+		ownedServers = new ConcurrentHashMap<>();
 	}
 
 	public Map<String, AID> getServerForJobMap() {
 		return serverForJobMap;
 	}
 
-	public Map<ClientJob, JobExecutionStatusEnum> getNetworkJobs() {
+	public ConcurrentMap<ClientJob, JobExecutionStatusEnum> getNetworkJobs() {
 		return networkJobs;
 	}
 
@@ -62,7 +63,7 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 		return completedJobs.incrementAndGet();
 	}
 
-	public Map<AID, Boolean> getOwnedServers() {
+	public ConcurrentMap<AID, Boolean> getOwnedServers() {
 		return ownedServers;
 	}
 

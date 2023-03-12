@@ -3,6 +3,7 @@ package com.greencloud.application.messages;
 import static com.google.common.collect.Collections2.filter;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 
@@ -16,7 +17,6 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.exception.IncorrectMessageContentException;
-import com.greencloud.application.messages.domain.factory.ReplyMessageFactory;
 
 import jade.lang.acl.ACLMessage;
 
@@ -75,8 +75,7 @@ public class MessagingUtils {
 			final List<ACLMessage> receivedOffers) {
 		receivedOffers.stream()
 				.filter(offer -> !offer.equals(chosenOffer))
-				.forEach(offer -> agent.send(
-						ReplyMessageFactory.prepareStringReply(offer.createReply(), jobId, REJECT_PROPOSAL)));
+				.forEach(offer -> agent.send(prepareStringReply(offer.createReply(), jobId, REJECT_PROPOSAL)));
 	}
 
 	/**
@@ -130,7 +129,14 @@ public class MessagingUtils {
 		}
 	}
 
-	private static boolean isMessageContentValid(final ACLMessage message, final Class<?> expectedType) {
+	/**
+	 * Method verifies if content of given message is correct
+	 *
+	 * @param message      received message
+	 * @param expectedType expected content type
+	 * @return boolean indicating if content has valid type
+	 */
+	public static boolean isMessageContentValid(final ACLMessage message, final Class<?> expectedType) {
 		try {
 			getMapper().readValue(message.getContent(), expectedType);
 			return true;

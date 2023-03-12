@@ -2,11 +2,14 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.lis
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_CFP_NEW_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.templates.JobHandlingMessageTemplates.NEW_JOB_REQUEST_TEMPLATE;
+import static com.greencloud.application.agents.cloudnetwork.domain.CloudNetworkAgentConstants.MAX_NUMBER_OF_JOBS_IN_MESSAGE_BATCH;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -40,15 +43,18 @@ public class ListenForScheduledJob extends CyclicBehaviour {
 
 	/**
 	 * Method listens for the upcoming job call for proposals from the Scheduler Agent.
-	 * It announces the job to the network by sending call for proposal with job characteristics to owned Server Agents.
+	 * It announces the jobs to the network by sending call for proposal with job characteristics to owned Server Agents.
 	 */
 	@Override
 	public void action() {
-		final ACLMessage message = myAgent.receive(NEW_JOB_REQUEST_TEMPLATE);
+		final List<ACLMessage> messages = myAgent.receive(NEW_JOB_REQUEST_TEMPLATE,
+				MAX_NUMBER_OF_JOBS_IN_MESSAGE_BATCH);
 
-		if (Objects.nonNull(message)) {
-			final ClientJob job = readMessageContent(message, ClientJob.class);
-			sendCallForProposalToServers(job, message);
+		if (Objects.nonNull(messages)) {
+			messages.stream().parallel().forEach(message -> {
+				final ClientJob job = readMessageContent(message, ClientJob.class);
+				sendCallForProposalToServers(job, message);
+			});
 		} else {
 			block();
 		}
