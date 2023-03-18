@@ -68,7 +68,9 @@ public class HandleJobFinishUpdate extends AbstractJobUpdateHandler {
 
 		final String jobPartId = jobUpdate.getJobInstance().getJobId();
 		final ClientJobExecution jobPart = myClient.getJobParts().get(jobPartId);
-		checkIfJobFinishedOnTime(jobUpdate.getChangeTime(), jobPart.getJobSimulatedEnd(), jobPart.getJobSimulatedDeadline());
+		checkIfJobFinishedOnTime(jobUpdate.getChangeTime(), jobPart.getJobSimulatedEnd(),
+				jobPart.getJobSimulatedDeadline());
+		myClient.manage().writeClientData(false);
 
 		if (myClient.manage().checkIfAllPartsMatchStatus(jobStatus)) {
 			MDC.put(MDC_JOB_ID, myClient.getJobExecution().getJob().getJobId());

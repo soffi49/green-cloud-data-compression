@@ -16,11 +16,11 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Objects;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.handler.AbstractJobUpdateHandler;
@@ -41,7 +41,7 @@ import jade.lang.acl.ACLMessage;
  */
 public class ListenForJobUpdate extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForJobUpdate.class);
+	private static final Logger logger = getLogger(ListenForJobUpdate.class);
 
 	private final ClientAgent myClientAgent;
 

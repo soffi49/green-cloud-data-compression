@@ -3,9 +3,9 @@ package com.greencloud.application.agents.client.behaviour.jobannouncement.initi
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.initiator.logs.JobAnnouncementInitiatorLog.SEND_INFORM_TO_SCHEDULER;
 import static com.greencloud.application.agents.client.constants.ClientAgentConstants.SCHEDULER_AGENT;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobAnnouncementMessage;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.client.ClientAgent;
 
@@ -18,7 +18,7 @@ import jade.core.behaviours.OneShotBehaviour;
  */
 public class InitiateNewJobAnnouncement extends OneShotBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateNewJobAnnouncement.class);
+	private static final Logger logger = getLogger(InitiateNewJobAnnouncement.class);
 
 	private final ClientAgent myClientAgent;
 

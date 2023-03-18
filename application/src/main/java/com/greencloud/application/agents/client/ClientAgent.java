@@ -1,6 +1,7 @@
 package com.greencloud.application.agents.client;
 
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
 import static com.greencloud.application.gui.GuiConnectionProvider.connectToGui;
 import static com.greencloud.application.utils.TimeUtils.convertToInstantTime;
 import static com.greencloud.application.utils.TimeUtils.convertToSimulationTime;
@@ -55,7 +56,7 @@ public class ClientAgent extends AbstractClientAgent {
 				final String jobId = arguments[4].toString();
 
 				initializeJob(startTime, endTime, deadline, power, jobId);
-				this.clientStateManagement = new ClientStateManagement(this);
+				this.agentManagementServices.put(STATE_MANAGEMENT, new ClientStateManagement(this));
 
 			} catch (IncorrectTaskDateException e) {
 				logger.error(e.getMessage());

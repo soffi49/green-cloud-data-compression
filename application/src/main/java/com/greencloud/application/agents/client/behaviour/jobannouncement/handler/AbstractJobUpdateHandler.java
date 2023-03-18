@@ -1,7 +1,6 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
-import static java.util.Objects.isNull;
 
 import java.time.Instant;
 
@@ -40,7 +39,9 @@ public abstract class AbstractJobUpdateHandler extends OneShotBehaviour {
 
 	@Override
 	public int onEnd() {
-		myClient.manage().writeClientData(false);
+		if (!(this instanceof HandleJobFinishUpdate || this instanceof HandleJobFailedUpdate)) {
+			myClient.manage().writeClientData(false);
+		}
 		return 0;
 	}
 

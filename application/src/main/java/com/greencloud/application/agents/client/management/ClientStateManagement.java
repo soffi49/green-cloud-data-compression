@@ -7,26 +7,27 @@ import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PRO
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.PROCESSED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.SCHEDULED;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.ToLongFunction;
 
 import com.database.knowledge.domain.agent.client.ClientMonitoringData;
 import com.database.knowledge.domain.agent.client.ImmutableClientMonitoringData;
+import com.greencloud.application.agents.AbstractAgentManagement;
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.domain.ClientJobExecution;
 import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 import com.gui.agents.ClientAgentNode;
 
 /**
- * Class store methods used to manage the state of Client Agent
+ * Class stores methods used to manage the state of Client Agent
  */
-public class ClientStateManagement {
+public class ClientStateManagement extends AbstractAgentManagement {
 
 	private static final List<JobClientStatusEnum> SIMULATION_STATUSES = List.of(SCHEDULED, PROCESSED, CREATED);
 	protected ClientAgent clientAgent;
@@ -47,7 +48,7 @@ public class ClientStateManagement {
 	 */
 	public void updateOriginalJobStatus(final JobClientStatusEnum status) {
 		if (isOriginalStatusUpdated(status)) {
-			if (Objects.nonNull(clientAgent.getAgentNode())) {
+			if (nonNull(clientAgent.getAgentNode())) {
 				((ClientAgentNode) clientAgent.getAgentNode()).updateJobStatus(status);
 			}
 			clientAgent.getJobExecution().setJobStatus(status);
@@ -112,8 +113,8 @@ public class ClientStateManagement {
 			case PROCESSED -> clientAgent.getJobExecution().getJobStatus().equals(SCHEDULED);
 			case DELAYED -> clientAgent.getJobExecution().getJobStatus().equals(PROCESSED);
 			case ON_BACK_UP -> List.of(IN_PROGRESS, PROCESSED).contains(clientAgent.getJobExecution().getJobStatus());
-			case IN_PROGRESS -> checkIfAllPartsMatchStatus(IN_PROGRESS) || clientAgent.getJobExecution().getJobStatus()
-					.equals(PROCESSED);
+			case IN_PROGRESS -> checkIfAllPartsMatchStatus(IN_PROGRESS) ||
+					clientAgent.getJobExecution().getJobStatus().equals(PROCESSED);
 			case ON_HOLD -> true;
 			default -> false;
 		};
