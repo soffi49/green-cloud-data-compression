@@ -1,7 +1,8 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs;
 
 /**
- * Class contains all constants used in logging information in listener behaviours during job handling process
+ * Class contains all constants used in logging information in Cloud Network listener behaviours
+ * during job handling process
  */
 public class JobHandlingListenerLog {
 
@@ -21,7 +22,7 @@ public class JobHandlingListenerLog {
 	public static final String SEND_JOB_START_STATUS_LOG =
 			"Sending information that the job {} execution has started";
 	public static final String SEND_JOB_FINISH_STATUS_LOG =
-			"Sending information that the job {} execution is finished. So far completed {} jobs!";
+			"Sending information that the job {} execution has finished";
 	public static final String SEND_JOB_FAILED_STATUS_LOG =
 			"Sending information that the job {} execution has failed";
 }

@@ -12,7 +12,7 @@ import static jade.lang.acl.MessageTemplate.or;
 import jade.lang.acl.MessageTemplate;
 
 /**
- * Class stores all message templates used in listener behaviours for DF registration
+ * Class stores all message templates used in Cloud Network listener behaviours for DF registration
  */
 public class DFCloudNetworkMessageTemplates {
 

@@ -3,134 +3,103 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.i
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_CHOSEN_SERVER_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_RESPONSE_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG;
-import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerTransferConfirmation.createFor;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.MessagingUtils.rejectJobOffers;
-import static com.greencloud.application.messages.MessagingUtils.retrieveProposals;
-import static com.greencloud.application.messages.MessagingUtils.retrieveValidMessages;
+import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
+import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
+import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.FAILURE;
+import static org.slf4j.LoggerFactory.getLogger;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Vector;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.domain.ServerData;
+import com.greencloud.application.agents.cloudnetwork.behaviour.AbstractCloudNetworkCFPInitiator;
+import com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerTransferConfirmation;
+import com.greencloud.application.domain.agent.ServerData;
 import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
-import jade.proto.ContractNetInitiator;
 
 /**
  * Behaviours sends the CFP to remaining servers looking for job transfer and selects the one which will
  * handle the remaining job execution
  */
-public class InitiateJobTransferRequest extends ContractNetInitiator {
+public class InitiateJobTransferRequest extends AbstractCloudNetworkCFPInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateJobTransferRequest.class);
+	private static final Logger logger = getLogger(InitiateJobTransferRequest.class);
 
-	private final CloudNetworkAgent myCloudNetworkAgent;
-	private final ACLMessage serverRequest;
 	private final JobPowerShortageTransfer jobTransfer;
 
-	/**
-	 * Behaviour constructor.
-	 *
-	 * @param agent         agent which is executing the behaviour
-	 * @param cfp           call for proposal message containing job requriements sent to the servers
-	 * @param serverRequest transfer request message coming from the server
-	 * @param jobTransfer   job for which the transfer is being performed
-	 */
-	public InitiateJobTransferRequest(final Agent agent,
-			final ACLMessage cfp,
-			final ACLMessage serverRequest,
-			final JobPowerShortageTransfer jobTransfer) {
-		super(agent, cfp);
-		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
+	private InitiateJobTransferRequest(final CloudNetworkAgent cloudNetworkAgent, final ACLMessage cfp,
+			final ACLMessage serverRequest, final JobPowerShortageTransfer jobTransfer) {
+		super(cloudNetworkAgent, cfp, serverRequest, jobTransfer.getJobInstanceId());
 		this.jobTransfer = jobTransfer;
-		this.serverRequest = serverRequest;
 	}
 
 	/**
-	 * Method processes Server Agent responses.
-	 * It selects one server to which the job will be transferred.
-	 * If no servers are available, it sends the information to Server with power shortage that the transfer was
-	 * unsuccessful.
+	 * Method creates the behaviour
 	 *
-	 * @param responses   retrieved responses from Server Agents
-	 * @param acceptances vector containing accept proposal message sent back to the chosen server (not used)
+	 * @param agent             agent which is executing the behaviour
+	 * @param serverRequest     transfer request message received from the server
+	 * @param jobToTransfer     job for which the transfer is being performed
+	 * @param shortageStartTime time when the power shortage will start
+	 * @param servers           servers that are to be asked for job transfer
+	 * @return InitiateJobTransferRequest
+	 */
+	public static InitiateJobTransferRequest create(final CloudNetworkAgent agent, final ACLMessage serverRequest,
+			final ClientJob jobToTransfer, final Instant shortageStartTime, final List<AID> servers) {
+		final JobPowerShortageTransfer jobTransfer = mapToPowerShortageJob(jobToTransfer, shortageStartTime);
+		final ACLMessage cfp = createCallForProposal(jobToTransfer, servers, CNA_JOB_CFP_PROTOCOL);
+
+		return new InitiateJobTransferRequest(agent, cfp, serverRequest, jobTransfer);
+	}
+
+	/**
+	 * Method logs message regarding no responses and calls generic method responsible for postprocessing the job
+	 * transfer failure.
 	 */
 	@Override
-	protected void handleAllResponses(final Vector responses, final Vector acceptances) {
-		final List<ACLMessage> proposals = retrieveProposals(responses);
-
-		MDC.put(MDC_JOB_ID, jobTransfer.getJobInstanceId().getJobId());
-		if (responses.isEmpty()) {
-			logger.info(SERVER_TRANSFER_NO_RESPONSE_LOG);
-			respondWithFailureMessage();
-		} else if (proposals.isEmpty()) {
-			logger.info(SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG);
-			respondWithFailureMessage();
-		} else {
-			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, ServerData.class);
-
-			if (!validProposals.isEmpty()) {
-				final ACLMessage chosenServerOffer = chooseServerToExecuteJob(validProposals);
-				final ServerData chosenServerData = readMessageContent(chosenServerOffer, ServerData.class);
-				final AID chosenServer = chosenServerOffer.getSender();
-				logger.info(SERVER_TRANSFER_CHOSEN_SERVER_LOG, chosenServerData.getJobId(), chosenServer.getName());
-
-				initiateTransferForServer(chosenServer, chosenServerOffer);
-				rejectJobOffers(myCloudNetworkAgent, jobTransfer.getJobInstanceId(), chosenServerOffer, proposals);
-			} else {
-				handleInvalidResponses(proposals);
-			}
-		}
-	}
-
-	private void initiateTransferForServer(final AID chosenServer, final ACLMessage chosenOffer) {
-		final ACLMessage replyToChosenOffer = prepareAcceptReplyWithProtocol(chosenOffer.createReply(),
-				jobTransfer.getJobInstanceId(), POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL);
-		myAgent.addBehaviour(createFor(myCloudNetworkAgent, serverRequest.createReply(), jobTransfer, chosenServer));
-		myAgent.send(replyToChosenOffer);
-	}
-
-	private void handleInvalidResponses(final List<ACLMessage> proposals) {
-		rejectJobOffers(myCloudNetworkAgent, jobTransfer.getJobInstanceId(), null, proposals);
+	protected void handleNoServerResponses() {
+		logger.info(SERVER_TRANSFER_NO_RESPONSE_LOG);
 		respondWithFailureMessage();
 	}
 
+	/**
+	 * Method logs message regarding no available servers and calls generic method responsible for postprocessing the
+	 * job transfer failure.
+	 */
+	@Override
+	protected void handleNoAvailableServers() {
+		logger.info(SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG);
+		respondWithFailureMessage();
+	}
+
+	/**
+	 * Method accepts the job transfer proposal for the previously selected best offer and initiates listener that
+	 * waits for the message that will enclose the negotiation by confirming the transfer on the Server side.
+	 */
+	@Override
+	protected void handleSelectedOffer(final ServerData serverData) {
+		final AID chosenServer = bestProposal.getSender();
+		logger.info(SERVER_TRANSFER_CHOSEN_SERVER_LOG, serverData.getJobId(), chosenServer.getName());
+
+		final ACLMessage replyToChosenOffer = prepareAcceptJobOfferReply(bestProposal, jobTransfer.getJobInstanceId(),
+				POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL);
+		myAgent.addBehaviour(ListenForServerTransferConfirmation.create(myCloudNetworkAgent, originalMessage,
+				jobTransfer, chosenServer));
+		myAgent.send(replyToChosenOffer);
+	}
+
 	private void respondWithFailureMessage() {
-		final ACLMessage response = prepareReply(serverRequest.createReply(), NO_SERVER_AVAILABLE_CAUSE_MESSAGE,
-				FAILURE);
+		final ACLMessage response = prepareReply(originalMessage, NO_SERVER_AVAILABLE_CAUSE_MESSAGE, FAILURE);
 		myCloudNetworkAgent.send(response);
-	}
-
-	private ACLMessage chooseServerToExecuteJob(final List<ACLMessage> serverOffers) {
-		return serverOffers.stream().min(this::compareServerOffers).orElseThrow();
-	}
-
-	private int compareServerOffers(final ACLMessage serverOffer1, final ACLMessage serverOffer2) {
-		final ServerData server1;
-		final ServerData server2;
-		try {
-			server1 = getMapper().readValue(serverOffer1.getContent(), ServerData.class);
-			server2 = getMapper().readValue(serverOffer2.getContent(), ServerData.class);
-			return server1.getAvailablePower() - server2.getAvailablePower();
-		} catch (JsonProcessingException e) {
-			return Integer.MAX_VALUE;
-		}
 	}
 }

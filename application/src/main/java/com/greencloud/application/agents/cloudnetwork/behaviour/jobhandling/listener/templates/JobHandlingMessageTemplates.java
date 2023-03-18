@@ -14,12 +14,12 @@ import static jade.lang.acl.MessageTemplate.or;
 import jade.lang.acl.MessageTemplate;
 
 /**
- * Class stores all message templates used in listener behaviours for job handling in cloud network
+ * Class stores all message templates used in listener behaviours for job handling in Cloud Network
  */
 public class JobHandlingMessageTemplates {
 
-	public static final MessageTemplate NEW_JOB_REQUEST_TEMPLATE = and(MatchPerformative(CFP),
-			MatchProtocol(SCHEDULER_JOB_CFP_PROTOCOL));
+	public static final MessageTemplate NEW_JOB_REQUEST_TEMPLATE = and(
+			MatchPerformative(CFP), MatchProtocol(SCHEDULER_JOB_CFP_PROTOCOL));
 	public static final MessageTemplate JOB_STATUS_CHANGE_TEMPLATE = or(
 			and(MatchPerformative(INFORM), MatchProtocol(CHANGE_JOB_STATUS_PROTOCOL)),
 			and(MatchPerformative(FAILURE), MatchProtocol(FAILED_JOB_PROTOCOL)));

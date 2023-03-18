@@ -1,7 +1,8 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler.logs;
 
 /**
- * Class contains all constants used in logging information in handler behaviours for power shortage in cloud network
+ * Class contains all constants used in logging information in Cloud Network handler behaviours for power
+ * shortage in cloud network
  */
 public class PowerShortageCloudHandlerLog {
 

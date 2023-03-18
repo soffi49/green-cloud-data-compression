@@ -3,14 +3,13 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.h
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler.logs.PowerShortageCloudHandlerLog.SERVER_TRANSFER_EXECUTE_TRANSFER_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobById;
-import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.application.utils.TimeUtils.alignStartTimeToCurrentTime;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import java.time.Instant;
 import java.util.Date;
-import java.util.Objects;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
@@ -22,24 +21,16 @@ import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
 
 /**
- * Behaviour updates internal Cloud Network state according to the job transfer
+ * Behaviour updates internal Cloud Network state after performing the job transfer
  */
 public class HandleJobTransferToServer extends WakerBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(HandleJobTransferToServer.class);
+	private static final Logger logger = getLogger(HandleJobTransferToServer.class);
 
 	private final CloudNetworkAgent myCloudNetworkAgent;
 	private final String jobId;
 	private final AID newServer;
 
-	/**
-	 * Behaviour constructor.
-	 *
-	 * @param myAgent      agent executing the behaviour
-	 * @param transferTime time when the power shortage begin
-	 * @param jobId        unique identifier of the job
-	 * @param newServer    server which will take over the job execution
-	 */
 	private HandleJobTransferToServer(Agent myAgent, Date transferTime, String jobId, AID newServer) {
 		super(myAgent, transferTime);
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
@@ -48,19 +39,17 @@ public class HandleJobTransferToServer extends WakerBehaviour {
 	}
 
 	/**
-	 * Method creates the HandleJobTransferToServer behaviour based on the passed arguments
+	 * Method creates the behaviour
 	 *
 	 * @param cloudNetworkAgent cloud network executing the behaviour
 	 * @param powerShortageJob  job to be transferred
 	 * @param newServer         server which will take over the job execution
-	 * @return behaviour which transfer the jobs between servers
+	 * @return HandleJobTransferToServer
 	 */
 	public static HandleJobTransferToServer createFor(final CloudNetworkAgent cloudNetworkAgent,
-			final JobPowerShortageTransfer powerShortageJob, AID newServer) {
-		final Instant transferTime = getCurrentTime().isAfter(powerShortageJob.getPowerShortageStart()) ?
-				getCurrentTime() :
-				powerShortageJob.getPowerShortageStart();
-		return new HandleJobTransferToServer(cloudNetworkAgent, Date.from(transferTime),
+			final JobPowerShortageTransfer powerShortageJob, final AID newServer) {
+		final Date transferTime = Date.from(alignStartTimeToCurrentTime(powerShortageJob.getPowerShortageStart()));
+		return new HandleJobTransferToServer(cloudNetworkAgent, transferTime,
 				powerShortageJob.getJobInstanceId().getJobId(), newServer);
 	}
 
@@ -71,7 +60,8 @@ public class HandleJobTransferToServer extends WakerBehaviour {
 	@Override
 	protected void onWake() {
 		final ClientJob jobToExecute = getJobById(jobId, myCloudNetworkAgent.getNetworkJobs());
-		if (Objects.nonNull(jobToExecute)) {
+
+		if (nonNull(jobToExecute)) {
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(SERVER_TRANSFER_EXECUTE_TRANSFER_LOG, jobId, newServer.getLocalName());
 			myCloudNetworkAgent.getServerForJobMap().replace(jobId, newServer);

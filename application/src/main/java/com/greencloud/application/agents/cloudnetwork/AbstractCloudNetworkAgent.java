@@ -1,18 +1,14 @@
 package com.greencloud.application.agents.cloudnetwork;
 
-import static java.util.stream.Collectors.toMap;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
+import static com.greencloud.commons.agent.AgentType.CNA;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.greencloud.application.agents.AbstractAgent;
-import com.greencloud.application.agents.cloudnetwork.management.CloudNetworkConfigManagement;
 import com.greencloud.application.agents.cloudnetwork.management.CloudNetworkStateManagement;
-import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
@@ -23,35 +19,29 @@ import jade.core.AID;
  */
 public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 
-	protected transient CloudNetworkStateManagement stateManagement;
-	protected transient CloudNetworkConfigManagement configManagement;
-
-	protected double maximumCapacity;
 	protected ConcurrentMap<ClientJob, JobExecutionStatusEnum> networkJobs;
 	protected ConcurrentMap<String, AID> serverForJobMap;
-	protected AtomicLong completedJobs;
 	protected ConcurrentMap<AID, Boolean> ownedServers;
+	protected ConcurrentMap<AID, Integer> weightsForServersMap;
+
+	protected AtomicDouble maximumCapacity;
 	protected AID scheduler;
 
 	AbstractCloudNetworkAgent() {
 		super();
-		agentType = AgentType.CNA;
+
+		this.agentType = CNA;
+		this.serverForJobMap = new ConcurrentHashMap<>();
+		this.networkJobs = new ConcurrentHashMap<>();
+		this.ownedServers = new ConcurrentHashMap<>();
+		this.weightsForServersMap = new ConcurrentHashMap<>();
 	}
 
-	/**
-	 * Method run on agent start. It initializes the Cloud Network Agent data with default values
-	 */
-	@Override
-	protected void setup() {
-		super.setup();
-
-		serverForJobMap = new ConcurrentHashMap<>();
-		networkJobs = new ConcurrentHashMap<>();
-		completedJobs = new AtomicLong(0L);
-		ownedServers = new ConcurrentHashMap<>();
+	public CloudNetworkStateManagement manage() {
+		return (CloudNetworkStateManagement) agentManagementServices.get(STATE_MANAGEMENT);
 	}
 
-	public Map<String, AID> getServerForJobMap() {
+	public ConcurrentMap<String, AID> getServerForJobMap() {
 		return serverForJobMap;
 	}
 
@@ -59,54 +49,27 @@ public abstract class AbstractCloudNetworkAgent extends AbstractAgent {
 		return networkJobs;
 	}
 
-	public Long completedJob() {
-		return completedJobs.incrementAndGet();
-	}
-
 	public ConcurrentMap<AID, Boolean> getOwnedServers() {
 		return ownedServers;
 	}
 
-	public void setOwnedServers(Collection<AID> ownedServers) {
-		var serversToAdd = ownedServers.stream().collect(toMap(aid -> aid, aid -> true));
-
-		this.ownedServers.clear();
-		this.ownedServers.putAll(serversToAdd);
-	}
-
-	/**
-	 * Method retrieves list of owned servers that are active
-	 *
-	 * @return list of server AIDs
-	 */
-	public List<AID> getOwnedActiveServers() {
-		return ownedServers.entrySet().stream()
-				.filter(Map.Entry::getValue)
-				.map(Map.Entry::getKey)
-				.toList();
+	public ConcurrentMap<AID, Integer> getWeightsForServersMap() {
+		return weightsForServersMap;
 	}
 
 	public AID getScheduler() {
 		return scheduler;
 	}
 
-	public void setScheduler(AID scheduler) {
+	public void setScheduler(final AID scheduler) {
 		this.scheduler = scheduler;
 	}
 
-	public CloudNetworkStateManagement manage() {
-		return stateManagement;
-	}
-
-	public CloudNetworkConfigManagement manageConfig() {
-		return configManagement;
-	}
-
 	public double getMaximumCapacity() {
-		return maximumCapacity;
+		return maximumCapacity.get();
 	}
 
-	public void setMaximumCapacity(double maximumCapacity) {
-		this.maximumCapacity = maximumCapacity;
+	public void setMaximumCapacity(final double maximumCapacity) {
+		this.maximumCapacity.set(maximumCapacity);
 	}
 }

@@ -5,20 +5,24 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandli
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
+import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
-
-import java.util.Objects;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
+import com.greencloud.application.domain.agent.ServerData;
+import com.greencloud.application.domain.job.ImmutableJobWithPrice;
+import com.greencloud.application.domain.job.JobWithPrice;
 import com.greencloud.commons.domain.job.ClientJob;
+import com.greencloud.commons.message.MessageBuilder;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -27,24 +31,40 @@ import jade.proto.ProposeInitiator;
 /**
  * Behaviour sends proposal with job execution offer to the Scheduler
  */
-public class InitiateMakingNewJobOffer extends ProposeInitiator {
+public class InitiateNewJobOffer extends ProposeInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateMakingNewJobOffer.class);
+	private static final Logger logger = getLogger(InitiateNewJobOffer.class);
 
-	private final ACLMessage replyMessage;
+	private final ACLMessage serverMessage;
 	private final CloudNetworkAgent myCloudNetworkAgent;
 
-	/**
-	 * Behaviour constructor.
-	 *
-	 * @param agent        agent which is executing the behaviour
-	 * @param msg          proposal message with job execution price that will be sent to the scheduler
-	 * @param replyMessage reply message sent to server with ACCEPT/REJECT proposal
-	 */
-	public InitiateMakingNewJobOffer(final Agent agent, final ACLMessage msg, final ACLMessage replyMessage) {
+	protected InitiateNewJobOffer(final Agent agent, final ACLMessage msg, final ACLMessage serverMessage) {
 		super(agent, msg);
 		this.myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
-		this.replyMessage = replyMessage;
+		this.serverMessage = serverMessage;
+	}
+
+	/**
+	 * Method creates the behaviour
+	 *
+	 * @param agent            agent creating a behaviour
+	 * @param availablePower   current available power for given network segment
+	 * @param serverOffer      job execution offer proposed by the server
+	 * @param serverMessage    proposal message received from selected server
+	 * @param schedulerMessage CFP received from scheduler
+	 * @return InitiateMakingNewJobOffer
+	 */
+	public static InitiateNewJobOffer create(final Agent agent, final double availablePower,
+			final ServerData serverOffer, final ACLMessage serverMessage, final ACLMessage schedulerMessage) {
+		final JobWithPrice pricedJob =
+				new ImmutableJobWithPrice(serverOffer.getJobId(), serverOffer.getServicePrice(), availablePower);
+		final ACLMessage proposal = MessageBuilder.builder()
+				.copy(schedulerMessage.createReply())
+				.withObjectContent(pricedJob)
+				.withPerformative(PROPOSE)
+				.build();
+
+		return new InitiateNewJobOffer(agent, proposal, serverMessage);
 	}
 
 	/**
@@ -58,13 +78,13 @@ public class InitiateMakingNewJobOffer extends ProposeInitiator {
 		final String jobId = accept.getContent();
 		final ClientJob job = getJobById(jobId, myCloudNetworkAgent.getNetworkJobs());
 
-		if (Objects.nonNull(job)) {
+		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(ACCEPT_SERVER_PROPOSAL_LOG);
 
 			myCloudNetworkAgent.manage().incrementJobCounter(jobId, ACCEPTED);
 			myAgent.send(
-					prepareAcceptReplyWithProtocol(replyMessage, mapToJobInstanceId(job), SERVER_JOB_CFP_PROTOCOL));
+					prepareAcceptJobOfferReply(serverMessage, mapToJobInstanceId(job), SERVER_JOB_CFP_PROTOCOL));
 		}
 	}
 
@@ -81,10 +101,10 @@ public class InitiateMakingNewJobOffer extends ProposeInitiator {
 		MDC.put(MDC_JOB_ID, jobId);
 		logger.info(REJECT_SERVER_PROPOSAL_LOG, reject.getSender().getName());
 
-		if (Objects.nonNull(job)) {
+		if (nonNull(job)) {
 			myCloudNetworkAgent.getServerForJobMap().remove(jobId);
 			myCloudNetworkAgent.getNetworkJobs().remove(getJobById(jobId, myCloudNetworkAgent.getNetworkJobs()));
-			myCloudNetworkAgent.send(prepareReply(replyMessage, mapToJobInstanceId(job), REJECT_PROPOSAL));
+			myCloudNetworkAgent.send(prepareReply(serverMessage, mapToJobInstanceId(job), REJECT_PROPOSAL));
 		}
 	}
 }

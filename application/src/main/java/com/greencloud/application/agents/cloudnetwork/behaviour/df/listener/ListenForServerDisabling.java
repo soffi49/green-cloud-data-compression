@@ -5,28 +5,28 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.df.listen
 import static com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.templates.DFCloudNetworkMessageTemplates.DISABLE_SERVER_TEMPLATE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.utils.StateManagementUtils.updateAgentMaximumCapacity;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.lang.Double.parseDouble;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Objects;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.exception.IncorrectMessageContentException;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Behaviour listens for the messages related with the Server disabling
+ * Behaviour listens for the messages informing about disabling given Server
  */
 public class ListenForServerDisabling extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForServerDisabling.class);
+	private static final Logger logger = getLogger(ListenForServerDisabling.class);
 
 	private final CloudNetworkAgent myCloudNetworkAgent;
 
@@ -64,24 +64,16 @@ public class ListenForServerDisabling extends CyclicBehaviour {
 		if (myCloudNetworkAgent.getOwnedServers().containsKey(serverToBeDisabled)) {
 			logger.info(DISABLING_SERVER_IN_CNA_LOG, serverToBeDisabled.getLocalName());
 			myCloudNetworkAgent.getOwnedServers().replace(serverToBeDisabled, false);
-			myCloudNetworkAgent.send(prepareInformReply(request.createReply()));
+			myCloudNetworkAgent.send(prepareInformReply(request));
 		} else {
 			logger.info(SERVER_FOR_DISABLING_NOT_FOUND_LOG, serverToBeDisabled.getLocalName());
-			myCloudNetworkAgent.send(prepareRefuseReply(request.createReply()));
+			myCloudNetworkAgent.send(prepareRefuseReply(request));
 		}
 	}
 
 	private void handleServerDisablingCompletion(final ACLMessage msg) {
-		final double newNetworkCapacity = myCloudNetworkAgent.getMaximumCapacity() - getCapacity(msg);
-		myCloudNetworkAgent.manage().updateMaximumCapacity(newNetworkCapacity);
-	}
-
-	private double getCapacity(ACLMessage msg) {
-		try {
-			return parseDouble(msg.getContent());
-		} catch (NumberFormatException e) {
-			throw new IncorrectMessageContentException();
-		}
+		final double newNetworkCapacity = myCloudNetworkAgent.getMaximumCapacity() - parseDouble(msg.getContent());
+		updateAgentMaximumCapacity(newNetworkCapacity, myCloudNetworkAgent);
 	}
 
 }
