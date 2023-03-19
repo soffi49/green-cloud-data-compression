@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.client;
 
-import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.CLIENT_MANAGEMENT;
 import static com.greencloud.commons.agent.AgentType.CLIENT;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.client.domain.ClientJobExecution;
-import com.greencloud.application.agents.client.management.ClientStateManagement;
+import com.greencloud.application.agents.client.management.ClientManagement;
 
 /**
  * Abstract agent class storing the data regarding Client Agent
@@ -26,8 +26,8 @@ public abstract class AbstractClientAgent extends AbstractAgent {
 		this.agentType = CLIENT;
 	}
 
-	public ClientStateManagement manage() {
-		return (ClientStateManagement) agentManagementServices.get(STATE_MANAGEMENT);
+	public ClientManagement manage() {
+		return (ClientManagement) agentManagementServices.get(CLIENT_MANAGEMENT);
 	}
 
 	public ConcurrentMap<String, ClientJobExecution> getJobParts() {

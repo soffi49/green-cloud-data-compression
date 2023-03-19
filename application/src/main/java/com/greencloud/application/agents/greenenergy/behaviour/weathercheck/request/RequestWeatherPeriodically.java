@@ -6,24 +6,24 @@ import static com.greencloud.application.agents.greenenergy.behaviour.weatherche
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.PERIODIC_CHECK_SENT_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.POWER_DROP_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.WEATHER_UNAVAILABLE_LOG;
+import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.PERIODIC_WEATHER_CHECK_TIMEOUT;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
+import static com.greencloud.application.utils.StateManagementUtils.getPowerPercent;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.WEATHER_CAUSE;
 import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.database.knowledge.domain.agent.greensource.AvailableGreenEnergy;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
-import com.greencloud.application.agents.greenenergy.domain.GreenEnergyAgentConstants;
-import com.greencloud.application.domain.MonitoringData;
-import com.greencloud.application.exception.IncorrectMessageContentException;
+import com.greencloud.application.domain.weather.MonitoringData;
 
 import jade.core.behaviours.TickerBehaviour;
 
@@ -32,7 +32,7 @@ import jade.core.behaviours.TickerBehaviour;
  */
 public class RequestWeatherPeriodically extends TickerBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(RequestWeatherPeriodically.class);
+	private static final Logger logger = getLogger(RequestWeatherPeriodically.class);
 
 	private final GreenEnergyAgent myGreenEnergyAgent;
 
@@ -42,7 +42,7 @@ public class RequestWeatherPeriodically extends TickerBehaviour {
 	 * @param agent agent executing the behaviour
 	 */
 	public RequestWeatherPeriodically(GreenEnergyAgent agent) {
-		super(agent, GreenEnergyAgentConstants.PERIODIC_WEATHER_CHECK_TIMEOUT);
+		super(agent, PERIODIC_WEATHER_CHECK_TIMEOUT);
 		this.myGreenEnergyAgent = agent;
 	}
 
@@ -56,28 +56,24 @@ public class RequestWeatherPeriodically extends TickerBehaviour {
 				getResponseHandler(), getResponseRefuseHandler()));
 	}
 
-	private BiConsumer<MonitoringData, IncorrectMessageContentException> getResponseHandler() {
-		return (data, e) -> {
-
-			if (nonNull(e)) {
-				e.printStackTrace();
+	private BiConsumer<MonitoringData, Exception> getResponseHandler() {
+		return (data, error) -> {
+			if (nonNull(error)) {
 				logger.info(WEATHER_UNAVAILABLE_LOG, getCurrentTime());
 				return;
 			}
-
 			final Instant time = getCurrentTime();
-			final double availablePower = myGreenEnergyAgent.manage().getAvailablePower(convertToRealTime(time), data)
-					.orElse(-1.0);
+			final Instant realTime = convertToRealTime(time);
+			final double availablePower = myGreenEnergyAgent.power().getAvailablePower(realTime, data).orElse(-1.0);
 
 			if (availablePower < 0 && !myGreenEnergyAgent.getServerJobs().isEmpty()) {
 				logger.info(POWER_DROP_LOG, time);
-				myAgent.addBehaviour(new AnnounceSourcePowerShortage(myGreenEnergyAgent, null, time, availablePower,
-						WEATHER_CAUSE));
-				myGreenEnergyAgent.manage().getWeatherShortagesCounter().getAndIncrement();
+				myAgent.addBehaviour(new AnnounceSourcePowerShortage(myGreenEnergyAgent, null,
+						time, availablePower, WEATHER_CAUSE));
 			} else {
 				logger.info(NO_POWER_DROP_LOG, time);
 			}
-			reportAvailableEnergyData(myGreenEnergyAgent.manageGreenPower().getAvailablePower(data, time));
+			reportAvailableEnergyData(myGreenEnergyAgent.power().getAvailableGreenPower(data, time));
 		};
 	}
 
@@ -86,10 +82,8 @@ public class RequestWeatherPeriodically extends TickerBehaviour {
 	}
 
 	private void reportAvailableEnergyData(final double availablePower) {
-		final double currentMaximumCapacity = myGreenEnergyAgent.manageGreenPower().getCurrentMaximumCapacity();
-		final double availableGreenEnergyPercentage =
-				currentMaximumCapacity == 0 ? 0 : availablePower / currentMaximumCapacity;
-		final AvailableGreenEnergy greenEnergy = new AvailableGreenEnergy(availableGreenEnergyPercentage);
-		myGreenEnergyAgent.writeMonitoringData(AVAILABLE_GREEN_ENERGY, greenEnergy);
+		final double currentMaximumCapacity = myGreenEnergyAgent.getCurrentMaximumCapacity();
+		final double energyPercentage = getPowerPercent(availablePower, currentMaximumCapacity);
+		myGreenEnergyAgent.writeMonitoringData(AVAILABLE_GREEN_ENERGY, new AvailableGreenEnergy(energyPercentage));
 	}
 }

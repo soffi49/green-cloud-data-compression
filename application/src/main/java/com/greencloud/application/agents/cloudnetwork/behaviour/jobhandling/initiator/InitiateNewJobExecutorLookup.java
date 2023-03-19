@@ -101,7 +101,7 @@ public class InitiateNewJobExecutorLookup extends AbstractCloudNetworkCFPInitiat
 
 	private void handleRejectedJob() {
 		myCloudNetworkAgent.getNetworkJobs().remove(job);
-		myCloudNetworkAgent.manage().updateCloudNetworkGUI();
+		myCloudNetworkAgent.manage().updateGUI();
 		myAgent.send(prepareRefuseReply(originalMessage));
 	}
 }

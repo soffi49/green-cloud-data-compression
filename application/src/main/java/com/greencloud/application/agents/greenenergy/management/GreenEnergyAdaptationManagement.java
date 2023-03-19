@@ -3,12 +3,11 @@ package com.greencloud.application.agents.greenenergy.management;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.ADAPTATION_CONNECT_SERVER_LOG;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.ADAPTATION_DISCONNECT_SERVER_LOG;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.ADAPTATION_INCREASE_ERROR_LOG;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
-import static jade.lang.acl.ACLMessage.REQUEST;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.greencloud.application.agents.AbstractAgentManagement;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.adaptation.InitiateGreenSourceDeactivation;
 import com.greencloud.application.agents.greenenergy.behaviour.adaptation.InitiateNewServerConnection;
@@ -16,15 +15,14 @@ import com.greencloud.application.agents.greenenergy.domain.GreenSourceDisconnec
 import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceConnectionParameters;
 
-import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
 /**
  * Set of methods used to adapt the current configuration of Green Energy agent
  */
-public class GreenEnergyAdaptationManagement {
+public class GreenEnergyAdaptationManagement extends AbstractAgentManagement {
 
-	private static final Logger logger = LoggerFactory.getLogger(GreenEnergyAdaptationManagement.class);
+	private static final Logger logger = getLogger(GreenEnergyAdaptationManagement.class);
 
 	private final GreenEnergyAgent greenEnergyAgent;
 	private GreenSourceDisconnection greenSourceDisconnection;
@@ -40,22 +38,11 @@ public class GreenEnergyAdaptationManagement {
 	}
 
 	/**
-	 * @return curren state of Green Source disconnection parameters
-	 */
-	public GreenSourceDisconnection getGreenSourceDisconnectionState() {
-		return greenSourceDisconnection;
-	}
-
-	public void setGreenSourceDisconnection(GreenSourceDisconnection greenSourceDisconnection) {
-		this.greenSourceDisconnection = greenSourceDisconnection;
-	}
-
-	/**
 	 * Method adapts the current weather prediction error of Green Energy Agent
 	 *
 	 * @param params adaptation parameters
 	 */
-	public boolean adaptAgentWeatherPredictionError(AdjustGreenSourceErrorParameters params) {
+	public boolean adaptAgentWeatherPredictionError(final AdjustGreenSourceErrorParameters params) {
 		final double currentError = greenEnergyAgent.getWeatherPredictionError();
 		final double newError = currentError + params.getPercentageChange();
 		final String log = params.getPercentageChange() > 0 ? "Increasing" : "Decreasing";
@@ -63,45 +50,47 @@ public class GreenEnergyAdaptationManagement {
 		logger.info(ADAPTATION_INCREASE_ERROR_LOG, log, currentError, newError);
 
 		greenEnergyAgent.setWeatherPredictionError(newError);
-		greenEnergyAgent.manage().updateGreenSourceGUI();
+		greenEnergyAgent.manage().updateGUI();
 		return true;
 	}
 
 	/**
-	 * Method registers green source service available for a new server
+	 * Method communicates with indicated Server in order o establish with it a connection
 	 *
 	 * @param params            adaptation parameters
 	 * @param adaptationMessage original adaptation message
 	 */
-	public void connectNewServerToGreenSource(ChangeGreenSourceConnectionParameters params,
-			ACLMessage adaptationMessage) {
-		final String serverToBeConnected = params.getServerName().split("@")[0];
-		logger.info(ADAPTATION_CONNECT_SERVER_LOG, serverToBeConnected);
+	public void connectNewServerToGreenSource(final ChangeGreenSourceConnectionParameters params,
+			final ACLMessage adaptationMessage) {
+		final String serverName = params.getServerName().split("@")[0];
+		logger.info(ADAPTATION_CONNECT_SERVER_LOG, serverName);
 
-		final ACLMessage connectionRequest = new ACLMessage(REQUEST);
-		connectionRequest.setContent(CONNECT_GREEN_SOURCE_PROTOCOL);
-		connectionRequest.setProtocol(CONNECT_GREEN_SOURCE_PROTOCOL);
-		connectionRequest.addReceiver(new AID(params.getServerName(), AID.ISGUID));
-
-		greenEnergyAgent.addBehaviour(
-				new InitiateNewServerConnection(greenEnergyAgent, connectionRequest, adaptationMessage,
-						serverToBeConnected));
+		greenEnergyAgent.addBehaviour(InitiateNewServerConnection.create(greenEnergyAgent, adaptationMessage,
+				params.getServerName()));
 	}
 
 	/**
-	 * Method disconnects a green source from given server
+	 * Method disconnects a green source from selected server
 	 *
 	 * @param params            adaptation parameters
 	 * @param adaptationMessage original adaptation message
 	 */
-	public void disconnectGreenSourceFromServer(ChangeGreenSourceConnectionParameters params,
-			ACLMessage adaptationMessage) {
-		final String serverToBeConnected = params.getServerName().split("@")[0];
-		logger.info(ADAPTATION_DISCONNECT_SERVER_LOG, serverToBeConnected);
+	public void disconnectGreenSourceFromServer(final ChangeGreenSourceConnectionParameters params,
+			final ACLMessage adaptationMessage) {
+		final String serverName = params.getServerName().split("@")[0];
+		logger.info(ADAPTATION_DISCONNECT_SERVER_LOG, serverName);
 
-		getGreenSourceDisconnectionState().setBeingDisconnected(true);
-		getGreenSourceDisconnectionState().setOriginalAdaptationMessage(adaptationMessage);
+		getDisconnectionState().setBeingDisconnected(true);
+		getDisconnectionState().setOriginalAdaptationMessage(adaptationMessage);
 		greenEnergyAgent.addBehaviour(InitiateGreenSourceDeactivation.create(greenEnergyAgent, params.getServerName()));
+	}
+
+	public GreenSourceDisconnection getDisconnectionState() {
+		return greenSourceDisconnection;
+	}
+
+	public void setDisconnectionState(GreenSourceDisconnection greenSourceDisconnection) {
+		this.greenSourceDisconnection = greenSourceDisconnection;
 	}
 
 }

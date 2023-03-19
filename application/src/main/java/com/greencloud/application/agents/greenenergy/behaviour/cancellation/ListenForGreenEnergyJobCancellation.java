@@ -1,11 +1,7 @@
 package com.greencloud.application.agents.greenenergy.behaviour.cancellation;
 
 import static com.google.common.collect.Collections2.filter;
-import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.CANCELLED_JOB_PART_LOG;
-import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.CANCELLING_JOB_PARTS_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.templates.JobCancellationMessageTemplates.CANCEL_JOB_ANNOUNCEMENT;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
@@ -27,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
+import com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs;
+import com.greencloud.application.common.constant.LoggingConstant;
 import com.greencloud.application.mapper.JobMapper;
 import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
@@ -38,6 +36,7 @@ import jade.lang.acl.ACLMessage;
  * Listens for job cancellation announcements. If any part of the job is processed by the
  * agent, it is removed from processing, otherwise refusal message is sent.
  */
+//TODO DEFINITELY SHOULD BE REFACTORED!!!!!
 public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForGreenEnergyJobCancellation.class);
@@ -48,12 +47,6 @@ public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 	private GreenEnergyAgent myGreenEnergyAgent;
 
 	@Override
-	public void onStart() {
-		super.onStart();
-		myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
-	}
-
-	@Override
 	public void action() {
 		var message = myGreenEnergyAgent.receive(CANCEL_JOB_ANNOUNCEMENT);
 
@@ -62,18 +55,24 @@ public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 		}
 	}
 
+	@Override
+	public void onStart() {
+		super.onStart();
+		myGreenEnergyAgent = (GreenEnergyAgent) myAgent;
+	}
+
 	private void processJobCancellation(String originalJobId, ACLMessage message) {
 		var jobParts = List.copyOf((filter(myGreenEnergyAgent.getServerJobs().keySet(),
 				job -> job.getJobId().split("#")[0].equals(originalJobId))));
 		if (!jobParts.isEmpty()) {
-			myGreenEnergyAgent.send(prepareStringReply(message.createReply(), originalJobId, AGREE));
-			MDC.put(MDC_JOB_ID, originalJobId);
-			logger.info(CANCELLING_JOB_PARTS_LOG, jobParts.size());
+			myGreenEnergyAgent.send(prepareStringReply(message, originalJobId, AGREE));
+			MDC.put(LoggingConstant.MDC_JOB_ID, originalJobId);
+			logger.info(JobCancellationLogs.CANCELLING_JOB_PARTS_LOG, jobParts.size());
 			jobParts.forEach(this::processJobPart);
 			var powerJobParts = jobParts.stream().map(JobMapper::mapServerJobToPowerJob).toList();
-			myGreenEnergyAgent.send(prepareReply(message.createReply(), powerJobParts, INFORM));
+			myGreenEnergyAgent.send(prepareReply(message, powerJobParts, INFORM));
 		} else {
-			myGreenEnergyAgent.send(prepareRefuseReply(message.createReply()));
+			myGreenEnergyAgent.send(prepareRefuseReply(message));
 		}
 	}
 
@@ -81,11 +80,11 @@ public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 		var jobPartStatus = myGreenEnergyAgent.getServerJobs().get(jobPart);
 		myGreenEnergyAgent.manage().removeJob(jobPart);
 		if (!JOB_NOT_STARTED_STATUSES.contains(jobPartStatus)) {
-			myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), FINISH);
+			myGreenEnergyAgent.manage().incrementJobCounter(jobPart.getJobId(), FINISH);
 		}
-		myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), FAILED);
-		MDC.put(MDC_JOB_ID, jobPart.getJobId());
-		logger.info(CANCELLED_JOB_PART_LOG);
-		myGreenEnergyAgent.manage().updateGreenSourceGUI();
+		myGreenEnergyAgent.manage().incrementJobCounter(jobPart.getJobId(), FAILED);
+		MDC.put(LoggingConstant.MDC_JOB_ID, jobPart.getJobId());
+		logger.info(JobCancellationLogs.CANCELLED_JOB_PART_LOG);
+		myGreenEnergyAgent.manage().updateGUI();
 	}
 }

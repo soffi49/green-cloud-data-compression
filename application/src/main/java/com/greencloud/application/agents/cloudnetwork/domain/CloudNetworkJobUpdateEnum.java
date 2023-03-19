@@ -22,7 +22,7 @@ import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.hand
 import com.greencloud.commons.domain.job.ClientJob;
 
 /**
- * Class containing data associated with processing by the Cloud Network the updates
+ * Enum mapping data associated with processing by the Cloud Network the updates
  * regarding the execution of the client's job
  */
 public enum CloudNetworkJobUpdateEnum {
@@ -78,7 +78,7 @@ public enum CloudNetworkJobUpdateEnum {
 			}
 			myCloudNetworkAgent.getNetworkJobs().remove(job);
 			myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
-			myCloudNetworkAgent.manage().updateCloudNetworkGUI();
+			myCloudNetworkAgent.manage().updateGUI();
 		};
 	}
 

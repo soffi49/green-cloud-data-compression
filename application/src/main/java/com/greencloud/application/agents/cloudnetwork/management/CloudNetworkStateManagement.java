@@ -6,7 +6,6 @@ import static com.greencloud.application.agents.cloudnetwork.management.logs.Clo
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_FINISH_LOG;
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_PROCESS_LOG;
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_START_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.GUIUtils.announceFinishedJob;
 import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
 import static com.greencloud.application.utils.StateManagementUtils.getCurrentPowerInUse;
@@ -17,24 +16,23 @@ import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FIN
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
-import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toConcurrentMap;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import com.database.knowledge.domain.agent.cloudnetwork.CloudNetworkMonitoringData;
 import com.database.knowledge.domain.agent.cloudnetwork.ImmutableCloudNetworkMonitoringData;
-import com.greencloud.application.agents.AbstractAgentManagement;
+import com.greencloud.application.agents.AbstractStateManagement;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.domain.agent.ServerData;
+import com.greencloud.application.domain.job.JobCounter;
 import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
 import com.gui.agents.CloudNetworkAgentNode;
 
@@ -44,16 +42,14 @@ import jade.lang.acl.ACLMessage;
 /**
  * Class stores methods used to manage the state of Cloud Network Agent
  */
-public class CloudNetworkStateManagement extends AbstractAgentManagement {
+public class CloudNetworkStateManagement extends AbstractStateManagement {
 
-	private static final Logger logger = LoggerFactory.getLogger(CloudNetworkStateManagement.class);
+	private static final Logger logger = getLogger(CloudNetworkStateManagement.class);
 
 	protected final CloudNetworkAgent cloudNetworkAgent;
-	protected final ConcurrentMap<JobExecutionResultEnum, Long> jobCounters;
 
 	public CloudNetworkStateManagement(CloudNetworkAgent cloudNetworkAgent) {
 		this.cloudNetworkAgent = cloudNetworkAgent;
-		this.jobCounters = stream(JobExecutionResultEnum.values()).collect(toConcurrentMap(key -> key, status -> 0L));
 	}
 
 	/**
@@ -94,57 +90,49 @@ public class CloudNetworkStateManagement extends AbstractAgentManagement {
 		return compareReceivedOffers(offer1, offer2, ServerData.class, comparator);
 	}
 
-	/**
-	 * Method increments the counter of jobs
-	 *
-	 * @param jobId job identifier
-	 * @param type  type of counter to increment
-	 */
-	public void incrementJobCounter(final String jobId, final JobExecutionResultEnum type) {
-		MDC.put(MDC_JOB_ID, jobId);
-		jobCounters.computeIfPresent(type, (key, val) -> val += 1);
-
-		switch (type) {
-			case FAILED -> logger.info(COUNT_JOB_PROCESS_LOG, jobCounters.get(FAILED));
-			case ACCEPTED -> logger.info(COUNT_JOB_ACCEPTED_LOG, jobCounters.get(ACCEPTED));
-			case STARTED -> {
-				logger.info(COUNT_JOB_START_LOG, jobId, jobCounters.get(STARTED), jobCounters.get(ACCEPTED));
-				cloudNetworkAgent.getGuiController().updateActiveJobsCountByValue(1);
-			}
-			case FINISH -> {
-				logger.info(COUNT_JOB_FINISH_LOG, jobId, jobCounters.get(FINISH), jobCounters.get(STARTED));
-				announceFinishedJob(cloudNetworkAgent);
-			}
-		}
-		updateCloudNetworkGUI();
+	@Override
+	protected ConcurrentMap<JobExecutionResultEnum, JobCounter> getJobCountersMap() {
+		return new ConcurrentHashMap<>(Map.of(
+				FAILED, new JobCounter(jobId ->
+						logger.info(COUNT_JOB_PROCESS_LOG, jobCounters.get(FAILED).getCount())),
+				ACCEPTED, new JobCounter(jobId ->
+						logger.info(COUNT_JOB_ACCEPTED_LOG, jobCounters.get(ACCEPTED).getCount())),
+				STARTED, new JobCounter(jobId -> {
+					logger.info(COUNT_JOB_START_LOG, jobId, jobCounters.get(STARTED).getCount(),
+							jobCounters.get(ACCEPTED).getCount());
+					cloudNetworkAgent.getGuiController().updateActiveJobsCountByValue(1);
+				}),
+				FINISH, new JobCounter(jobId -> {
+					logger.info(COUNT_JOB_FINISH_LOG, jobId, jobCounters.get(FINISH).getCount(),
+							jobCounters.get(STARTED).getCount());
+					announceFinishedJob(cloudNetworkAgent);
+				})
+		));
 	}
 
-	/**
-	 * Method updates Cloud Network statistics in GUI
-	 */
-	public void updateCloudNetworkGUI() {
+	@Override
+	public void updateGUI() {
 		final CloudNetworkAgentNode cloudNetworkAgentNode = (CloudNetworkAgentNode) cloudNetworkAgent.getAgentNode();
 
 		if (nonNull(cloudNetworkAgentNode)) {
-			final double successRatio = getJobSuccessRatio(jobCounters.get(ACCEPTED), jobCounters.get(FAILED));
+			final double successRatio = getJobSuccessRatio(jobCounters.get(ACCEPTED).getCount(),
+					jobCounters.get(FAILED).getCount());
 			cloudNetworkAgentNode.updateClientNumber(getScheduledJobs());
 			cloudNetworkAgentNode.updateJobsCount(getJobInProgressCount());
 			cloudNetworkAgentNode.updateTraffic(getCurrentPowerInUse(cloudNetworkAgent.getNetworkJobs()));
 			cloudNetworkAgentNode.updateCurrentJobSuccessRatio(successRatio);
 		}
-		cloudNetworkAgent.manage().saveMonitoringData();
+		saveMonitoringData();
 	}
 
-	/**
-	 * Method assembles the object that stores Cloud Network monitoring data and saves it in the database
-	 */
-	public void saveMonitoringData() {
+	private void saveMonitoringData() {
 		final int maxCapacity = (int) cloudNetworkAgent.getMaximumCapacity();
 		final int traffic = getCurrentPowerInUse(cloudNetworkAgent.getNetworkJobs());
 		final CloudNetworkMonitoringData cloudNetworkMonitoringData = ImmutableCloudNetworkMonitoringData.builder()
 				.currentTraffic(getPowerPercent(traffic, maxCapacity))
 				.availablePower((double) maxCapacity - traffic)
-				.successRatio(getJobSuccessRatio(jobCounters.get(ACCEPTED), jobCounters.get(FAILED)))
+				.successRatio(getJobSuccessRatio(jobCounters.get(ACCEPTED).getCount(),
+						jobCounters.get(FAILED).getCount()))
 				.build();
 		cloudNetworkAgent.writeMonitoringData(CLOUD_NETWORK_MONITORING, cloudNetworkMonitoringData);
 	}

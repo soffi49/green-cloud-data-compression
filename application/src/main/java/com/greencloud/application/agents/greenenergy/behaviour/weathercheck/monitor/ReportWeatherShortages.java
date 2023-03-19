@@ -2,43 +2,49 @@ package com.greencloud.application.agents.greenenergy.behaviour.weathercheck.mon
 
 import static com.database.knowledge.domain.agent.DataType.SHORTAGES;
 import static com.database.knowledge.domain.agent.DataType.WEATHER_SHORTAGES;
+import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.PERIODIC_SHORTAGE_REPORT_PERIOD;
 
 import com.database.knowledge.domain.agent.greensource.Shortages;
 import com.database.knowledge.domain.agent.greensource.WeatherShortages;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 
-import jade.core.Agent;
 import jade.core.behaviours.TickerBehaviour;
 
 /**
- * Ticker behaviour responsible for periodical reporting of weather shortages
+ * Behaviour responsible for periodical reporting the number of weather shortages
  */
 public class ReportWeatherShortages extends TickerBehaviour {
 
-	/**
-	 * Defines how often weather shortage happens on the given agent in given window of time [ms].
-	 */
-	private static final long REPORT_SHORTAGE_PERIOD = 250;
-
 	private final GreenEnergyAgent myGreenEnergyAgent;
 
-	public ReportWeatherShortages(Agent a) {
-		super(a, REPORT_SHORTAGE_PERIOD);
-		myGreenEnergyAgent = (GreenEnergyAgent) a;
+	/**
+	 * Behaviour constructor
+	 *
+	 * @param agent agent executing the behaviour
+	 */
+	public ReportWeatherShortages(final GreenEnergyAgent agent) {
+		super(agent, PERIODIC_SHORTAGE_REPORT_PERIOD);
+		myGreenEnergyAgent = agent;
 	}
 
+	/**
+	 * Method check the number of power fluctuations caused by weather changes (i.e. weatherShortages) and the total
+	 * number of power fluctuations caused by all possible factors (i.e. accumulatedShortages).
+	 * If the numbers are greater than 0, then the method writes those statistics to the database.
+	 */
 	@Override
 	public void onTick() {
-		if (myGreenEnergyAgent.manage().getWeatherShortagesCounter().get() > 0) {
-			int shortages = myGreenEnergyAgent.manage().getWeatherShortagesCounter().getAndSet(0);
-			WeatherShortages weatherShortages = new WeatherShortages(shortages, REPORT_SHORTAGE_PERIOD);
-			myGreenEnergyAgent.writeMonitoringData(WEATHER_SHORTAGES, weatherShortages);
+		final int weatherShortages = myGreenEnergyAgent.manage().getWeatherShortagesCounter().get();
+		final int accumulatedShortages = myGreenEnergyAgent.manage().getShortagesAccumulator().get();
+
+		if (weatherShortages > 0) {
+			myGreenEnergyAgent.manage().getWeatherShortagesCounter().set(0);
+			myGreenEnergyAgent.writeMonitoringData(WEATHER_SHORTAGES,
+					new WeatherShortages(weatherShortages, PERIODIC_SHORTAGE_REPORT_PERIOD));
 		}
 
-		if (myGreenEnergyAgent.manage().getShortagesAccumulator().get() > 0) {
-			int accumulatedShortages = myGreenEnergyAgent.manage().getShortagesAccumulator().get();
-			Shortages shortages = new Shortages(accumulatedShortages);
-			myGreenEnergyAgent.writeMonitoringData(SHORTAGES, shortages);
+		if (accumulatedShortages > 0) {
+			myGreenEnergyAgent.writeMonitoringData(SHORTAGES, new Shortages(accumulatedShortages));
 		}
 	}
 }

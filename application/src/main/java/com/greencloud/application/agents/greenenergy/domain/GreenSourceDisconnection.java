@@ -23,7 +23,7 @@ public class GreenSourceDisconnection {
 	}
 
 	/**
-	 * Constructor (mostly used in tests)
+	 * Constructor (used in tests)
 	 *
 	 * @param serverToBeDisconnected    server with which Green Source is disconnected
 	 * @param originalAdaptationMessage received adaptation message awaiting a response
@@ -55,23 +55,18 @@ public class GreenSourceDisconnection {
 	public AID getServerToBeDisconnected() {
 		return serverToBeDisconnected;
 	}
-
-	public void setServerToBeDisconnected(AID serverToBeDisconnected) {
-		this.serverToBeDisconnected = serverToBeDisconnected;
-	}
-
 	public ACLMessage getOriginalAdaptationMessage() {
 		return originalAdaptationMessage;
 	}
-
-	public void setOriginalAdaptationMessage(ACLMessage originalAdaptationMessage) {
-		this.originalAdaptationMessage = originalAdaptationMessage;
-	}
-
 	public boolean isBeingDisconnected() {
 		return isBeingDisconnected.get();
 	}
-
+	public void setServerToBeDisconnected(AID serverToBeDisconnected) {
+		this.serverToBeDisconnected = serverToBeDisconnected;
+	}
+	public void setOriginalAdaptationMessage(ACLMessage originalAdaptationMessage) {
+		this.originalAdaptationMessage = originalAdaptationMessage;
+	}
 	public void setBeingDisconnected(boolean beingDisconnected) {
 		isBeingDisconnected.set(beingDisconnected);
 	}

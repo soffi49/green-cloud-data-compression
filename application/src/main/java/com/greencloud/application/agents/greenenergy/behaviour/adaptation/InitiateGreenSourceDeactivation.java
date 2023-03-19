@@ -7,9 +7,9 @@ import static com.greencloud.application.agents.greenenergy.behaviour.adaptation
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static jade.lang.acl.ACLMessage.REQUEST;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.commons.message.MessageBuilder;
@@ -23,7 +23,7 @@ import jade.proto.AchieveREInitiator;
  */
 public class InitiateGreenSourceDeactivation extends AchieveREInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateGreenSourceDeactivation.class);
+	private static final Logger logger = getLogger(InitiateGreenSourceDeactivation.class);
 
 	private final GreenEnergyAgent myGreenAgent;
 	private final ACLMessage adaptationMessage;
@@ -31,14 +31,14 @@ public class InitiateGreenSourceDeactivation extends AchieveREInitiator {
 	private InitiateGreenSourceDeactivation(GreenEnergyAgent agent, ACLMessage deactivationMessage) {
 		super(agent, deactivationMessage);
 		this.myGreenAgent = agent;
-		this.adaptationMessage = agent.adapt().getGreenSourceDisconnectionState().getOriginalAdaptationMessage();
+		this.adaptationMessage = agent.adapt().getDisconnectionState().getOriginalAdaptationMessage();
 	}
 
 	/**
-	 * Method creating a behaviour
+	 * Method creates a behaviour
 	 *
-	 * @param greenEnergyAgent  green source executing the behaviour
-	 * @param server            server to which the message is sent
+	 * @param greenEnergyAgent green source executing the behaviour
+	 * @param server           server to which the message is sent
 	 * @return new InitiateGreenSourceDeactivation behaviour
 	 */
 	public static InitiateGreenSourceDeactivation create(final GreenEnergyAgent greenEnergyAgent, String server) {
@@ -60,8 +60,8 @@ public class InitiateGreenSourceDeactivation extends AchieveREInitiator {
 	@Override
 	protected void handleRefuse(ACLMessage refuse) {
 		logger.info(DEACTIVATION_FAILED_LOG, refuse.getSender().getName());
-		myGreenAgent.adapt().getGreenSourceDisconnectionState().setBeingDisconnected(false);
-		myGreenAgent.send(prepareFailureReply(adaptationMessage.createReply()));
+		myGreenAgent.adapt().getDisconnectionState().setBeingDisconnected(false);
+		myGreenAgent.send(prepareFailureReply(adaptationMessage));
 	}
 
 	/**
@@ -74,13 +74,13 @@ public class InitiateGreenSourceDeactivation extends AchieveREInitiator {
 	protected void handleInform(ACLMessage inform) {
 		logger.info(DEACTIVATION_SUCCEEDED_LOG, inform.getSender().getName());
 
-		final long serverJobsLeftCount = myGreenAgent.getServerJobs().keySet().stream()
+		final long numberOfServerJobs = myGreenAgent.getServerJobs().keySet().stream()
 				.filter(job -> job.getServer().equals(inform.getSender()))
 				.count();
 
-		if (serverJobsLeftCount > 0) {
-			logger.info(DEACTIVATION_FINISH_REMAIN_JOBS_LOG, serverJobsLeftCount);
-			myGreenAgent.adapt().getGreenSourceDisconnectionState().setServerToBeDisconnected(inform.getSender());
+		if (numberOfServerJobs > 0) {
+			logger.info(DEACTIVATION_FINISH_REMAIN_JOBS_LOG, numberOfServerJobs);
+			myGreenAgent.adapt().getDisconnectionState().setServerToBeDisconnected(inform.getSender());
 		} else {
 			logger.info(INITIATE_GREEN_SOURCE_DISCONNECTION_LOG);
 			myGreenAgent.addBehaviour(InitiateGreenSourceDisconnection.create(myGreenAgent, inform.getSender()));

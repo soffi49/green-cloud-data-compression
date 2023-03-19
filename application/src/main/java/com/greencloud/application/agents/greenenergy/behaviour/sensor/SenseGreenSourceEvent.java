@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.greenenergy.behaviour.sensor;
 
+import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.GREEN_ENERGY_ENVIRONMENT_SENSOR_TIMEOUT;
 import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.PHYSICAL_CAUSE;
-import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.WEATHER_CAUSE;
 import static java.util.Objects.isNull;
 
 import java.util.Optional;
@@ -9,14 +9,14 @@ import java.util.Optional;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortageFinish;
-import com.greencloud.application.agents.greenenergy.domain.GreenEnergyAgentConstants;
 import com.gui.agents.GreenEnergyAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 
 import jade.core.behaviours.TickerBehaviour;
 
 /**
- * Behaviour listens and reads the environmental eventsQueue
+ * Behaviour listens and reads the environmental eventsQueue to which new events associated with Green Source Agent
+ * are being added
  */
 public class SenseGreenSourceEvent extends TickerBehaviour {
 
@@ -28,7 +28,7 @@ public class SenseGreenSourceEvent extends TickerBehaviour {
 	 * @param myGreenEnergyAgent agent which is executing the behaviour
 	 */
 	public SenseGreenSourceEvent(final GreenEnergyAgent myGreenEnergyAgent) {
-		super(myGreenEnergyAgent, GreenEnergyAgentConstants.GREEN_ENERGY_ENVIRONMENT_SENSOR_TIMEOUT);
+		super(myGreenEnergyAgent, GREEN_ENERGY_ENVIRONMENT_SENSOR_TIMEOUT);
 		this.myGreenEnergyAgent = myGreenEnergyAgent;
 	}
 
@@ -43,19 +43,15 @@ public class SenseGreenSourceEvent extends TickerBehaviour {
 			return;
 		}
 
-		Optional<PowerShortageEvent> latestEvent = greenEnergyAgentNode.getEvent();
+		final Optional<PowerShortageEvent> latestEvent = greenEnergyAgentNode.getEvent();
+
 		latestEvent.ifPresent(event -> {
 			if (event.isFinished() && event.getCause().equals(PHYSICAL_CAUSE)) {
 				myGreenEnergyAgent.addBehaviour(new AnnounceSourcePowerShortageFinish(myGreenEnergyAgent));
-			} else if (event.getCause().equals(PHYSICAL_CAUSE)) {
-				myGreenEnergyAgent.addBehaviour(new AnnounceSourcePowerShortage(myGreenEnergyAgent,
-						null, event.getOccurrenceTime(), (double) event.getNewMaximumCapacity(), PHYSICAL_CAUSE));
-				myGreenEnergyAgent.manage().getShortagesAccumulator().getAndIncrement();
 			} else {
 				myGreenEnergyAgent.addBehaviour(new AnnounceSourcePowerShortage(myGreenEnergyAgent, null,
-						event.getOccurrenceTime(), (double) event.getNewMaximumCapacity(), WEATHER_CAUSE));
+						event.getOccurrenceTime(), (double) event.getNewMaximumCapacity(), event.getCause()));
 				myGreenEnergyAgent.manage().getShortagesAccumulator().getAndIncrement();
-				myGreenEnergyAgent.manage().getWeatherShortagesCounter().getAndIncrement();
 			}
 		});
 	}

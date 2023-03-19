@@ -7,9 +7,8 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.cancella
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.PRE_EXECUTION;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -37,17 +36,17 @@ public class ListenForCloudNetworkJobCancellation extends CyclicBehaviour {
 	private CloudNetworkAgent myCloudNetworkAgent;
 
 	@Override
-	public void onStart() {
-		super.onStart();
-		myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
-	}
-
-	@Override
 	public void action() {
 		var message = myCloudNetworkAgent.receive(CANCEL_JOB_ANNOUNCEMENT);
 		if (nonNull(message)) {
 			processJobCancellation(message.getContent(), message);
 		}
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		myCloudNetworkAgent = (CloudNetworkAgent) myAgent;
 	}
 
 	private void processJobCancellation(String originalJobId, ACLMessage message) {
@@ -60,7 +59,7 @@ public class ListenForCloudNetworkJobCancellation extends CyclicBehaviour {
 				var jobPartStatus = myCloudNetworkAgent.getNetworkJobs().get(jobPart);
 				myCloudNetworkAgent.getNetworkJobs().remove(jobPart);
 				myCloudNetworkAgent.getServerForJobMap().remove(jobPart.getJobId());
-				if (!List.of(CREATED, PROCESSING).contains(jobPartStatus)) {
+				if (PRE_EXECUTION.getStatuses().contains(jobPartStatus)) {
 					if (!jobPartStatus.equals(ACCEPTED)) {
 						myCloudNetworkAgent.manage()
 								.incrementJobCounter(jobPart.getJobId(), JobExecutionResultEnum.FINISH);

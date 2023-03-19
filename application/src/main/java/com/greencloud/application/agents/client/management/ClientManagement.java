@@ -27,7 +27,7 @@ import com.gui.agents.ClientAgentNode;
 /**
  * Class stores methods used to manage the state of Client Agent
  */
-public class ClientStateManagement extends AbstractAgentManagement {
+public class ClientManagement extends AbstractAgentManagement {
 
 	private static final List<JobClientStatusEnum> SIMULATION_STATUSES = List.of(SCHEDULED, PROCESSED, CREATED);
 	protected ClientAgent clientAgent;
@@ -37,7 +37,7 @@ public class ClientStateManagement extends AbstractAgentManagement {
 	 *
 	 * @param clientAgent client using the state management
 	 */
-	public ClientStateManagement(final ClientAgent clientAgent) {
+	public ClientManagement(final ClientAgent clientAgent) {
 		this.clientAgent = clientAgent;
 	}
 

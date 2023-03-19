@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.client;
 
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.CLIENT_MANAGEMENT;
 import static com.greencloud.application.gui.GuiConnectionProvider.connectToGui;
 import static com.greencloud.application.utils.TimeUtils.convertToInstantTime;
 import static com.greencloud.application.utils.TimeUtils.convertToSimulationTime;
@@ -22,7 +22,7 @@ import com.greencloud.application.agents.client.behaviour.df.FindSchedulerAgent;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.initiator.InitiateNewJobAnnouncement;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.listener.ListenForJobUpdate;
 import com.greencloud.application.agents.client.domain.ClientJobExecution;
-import com.greencloud.application.agents.client.management.ClientStateManagement;
+import com.greencloud.application.agents.client.management.ClientManagement;
 import com.greencloud.application.exception.IncorrectTaskDateException;
 
 import jade.core.behaviours.ParallelBehaviour;
@@ -34,42 +34,6 @@ import jade.core.behaviours.SequentialBehaviour;
 public class ClientAgent extends AbstractClientAgent {
 
 	private static final Logger logger = getLogger(ClientAgent.class);
-
-	/**
-	 * Method run at the agent's start.
-	 * <p> In initialize the Client Agent based on the given by the user arguments and runs the starting behaviours. </p>
-	 */
-	@Override
-	protected void setup() {
-		super.setup();
-		logClientSetUp();
-	}
-
-	@Override
-	public void initializeAgent(final Object[] arguments) {
-		if (nonNull(arguments) && arguments.length == 5) {
-			try {
-				final Instant startTime = convertToInstantTime(arguments[0].toString());
-				final Instant endTime = convertToInstantTime(arguments[1].toString());
-				final Instant deadline = convertToInstantTime(arguments[2].toString());
-				final int power = parseInt(arguments[3].toString());
-				final String jobId = arguments[4].toString();
-
-				initializeJob(startTime, endTime, deadline, power, jobId);
-				this.agentManagementServices.put(STATE_MANAGEMENT, new ClientStateManagement(this));
-
-			} catch (IncorrectTaskDateException e) {
-				logger.error(e.getMessage());
-				doDelete();
-			} catch (NumberFormatException e) {
-				logger.error("The given power is not a number!");
-				doDelete();
-			}
-		} else {
-			logger.error("Incorrect arguments: some parameters for client's job are missing");
-			doDelete();
-		}
-	}
 
 	@Override
 	public void validateAgentArguments() {
@@ -93,6 +57,32 @@ public class ClientAgent extends AbstractClientAgent {
 	}
 
 	@Override
+	public void initializeAgent(final Object[] arguments) {
+		if (nonNull(arguments) && arguments.length == 5) {
+			try {
+				final Instant startTime = convertToInstantTime(arguments[0].toString());
+				final Instant endTime = convertToInstantTime(arguments[1].toString());
+				final Instant deadline = convertToInstantTime(arguments[2].toString());
+				final int power = parseInt(arguments[3].toString());
+				final String jobId = arguments[4].toString();
+
+				initializeJob(startTime, endTime, deadline, power, jobId);
+				this.agentManagementServices.put(CLIENT_MANAGEMENT, new ClientManagement(this));
+
+			} catch (IncorrectTaskDateException e) {
+				logger.error(e.getMessage());
+				doDelete();
+			} catch (NumberFormatException e) {
+				logger.error("The given power is not a number!");
+				doDelete();
+			}
+		} else {
+			logger.error("Incorrect arguments: some parameters for client's job are missing");
+			doDelete();
+		}
+	}
+
+	@Override
 	protected void runStartingBehaviours() {
 		final SequentialBehaviour startingBehaviour = new SequentialBehaviour(this);
 		startingBehaviour.addSubBehaviour(new FindSchedulerAgent());
@@ -105,6 +95,16 @@ public class ClientAgent extends AbstractClientAgent {
 		main.addSubBehaviour(startingBehaviour);
 		addBehaviour(main);
 		setMainBehaviour(main);
+	}
+
+	/**
+	 * Method run at the agent's start.
+	 * <p> In initialize the Client Agent based on the given by the user arguments and runs the starting behaviours. </p>
+	 */
+	@Override
+	protected void setup() {
+		super.setup();
+		logClientSetUp();
 	}
 
 	private void initializeJob(final Instant startTime, final Instant endTime, final Instant deadline, final int power,

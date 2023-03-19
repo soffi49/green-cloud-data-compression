@@ -1,12 +1,12 @@
 package com.greencloud.application.agents;
 
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_CLIENT_NAME;
 import static com.greencloud.commons.agent.AgentType.CLIENT;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.nonNull;
 
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +17,8 @@ import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.greencloud.application.behaviours.ReceiveGUIController;
+import com.greencloud.application.common.constant.LoggingConstant;
+import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.gui.agents.AbstractAgentNode;
@@ -35,13 +37,15 @@ public abstract class AbstractAgent extends Agent {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractAgent.class);
 
 	protected AgentType agentType;
-	private GuiController guiController;
-	private AbstractAgentNode agentNode;
+	protected GuiController guiController;
+	protected AbstractAgentNode agentNode;
+	protected Map<AgentManagementEnum, AbstractAgentManagement> agentManagementServices;
 
-	private ParallelBehaviour mainBehaviour;
+	protected ParallelBehaviour mainBehaviour;
 
 	protected AbstractAgent() {
 		setEnabledO2ACommunication(true, 2);
+		this.agentManagementServices = new EnumMap<>(AgentManagementEnum.class);
 	}
 
 	/**
@@ -72,6 +76,77 @@ public abstract class AbstractAgent extends Agent {
 		addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviours()));
 	}
 
+	/**
+	 * Abstract method invoked when the agent is the target of adaptation
+	 *
+	 * @param adaptationAction adaptation action
+	 * @param actionParameters parameters related with given adaptation
+	 * @return flag indicating if adaptation was successful
+	 */
+	public boolean executeAction(final AdaptationAction adaptationAction,
+			final AdaptationActionParameters actionParameters) {
+		// this method must be overwritten in agent types that will be a target to adaptation
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Abstract method invoked when the agent is the target of adaptation and the adaptation requires communicating
+	 * with other agents (i.e. cannot be executed on the spot)
+	 *
+	 * @param adaptationAction  adaptation action
+	 * @param actionParameters  parameters related with given adaptation
+	 * @param adaptationMessage message with adaptation request
+	 */
+	public void executeAction(final AdaptationAction adaptationAction,
+			final AdaptationActionParameters actionParameters,
+			final ACLMessage adaptationMessage) {
+		// this method can be overwritten in agent types that will be a target to adaptation
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void clean(boolean ok) {
+		if (!ok && nonNull(getGuiController()) && !agentType.equals(CLIENT)) {
+			getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		}
+		super.clean(ok);
+	}
+
+	@Override
+	protected void setup() {
+		logger.info("Setting up Agent {}", getName());
+		if (agentType.equals(CLIENT)) {
+			MDC.put(LoggingConstant.MDC_CLIENT_NAME, super.getLocalName());
+		} else {
+			MDC.put(LoggingConstant.MDC_AGENT_NAME, super.getLocalName());
+		}
+		initializeAgent(getArguments());
+		validateAgentArguments();
+		runStartingBehaviours();
+	}
+
+	@Override
+	protected void takeDown() {
+		logger.info("I'm finished. Bye!");
+		super.takeDown();
+	}
+
+	@Override
+	protected void afterMove() {
+		super.afterMove();
+		guiController.addAgentNodeToGraph(agentNode);
+		agentNode.setDatabaseClient(new TimescaleDatabase());
+	}
+
+	@Override
+	public void addBehaviour(Behaviour b) {
+		if (nonNull(mainBehaviour) && !mainBehaviour.equals(b)) {
+			mainBehaviour.addSubBehaviour(b);
+		} else {
+			super.addBehaviour(b);
+		}
+	}
+
 	public AgentType getAgentType() {
 		return agentType;
 	}
@@ -98,58 +173,5 @@ public abstract class AbstractAgent extends Agent {
 
 	public void writeMonitoringData(DataType dataType, MonitoringData monitoringData) {
 		agentNode.getDatabaseClient().writeMonitoringData(this.getAID().getName(), dataType, monitoringData);
-	}
-
-	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
-		// this method must be overwritten in agent types that will be a target to adaptation
-		throw new UnsupportedOperationException();
-	}
-
-	public void executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters,
-			ACLMessage adaptationMessage) {
-		// this method can be overwritten in agent types that will be a target to adaptation
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	protected void setup() {
-		if (agentType.equals(CLIENT)) {
-			MDC.put(MDC_CLIENT_NAME, super.getLocalName());
-		} else {
-			MDC.put(MDC_AGENT_NAME, super.getLocalName());
-		}
-		initializeAgent(getArguments());
-		validateAgentArguments();
-		runStartingBehaviours();
-	}
-
-	@Override
-	protected void takeDown() {
-		logger.info("I'm finished. Bye!");
-		super.takeDown();
-	}
-
-	@Override
-	public void clean(boolean ok) {
-		if (!ok && Objects.nonNull(getGuiController()) && !agentType.equals(CLIENT)) {
-			getGuiController().removeAgentNodeFromGraph(getAgentNode());
-		}
-		super.clean(ok);
-	}
-
-	@Override
-	public void addBehaviour(Behaviour b) {
-		if (Objects.nonNull(mainBehaviour)) {
-			mainBehaviour.addSubBehaviour(b);
-		} else {
-			super.addBehaviour(b);
-		}
-	}
-
-	@Override
-	protected void afterMove() {
-		super.afterMove();
-		guiController.addAgentNodeToGraph(agentNode);
-		agentNode.setDatabaseClient(new TimescaleDatabase());
 	}
 }

@@ -5,15 +5,15 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.factory.PowerCheckMessageFactory.preparePowerCheckRequest;
 import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.application.domain.MonitoringData;
+import com.greencloud.application.domain.weather.MonitoringData;
 import com.greencloud.application.exception.IncorrectMessageContentException;
 import com.greencloud.commons.domain.job.ServerJob;
 
@@ -25,13 +25,13 @@ import jade.proto.AchieveREInitiator;
  */
 public class RequestWeatherData extends AchieveREInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(RequestWeatherData.class);
+	private static final Logger logger = getLogger(RequestWeatherData.class);
 
-	private final BiConsumer<MonitoringData, IncorrectMessageContentException> weatherHandler;
+	private final BiConsumer<MonitoringData, Exception> weatherHandler;
 	private final Runnable refusalHandler;
 
 	private RequestWeatherData(final GreenEnergyAgent greenEnergyAgent, final ACLMessage request,
-			final BiConsumer<MonitoringData, IncorrectMessageContentException> weatherHandler,
+			final BiConsumer<MonitoringData, Exception> weatherHandler,
 			final Runnable refusalHandler) {
 		super(greenEnergyAgent, request);
 
@@ -52,7 +52,7 @@ public class RequestWeatherData extends AchieveREInitiator {
 	 */
 	public static RequestWeatherData createWeatherRequest(final GreenEnergyAgent greenEnergyAgent,
 			final String protocol, final String conversationId,
-			final BiConsumer<MonitoringData, IncorrectMessageContentException> weatherHandler,
+			final BiConsumer<MonitoringData, Exception> weatherHandler,
 			final Runnable refusalHandler, final ServerJob serverJob) {
 		final ACLMessage request = preparePowerCheckRequest(greenEnergyAgent, serverJob, conversationId, protocol);
 
@@ -74,7 +74,7 @@ public class RequestWeatherData extends AchieveREInitiator {
 	 * @param refusalHandler   function executed when Monitoring agent refuses to retrieve weather data
 	 */
 	public static RequestWeatherData createWeatherRequest(final GreenEnergyAgent greenEnergyAgent,
-			final String protocol, final BiConsumer<MonitoringData, IncorrectMessageContentException> weatherHandler,
+			final String protocol, final BiConsumer<MonitoringData, Exception> weatherHandler,
 			final Runnable refusalHandler) {
 		return createWeatherRequest(greenEnergyAgent, protocol, protocol, weatherHandler, refusalHandler, null);
 	}
@@ -90,9 +90,19 @@ public class RequestWeatherData extends AchieveREInitiator {
 	 * @param serverJob        job for which the weather is to be checked
 	 */
 	public static RequestWeatherData createWeatherRequest(final GreenEnergyAgent greenEnergyAgent,
-			final String protocol, final BiConsumer<MonitoringData, IncorrectMessageContentException> weatherHandler,
+			final String protocol, final BiConsumer<MonitoringData, Exception> weatherHandler,
 			final Runnable refusalHandler, final ServerJob serverJob) {
 		return createWeatherRequest(greenEnergyAgent, protocol, protocol, weatherHandler, refusalHandler, serverJob);
+	}
+
+	/**
+	 * Method executes REFUSE message handler
+	 *
+	 * @param refuse refuse response
+	 */
+	@Override
+	protected void handleRefuse(ACLMessage refuse) {
+		refusalHandler.run();
 	}
 
 	/**
@@ -108,16 +118,6 @@ public class RequestWeatherData extends AchieveREInitiator {
 		} catch (IncorrectMessageContentException e) {
 			weatherHandler.accept(null, e);
 		}
-	}
-
-	/**
-	 * Method executes REFUSE message handler
-	 *
-	 * @param refuse refuse response
-	 */
-	@Override
-	protected void handleRefuse(ACLMessage refuse) {
-		refusalHandler.run();
 	}
 
 }

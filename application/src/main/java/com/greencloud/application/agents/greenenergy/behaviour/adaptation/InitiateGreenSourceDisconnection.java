@@ -6,11 +6,10 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
 import static jade.lang.acl.ACLMessage.REQUEST;
-
-import java.util.Objects;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.commons.message.MessageBuilder;
@@ -25,7 +24,7 @@ import jade.proto.AchieveREInitiator;
  */
 public class InitiateGreenSourceDisconnection extends AchieveREInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateGreenSourceDisconnection.class);
+	private static final Logger logger = getLogger(InitiateGreenSourceDisconnection.class);
 
 	private final GreenEnergyAgent myGreenAgent;
 	private final ACLMessage adaptationMessage;
@@ -33,7 +32,7 @@ public class InitiateGreenSourceDisconnection extends AchieveREInitiator {
 	private InitiateGreenSourceDisconnection(GreenEnergyAgent agent, ACLMessage deactivationMessage) {
 		super(agent, deactivationMessage);
 		this.myGreenAgent = agent;
-		this.adaptationMessage = agent.adapt().getGreenSourceDisconnectionState().getOriginalAdaptationMessage();
+		this.adaptationMessage = agent.adapt().getDisconnectionState().getOriginalAdaptationMessage();
 	}
 
 	/**
@@ -62,8 +61,8 @@ public class InitiateGreenSourceDisconnection extends AchieveREInitiator {
 	@Override
 	protected void handleRefuse(ACLMessage refuse) {
 		logger.info(DISCONNECTION_FAILED_LOG, refuse.getSender().getName());
-		myGreenAgent.adapt().getGreenSourceDisconnectionState().reset();
-		myGreenAgent.send(prepareFailureReply(adaptationMessage.createReply()));
+		myGreenAgent.adapt().getDisconnectionState().reset();
+		myGreenAgent.send(prepareFailureReply(adaptationMessage));
 	}
 
 	/**
@@ -75,10 +74,10 @@ public class InitiateGreenSourceDisconnection extends AchieveREInitiator {
 	@Override
 	protected void handleInform(ACLMessage inform) {
 		logger.info(DISCONNECTION_SUCCEEDED_LOG, inform.getSender().getName());
-		myGreenAgent.adapt().getGreenSourceDisconnectionState().reset();
-		myGreenAgent.send(prepareInformReply(adaptationMessage.createReply()));
+		myGreenAgent.adapt().getDisconnectionState().reset();
+		myGreenAgent.send(prepareInformReply(adaptationMessage));
 
-		if (Objects.nonNull(myGreenAgent.getAgentNode())) {
+		if (nonNull(myGreenAgent.getAgentNode())) {
 			((GreenEnergyAgentNode) myGreenAgent.getAgentNode()).updateServerConnection(
 					inform.getSender().getName().split("@")[0], false);
 		}
