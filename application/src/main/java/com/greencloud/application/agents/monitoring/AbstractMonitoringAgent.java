@@ -1,15 +1,16 @@
 package com.greencloud.application.agents.monitoring;
 
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.WEATHER_MANAGEMENT;
+import static com.greencloud.commons.agent.AgentType.MONITORING;
+
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.monitoring.management.MonitoringWeatherManagement;
-import com.greencloud.commons.agent.AgentType;
 
 /**
  * Abstract agent class storing data of the Monitoring Agent
  */
 public abstract class AbstractMonitoringAgent extends AbstractAgent {
 
-	private final MonitoringWeatherManagement weatherManagement;
 	protected double badStubProbability;
 
 	/**
@@ -19,12 +20,11 @@ public abstract class AbstractMonitoringAgent extends AbstractAgent {
 	 */
 	AbstractMonitoringAgent() {
 		super();
-		this.weatherManagement = new MonitoringWeatherManagement();
-		agentType = AgentType.MONITORING;
+		this.agentType = MONITORING;
 	}
 
 	public MonitoringWeatherManagement manageWeather() {
-		return weatherManagement;
+		return (MonitoringWeatherManagement) agentManagementServices.get(WEATHER_MANAGEMENT);
 	}
 
 	public double getBadStubProbability() {

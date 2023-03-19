@@ -1,6 +1,7 @@
 package com.greencloud.application.agents.monitoring.behaviour.templates;
 
 import static jade.lang.acl.ACLMessage.REQUEST;
+import static jade.lang.acl.MessageTemplate.MatchPerformative;
 
 import jade.lang.acl.MessageTemplate;
 
@@ -9,5 +10,5 @@ import jade.lang.acl.MessageTemplate;
  */
 public class WeatherServingMessageTemplates {
 
-	public static final MessageTemplate SERVE_FORECAST_TEMPLATE  = MessageTemplate.MatchPerformative(REQUEST);
+	public static final MessageTemplate SERVE_FORECAST_TEMPLATE  = MatchPerformative(REQUEST);
 }

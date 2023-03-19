@@ -1,9 +1,13 @@
 package com.greencloud.application.agents.monitoring.management;
 
+import static com.greencloud.application.agents.monitoring.management.logs.MonitoringManagementLog.RETRIEVE_WEATHER_LOG;
+import static com.greencloud.application.mapper.WeatherMapper.mapToWeatherData;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static java.lang.Math.abs;
 import static java.util.Comparator.comparingLong;
 import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -11,28 +15,27 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.greencloud.application.agents.monitoring.management.logs.MonitoringManagementLog;
-import com.greencloud.application.domain.GreenSourceForecastData;
-import com.greencloud.application.domain.GreenSourceWeatherData;
-import com.greencloud.application.domain.ImmutableMonitoringData;
-import com.greencloud.application.domain.ImmutableWeatherData;
-import com.greencloud.application.domain.MonitoringData;
-import com.greencloud.application.domain.WeatherData;
+import com.greencloud.application.agents.AbstractAgentManagement;
+import com.greencloud.application.domain.agent.GreenSourceForecastData;
+import com.greencloud.application.domain.agent.GreenSourceWeatherData;
+import com.greencloud.application.domain.weather.ImmutableMonitoringData;
+import com.greencloud.application.domain.weather.MonitoringData;
+import com.greencloud.application.domain.weather.WeatherData;
 import com.greencloud.application.exception.APIFetchInternalException;
 import com.greencloud.application.weather.api.OpenWeatherMapApi;
 import com.greencloud.application.weather.cache.WeatherCache;
-import com.greencloud.application.weather.domain.AbstractWeather;
+import com.greencloud.application.weather.domain.CurrentWeather;
+import com.greencloud.application.weather.domain.Forecast;
 import com.greencloud.application.weather.domain.FutureWeather;
 import com.greencloud.commons.domain.location.Location;
 
 /**
  * Set of methods used in weather management
  */
-public class MonitoringWeatherManagement implements Serializable {
+public class MonitoringWeatherManagement extends AbstractAgentManagement implements Serializable {
 
-	private static final Logger logger = LoggerFactory.getLogger(MonitoringWeatherManagement.class);
+	private static final Logger logger = getLogger(MonitoringWeatherManagement.class);
 
 	private final transient OpenWeatherMapApi api;
 	private final transient WeatherCache cache;
@@ -59,13 +62,13 @@ public class MonitoringWeatherManagement implements Serializable {
 	/**
 	 * Method retrieves weather for given location at current moment
 	 *
-	 * @param requestData information about location
+	 * @param data information about location
 	 * @return weather for current moment
 	 */
-	public MonitoringData getWeather(GreenSourceWeatherData requestData) {
-		logger.info(MonitoringManagementLog.RETRIEVE_WEATHER_LOG, requestData.getLocation());
+	public MonitoringData getWeather(final GreenSourceWeatherData data) {
+		logger.info(RETRIEVE_WEATHER_LOG, data.getLocation());
 		return ImmutableMonitoringData.builder()
-				.addWeatherData(getWeatherData(requestData.getLocation(), convertToRealTime(getCurrentTime())))
+				.addWeatherData(getWeatherData(data.getLocation(), convertToRealTime(getCurrentTime())))
 				.build();
 	}
 
@@ -75,10 +78,10 @@ public class MonitoringWeatherManagement implements Serializable {
 	 * @param requestData information about location and time
 	 * @return weather for given time
 	 */
-	public MonitoringData getForecast(GreenSourceForecastData requestData) {
-		var location = requestData.getLocation();
-		logger.info(MonitoringManagementLog.RETRIEVE_WEATHER_LOG, location);
-		var weatherData = requestData.getTimetable().stream()
+	public MonitoringData getForecast(final GreenSourceForecastData requestData) {
+		final Location location = requestData.getLocation();
+		logger.info(RETRIEVE_WEATHER_LOG, location);
+		final List<WeatherData> weatherData = requestData.getTimetable().stream()
 				.map(time -> getForecastData(location, time))
 				.toList();
 		return ImmutableMonitoringData.builder()
@@ -86,44 +89,39 @@ public class MonitoringWeatherManagement implements Serializable {
 				.build();
 	}
 
-	private WeatherData getWeatherData(Location location, Instant time) {
-		return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
-					var weather = api.getWeather(location);
-					if (nonNull(weather)) {
-						cache.updateCache(location, weather);
-						return buildWeatherData(weather, weather.getTimestamp());
-					} else {
-						throw new APIFetchInternalException();
-					}
-				}
-		);
+	private WeatherData getWeatherData(final Location location, final Instant time) {
+		return cache.getForecast(location, time)
+				.map(forecast -> mapToWeatherData(forecast, time))
+				.orElseGet(() -> {
+							final CurrentWeather weather = api.getWeather(location);
+							if (nonNull(weather)) {
+								cache.updateCache(location, weather);
+								return mapToWeatherData(weather, weather.getTimestamp());
+							} else {
+								throw new APIFetchInternalException();
+							}
+						}
+				);
 	}
 
 	private WeatherData getForecastData(Location location, Instant time) {
-		return cache.getForecast(location, time).map(f -> buildWeatherData(f, time)).orElseGet(() -> {
-					var forecast = api.getForecast(location);
-					if (nonNull(forecast)) {
-						cache.updateCache(location, forecast);
-						return buildWeatherData(getNearestForecast(forecast.getList(), time), time);
-					} else {
-						throw new APIFetchInternalException();
-					}
-				}
-		);
+		return cache.getForecast(location, time)
+				.map(forecast -> mapToWeatherData(forecast, time))
+				.orElseGet(() -> {
+							final Forecast forecast = api.getForecast(location);
+							if (nonNull(forecast)) {
+								cache.updateCache(location, forecast);
+								return mapToWeatherData(getNearestForecast(forecast.getList(), time), time);
+							} else {
+								throw new APIFetchInternalException();
+							}
+						}
+				);
 	}
 
-	private WeatherData buildWeatherData(AbstractWeather weather, Instant timestamp) {
-		return ImmutableWeatherData.builder()
-				.temperature(weather.getMain().getTemp())
-				.cloudCover(weather.getClouds().getAll())
-				.windSpeed(weather.getWind().getSpeed())
-				.time(timestamp)
-				.build();
-	}
-
-	private FutureWeather getNearestForecast(List<FutureWeather> forecasts, Instant timestamp) {
+	private FutureWeather getNearestForecast(final List<FutureWeather> forecasts, final Instant timestamp) {
 		return forecasts.stream()
-				.min(comparingLong(i -> Math.abs(i.getTimestamp().getEpochSecond() - timestamp.getEpochSecond())))
+				.min(comparingLong(i -> abs(i.getTimestamp().getEpochSecond() - timestamp.getEpochSecond())))
 				.orElseThrow(() -> new NoSuchElementException("No value present"));
 	}
 }
