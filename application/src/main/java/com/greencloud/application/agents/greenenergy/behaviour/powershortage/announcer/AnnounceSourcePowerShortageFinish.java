@@ -14,15 +14,12 @@ import static com.greencloud.application.messages.domain.constants.MessageProtoc
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD;
 import static java.lang.String.join;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -63,7 +60,7 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 	@Override
 	public void action() {
 		logger.info(POWER_SHORTAGE_SOURCE_FINISH_LOG);
-		final List<ServerJob> jobsOnHold = getJobsOnHold();
+		final List<ServerJob> jobsOnHold = myGreenAgent.manage().getActiveJobsOnHold(myGreenAgent.getServerJobs());
 
 		if (jobsOnHold.isEmpty()) {
 			logger.info(POWER_SHORTAGE_SOURCE_FINISH_NO_JOBS_LOG);
@@ -107,8 +104,8 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 
 				myGreenAgent.getServerJobs().replace(job, newStatus);
 				myGreenAgent.manage().updateGUI();
-				myGreenAgent.send(prepareJobPowerShortageInformation(mapToJobInstanceId(job), job.getServer(),
-						POWER_SHORTAGE_FINISH_ALERT_PROTOCOL));
+				myGreenAgent.send(prepareJobPowerShortageInformation(mapToJobInstanceId(job),
+						POWER_SHORTAGE_FINISH_ALERT_PROTOCOL, job.getServer()));
 			}
 		};
 	}
@@ -116,13 +113,5 @@ public class AnnounceSourcePowerShortageFinish extends OneShotBehaviour {
 	private Runnable getRequestRefuseHandler(final ServerJob affectedJob) {
 		MDC.put(MDC_JOB_ID, affectedJob.getJobId());
 		return () -> logger.info(WEATHER_UNAVAILABLE_JOB_LOG, affectedJob.getJobId());
-	}
-
-	private List<ServerJob> getJobsOnHold() {
-		return myGreenAgent.getServerJobs().entrySet().stream()
-				.filter(job -> EXECUTING_ON_HOLD.getStatuses().contains(job.getValue()))
-				.filter(job -> job.getKey().getEndTime().isAfter(getCurrentTime()))
-				.map(Map.Entry::getKey)
-				.toList();
 	}
 }

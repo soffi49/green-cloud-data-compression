@@ -65,9 +65,7 @@ public class ClientAgent extends AbstractClientAgent {
 				final Instant deadline = convertToInstantTime(arguments[2].toString());
 				final int power = parseInt(arguments[3].toString());
 				final String jobId = arguments[4].toString();
-
 				initializeJob(startTime, endTime, deadline, power, jobId);
-				this.agentManagementServices.put(CLIENT_MANAGEMENT, new ClientManagement(this));
 
 			} catch (IncorrectTaskDateException e) {
 				logger.error(e.getMessage());
@@ -80,6 +78,11 @@ public class ClientAgent extends AbstractClientAgent {
 			logger.error("Incorrect arguments: some parameters for client's job are missing");
 			doDelete();
 		}
+	}
+
+	@Override
+	protected void initializeAgentManagements() {
+		this.agentManagementServices.put(CLIENT_MANAGEMENT, new ClientManagement(this));
 	}
 
 	@Override

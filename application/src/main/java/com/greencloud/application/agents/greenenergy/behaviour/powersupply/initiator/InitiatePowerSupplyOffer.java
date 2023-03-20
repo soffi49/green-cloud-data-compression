@@ -80,13 +80,14 @@ public class InitiatePowerSupplyOffer extends ProposeInitiator {
 	@Override
 	protected void handleAcceptProposal(final ACLMessage acceptProposal) {
 		final JobWithProtocol jobWithProtocol = readMessageContent(acceptProposal, JobWithProtocol.class);
-		final ServerJob job = getJobByIdAndStartDateAndServer(jobWithProtocol.getJobInstanceIdentifier(),
-				acceptProposal.getSender(), myGreenEnergyAgent.getServerJobs());
+		final JobInstanceIdentifier jobInstance = jobWithProtocol.getJobInstanceIdentifier();
+		final ServerJob job = getJobByIdAndStartDateAndServer(jobInstance, acceptProposal.getSender(),
+				myGreenEnergyAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			final Optional<Double> averageAvailablePower =
 					myGreenEnergyAgent.power().getAvailablePower(job, weather, true);
-			myGreenEnergyAgent.manage().incrementJobCounter(job.getJobId(), ACCEPTED);
+			myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, ACCEPTED);
 
 			MDC.put(MDC_JOB_ID, job.getJobId());
 			if (averageAvailablePower.isEmpty() || job.getPower() > averageAvailablePower.get()) {
@@ -134,7 +135,7 @@ public class InitiatePowerSupplyOffer extends ProposeInitiator {
 		final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
 		final String responseProtocol = getResponseProtocol(jobWithProtocol.getReplyProtocol());
 
-		myGreenEnergyAgent.manage().incrementJobCounter(jobInstanceId.getJobId(), FAILED);
+		myGreenEnergyAgent.manage().incrementJobCounter(jobInstanceId, FAILED);
 		myGreenEnergyAgent.send(prepareFailureReply(proposal, jobInstanceId, responseProtocol));
 	}
 

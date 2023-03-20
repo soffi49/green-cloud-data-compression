@@ -7,6 +7,7 @@ import static com.greencloud.application.agents.monitoring.domain.MonitoringAgen
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.OFFLINE_MODE;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.STUB_DATA;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.WEATHER_REQUESTS_IN_BATCH;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.PowerCheckMessageFactory.prepareWeatherDataResponse;
@@ -19,6 +20,7 @@ import java.util.Random;
 
 import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.monitoring.MonitoringAgent;
 import com.greencloud.application.domain.agent.GreenSourceForecastData;
@@ -58,6 +60,7 @@ public class ServeForecastWeather extends CyclicBehaviour {
 		if (nonNull(messages)) {
 			ListUtils.partition(messages, WEATHER_REQUESTS_IN_BATCH).stream().parallel()
 					.forEach(list -> list.forEach(msg -> {
+						MDC.put(MDC_AGENT_NAME, myAgent.getLocalName());
 						logger.info(SERVE_FORECAST_LOG);
 						final boolean isPeriodicCheck = msg.getConversationId().equals(PERIODIC_WEATHER_CHECK_PROTOCOL);
 						final MonitoringData data = isPeriodicCheck ?

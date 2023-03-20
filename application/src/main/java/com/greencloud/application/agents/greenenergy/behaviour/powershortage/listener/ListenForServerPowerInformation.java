@@ -98,7 +98,7 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 		MDC.put(MDC_JOB_ID, jobInstance.getJobId());
 		if (nonNull(affectedJob)) {
 			logger.info(SERVER_POWER_SHORTAGE_START_LOG, jobInstance.getJobId());
-			myGreenEnergyAgent.manage().divideServerJobForPowerShortage(affectedJob, shortageStartTime);
+			myGreenEnergyAgent.manage().divideJobForPowerShortage(affectedJob, shortageStartTime);
 		} else {
 			logger.info(SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG, jobInstance.getJobId());
 		}

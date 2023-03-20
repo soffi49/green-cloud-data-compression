@@ -1,92 +1,61 @@
 package com.greencloud.application.agents.server;
 
-import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
-import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
-import static com.greencloud.application.agents.server.domain.ServerAgentConstants.MAX_AVAILABLE_POWER_DIFFERENCE;
-import static com.greencloud.application.mapper.JsonMapper.getMapper;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.COMMUNICATION_MANAGEMENT;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
+import static com.greencloud.commons.agent.AgentType.SERVER;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.database.knowledge.domain.action.AdaptationAction;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.server.management.ServerAdaptationManagement;
-import com.greencloud.application.agents.server.management.ServerConfigManagement;
+import com.greencloud.application.agents.server.management.ServerCommunicationManagement;
 import com.greencloud.application.agents.server.management.ServerStateManagement;
-import com.greencloud.application.domain.GreenSourceData;
-import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
-import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
-import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
 
 import jade.core.AID;
-import jade.lang.acl.ACLMessage;
 
 /**
  * Abstract agent class storing data of the Server Agent
  */
 public abstract class AbstractServerAgent extends AbstractAgent {
-
-	protected transient ServerStateManagement stateManagement;
-	protected transient ServerConfigManagement configManagement;
-	protected transient ServerAdaptationManagement adaptationManagement;
-	protected int initialMaximumCapacity;
-	protected int currentMaximumCapacity;
-
-	protected boolean isDisabled;
 	protected AtomicLong currentlyProcessing;
 	protected ConcurrentMap<ClientJob, JobExecutionStatusEnum> serverJobs;
-	protected Map<String, AID> greenSourceForJobMap;
-	protected Map<AID, Boolean> ownedGreenSources;
+	protected ConcurrentMap<AID, Integer> weightsForGreenSourcesMap;
+	protected ConcurrentMap<String, AID> greenSourceForJobMap;
+	protected ConcurrentMap<AID, Boolean> ownedGreenSources;
 	protected AID ownerCloudNetworkAgent;
+
+	protected int initialMaximumCapacity;
+	protected int currentMaximumCapacity;
+	protected boolean isDisabled;
+	protected double pricePerHour;
+	protected int jobProcessingLimit;
 
 	AbstractServerAgent() {
 		super();
+
 		serverJobs = new ConcurrentHashMap<>();
-		initialMaximumCapacity = 0;
-		ownedGreenSources = new HashMap<>();
-		greenSourceForJobMap = new HashMap<>();
+		ownedGreenSources = new ConcurrentHashMap<>();
+		greenSourceForJobMap = new ConcurrentHashMap<>();
+		weightsForGreenSourcesMap = new ConcurrentHashMap<>();
 		currentlyProcessing = new AtomicLong(0);
-		agentType = AgentType.SERVER;
+		agentType = SERVER;
 	}
 
-	/**
-	 * Method chooses the green source for job execution
-	 *
-	 * @param greenSourceOffers offers from green sources
-	 * @return chosen offer
-	 */
-	public ACLMessage chooseGreenSourceToExecuteJob(final List<ACLMessage> greenSourceOffers) {
-		return greenSourceOffers.stream().min(this::compareGreenSourceOffers).orElseThrow();
+	public ServerStateManagement manage() {
+		return (ServerStateManagement) agentManagementServices.get(STATE_MANAGEMENT);
 	}
 
-	private int compareGreenSourceOffers(final ACLMessage offer1, final ACLMessage offer2) {
-		GreenSourceData greenSource1;
-		GreenSourceData greenSource2;
-		int weight1 = this.manageConfig().getWeightsForGreenSourcesMap().get(offer1.getSender());
-		int weight2 = this.manageConfig().getWeightsForGreenSourcesMap().get(offer2.getSender());
-		try {
-			greenSource1 = getMapper().readValue(offer1.getContent(), GreenSourceData.class);
-			greenSource2 = getMapper().readValue(offer2.getContent(), GreenSourceData.class);
-		} catch (JsonProcessingException e) {
-			return Integer.MAX_VALUE;
-		}
-		double powerDifference =
-				greenSource2.getAvailablePowerInTime() * weight2 - greenSource1.getAvailablePowerInTime() * weight1;
-		double errorDifference = (greenSource1.getPowerPredictionError() - greenSource2.getPowerPredictionError());
-		int priceDifference = (int) (greenSource1.getPricePerPowerUnit() - greenSource2.getPricePerPowerUnit());
+	public ServerAdaptationManagement adapt() {
+		return (ServerAdaptationManagement) agentManagementServices.get(ADAPTATION_MANAGEMENT);
+	}
 
-		return (int) (errorDifference != 0 ?
-				Math.signum(errorDifference) :
-				MAX_AVAILABLE_POWER_DIFFERENCE.isValidValue((long) powerDifference) ?
-						priceDifference :
-						Math.signum(powerDifference));
+	public ServerCommunicationManagement message() {
+		return (ServerCommunicationManagement) agentManagementServices.get(COMMUNICATION_MANAGEMENT);
 	}
 
 	public int getInitialMaximumCapacity() {
@@ -105,16 +74,28 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 		return ownerCloudNetworkAgent;
 	}
 
-	public Map<ClientJob, JobExecutionStatusEnum> getServerJobs() {
+	public ConcurrentMap<ClientJob, JobExecutionStatusEnum> getServerJobs() {
 		return serverJobs;
 	}
 
-	public Map<AID, Boolean> getOwnedGreenSources() {
+	public ConcurrentMap<AID, Boolean> getOwnedGreenSources() {
 		return ownedGreenSources;
 	}
 
-	public Map<String, AID> getGreenSourceForJobMap() {
+	public ConcurrentMap<String, AID> getGreenSourceForJobMap() {
 		return greenSourceForJobMap;
+	}
+
+	public double getPricePerHour() {
+		return pricePerHour;
+	}
+
+	public ConcurrentMap<AID, Integer> getWeightsForGreenSourcesMap() {
+		return weightsForGreenSourcesMap;
+	}
+
+	public void setWeightsForGreenSourcesMap(ConcurrentMap<AID, Integer> weightsForGreenSourcesMap) {
+		this.weightsForGreenSourcesMap = weightsForGreenSourcesMap;
 	}
 
 	public boolean isDisabled() {
@@ -129,18 +110,6 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 		isDisabled = false;
 	}
 
-	public ServerStateManagement manage() {
-		return stateManagement;
-	}
-
-	public ServerConfigManagement manageConfig() {
-		return configManagement;
-	}
-
-	public ServerAdaptationManagement adapt() {
-		return adaptationManagement;
-	}
-
 	public void tookJobIntoProcessing() {
 		currentlyProcessing.incrementAndGet();
 	}
@@ -150,23 +119,6 @@ public abstract class AbstractServerAgent extends AbstractAgent {
 	}
 
 	public boolean canTakeIntoProcessing() {
-		return currentlyProcessing.get() < manageConfig().getJobProcessingLimit() && !isDisabled();
-	}
-
-	@Override
-	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
-		if (adaptationAction.getAction() == CHANGE_GREEN_SOURCE_WEIGHT) {
-			return adapt()
-					.changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
-		}
-		return false;
-	}
-
-	@Override
-	public void executeAction(final AdaptationAction adaptationAction,
-			final AdaptationActionParameters actionParameters, final ACLMessage adaptationMessage) {
-		if (adaptationAction.getAction() == DISABLE_SERVER) {
-			adapt().disableServer(adaptationMessage);
-		}
+		return currentlyProcessing.get() < jobProcessingLimit && !isDisabled;
 	}
 }

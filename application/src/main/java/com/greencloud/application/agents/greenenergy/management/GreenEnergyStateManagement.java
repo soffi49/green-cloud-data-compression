@@ -5,7 +5,8 @@ import static com.greencloud.application.agents.greenenergy.management.logs.Gree
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.POWER_JOB_FAILED_LOG;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.POWER_JOB_FINISH_LOG;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.POWER_JOB_START_LOG;
-import static com.greencloud.application.utils.JobUtils.divideJobForTransfer;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
+import static com.greencloud.application.utils.JobUtils.calculateExpectedJobEndTime;
 import static com.greencloud.application.utils.JobUtils.getJobCount;
 import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
 import static com.greencloud.application.utils.StateManagementUtils.getCurrentPowerInUse;
@@ -23,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 
@@ -34,6 +34,7 @@ import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.adaptation.InitiateGreenSourceDisconnection;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.handler.HandleManualPowerSupplyFinish;
 import com.greencloud.application.domain.job.JobCounter;
+import com.greencloud.commons.domain.job.PowerJob;
 import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
 import com.gui.agents.GreenEnergyAgentNode;
@@ -63,22 +64,6 @@ public class GreenEnergyStateManagement extends AbstractStateManagement {
 	}
 
 	/**
-	 * Method creates new instances for given server job that will be affected by the power shortage and defines
-	 * the post job division handler.
-	 */
-	public ServerJob divideServerJobForPowerShortage(final ServerJob serverJob, final Instant powerShortageStart) {
-		final BiConsumer<ServerJob, ServerJob> jobDivisionHandler = (affectedJob, nonAffectedJob) -> {
-			incrementJobCounter(affectedJob.getJobId(), ACCEPTED);
-			greenEnergyAgent.addBehaviour(HandleManualPowerSupplyFinish.create(greenEnergyAgent, nonAffectedJob));
-		};
-
-		final ServerJob jobToTransfer = divideJobForTransfer(serverJob, powerShortageStart,
-				greenEnergyAgent.getServerJobs(), jobDivisionHandler);
-		updateGUI();
-		return jobToTransfer;
-	}
-
-	/**
 	 * Method removes a job from Green Source map.
 	 * Then it performs post-removal actions that verify if the given Green Source is undergoing disconnection, and
 	 * if so - checks if the Green Source can be fully disconnected
@@ -99,6 +84,18 @@ public class GreenEnergyStateManagement extends AbstractStateManagement {
 		}
 	}
 
+	/**
+	 * Method creates new instances for given server job that will be affected by the power shortage and executes
+	 * the post job division handler.
+	 *
+	 * @param job                job that is to be divided into instances
+	 * @param powerShortageStart time when the power shortage will start
+	 * @return job instance for transfer
+	 */
+	public ServerJob divideJobForPowerShortage(final ServerJob job, final Instant powerShortageStart) {
+		return super.divideJobForPowerShortage(job, powerShortageStart, greenEnergyAgent.getServerJobs());
+	}
+
 	@Override
 	protected ConcurrentMap<JobExecutionResultEnum, JobCounter> getJobCountersMap() {
 		return new ConcurrentHashMap<>(Map.of(
@@ -113,6 +110,13 @@ public class GreenEnergyStateManagement extends AbstractStateManagement {
 						logger.info(POWER_JOB_FINISH_LOG, jobId, jobCounters.get(FINISH).getCount(),
 								jobCounters.get(STARTED).getCount()))
 		));
+	}
+
+	@Override
+	protected <T extends PowerJob> void processJobDivision(T affectedJob, T nonAffectedJob) {
+		incrementJobCounter(mapToJobInstanceId(affectedJob), ACCEPTED);
+		greenEnergyAgent.addBehaviour(HandleManualPowerSupplyFinish.create(greenEnergyAgent,
+				calculateExpectedJobEndTime(affectedJob), (ServerJob) nonAffectedJob));
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 import org.slf4j.Logger;
 
@@ -65,29 +66,29 @@ public class CloudNetworkStateManagement extends AbstractStateManagement {
 	}
 
 	/**
-	 * Method compares offers for job execution proposed by 2 servers
+	 * Method returns comparator that enables to evaluate which Server proposal is better
 	 *
-	 * @param offer1 first offer used in comparison
-	 * @param offer2 second offer used in comparison
-	 * @return method returns:
+	 * @return method comparator returns:
 	 * <p> val > 0 - if the offer1 is better</p>
 	 * <p> val = 0 - if both offers are equivalently good</p>
 	 * <p> val < 0 - if the offer2 is better</p>
 	 */
-	public int compareServerOffers(final ACLMessage offer1, final ACLMessage offer2) {
-		final int weight1 = cloudNetworkAgent.getWeightsForServersMap().get(offer1.getSender());
-		final int weight2 = cloudNetworkAgent.getWeightsForServersMap().get(offer2.getSender());
+	public BiFunction<ACLMessage, ACLMessage, Integer> offerComparator() {
+		return (offer1, offer2) -> {
+			final int weight1 = cloudNetworkAgent.getWeightsForServersMap().get(offer1.getSender());
+			final int weight2 = cloudNetworkAgent.getWeightsForServersMap().get(offer2.getSender());
 
-		final Comparator<ServerData> comparator = (server1Data, server2Data) -> {
-			final int powerDifference =
-					(server2Data.getAvailablePower() * weight2) - (server1Data.getAvailablePower() * weight1);
-			final double priceDifference =
-					((server1Data.getServicePrice() * 1 / weight1) - (server2Data.getServicePrice() * 1 / weight2));
+			final Comparator<ServerData> comparator = (server1Data, server2Data) -> {
+				final int powerDifference =
+						(server2Data.getAvailablePower() * weight2) - (server1Data.getAvailablePower() * weight1);
+				final double priceDifference =
+						((server1Data.getServicePrice() * 1 / weight1) - (server2Data.getServicePrice() * 1 / weight2));
 
-			return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? (int) priceDifference : powerDifference;
+				return MAX_POWER_DIFFERENCE.isValidIntValue(powerDifference) ? (int) priceDifference : powerDifference;
+			};
+
+			return compareReceivedOffers(offer1, offer2, ServerData.class, comparator);
 		};
-
-		return compareReceivedOffers(offer1, offer2, ServerData.class, comparator);
 	}
 
 	@Override

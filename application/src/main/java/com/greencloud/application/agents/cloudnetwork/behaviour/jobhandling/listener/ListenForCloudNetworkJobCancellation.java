@@ -5,6 +5,7 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.cancella
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.CANCELLING_JOB_PARTS_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.templates.JobCancellationMessageTemplates.CANCEL_JOB_ANNOUNCEMENT;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.PRE_EXECUTION;
@@ -59,10 +60,10 @@ public class ListenForCloudNetworkJobCancellation extends CyclicBehaviour {
 				var jobPartStatus = myCloudNetworkAgent.getNetworkJobs().get(jobPart);
 				myCloudNetworkAgent.getNetworkJobs().remove(jobPart);
 				myCloudNetworkAgent.getServerForJobMap().remove(jobPart.getJobId());
-				if (PRE_EXECUTION.getStatuses().contains(jobPartStatus)) {
+				if (!PRE_EXECUTION.getStatuses().contains(jobPartStatus)) {
 					if (!jobPartStatus.equals(ACCEPTED)) {
 						myCloudNetworkAgent.manage()
-								.incrementJobCounter(jobPart.getJobId(), JobExecutionResultEnum.FINISH);
+								.incrementJobCounter(mapToJobInstanceId(jobPart), JobExecutionResultEnum.FINISH);
 					} else {
 						myCloudNetworkAgent.getGuiController().updateAllJobsCountByValue(-1);
 					}

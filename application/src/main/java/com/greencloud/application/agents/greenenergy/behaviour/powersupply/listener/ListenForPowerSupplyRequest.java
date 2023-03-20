@@ -8,6 +8,7 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powersuppl
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.template.PowerSupplyMessageTemplates.POWER_SUPPLY_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData.createWeatherRequest;
 import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.MAX_NUMBER_OF_SERVER_MESSAGES;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToServerJob;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
@@ -62,6 +63,7 @@ public class ListenForPowerSupplyRequest extends CyclicBehaviour {
 
 		if (nonNull(messages)) {
 			messages.stream().parallel().forEach(message -> {
+				MDC.put(MDC_AGENT_NAME, myAgent.getLocalName());
 				final PowerJob job = readMessageContent(message, PowerJob.class);
 
 				if (nonNull(job)) {

@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.server.behaviour.sensor;
 
-import static com.greencloud.application.agents.server.domain.ServerAgentConstants.SERVER_ENVIRONMENT_SENSOR_TIMEOUT;
+import static com.greencloud.application.agents.server.constants.ServerAgentConstants.SERVER_ENVIRONMENT_SENSOR_TIMEOUT;
 import static java.util.Objects.isNull;
 
 import java.util.Optional;
@@ -14,7 +14,8 @@ import com.gui.event.domain.PowerShortageEvent;
 import jade.core.behaviours.TickerBehaviour;
 
 /**
- * Behaviour listens and reads environmental eventsQueue
+ * Behaviour listens and reads environmental eventsQueue to which new events associated with Server Agent
+ * are being added
  */
 public class SenseServerEvent extends TickerBehaviour {
 
@@ -41,14 +42,12 @@ public class SenseServerEvent extends TickerBehaviour {
 			return;
 		}
 
-		Optional<PowerShortageEvent> latestEvent = serverAgentNode.getEvent();
+		final Optional<PowerShortageEvent> latestEvent = serverAgentNode.getEvent();
 		latestEvent.ifPresent(event -> {
 			if (event.isFinished()) {
 				myServerAgent.addBehaviour(new AnnounceServerPowerShortageFinish(myServerAgent));
 			} else {
-				myServerAgent.addBehaviour(
-						new AnnounceServerPowerShortageStart(myServerAgent, event.getOccurrenceTime(),
-								event.getNewMaximumCapacity()));
+				myServerAgent.addBehaviour(new AnnounceServerPowerShortageStart(myServerAgent, event));
 			}
 		});
 	}

@@ -12,39 +12,29 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
-import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_PLANNED;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.application.utils.TimeUtils;
+import com.greencloud.application.utils.JobUtils;
 import com.greencloud.commons.domain.job.ClientJob;
-import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
-import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
-import jade.lang.acl.ACLMessage;
 
 /**
  * Behaviour sends the information that the power shortage for given server has finished
  */
 public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(AnnounceServerPowerShortageFinish.class);
+	private static final Logger logger = getLogger(AnnounceServerPowerShortageFinish.class);
 
 	private final ServerAgent myServerAgent;
 
@@ -66,7 +56,7 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	public void action() {
 		logger.info(POWER_SHORTAGE_FINISH_DETECTED_LOG);
 		myServerAgent.setCurrentMaximumCapacity(myServerAgent.getInitialMaximumCapacity());
-		final List<ClientJob> affectedJobs = getJobsOnHold();
+		final List<ClientJob> affectedJobs = myServerAgent.manage().getActiveJobsOnHold(myServerAgent.getServerJobs());
 
 		if (affectedJobs.isEmpty()) {
 			logger.info(POWER_SHORTAGE_FINISH_UPDATE_CAPACITY_LOG);
@@ -85,19 +75,16 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	}
 
 	private void handlePowerShortageFinish(final ClientJob job) {
-		final JobInstanceIdentifier jobInstance = JobMapper.mapToJobInstanceId(job);
+		final JobInstanceIdentifier jobInstance = mapToJobInstanceId(job);
 		final int jobPower = job.getPower();
-		final int availablePower = myServerAgent.manage()
-				.getAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance, null);
-		final int availableBackUpPower = myServerAgent.manage()
-				.getAvailableCapacity(job.getStartTime(), job.getEndTime(), jobInstance,
-						BACK_UP_POWER_STATUSES);
+		final int availablePower = myServerAgent.manage().getAvailableCapacity(job, jobInstance, null);
+		final int backUpPower = myServerAgent.manage()
+				.getAvailableCapacity(job, jobInstance, EXECUTING_ON_BACK_UP.getStatuses());
 
 		MDC.put(MDC_JOB_ID, job.getJobId());
-
-		if (availablePower < jobPower && availableBackUpPower < jobPower) {
+		if (availablePower < jobPower && backUpPower < jobPower) {
 			logger.info(POWER_SHORTAGE_FINISH_LEAVE_ON_HOLD_LOG, job.getJobId());
-		} else if (availableBackUpPower >= jobPower) {
+		} else if (backUpPower >= jobPower) {
 			logger.info(POWER_SHORTAGE_FINISH_USE_BACK_UP_LOG, job.getJobId());
 			supplyJobWithBackUpPower(job);
 		} else {
@@ -107,41 +94,28 @@ public class AnnounceServerPowerShortageFinish extends OneShotBehaviour {
 	}
 
 	private void supplyJobWithBackUpPower(final ClientJob job) {
-		final boolean hasJobStarted = myServerAgent.getServerJobs().get(job).equals(ON_HOLD);
-		final JobExecutionStatusEnum status = hasJobStarted ?
-				IN_PROGRESS_BACKUP_ENERGY :
-				IN_PROGRESS_BACKUP_ENERGY_PLANNED;
-		myServerAgent.getServerJobs().replace(job, status);
-		myServerAgent.manage().updateServerGUI();
+		final boolean hasStarted = myServerAgent.getServerJobs().get(job).equals(ON_HOLD);
 
-		if (hasJobStarted) {
-			myServerAgent.manage().informCNAAboutStatusChange(mapToJobInstanceId(job), BACK_UP_POWER_JOB_ID);
+		myServerAgent.getServerJobs().replace(job, EXECUTING_ON_BACK_UP.getStatus(hasStarted));
+		myServerAgent.manage().updateGUI();
+
+		if (hasStarted) {
+			myServerAgent.message().informCNAAboutStatusChange(mapToJobInstanceId(job), BACK_UP_POWER_JOB_ID);
 		}
 	}
 
 	private void supplyJobWithGreenEnergy(final ClientJob job, final JobInstanceIdentifier jobInstance) {
-		final boolean hasStarted = isJobStarted(job, myServerAgent.getServerJobs());
-		final JobExecutionStatusEnum newStatus = hasStarted ? ACCEPTED : IN_PROGRESS;
-		myServerAgent.getServerJobs().replace(job, newStatus);
+		final boolean hasStarted = JobUtils.isJobStarted(job, myServerAgent.getServerJobs());
 
-		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
-		final ACLMessage finishInformation = prepareJobPowerShortageInformation(jobInstance, greenSource,
-				POWER_SHORTAGE_FINISH_ALERT_PROTOCOL);
-		finishInformation.addReceiver(myServerAgent.getOwnerCloudNetworkAgent());
+		myServerAgent.getServerJobs().replace(job, EXECUTING_ON_GREEN.getStatus(hasStarted));
 
 		if (hasStarted) {
-			myServerAgent.manage().informCNAAboutStatusChange(mapToJobInstanceId(job), GREEN_POWER_JOB_ID);
+			myServerAgent.message().informCNAAboutStatusChange(mapToJobInstanceId(job), GREEN_POWER_JOB_ID);
 		}
 
-		myServerAgent.manage().updateServerGUI();
-		myServerAgent.send(finishInformation);
-	}
-
-	private List<ClientJob> getJobsOnHold() {
-		return myServerAgent.getServerJobs().entrySet().stream()
-				.filter(job -> (job.getValue().equals(ON_HOLD_PLANNED) || job.getValue().equals(ON_HOLD))
-						&& job.getKey().getEndTime().isAfter(TimeUtils.getCurrentTime()))
-				.map(Map.Entry::getKey)
-				.toList();
+		myServerAgent.manage().updateGUI();
+		myServerAgent.send(prepareJobPowerShortageInformation(jobInstance, POWER_SHORTAGE_FINISH_ALERT_PROTOCOL,
+				myServerAgent.getGreenSourceForJobMap().get(job.getJobId()),
+				myServerAgent.getOwnerCloudNetworkAgent()));
 	}
 }

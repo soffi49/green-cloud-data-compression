@@ -7,6 +7,7 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_NOT_FOUND_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
@@ -55,7 +56,7 @@ public class InitiateServerJobTransfer extends AchieveREInitiator {
 	 */
 	public static InitiateServerJobTransfer create(final GreenEnergyAgent agent, final ServerJob originalJob,
 			final Instant shortageStartTime) {
-		final ServerJob jobToTransfer = agent.manage().divideServerJobForPowerShortage(originalJob, shortageStartTime);
+		final ServerJob jobToTransfer = agent.manage().divideJobForPowerShortage(originalJob, shortageStartTime);
 		final JobPowerShortageTransfer transfer = mapToPowerShortageJob(originalJob, shortageStartTime);
 		final ACLMessage transferMessage = preparePowerShortageTransferRequest(transfer, originalJob.getServer());
 
@@ -107,7 +108,7 @@ public class InitiateServerJobTransfer extends AchieveREInitiator {
 			logger.info(SOURCE_JOB_TRANSFER_SUCCESSFUL_LOG, jobId);
 
 			if (isJobStarted(jobToTransfer, myGreenAgent.getServerJobs())) {
-				myGreenAgent.manage().incrementJobCounter(jobId, FINISH);
+				myGreenAgent.manage().incrementJobCounter(mapToJobInstanceId(jobToTransfer), FINISH);
 			}
 			myGreenAgent.manage().removeJob(jobToTransfer);
 			myGreenAgent.manage().updateGUI();
@@ -123,7 +124,7 @@ public class InitiateServerJobTransfer extends AchieveREInitiator {
 
 			if (jobId.equals(jobToTransfer.getJobId()) && !job.getStartTime().isAfter(jobToTransfer.getStartTime())) {
 				if (isJobStarted(entry.getValue())) {
-					myGreenAgent.manage().incrementJobCounter(jobId, FINISH);
+					myGreenAgent.manage().incrementJobCounter(mapToJobInstanceId(jobToTransfer), FINISH);
 				}
 				return true;
 			}

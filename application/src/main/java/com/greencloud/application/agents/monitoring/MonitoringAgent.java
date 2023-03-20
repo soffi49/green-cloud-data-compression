@@ -28,7 +28,13 @@ public class MonitoringAgent extends AbstractMonitoringAgent {
 		} else {
 			this.badStubProbability = BAD_STUB_PROBABILITY;
 		}
+	}
 
+	/**
+	 * Abstract method used to initialize agent management services
+	 */
+	@Override
+	protected void initializeAgentManagements() {
 		this.agentManagementServices = new EnumMap<>(Map.of(
 				WEATHER_MANAGEMENT, new MonitoringWeatherManagement()
 		));

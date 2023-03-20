@@ -20,6 +20,6 @@ public class DFServerMessageTemplates {
 			or(or(MatchProtocol(DEACTIVATE_GREEN_SOURCE_PROTOCOL), MatchProtocol(DISCONNECT_GREEN_SOURCE_PROTOCOL)),
 					MatchProtocol(CONNECT_GREEN_SOURCE_PROTOCOL)));
 
-	public static final MessageTemplate CLOUD_NETWORK_INFORMATION_TEMPLATE =
-			and(MatchPerformative(REQUEST), MatchProtocol(ASK_FOR_POWER_PROTOCOL));
+	public static final MessageTemplate CLOUD_NETWORK_INFORMATION_TEMPLATE = and(
+			MatchPerformative(REQUEST), MatchProtocol(ASK_FOR_POWER_PROTOCOL));
 }

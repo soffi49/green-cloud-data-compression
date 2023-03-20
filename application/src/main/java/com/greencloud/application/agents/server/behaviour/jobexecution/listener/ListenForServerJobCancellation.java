@@ -8,8 +8,8 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
-import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static jade.lang.acl.ACLMessage.AGREE;
@@ -28,9 +28,10 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Listens for job cancellation announcements. If any part of the job is processed by the
- * agent, it is removed from processing, otherwise refusal message is sent.
+ * Listens for job cancellation announcements.
+ * If any part of the job is processed by the agent, it is removed from processing, otherwise refusal message is sent.
  */
+//TODO REFACTOR!!!!!!!!!!
 public class ListenForServerJobCancellation extends CyclicBehaviour {
 
 	private static final Logger logger = LoggerFactory.getLogger(ListenForServerJobCancellation.class);
@@ -56,7 +57,7 @@ public class ListenForServerJobCancellation extends CyclicBehaviour {
 		var jobParts = List.copyOf(filter(myServerAgent.getServerJobs().keySet(),
 				job -> job.getJobId().split("#")[0].equals(originalJobId)));
 		if (!jobParts.isEmpty()) {
-			myServerAgent.send(prepareStringReply(message.createReply(), originalJobId, AGREE));
+			myServerAgent.send(prepareStringReply(message, originalJobId, AGREE));
 			MDC.put(MDC_JOB_ID, originalJobId);
 			logger.info(CANCELLING_JOB_PARTS_LOG, jobParts.size());
 			jobParts.forEach(jobPart -> {
@@ -67,10 +68,10 @@ public class ListenForServerJobCancellation extends CyclicBehaviour {
 				MDC.put(MDC_JOB_ID, jobPart.getJobId());
 				logger.info(CANCELLED_JOB_PART_LOG);
 			});
-			myServerAgent.manage().updateServerGUI();
-			myServerAgent.send(prepareReply(message.createReply(), jobParts, INFORM));
+			myServerAgent.manage().updateGUI();
+			myServerAgent.send(prepareReply(message, jobParts, INFORM));
 		} else {
-			myServerAgent.send(prepareRefuseReply(message.createReply()));
+			myServerAgent.send(prepareRefuseReply(message));
 		}
 	}
 }

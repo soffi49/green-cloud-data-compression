@@ -20,6 +20,7 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.domain.agent.ServerData;
 import com.greencloud.application.domain.job.ImmutableJobWithPrice;
+import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobWithPrice;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.message.MessageBuilder;
@@ -79,12 +80,12 @@ public class InitiateNewJobOffer extends ProposeInitiator {
 		final ClientJob job = getJobById(jobId, myCloudNetworkAgent.getNetworkJobs());
 
 		if (nonNull(job)) {
+			final JobInstanceIdentifier jobInstance = mapToJobInstanceId(job);
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(ACCEPT_SERVER_PROPOSAL_LOG);
 
-			myCloudNetworkAgent.manage().incrementJobCounter(jobId, ACCEPTED);
-			myAgent.send(
-					prepareAcceptJobOfferReply(serverMessage, mapToJobInstanceId(job), SERVER_JOB_CFP_PROTOCOL));
+			myCloudNetworkAgent.manage().incrementJobCounter(jobInstance, ACCEPTED);
+			myAgent.send(prepareAcceptJobOfferReply(serverMessage, jobInstance, SERVER_JOB_CFP_PROTOCOL));
 		}
 	}
 

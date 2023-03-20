@@ -1,5 +1,7 @@
 package com.greencloud.application.agents;
 
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_CLIENT_NAME;
 import static com.greencloud.commons.agent.AgentType.CLIENT;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
@@ -17,7 +19,6 @@ import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.greencloud.application.behaviours.ReceiveGUIController;
-import com.greencloud.application.common.constant.LoggingConstant;
 import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
@@ -60,6 +61,12 @@ public abstract class AbstractAgent extends Agent {
 	 * @param arguments arguments passed by the user
 	 */
 	protected void initializeAgent(final Object[] arguments) {
+	}
+
+	/**
+	 * Abstract method used to initialize agent management services
+	 */
+	protected void initializeAgentManagements() {
 	}
 
 	/**
@@ -116,11 +123,12 @@ public abstract class AbstractAgent extends Agent {
 	protected void setup() {
 		logger.info("Setting up Agent {}", getName());
 		if (agentType.equals(CLIENT)) {
-			MDC.put(LoggingConstant.MDC_CLIENT_NAME, super.getLocalName());
+			MDC.put(MDC_CLIENT_NAME, super.getLocalName());
 		} else {
-			MDC.put(LoggingConstant.MDC_AGENT_NAME, super.getLocalName());
+			MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		}
 		initializeAgent(getArguments());
+		initializeAgentManagements();
 		validateAgentArguments();
 		runStartingBehaviours();
 	}

@@ -5,11 +5,10 @@ import static com.greencloud.application.agents.server.behaviour.df.listener.tem
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.lang.String.valueOf;
-
-import java.util.Objects;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.server.ServerAgent;
 
@@ -17,11 +16,11 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Behaviour listens for requests sent by the Cloud Network asking for a specific details regarding provided service
+ * Behaviour listens for requests sent by the Cloud Network asking for information regarding Server's capacity
  */
-public class ListenForCloudNetworkInformationRequest extends CyclicBehaviour {
+public class ListenForCloudNetworkCapacityCheckRequest extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForCloudNetworkInformationRequest.class);
+	private static final Logger logger = getLogger(ListenForCloudNetworkCapacityCheckRequest.class);
 
 	private final ServerAgent myServerAgent;
 
@@ -30,7 +29,7 @@ public class ListenForCloudNetworkInformationRequest extends CyclicBehaviour {
 	 *
 	 * @param myServerAgent agent executing behaviour
 	 */
-	public ListenForCloudNetworkInformationRequest(ServerAgent myServerAgent) {
+	public ListenForCloudNetworkCapacityCheckRequest(ServerAgent myServerAgent) {
 		super(myServerAgent);
 		this.myServerAgent = myServerAgent;
 	}
@@ -42,10 +41,9 @@ public class ListenForCloudNetworkInformationRequest extends CyclicBehaviour {
 	public void action() {
 		final ACLMessage request = myServerAgent.receive(CLOUD_NETWORK_INFORMATION_TEMPLATE);
 
-		if (Objects.nonNull(request)) {
+		if (nonNull(request)) {
 			logger.info(RECEIVED_POWER_INFORMATION_REQUEST_LOG, request.getSender().getLocalName());
-			myServerAgent.send(prepareStringReply(request.createReply(),
-					valueOf(myServerAgent.getInitialMaximumCapacity()), INFORM));
+			myServerAgent.send(prepareStringReply(request, valueOf(myServerAgent.getInitialMaximumCapacity()), INFORM));
 		} else {
 			block();
 		}

@@ -50,6 +50,19 @@ public class HandleManualPowerSupplyFinish extends WakerBehaviour {
 	}
 
 	/**
+	 * Method creates the behaviour
+	 *
+	 * @param agent agent that executes the behaviour
+	 * @param endTime time when job execution should end
+	 * @param job     job of interest
+	 * @return HandleManualPowerSupplyFinish
+	 */
+	public static HandleManualPowerSupplyFinish create(final GreenEnergyAgent agent, final Date endTime,
+			final ServerJob job) {
+		return new HandleManualPowerSupplyFinish(agent, endTime, job);
+	}
+
+	/**
 	 * Method verifies if the job execution finished correctly.
 	 * If there was no information about job finish the Green Source finishes the power supply manually and sends
 	 * the warning to the Server Agent.
@@ -63,7 +76,7 @@ public class HandleManualPowerSupplyFinish extends WakerBehaviour {
 			logger.error(MANUAL_POWER_SUPPLY_FINISH_LOG);
 
 			if (isJobStarted(job, myGreenEnergyAgent.getServerJobs())) {
-				myGreenEnergyAgent.manage().incrementJobCounter(job.getJobId(), FINISH);
+				myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FINISH);
 			}
 			myGreenEnergyAgent.manage().removeJob(job);
 			myGreenEnergyAgent.manage().updateGUI();

@@ -80,12 +80,12 @@ public class ListenForPowerSupplyStatus extends CyclicBehaviour {
 		logger.info(START_POWER_SUPPLY_LOG, jobInstance.getJobId());
 
 		replaceStatusToActive(myGreenEnergyAgent.getServerJobs(), serverJob);
-		myGreenEnergyAgent.manage().incrementJobCounter(jobInstance.getJobId(), STARTED);
+		myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, STARTED);
 	}
 
 	private void handlePowerSupplyFinish(final ServerJob serverJob, final JobInstanceIdentifier jobInstance) {
 		if (isJobStarted(serverJob, myGreenEnergyAgent.getServerJobs())) {
-			myGreenEnergyAgent.manage().incrementJobCounter(jobInstance.getJobId(), FINISH);
+			myGreenEnergyAgent.manage().incrementJobCounter(jobInstance, FINISH);
 		}
 		logger.info(FINISH_POWER_SUPPLY_LOG, jobInstance);
 

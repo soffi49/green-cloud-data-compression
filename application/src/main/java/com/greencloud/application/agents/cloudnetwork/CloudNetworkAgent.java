@@ -29,9 +29,12 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 	@Override
 	protected void initializeAgent(final Object[] args) {
 		register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
-
-		this.agentManagementServices.put(STATE_MANAGEMENT, new CloudNetworkStateManagement(this));
 		this.maximumCapacity = new AtomicDouble(0.0);
+	}
+
+	@Override
+	protected void initializeAgentManagements() {
+		this.agentManagementServices.put(STATE_MANAGEMENT, new CloudNetworkStateManagement(this));
 	}
 
 	@Override

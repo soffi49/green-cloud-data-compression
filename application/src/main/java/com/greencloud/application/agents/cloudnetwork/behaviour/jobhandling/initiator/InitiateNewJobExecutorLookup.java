@@ -15,7 +15,7 @@ import java.util.Vector;
 import org.slf4j.Logger;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.agents.cloudnetwork.behaviour.AbstractCloudNetworkCFPInitiator;
+import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
 import com.greencloud.application.domain.agent.ServerData;
 import com.greencloud.commons.domain.job.ClientJob;
 
@@ -24,16 +24,20 @@ import jade.lang.acl.ACLMessage;
 /**
  * Behaviour initiates lookup for Server which will execute the Client's job
  */
-public class InitiateNewJobExecutorLookup extends AbstractCloudNetworkCFPInitiator {
+public class InitiateNewJobExecutorLookup extends AbstractCFPInitiator<ServerData> {
 
 	private static final Logger logger = getLogger(InitiateNewJobExecutorLookup.class);
 
 	private final ClientJob job;
+	private final CloudNetworkAgent myCloudNetworkAgent;
 
 	protected InitiateNewJobExecutorLookup(final CloudNetworkAgent agent, final ACLMessage cfp,
 			final ACLMessage schedulerMessage, final ClientJob job) {
-		super(agent, cfp, schedulerMessage, mapToJobInstanceId(job));
+		super(agent, cfp, schedulerMessage, mapToJobInstanceId(job), agent.manage().offerComparator(),
+				ServerData.class);
+
 		this.job = job;
+		this.myCloudNetworkAgent = agent;
 	}
 
 	/**
@@ -68,7 +72,7 @@ public class InitiateNewJobExecutorLookup extends AbstractCloudNetworkCFPInitiat
 	 * execution rejection.
 	 */
 	@Override
-	protected void handleNoServerResponses() {
+	protected void handleNoResponses() {
 		logger.info(NO_SERVER_RESPONSES_LOG);
 		handleRejectedJob();
 	}
@@ -78,7 +82,7 @@ public class InitiateNewJobExecutorLookup extends AbstractCloudNetworkCFPInitiat
 	 * job execution rejection.
 	 */
 	@Override
-	protected void handleNoAvailableServers() {
+	protected void handleNoAvailableAgents() {
 		logger.info(NO_SERVER_AVAILABLE_LOG);
 		handleRejectedJob();
 	}

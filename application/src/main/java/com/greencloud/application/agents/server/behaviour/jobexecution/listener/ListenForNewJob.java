@@ -1,32 +1,34 @@
 package com.greencloud.application.agents.server.behaviour.jobexecution.listener;
 
+import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LACK_OF_POWER_LOG;
+import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.NEW_JOB_CFP_TEMPLATE;
+import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.jobexecution.initiator.InitiatePowerDeliveryForJob;
-import com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates;
-import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.commons.job.ClientJob;
-import com.greencloud.commons.job.ExecutionJobStatusEnum;
+import com.greencloud.commons.domain.job.ClientJob;
 
-import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Behaviour handles upcoming job's CFP from cloud network com.greencloud.application.agents
+ * Behaviour handles upcoming job's CFP from Cloud Network Agents
  */
 public class ListenForNewJob extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForNewJob.class);
+	private static final Logger logger = getLogger(ListenForNewJob.class);
 
 	private ServerAgent myServerAgent;
 
@@ -47,47 +49,29 @@ public class ListenForNewJob extends CyclicBehaviour {
 	 */
 	@Override
 	public void action() {
-		final ACLMessage message = myAgent.receive(JobHandlingMessageTemplates.NEW_JOB_CFP_TEMPLATE);
+		final List<ACLMessage> messages = myAgent.receive(NEW_JOB_CFP_TEMPLATE, MAX_MESSAGE_NUMBER);
 
-		if (Objects.nonNull(message)) {
-			final ClientJob job = readMessageContent(message, ClientJob.class);
-			MDC.put(MDC_JOB_ID, job.getJobId());
-			final int availableCapacity = myServerAgent.manage()
-					.getAvailableCapacity(job.getStartTime(), job.getEndTime(), null, null);
-			final boolean validJobConditions =
-					job.getPower() <= availableCapacity && !myServerAgent.getServerJobs().containsKey(job)
-							&& myServerAgent.canTakeIntoProcessing();
+		if (Objects.nonNull(messages)) {
+			messages.stream().parallel().forEach(message -> {
+				final ClientJob job = readMessageContent(message, ClientJob.class);
+				MDC.put(MDC_JOB_ID, job.getJobId());
 
-			if (validJobConditions) {
-				initiateNegotiationWithPowerSources(job, message);
-			} else {
-				logger.info(SERVER_NEW_JOB_LACK_OF_POWER_LOG);
-				myAgent.send(prepareRefuseReply(message.createReply()));
-			}
+				if (job.getPower() <= myServerAgent.manage().getAvailableCapacity(job, null, null)
+						&& !myServerAgent.getServerJobs().containsKey(job)
+						&& myServerAgent.canTakeIntoProcessing()) {
+					MDC.put(MDC_JOB_ID, job.getJobId());
+					logger.info(SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG);
+
+					myServerAgent.getServerJobs().putIfAbsent(job, PROCESSING);
+					myServerAgent.tookJobIntoProcessing();
+					myAgent.addBehaviour(InitiatePowerDeliveryForJob.create(job, myServerAgent, message));
+				} else {
+					logger.info(SERVER_NEW_JOB_LACK_OF_POWER_LOG);
+					myAgent.send(prepareRefuseReply(message));
+				}
+			});
 		} else {
 			block();
 		}
-	}
-
-	private void initiateNegotiationWithPowerSources(final ClientJob job, final ACLMessage cnaMessage) {
-		MDC.put(MDC_JOB_ID, job.getJobId());
-		logger.info(SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG);
-
-		myServerAgent.getServerJobs().putIfAbsent(job, ExecutionJobStatusEnum.PROCESSING);
-		myServerAgent.tookJobIntoProcessing();
-		if (myServerAgent.getOwnedGreenSources().isEmpty()) {
-			reSearchGreenSources();
-		}
-
-		final ACLMessage cfp = createCallForProposal(JobMapper.mapJobToPowerJob(job),
-				myServerAgent.manage().getOwnedActiveGreenSources().stream().toList(), SERVER_JOB_CFP_PROTOCOL);
-
-		myAgent.addBehaviour(new InitiatePowerDeliveryForJob(myAgent, cfp, cnaMessage.createReply(), job));
-	}
-
-	private void reSearchGreenSources() {
-		Set<AID> greenSources = search(myAgent, GS_SERVICE_TYPE, myAgent.getName());
-		Map<AID, Boolean> greenSourcesWithState = greenSources.stream().collect(toMap(gs -> gs, gs -> true));
-		myServerAgent.getOwnedGreenSources().putAll(greenSourcesWithState);
 	}
 }

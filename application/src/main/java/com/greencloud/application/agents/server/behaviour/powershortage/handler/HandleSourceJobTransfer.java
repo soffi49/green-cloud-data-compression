@@ -1,7 +1,6 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.handler;
 
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.GS_TRANSFER_EXECUTION_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndEndDate;
@@ -9,46 +8,38 @@ import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.common.constant.LoggingConstant;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.WakerBehaviour;
-import jade.lang.acl.ACLMessage;
 
 /**
  * Behaviour transfers a job to a new green source
  */
 public class HandleSourceJobTransfer extends WakerBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(HandleSourceJobTransfer.class);
+	private static final Logger logger = getLogger(HandleSourceJobTransfer.class);
 
 	private final ServerAgent myServerAgent;
 	private final JobInstanceIdentifier jobInstanceId;
 	private final AID newGreenSource;
 
-	/**
-	 * Behaviour constructor.
-	 *
-	 * @param myAgent       agent executing the behaviour
-	 * @param transferTime  time of the job transfer
-	 * @param jobInstanceId unique identifier of the job instance
-	 */
-	private HandleSourceJobTransfer(Agent myAgent, Date transferTime, JobInstanceIdentifier jobInstanceId,
-			AID newGreenSource) {
+	private HandleSourceJobTransfer(final ServerAgent myAgent, final Date transferTime,
+			final JobInstanceIdentifier jobInstanceId, final AID newGreenSource) {
 		super(myAgent, transferTime);
-		this.myServerAgent = (ServerAgent) myAgent;
+
+		this.myServerAgent = myAgent;
 		this.jobInstanceId = jobInstanceId;
 		this.newGreenSource = newGreenSource;
 	}
@@ -57,17 +48,17 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	 * Method creating the behaviour
 	 *
 	 * @param serverAgent    server executing the behaviour
-	 * @param jobInstanceId  unique identifier of the job instance
+	 * @param jobInstance    unique identifier of the job instance
 	 * @param newGreenSource green source which will execute the job after power shortage
 	 * @return behaviour which transfer the jobs between green sources
 	 */
-	public static HandleSourceJobTransfer createFor(final ServerAgent serverAgent,
-			final JobInstanceIdentifier jobInstanceId, final AID newGreenSource) {
-		final Instant transferTime = getCurrentTime().isAfter(jobInstanceId.getStartTime()) ?
+	public static HandleSourceJobTransfer create(final ServerAgent serverAgent, final JobInstanceIdentifier jobInstance,
+			final AID newGreenSource) {
+		final Instant transferTime = getCurrentTime().isAfter(jobInstance.getStartTime()) ?
 				getCurrentTime() :
-				jobInstanceId.getStartTime();
-		return new HandleSourceJobTransfer(serverAgent, Date.from(transferTime), jobInstanceId,
-				newGreenSource);
+				jobInstance.getStartTime();
+
+		return new HandleSourceJobTransfer(serverAgent, Date.from(transferTime), jobInstance, newGreenSource);
 	}
 
 	/**
@@ -80,17 +71,18 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 				myServerAgent.getServerJobs());
 		final ClientJob jobToExecute = getJobByIdAndStartDate(jobInstanceId, myServerAgent.getServerJobs());
 
-		MDC.put(MDC_JOB_ID, jobInstanceId.getJobId());
+		MDC.put(LoggingConstant.MDC_JOB_ID, jobInstanceId.getJobId());
 		finishPreviousInstance(previousInstance);
 
 		if (nonNull(jobToExecute)) {
 			logger.info(GS_TRANSFER_EXECUTION_LOG);
 			myServerAgent.getGreenSourceForJobMap().replace(jobToExecute.getJobId(), newGreenSource);
-			myServerAgent.manage().informCNAAboutStatusChange(jobInstanceId, GREEN_POWER_JOB_ID);
-			myServerAgent.manage().updateServerGUI();
+			myServerAgent.message().informCNAAboutStatusChange(jobInstanceId, GREEN_POWER_JOB_ID);
+			myServerAgent.manage().updateGUI();
 
 			if (isJobStarted(jobToExecute, myServerAgent.getServerJobs())) {
-				startJobExecutionInNewGreenSource(jobToExecute);
+				myAgent.send(prepareJobStartedMessage(jobToExecute.getJobId(), jobToExecute.getStartTime(),
+						newGreenSource));
 			}
 		}
 	}
@@ -98,13 +90,7 @@ public class HandleSourceJobTransfer extends WakerBehaviour {
 	private void finishPreviousInstance(final ClientJob job) {
 		if (nonNull(job)) {
 			myServerAgent.manage().finishJobExecution(job, false);
-			myServerAgent.manage().updateServerGUI();
+			myServerAgent.manage().updateGUI();
 		}
-	}
-
-	private void startJobExecutionInNewGreenSource(final ClientJob jobToExecute) {
-		final ACLMessage startedJobMessage = prepareJobStartedMessage(jobToExecute.getJobId(),
-				jobToExecute.getStartTime(), List.of(newGreenSource));
-		myAgent.send(startedJobMessage);
 	}
 }

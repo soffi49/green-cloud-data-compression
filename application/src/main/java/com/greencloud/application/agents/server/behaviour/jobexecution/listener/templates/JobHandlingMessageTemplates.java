@@ -23,12 +23,16 @@ import jade.lang.acl.MessageTemplate;
  */
 public class JobHandlingMessageTemplates {
 
-	public static final MessageTemplate NEW_JOB_CFP_TEMPLATE = and(MatchPerformative(CFP),
-			MatchProtocol(CNA_JOB_CFP_PROTOCOL));
+	public static final MessageTemplate NEW_JOB_CFP_TEMPLATE = and(
+			MatchPerformative(CFP), MatchProtocol(CNA_JOB_CFP_PROTOCOL));
 	public static final MessageTemplate POWER_SUPPLY_UPDATE_TEMPLATE = or(
-			and(MatchPerformative(INFORM), or(or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL), MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL))
-					, MatchProtocol(MANUAL_JOB_FINISH_PROTOCOL))),
-			and(MatchPerformative(FAILURE), or(MatchProtocol(FAILED_JOB_PROTOCOL), MatchProtocol(FAILED_TRANSFER_PROTOCOL))));
-	public static final MessageTemplate JOB_STATUS_REQUEST_TEMPLATE = and(MatchPerformative(REQUEST),
-			MatchProtocol(JOB_START_STATUS_PROTOCOL));
+			and(MatchPerformative(INFORM),
+					or(MatchProtocol(SERVER_JOB_CFP_PROTOCOL), MatchProtocol(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL))),
+			and(MatchPerformative(FAILURE),
+					or(MatchProtocol(FAILED_JOB_PROTOCOL), MatchProtocol(FAILED_TRANSFER_PROTOCOL))));
+
+	public static final MessageTemplate MANUAL_FINISH_TEMPLATE = and(
+			MatchPerformative(INFORM), MatchProtocol(MANUAL_JOB_FINISH_PROTOCOL));
+	public static final MessageTemplate JOB_STATUS_REQUEST_TEMPLATE = and(
+			MatchPerformative(REQUEST), MatchProtocol(JOB_START_STATUS_PROTOCOL));
 }

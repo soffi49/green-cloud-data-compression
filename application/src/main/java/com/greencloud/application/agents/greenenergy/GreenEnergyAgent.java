@@ -19,7 +19,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 import com.database.knowledge.domain.action.AdaptationAction;
-import com.greencloud.application.agents.AbstractAgentManagement;
 import com.greencloud.application.agents.greenenergy.behaviour.cancellation.ListenForGreenEnergyJobCancellation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerReSupplyRequest;
@@ -31,7 +30,6 @@ import com.greencloud.application.agents.greenenergy.behaviour.weathercheck.requ
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyAdaptationManagement;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyStateManagement;
 import com.greencloud.application.agents.greenenergy.management.GreenPowerManagement;
-import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum;
 import com.greencloud.commons.domain.location.ImmutableLocation;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
@@ -71,7 +69,6 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 				this.energyType = args[6] instanceof String type ?
 						GreenEnergySourceTypeEnum.valueOf(type) :
 						(GreenEnergySourceTypeEnum) args[6];
-				this.agentManagementServices = getManagementServices();
 
 			} catch (final NumberFormatException e) {
 				logger.info("Couldn't parse one of the numerical arguments");
@@ -81,6 +78,15 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 			logger.info("Incorrect arguments: some parameters for Green Source Agent are missing.");
 			doDelete();
 		}
+	}
+
+	@Override
+	protected void initializeAgentManagements() {
+		this.agentManagementServices = new EnumMap<>(Map.of(
+				ADAPTATION_MANAGEMENT, new GreenEnergyAdaptationManagement(this),
+				STATE_MANAGEMENT, new GreenEnergyStateManagement(this),
+				POWER_MANAGEMENT, new GreenPowerManagement(this)
+		));
 	}
 
 	@Override
@@ -129,14 +135,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		this.agentManagementServices = getManagementServices();
+		initializeAgentManagements();
 	}
 
-	private EnumMap<AgentManagementEnum, AbstractAgentManagement> getManagementServices() {
-		return new EnumMap<>(Map.of(
-				ADAPTATION_MANAGEMENT, new GreenEnergyAdaptationManagement(this),
-				STATE_MANAGEMENT, new GreenEnergyStateManagement(this),
-				POWER_MANAGEMENT, new GreenPowerManagement(this)
-		));
-	}
 }

@@ -7,6 +7,7 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandli
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_JOB_FINISH_STATUS_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_JOB_START_STATUS_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_ON_HOLD_STATUS_LOG;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
@@ -63,7 +64,7 @@ public enum CloudNetworkJobUpdateEnum {
 		return (job, myCloudNetworkAgent) -> {
 			if (!myCloudNetworkAgent.getNetworkJobs().get(job).equals(IN_PROGRESS)) {
 				myCloudNetworkAgent.getNetworkJobs().replace(job, IN_PROGRESS);
-				myCloudNetworkAgent.manage().incrementJobCounter(job.getJobId(), STARTED);
+				myCloudNetworkAgent.manage().incrementJobCounter(mapToJobInstanceId(job), STARTED);
 			}
 		};
 	}
@@ -74,7 +75,7 @@ public enum CloudNetworkJobUpdateEnum {
 	private static BiConsumer<ClientJob, CloudNetworkAgent> processJobFinish() {
 		return (job, myCloudNetworkAgent) -> {
 			if (isJobStarted(job, myCloudNetworkAgent.getNetworkJobs())) {
-				myCloudNetworkAgent.manage().incrementJobCounter(job.getJobId(), FINISH);
+				myCloudNetworkAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FINISH);
 			}
 			myCloudNetworkAgent.getNetworkJobs().remove(job);
 			myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
@@ -92,7 +93,7 @@ public enum CloudNetworkJobUpdateEnum {
 			}
 			myCloudNetworkAgent.getNetworkJobs().remove(job);
 			myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
-			myCloudNetworkAgent.manage().incrementJobCounter(job.getJobId(), FAILED);
+			myCloudNetworkAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FAILED);
 		};
 	}
 

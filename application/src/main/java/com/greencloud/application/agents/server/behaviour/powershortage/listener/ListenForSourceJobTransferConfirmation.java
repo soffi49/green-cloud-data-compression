@@ -1,35 +1,35 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.listener;
 
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_CONFIRMED_LOG;
-import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_FAILED_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_JOB_FINISHED_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_CONFIRMATION_TEMPLATE;
+import static com.greencloud.application.agents.server.constants.ServerAgentConstants.TRANSFER_EXPIRATION_TIME;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
-import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
-import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.MessageTemplate.MatchContent;
 import static jade.lang.acl.MessageTemplate.and;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
-import java.util.Objects;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.handler.HandleSourceJobTransfer;
+import com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 
@@ -42,13 +42,12 @@ import jade.proto.states.MsgReceiver;
  */
 public class ListenForSourceJobTransferConfirmation extends MsgReceiver {
 
-	private static final long EXPIRATION_TIME = 3000L;
-	private static final Logger logger = LoggerFactory.getLogger(ListenForSourceJobTransferConfirmation.class);
+	private static final Logger logger = getLogger(ListenForSourceJobTransferConfirmation.class);
 
 	private final ServerAgent myServerAgent;
 	private final JobInstanceIdentifier jobToTransfer;
 	private final ACLMessage greenSourceRequest;
-	private final Instant powerShortageStart;
+	private final Instant shortageStart;
 
 	/**
 	 * Behaviours constructor
@@ -58,15 +57,14 @@ public class ListenForSourceJobTransferConfirmation extends MsgReceiver {
 	 * @param powerShortageTime  time when the power shortage starts
 	 * @param greenSourceRequest original green source job transfer request
 	 */
-	public ListenForSourceJobTransferConfirmation(ServerAgent agent,
-			JobInstanceIdentifier jobInstanceId,
-			Instant powerShortageTime,
-			ACLMessage greenSourceRequest) {
-		super(agent, createListenerTemplate(jobInstanceId), System.currentTimeMillis() + EXPIRATION_TIME, null, null);
+	public ListenForSourceJobTransferConfirmation(final ServerAgent agent, final JobInstanceIdentifier jobInstanceId,
+			final Instant powerShortageTime, final ACLMessage greenSourceRequest) {
+		super(agent, createListenerTemplate(jobInstanceId), currentTimeMillis() + TRANSFER_EXPIRATION_TIME, null, null);
+
 		this.myServerAgent = agent;
 		this.greenSourceRequest = greenSourceRequest;
 		this.jobToTransfer = jobInstanceId;
-		this.powerShortageStart = powerShortageTime;
+		this.shortageStart = powerShortageTime;
 	}
 
 	private static MessageTemplate createListenerTemplate(final JobInstanceIdentifier jobInstanceId) {
@@ -85,22 +83,13 @@ public class ListenForSourceJobTransferConfirmation extends MsgReceiver {
 	 */
 	@Override
 	public void handleMessage(final ACLMessage msg) {
-		if (Objects.nonNull(msg)) {
+		if (nonNull(msg)) {
 			final String jobId = jobToTransfer.getJobId();
-			if (msg.getPerformative() == INFORM) {
-				MDC.put(MDC_JOB_ID, jobId);
-				if (Objects.nonNull(getJobById(jobId, myServerAgent.getServerJobs()))) {
-					logger.info(GS_TRANSFER_CONFIRMED_LOG, jobId);
-					handleJobTransfer(msg);
-				} else {
-					logger.info(GS_TRANSFER_JOB_FINISHED_LOG);
-					handleJobFinish();
-				}
-			} else {
-				MDC.put(MDC_JOB_ID, jobId);
-				logger.info(GS_TRANSFER_FAILED_LOG, jobId);
-				myServerAgent.manage()
-						.passTransferRequestToCloudNetwork(jobToTransfer, powerShortageStart, greenSourceRequest);
+
+			MDC.put(MDC_JOB_ID, jobId);
+			switch (msg.getPerformative()) {
+				case INFORM -> handleJobTransfer(msg);
+				default -> handleTransferFailure(jobId);
 			}
 		} else {
 			block();
@@ -108,26 +97,26 @@ public class ListenForSourceJobTransferConfirmation extends MsgReceiver {
 	}
 
 	private void handleJobTransfer(final ACLMessage inform) {
-		myServerAgent.send(prepareReply(greenSourceRequest.createReply(), TRANSFER_SUCCESSFUL_MESSAGE, INFORM));
-		final ClientJob jobToExecute = getJobByIdAndStartDate(jobToTransfer, myServerAgent.getServerJobs());
-		if (Objects.nonNull(jobToExecute)) {
-			updateJobStatus(jobToExecute);
+		final ClientJob job = getJobByIdAndStartDate(jobToTransfer, myServerAgent.getServerJobs());
+
+		if (nonNull(job)) {
+			logger.info(GS_TRANSFER_CONFIRMED_LOG, job.getJobId());
+			myServerAgent.send(prepareReply(greenSourceRequest, TRANSFER_SUCCESSFUL_MESSAGE, INFORM));
+			updateJobStatus(job);
+			myAgent.addBehaviour(HandleSourceJobTransfer.create(myServerAgent, jobToTransfer, inform.getSender()));
+		} else {
+			logger.info(GS_TRANSFER_JOB_FINISHED_LOG);
+			myServerAgent.send(prepareStringReply(greenSourceRequest, JOB_NOT_FOUND_CAUSE_MESSAGE, REFUSE));
 		}
-		myAgent.addBehaviour(HandleSourceJobTransfer.createFor(myServerAgent, jobToTransfer, inform.getSender()));
 	}
 
-	private void handleJobFinish() {
-		final ACLMessage failTransferMessage = prepareStringReply(greenSourceRequest.createReply(),
-				JOB_NOT_FOUND_CAUSE_MESSAGE, FAILURE);
-		myServerAgent.send(failTransferMessage);
+	private void handleTransferFailure(final String jobId) {
+		logger.info(PowerShortageServerListenerLog.GS_TRANSFER_FAILED_LOG, jobId);
+		myServerAgent.message().passTransferRequestToCloudNetwork(jobToTransfer, shortageStart, greenSourceRequest);
 	}
 
 	private void updateJobStatus(final ClientJob jobToExecute) {
 		final boolean isJobRunning = myServerAgent.getServerJobs().get(jobToExecute).equals(ON_HOLD_TRANSFER);
-		if(isJobRunning) {
-			myServerAgent.getServerJobs().replace(jobToExecute, IN_PROGRESS);
-		} else {
-			myServerAgent.getServerJobs().replace(jobToExecute, ACCEPTED);
-		}
+		myServerAgent.getServerJobs().replace(jobToExecute, EXECUTING_ON_GREEN.getStatus(isJobRunning));
 	}
 }

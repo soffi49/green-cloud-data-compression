@@ -14,11 +14,11 @@ import static com.greencloud.application.messages.domain.factory.ReplyMessageFac
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Objects;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.server.ServerAgent;
 
@@ -31,7 +31,7 @@ import jade.lang.acl.ACLMessage;
  */
 public class ListenForGreenSourceServiceUpdate extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForGreenSourceServiceUpdate.class);
+	private static final Logger logger = getLogger(ListenForGreenSourceServiceUpdate.class);
 
 	private final ServerAgent myServerAgent;
 
@@ -46,12 +46,13 @@ public class ListenForGreenSourceServiceUpdate extends CyclicBehaviour {
 	}
 
 	/**
-	 * Method listens for the message coming from the Green Source informing about its service status update.
-	 * 1. In case of Green Source DEACTIVATION - server turns of a Green Source service so that it will not be taken
-	 * under consideration for future job execution
-	 * 2. In case of Green Source DISCONNECTION - server removes a given Green Source from its list. It is important to
-	 * note that Server can remove only Green Sources which were deactivated
-	 * 3. In case of Green Source CONNECTION - server adds a given Green Source to its list.
+	 * Method listens for the message coming from the Green Source informing about its service status update:
+	 *
+	 * <p> DEACTIVATION - server turns of a Green Source service so that it will not be taken
+	 * under consideration for future job execution </p>
+	 * <p> DISCONNECTION - server removes a given Green Source from its list. It is important to
+	 * note that Server can remove only Green Sources which were deactivated </p>
+	 * <p> CONNECTION - server adds a given Green Source to its list </p>
 	 */
 	@Override
 	public void action() {
@@ -73,11 +74,11 @@ public class ListenForGreenSourceServiceUpdate extends CyclicBehaviour {
 
 		if (!myServerAgent.getOwnedGreenSources().containsKey(greenSource)) {
 			logger.info(GREEN_SOURCE_NOT_CONNECTED_TO_SERVER_LOG, greenSource.getName());
-			myServerAgent.send(prepareRefuseReply(request.createReply()));
+			myServerAgent.send(prepareRefuseReply(request));
 		} else {
 			logger.info(DEACTIVATE_GREEN_SOURCE_LOG, greenSource.getName());
 			myServerAgent.getOwnedGreenSources().replace(greenSource, false);
-			myServerAgent.send(prepareInformReply(request.createReply()));
+			myServerAgent.send(prepareInformReply(request));
 		}
 	}
 
@@ -86,32 +87,31 @@ public class ListenForGreenSourceServiceUpdate extends CyclicBehaviour {
 
 		if (!myServerAgent.getOwnedGreenSources().containsKey(greenSource)) {
 			logger.info(GREEN_SOURCE_NOT_CONNECTED_TO_SERVER_LOG, greenSource.getName());
-			myServerAgent.send(prepareRefuseReply(request.createReply()));
+			myServerAgent.send(prepareRefuseReply(request));
 		} else if (TRUE.equals(myServerAgent.getOwnedGreenSources().get(greenSource)) ||
 				isGreenSourceExecutingJobs(greenSource)) {
 			logger.info(GREEN_SOURCE_NOT_DEACTIVATED_LOG, greenSource.getName());
-			myServerAgent.send(prepareRefuseReply(request.createReply()));
+			myServerAgent.send(prepareRefuseReply(request));
 		} else {
 			logger.info(DISCONNECT_GREEN_SOURCE_LOG, greenSource.getName());
 			myServerAgent.getOwnedGreenSources().remove(greenSource);
-			myServerAgent.send(prepareInformReply(request.createReply()));
+			myServerAgent.send(prepareInformReply(request));
 		}
 	}
 
 	private void handleGreenSourceConnection(final ACLMessage request) {
 		if (myServerAgent.getOwnedGreenSources().containsKey(request.getSender())) {
 			logger.info(GREEN_SOURCE_ALREADY_CONNECTED_LOG, request.getSender().getName());
-			myServerAgent.send(prepareRefuseReply(request.createReply()));
+			myServerAgent.send(prepareRefuseReply(request));
 		} else {
 			logger.info(CONNECT_GREEN_SOURCE_LOG, request.getSender().getName());
-			myServerAgent.manageConfig().connectNewGreenSourcesToServer(singletonList(request.getSender()));
-			myServerAgent.send(prepareInformReply(request.createReply()));
+			myServerAgent.adapt().connectNewGreenSourcesToServer(singletonList(request.getSender()));
+			myServerAgent.send(prepareInformReply(request));
 		}
 	}
 
 	private boolean isGreenSourceExecutingJobs(final AID greenSource) {
-		return myServerAgent.getGreenSourceForJobMap().values().stream()
-				.anyMatch(executor -> executor.equals(greenSource));
+		return myServerAgent.getGreenSourceForJobMap().values().stream().anyMatch(agent -> agent.equals(greenSource));
 	}
 
 }

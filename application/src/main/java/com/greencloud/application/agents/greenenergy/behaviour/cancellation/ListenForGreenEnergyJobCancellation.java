@@ -2,6 +2,7 @@ package com.greencloud.application.agents.greenenergy.behaviour.cancellation;
 
 import static com.google.common.collect.Collections2.filter;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.templates.JobCancellationMessageTemplates.CANCEL_JOB_ANNOUNCEMENT;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
@@ -80,9 +81,9 @@ public class ListenForGreenEnergyJobCancellation extends CyclicBehaviour {
 		var jobPartStatus = myGreenEnergyAgent.getServerJobs().get(jobPart);
 		myGreenEnergyAgent.manage().removeJob(jobPart);
 		if (!JOB_NOT_STARTED_STATUSES.contains(jobPartStatus)) {
-			myGreenEnergyAgent.manage().incrementJobCounter(jobPart.getJobId(), FINISH);
+			myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), FINISH);
 		}
-		myGreenEnergyAgent.manage().incrementJobCounter(jobPart.getJobId(), FAILED);
+		myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(jobPart), FAILED);
 		MDC.put(LoggingConstant.MDC_JOB_ID, jobPart.getJobId());
 		logger.info(JobCancellationLogs.CANCELLED_JOB_PART_LOG);
 		myGreenEnergyAgent.manage().updateGUI();

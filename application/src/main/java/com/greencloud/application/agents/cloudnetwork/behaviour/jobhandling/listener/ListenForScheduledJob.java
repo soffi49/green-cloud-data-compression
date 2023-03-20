@@ -3,6 +3,7 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.lis
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_CFP_NEW_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.templates.JobHandlingMessageTemplates.NEW_JOB_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.MAX_MESSAGE_NUMBER_IN_BATCH;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
@@ -49,6 +50,7 @@ public class ListenForScheduledJob extends CyclicBehaviour {
 
 		if (Objects.nonNull(messages)) {
 			messages.stream().parallel().forEach(message -> {
+				MDC.put(MDC_AGENT_NAME, myAgent.getLocalName());
 				final ClientJob job = readMessageContent(message, ClientJob.class);
 
 				MDC.put(MDC_JOB_ID, job.getJobId());

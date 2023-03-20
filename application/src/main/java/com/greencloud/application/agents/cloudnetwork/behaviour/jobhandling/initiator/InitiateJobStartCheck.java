@@ -87,7 +87,7 @@ public class InitiateJobStartCheck extends AchieveREInitiator {
 
 			final JobStatusUpdate jobStatusUpdate = new ImmutableJobStatusUpdate(mapToJobInstanceId(job), jobStart);
 			myCloudNetwork.getNetworkJobs().replace(job, IN_PROGRESS);
-			myCloudNetwork.manage().incrementJobCounter(jobId, STARTED);
+			myCloudNetwork.manage().incrementJobCounter(mapToJobInstanceId(job), STARTED);
 			myAgent.send(prepareJobStatusMessageForScheduler(myCloudNetwork, jobStatusUpdate, STARTED_JOB_ID));
 		}
 	}

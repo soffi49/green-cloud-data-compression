@@ -2,26 +2,25 @@ package com.greencloud.application.agents.server.behaviour.powershortage.listene
 
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.mapper.JsonMapper.getMapper;
+import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
+import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.POWER_SHORTAGE_SOURCE_STATUSES;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Objects;
+import java.util.List;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.common.constant.LoggingConstant;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
-import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -31,7 +30,7 @@ import jade.lang.acl.ACLMessage;
  */
 public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForSourcePowerShortageFinish.class);
+	private static final Logger logger = getLogger(ListenForSourcePowerShortageFinish.class);
 
 	private ServerAgent myServerAgent;
 
@@ -50,37 +49,25 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 	 */
 	@Override
 	public void action() {
-		final ACLMessage inform = myAgent.receive(SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE);
+		final List<ACLMessage> messages = myAgent.receive(SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE, MAX_MESSAGE_NUMBER);
 
-		if (Objects.nonNull(inform)) {
-			final ClientJob job = getJobFromMessage(inform);
+		if (nonNull(messages)) {
+			messages.stream().parallel().forEach(message -> {
+				final JobInstanceIdentifier jobInstance = readMessageContent(message, JobInstanceIdentifier.class);
+				final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
 
-			if (Objects.nonNull(job) && POWER_SHORTAGE_SOURCE_STATUSES.contains(
-					myServerAgent.getServerJobs().get(job))) {
-				MDC.put(MDC_JOB_ID, job.getJobId());
-				logger.info(GS_SHORTAGE_FINISH_LOG, job.getJobId());
+				if (nonNull(job) && POWER_SHORTAGE_SOURCE_STATUSES.contains(myServerAgent.getServerJobs().get(job))) {
+					MDC.put(LoggingConstant.MDC_JOB_ID, job.getJobId());
+					logger.info(GS_SHORTAGE_FINISH_LOG, job.getJobId());
+					final boolean hasStarted = isJobStarted(job, myServerAgent.getServerJobs());
 
-				myServerAgent.getServerJobs().replace(job, getNewJobStatus(job));
-				myServerAgent.manage().updateServerGUI();
-				myServerAgent.manage().informCNAAboutStatusChange(mapToJobInstanceId(job), GREEN_POWER_JOB_ID);
-			}
+					myServerAgent.getServerJobs().replace(job, EXECUTING_ON_GREEN.getStatus(hasStarted));
+					myServerAgent.manage().updateGUI();
+					myServerAgent.message().informCNAAboutStatusChange(jobInstance, GREEN_POWER_JOB_ID);
+				}
+			});
 		} else {
 			block();
 		}
-	}
-
-	private ClientJob getJobFromMessage(final ACLMessage message) {
-		try {
-			final JobInstanceIdentifier jobInstanceIdentifier = getMapper().readValue(message.getContent(),
-					JobInstanceIdentifier.class);
-			return getJobByIdAndStartDate(jobInstanceIdentifier, myServerAgent.getServerJobs());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	private JobExecutionStatusEnum getNewJobStatus(final ClientJob job) {
-		return isJobStarted(job, myServerAgent.getServerJobs()) ? ACCEPTED : IN_PROGRESS;
 	}
 }

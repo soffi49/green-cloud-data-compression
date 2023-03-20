@@ -5,6 +5,7 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.powershor
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerShortageCloudListenerLog.SERVER_TRANSFER_REQUEST_NO_SERVERS_AVAILABLE_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.templates.PowerShortageCloudMessageTemplates.SERVER_JOB_TRANSFER_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.MAX_MESSAGE_NUMBER_IN_BATCH;
+import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobNewStartTime;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
@@ -63,6 +64,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 
 		if (nonNull(requests)) {
 			requests.stream().parallel().forEach(request -> {
+				MDC.put(MDC_AGENT_NAME, myAgent.getLocalName());
 				final JobPowerShortageTransfer transferData = readMessageContent(request,
 						JobPowerShortageTransfer.class);
 				final String jobId = transferData.getJobInstanceId().getJobId();
@@ -70,7 +72,9 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 
 				MDC.put(MDC_JOB_ID, jobId);
 				if (nonNull(job)) {
-					final List<AID> remainingServers = getRemainingServers(request.getSender());
+					final List<AID> remainingServers = myCloudNetworkAgent.manage()
+							.getRemainingAgents(request.getSender(),
+									myCloudNetworkAgent.manage().getOwnedActiveServers());
 					final Instant shortageStartTime = transferData.getPowerShortageStart();
 
 					if (!remainingServers.isEmpty()) {
@@ -98,11 +102,5 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 
 		myAgent.addBehaviour(InitiateJobTransferRequest.create(myCloudNetworkAgent, request, jobToTransfer,
 				shortageStartTime, remainingServers));
-	}
-
-	private List<AID> getRemainingServers(final AID serverSender) {
-		return myCloudNetworkAgent.manage().getOwnedActiveServers().stream()
-				.filter(server -> !server.equals(serverSender))
-				.toList();
 	}
 }

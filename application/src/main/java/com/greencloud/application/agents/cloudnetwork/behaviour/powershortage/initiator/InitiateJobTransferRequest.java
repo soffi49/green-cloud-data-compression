@@ -19,8 +19,8 @@ import java.util.List;
 import org.slf4j.Logger;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.agents.cloudnetwork.behaviour.AbstractCloudNetworkCFPInitiator;
 import com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerTransferConfirmation;
+import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
 import com.greencloud.application.domain.agent.ServerData;
 import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.commons.domain.job.ClientJob;
@@ -32,16 +32,20 @@ import jade.lang.acl.ACLMessage;
  * Behaviours sends the CFP to remaining servers looking for job transfer and selects the one which will
  * handle the remaining job execution
  */
-public class InitiateJobTransferRequest extends AbstractCloudNetworkCFPInitiator {
+public class InitiateJobTransferRequest extends AbstractCFPInitiator<ServerData> {
 
 	private static final Logger logger = getLogger(InitiateJobTransferRequest.class);
 
 	private final JobPowerShortageTransfer jobTransfer;
+	private final CloudNetworkAgent myCloudNetworkAgent;
 
-	private InitiateJobTransferRequest(final CloudNetworkAgent cloudNetworkAgent, final ACLMessage cfp,
+	private InitiateJobTransferRequest(final CloudNetworkAgent agent, final ACLMessage cfp,
 			final ACLMessage serverRequest, final JobPowerShortageTransfer jobTransfer) {
-		super(cloudNetworkAgent, cfp, serverRequest, jobTransfer.getJobInstanceId());
+		super(agent, cfp, serverRequest, jobTransfer.getJobInstanceId(), agent.manage().offerComparator(),
+				ServerData.class);
+
 		this.jobTransfer = jobTransfer;
+		this.myCloudNetworkAgent = agent;
 	}
 
 	/**
@@ -58,7 +62,6 @@ public class InitiateJobTransferRequest extends AbstractCloudNetworkCFPInitiator
 			final ClientJob jobToTransfer, final Instant shortageStartTime, final List<AID> servers) {
 		final JobPowerShortageTransfer jobTransfer = mapToPowerShortageJob(jobToTransfer, shortageStartTime);
 		final ACLMessage cfp = createCallForProposal(jobToTransfer, servers, CNA_JOB_CFP_PROTOCOL);
-
 		return new InitiateJobTransferRequest(agent, cfp, serverRequest, jobTransfer);
 	}
 
@@ -67,7 +70,7 @@ public class InitiateJobTransferRequest extends AbstractCloudNetworkCFPInitiator
 	 * transfer failure.
 	 */
 	@Override
-	protected void handleNoServerResponses() {
+	protected void handleNoResponses() {
 		logger.info(SERVER_TRANSFER_NO_RESPONSE_LOG);
 		respondWithFailureMessage();
 	}
@@ -77,7 +80,7 @@ public class InitiateJobTransferRequest extends AbstractCloudNetworkCFPInitiator
 	 * job transfer failure.
 	 */
 	@Override
-	protected void handleNoAvailableServers() {
+	protected void handleNoAvailableAgents() {
 		logger.info(SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG);
 		respondWithFailureMessage();
 	}

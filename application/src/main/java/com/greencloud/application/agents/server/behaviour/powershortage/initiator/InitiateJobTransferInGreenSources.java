@@ -6,166 +6,118 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.i
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NONE_AVAILABLE_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.JobUtils.isJobStarted;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_SOURCE_SHORTAGE_PLANNED;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.MessagingUtils.rejectJobOffers;
-import static com.greencloud.application.messages.MessagingUtils.retrieveProposals;
-import static com.greencloud.application.messages.MessagingUtils.retrieveValidMessages;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.BACK_UP_POWER_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.ON_HOLD_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
+import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD_SOURCE;
+import static jade.lang.acl.ACLMessage.REFUSE;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.listener.ListenForSourceJobTransferConfirmation;
-import com.greencloud.application.domain.GreenSourceData;
-import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.mapper.JobMapper;
+import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
+import com.greencloud.application.domain.agent.GreenSourceData;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.PowerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStateEnum;
 
-import jade.core.Agent;
+import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import jade.proto.ContractNetInitiator;
 
 /**
  * Behaviours sends the CFP to remaining green sources looking for job transfer and selects the one which will
  * handle the remaining job execution
  */
-public class InitiateJobTransferInGreenSources extends ContractNetInitiator {
+public class InitiateJobTransferInGreenSources extends AbstractCFPInitiator<GreenSourceData> {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateJobTransferInGreenSources.class);
+	private static final Logger logger = getLogger(InitiateJobTransferInGreenSources.class);
 
 	private final ServerAgent myServerAgent;
 	private final PowerJob jobToTransfer;
-	private final JobInstanceIdentifier jobToTransferInstance;
 	private final Instant powerShortageStart;
-	private final ACLMessage greenSourceRequest;
 
-	/**
-	 * Behaviour constructor
-	 *
-	 * @param agent              agent which executes the behaviour
-	 * @param powerRequest       call for proposal sent to GSAs containing the details regarding job to be transferred
-	 * @param greenSourceRequest green source power transfer request
-	 * @param jobToTransfer      job to be transferred
-	 * @param powerShortageStart time when the power shortage starts
-	 */
-	public InitiateJobTransferInGreenSources(final Agent agent,
-			final ACLMessage powerRequest,
-			final ACLMessage greenSourceRequest,
-			final PowerJob jobToTransfer,
-			final Instant powerShortageStart) {
-		super(agent, powerRequest);
-		this.myServerAgent = (ServerAgent) myAgent;
+	public InitiateJobTransferInGreenSources(final ServerAgent agent, final ACLMessage cfp,
+			final ACLMessage originalMessage, final PowerJob jobToTransfer, final Instant powerShortageStart) {
+		super(agent, cfp, originalMessage, mapToJobInstanceId(jobToTransfer), agent.manage().offerComparator(),
+				GreenSourceData.class);
+
+		this.myServerAgent = agent;
 		this.jobToTransfer = jobToTransfer;
-		this.greenSourceRequest = greenSourceRequest;
 		this.powerShortageStart = powerShortageStart;
-		this.jobToTransferInstance = JobMapper.mapToJobInstanceId(jobToTransfer);
 	}
 
 	/**
-	 * Method handles Green Source Agent responses. It analyzes received proposals and selects one GSA for power job transfer.
-	 * If no green source is available, it passes the information about the need of the job transfer to the parent Cloud Network
+	 * Method creates behaviour
 	 *
-	 * @param responses   retrieved responses from Green Source Agents
-	 * @param acceptances vector containing accept proposal message sent back to the chosen green source (not used)
+	 * @param agent              agent executing the behaviour
+	 * @param jobToTransfer      job that is to be transferred
+	 * @param greenSources       list of green sources to which CFP is sent
+	 * @param greenSourceRequest original green source request
+	 * @param shortageTime       time when power shortage is to start
+	 * @return InitiateJobTransferInGreenSources
 	 */
+	public static InitiateJobTransferInGreenSources create(final ServerAgent agent, final PowerJob jobToTransfer,
+			final List<AID> greenSources, final ACLMessage greenSourceRequest, final Instant shortageTime) {
+		final ACLMessage cfp = createCallForProposal(jobToTransfer, greenSources, SERVER_JOB_CFP_PROTOCOL);
+
+		return new InitiateJobTransferInGreenSources(agent, cfp, greenSourceRequest, jobToTransfer, shortageTime);
+	}
+
 	@Override
-	protected void handleAllResponses(Vector responses, Vector acceptances) {
-		final List<ACLMessage> proposals = retrieveProposals(responses);
-
-		if (responses.isEmpty()) {
-			logger.info(GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG);
-			handleTransferFailure();
-		} else if (proposals.isEmpty()) {
-			logger.info(GS_TRANSFER_NONE_AVAILABLE_LOG, jobToTransfer.getJobId());
-			myServerAgent.manage()
-					.passTransferRequestToCloudNetwork(jobToTransferInstance, powerShortageStart, greenSourceRequest);
-		} else {
-			final List<ACLMessage> validProposals = retrieveValidMessages(proposals, GreenSourceData.class);
-			if (!validProposals.isEmpty()) {
-				final ACLMessage chosenOffer = myServerAgent.chooseGreenSourceToExecuteJob(validProposals);
-				initiateTransferForGreenSource(jobToTransfer.getJobId(), chosenOffer);
-				rejectJobOffers(myServerAgent, jobToTransferInstance, chosenOffer, proposals);
-			} else {
-				handleInvalidProposals(proposals);
-			}
-		}
-	}
-
-	private void initiateTransferForGreenSource(final String jobId, final ACLMessage chosenOffer) {
-		MDC.put(MDC_JOB_ID, jobId);
-		logger.info(GS_TRANSFER_CHOSEN_GS_LOG, jobId, chosenOffer.getSender().getLocalName());
-
-		myServerAgent.addBehaviour(
-				new ListenForSourceJobTransferConfirmation(myServerAgent, jobToTransferInstance, powerShortageStart,
-						greenSourceRequest));
-		myAgent.send(prepareAcceptReplyWithProtocol(chosenOffer.createReply(),
-				jobToTransferInstance, POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));
-	}
-
-	private void handleInvalidProposals(final List<ACLMessage> proposals) {
+	protected void handleNoResponses() {
+		logger.info(GS_TRANSFER_NO_RESPONSE_RETRIEVED_LOG);
 		handleTransferFailure();
-		rejectJobOffers(myServerAgent, jobToTransferInstance, null, proposals);
+	}
+
+	@Override
+	protected void handleNoAvailableAgents() {
+		logger.info(GS_TRANSFER_NONE_AVAILABLE_LOG, jobToTransfer.getJobId());
+		myServerAgent.message().passTransferRequestToCloudNetwork(jobInstance, powerShortageStart, originalMessage);
+	}
+
+	@Override
+	protected void handleSelectedOffer(final GreenSourceData chosenOfferData) {
+		MDC.put(MDC_JOB_ID, jobInstance.getJobId());
+		logger.info(GS_TRANSFER_CHOSEN_GS_LOG, jobInstance.getJobId(), bestProposal.getSender().getLocalName());
+
+		myServerAgent.addBehaviour(new ListenForSourceJobTransferConfirmation(myServerAgent, jobInstance,
+				powerShortageStart, originalMessage));
+		myAgent.send(prepareAcceptJobOfferReply(bestProposal, jobInstance, POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL));
 	}
 
 	private void handleTransferFailure() {
 		MDC.put(MDC_JOB_ID, jobToTransfer.getJobId());
-		final ClientJob job = getJobByIdAndStartDate(jobToTransferInstance, myServerAgent.getServerJobs());
-		if (Objects.nonNull(job)) {
-			final int availableBackUpPower = myServerAgent.manage()
-					.getAvailableCapacity(jobToTransfer.getStartTime(), jobToTransfer.getEndTime(),
-							jobToTransferInstance, BACK_UP_POWER_STATUSES);
-			final boolean hasStarted = isJobStarted(job, myServerAgent.getServerJobs());
+		final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
 
-			if (availableBackUpPower < jobToTransfer.getPower()) {
-				putJobOnHold(job, hasStarted);
-			} else {
-				putJobOnBackUp(job, hasStarted);
-			}
-
-			myServerAgent.manage().updateServerGUI();
-			myServerAgent.send(prepareReply(greenSourceRequest.createReply(), NO_SOURCES_AVAILABLE_CAUSE_MESSAGE,
-					ACLMessage.FAILURE));
+		if (nonNull(job)) {
+			myServerAgent.manage().handleJobStateChange(getFieldsForJobState(job), job);
+			myServerAgent.send(prepareStringReply(originalMessage, NO_SOURCES_AVAILABLE_CAUSE_MESSAGE, REFUSE));
 		}
 	}
 
-	private void putJobOnHold(final ClientJob job, final boolean hasStarted) {
-		logger.info(GS_TRANSFER_FAIL_NO_BACK_UP_LOG, jobToTransfer.getJobId());
-		myServerAgent.getServerJobs()
-				.replace(job, hasStarted ? ON_HOLD_SOURCE_SHORTAGE : ON_HOLD_SOURCE_SHORTAGE_PLANNED);
+	private Triple<JobExecutionStateEnum, String, String> getFieldsForJobState(final ClientJob job) {
+		final int availableBackUpPower = myServerAgent.manage().getAvailableCapacity((ClientJob) jobToTransfer,
+				jobInstance, EXECUTING_ON_BACK_UP.getStatuses());
 
-		if (hasStarted) {
-			myServerAgent.manage().informCNAAboutStatusChange(mapToJobInstanceId(job), ON_HOLD_JOB_ID);
-		}
-	}
-
-	private void putJobOnBackUp(final ClientJob job, final boolean hasStarted) {
-		logger.info(GS_TRANSFER_FAIL_BACK_UP_LOG, jobToTransfer.getJobId());
-		myServerAgent.getServerJobs()
-				.replace(job, hasStarted ? IN_PROGRESS_BACKUP_ENERGY : IN_PROGRESS_BACKUP_ENERGY_PLANNED);
-
-		if (hasStarted) {
-			myServerAgent.manage()
-					.informCNAAboutStatusChange(mapToJobInstanceId(job), BACK_UP_POWER_JOB_ID);
-		}
+		return availableBackUpPower < job.getPower() ?
+				new ImmutableTriple<>(EXECUTING_ON_HOLD_SOURCE, GS_TRANSFER_FAIL_NO_BACK_UP_LOG, ON_HOLD_JOB_ID) :
+				new ImmutableTriple<>(EXECUTING_ON_BACK_UP, GS_TRANSFER_FAIL_BACK_UP_LOG, BACK_UP_POWER_JOB_ID);
 	}
 }

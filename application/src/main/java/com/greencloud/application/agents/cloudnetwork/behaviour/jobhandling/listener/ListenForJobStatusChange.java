@@ -54,9 +54,8 @@ public class ListenForJobStatusChange extends CyclicBehaviour {
 		if (nonNull(messages)) {
 			messages.forEach(message -> {
 				final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
-				final String messageType = message.getProtocol().equals(FAILED_JOB_PROTOCOL) ?
-						FAILED_JOB_ID :
-						message.getConversationId();
+				final String messageType =
+						message.getProtocol().equals(FAILED_JOB_PROTOCOL) ? FAILED_JOB_ID : message.getConversationId();
 
 				handleJobUpdate(jobStatusUpdate, messageType);
 			});

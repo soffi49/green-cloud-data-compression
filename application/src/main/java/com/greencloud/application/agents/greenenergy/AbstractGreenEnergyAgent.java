@@ -26,10 +26,11 @@ import jade.core.AID;
  */
 public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
+	protected ConcurrentMap<ServerJob, JobExecutionStatusEnum> serverJobs;
 	protected Location location;
 	protected GreenEnergySourceTypeEnum energyType;
-	protected ConcurrentMap<ServerJob, JobExecutionStatusEnum> serverJobs;
 	protected AID monitoringAgent;
+
 	protected double pricePerPowerUnit;
 	protected double weatherPredictionError;
 	protected int initialMaximumCapacity;

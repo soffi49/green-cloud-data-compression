@@ -18,7 +18,7 @@ import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceConnection
 import jade.lang.acl.ACLMessage;
 
 /**
- * Set of methods used to adapt the current configuration of Green Energy agent
+ * Set of methods used to adapt the current configuration of Green Energy Agent
  */
 public class GreenEnergyAdaptationManagement extends AbstractAgentManagement {
 

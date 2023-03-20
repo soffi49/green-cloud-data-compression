@@ -8,23 +8,24 @@ import static com.greencloud.application.messages.MessagingUtils.readMessageCont
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
+import static com.greencloud.application.messages.domain.factory.OfferMessageFactory.makeServerJobOffer;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_BY_SERVER;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_BY_SERVER;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
-
-import java.util.Objects;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.domain.agent.GreenSourceData;
 import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobStatusUpdate;
@@ -40,47 +41,58 @@ import jade.proto.ProposeInitiator;
  */
 public class InitiateExecutionOfferForJob extends ProposeInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateExecutionOfferForJob.class);
+	private static final Logger logger = getLogger(InitiateExecutionOfferForJob.class);
 
 	private final ServerAgent myServerAgent;
-	private final ACLMessage replyMessage;
+	private final ACLMessage greenSourceMessage;
 
-	/**
-	 * Behaviour constructor.
-	 *
-	 * @param agent        agent executing the behaviour
-	 * @param msg          proposal message that has to be sent to the Cloud Network
-	 * @param replyMessage reply message sent to chosen Green Source after receiving the Cloud Network
-	 *                     response
-	 */
-	public InitiateExecutionOfferForJob(final Agent agent, final ACLMessage msg, final ACLMessage replyMessage) {
+	private InitiateExecutionOfferForJob(final Agent agent, final ACLMessage msg, final ACLMessage greenSourceMessage) {
 		super(agent, msg);
-		this.replyMessage = replyMessage;
+
+		this.greenSourceMessage = greenSourceMessage;
 		this.myServerAgent = (ServerAgent) myAgent;
 	}
 
 	/**
+	 * Method creates behaviour
+	 *
+	 * @param agent            agent executing the behaviour
+	 * @param greenSourceOffer offer received from Green Source
+	 * @param cnaMessage       original message received from Cloud Network
+	 * @return InitiateExecutionOfferForJob
+	 */
+	public static InitiateExecutionOfferForJob create(final ServerAgent agent, final ACLMessage greenSourceOffer,
+			final ACLMessage cnaMessage) {
+		final GreenSourceData data = readMessageContent(greenSourceOffer, GreenSourceData.class);
+		final double servicePrice = agent.manage().calculateServicePrice(data);
+		final ACLMessage proposalMessage = makeServerJobOffer(agent, servicePrice, data.getJobId(), cnaMessage);
+
+		return new InitiateExecutionOfferForJob(agent, proposalMessage, greenSourceOffer);
+	}
+
+	/**
 	 * Method handles ACCEPT_PROPOSAL response received from the Cloud Network Agents.
-	 * It schedules the job execution, updates the network data and responds with ACCEPT_PROPOSAL to the
-	 * chosen Green Source Agent
+	 * It recomputes the available capacity to verify if job can be executed and if not - it responds with FAILURE,
+	 * or otherwise it communicates with selected Green Source to received confirmation regarding power supply.
 	 *
 	 * @param accept accept proposal message retrieved from the Cloud Network
 	 */
 	@Override
 	protected void handleAcceptProposal(final ACLMessage accept) {
 		final JobWithProtocol jobWithProtocol = readMessageContent(accept, JobWithProtocol.class);
-		final JobInstanceIdentifier jobInstanceId = jobWithProtocol.getJobInstanceIdentifier();
-		final ClientJob jobInstance = getJobByIdAndStartDate(jobInstanceId, myServerAgent.getServerJobs());
-		if (Objects.nonNull(jobInstance)) {
-			final int availableCapacity = myServerAgent.manage()
-					.getAvailableCapacity(jobInstance.getStartTime(), jobInstance.getEndTime(), null, null);
-			myServerAgent.manage().incrementJobCounter(jobInstanceId, ACCEPTED);
-			myServerAgent.getServerJobs().replace(jobInstance, ACCEPTED_BY_SERVER);
+		final JobInstanceIdentifier jobInstance = jobWithProtocol.getJobInstanceIdentifier();
+		final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
 
-			if (jobInstance.getPower() > availableCapacity) {
-				passJobExecutionFailure(jobInstance, jobInstanceId, jobWithProtocol.getReplyProtocol(), accept);
+		if (nonNull(job)) {
+			final int availableCapacity = myServerAgent.manage().getAvailableCapacity(job, null, null);
+
+			myServerAgent.manage().incrementJobCounter(jobInstance, ACCEPTED);
+			myServerAgent.getServerJobs().replace(job, ACCEPTED_BY_SERVER);
+
+			if (job.getPower() > availableCapacity) {
+				passJobExecutionFailure(job, jobInstance, jobWithProtocol.getReplyProtocol(), accept);
 			} else {
-				acceptGreenSourceForJobExecution(jobInstanceId, jobWithProtocol);
+				acceptGreenSourceForJobExecution(jobInstance, jobWithProtocol.getReplyProtocol());
 			}
 		}
 	}
@@ -93,41 +105,39 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 	 */
 	@Override
 	protected void handleRejectProposal(final ACLMessage reject) {
-		final JobInstanceIdentifier jobInstanceId = readMessageContent(reject,
-				JobInstanceIdentifier.class);
-		final ClientJob job = getJobByIdAndStartDate(jobInstanceId, myServerAgent.getServerJobs());
-		myServerAgent.getGreenSourceForJobMap().remove(jobInstanceId.getJobId());
+		final JobInstanceIdentifier jobInstance = readMessageContent(reject, JobInstanceIdentifier.class);
+		final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
 
-		if (Objects.nonNull(job)) {
-			myServerAgent.getServerJobs().remove(job);
+		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
 			logger.info(SERVER_OFFER_REJECT_LOG, reject.getSender().getLocalName());
-			myServerAgent.send(prepareReply(replyMessage, jobInstanceId, REJECT_PROPOSAL));
+			handleJobRejection(job, jobInstance);
 		}
 	}
 
-	private void passJobExecutionFailure(final ClientJob jobInstance, final JobInstanceIdentifier jobInstanceId,
+	private void passJobExecutionFailure(final ClientJob job, final JobInstanceIdentifier jobInstance,
 			final String protocol, final ACLMessage cnaAccept) {
 		final String responseProtocol = protocol.equals(POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL) ?
-				FAILED_TRANSFER_PROTOCOL :
-				FAILED_JOB_PROTOCOL;
+				FAILED_TRANSFER_PROTOCOL : FAILED_JOB_PROTOCOL;
+		final JobStatusUpdate jobStatusUpdate = new ImmutableJobStatusUpdate(jobInstance, getCurrentTime());
 
-		MDC.put(MDC_JOB_ID, jobInstance.getJobId());
-		logger.info(SERVER_OFFER_ACCEPT_PROPOSAL_FAILURE_LOG, jobInstance.getJobId());
-		myServerAgent.getServerJobs().remove(jobInstance);
-		myServerAgent.getGreenSourceForJobMap().remove(jobInstance.getJobId());
-		myServerAgent.manage().incrementJobCounter(jobInstanceId, FAILED);
+		MDC.put(MDC_JOB_ID, job.getJobId());
+		logger.info(SERVER_OFFER_ACCEPT_PROPOSAL_FAILURE_LOG, job.getJobId());
 
-		final JobStatusUpdate jobStatusUpdate = ImmutableJobStatusUpdate.of(jobInstanceId, getCurrentTime());
-		myServerAgent.send(prepareReply(replyMessage, jobInstanceId, REJECT_PROPOSAL));
-		myServerAgent.send(prepareFailureReply(cnaAccept.createReply(), jobStatusUpdate, responseProtocol));
+		handleJobRejection(job, jobInstance);
+		myServerAgent.manage().incrementJobCounter(jobInstance, FAILED);
+		myServerAgent.send(prepareFailureReply(cnaAccept, jobStatusUpdate, responseProtocol));
 	}
 
-	private void acceptGreenSourceForJobExecution(final JobInstanceIdentifier jobInstanceId,
-			final JobWithProtocol jobWithProtocol) {
-		MDC.put(MDC_JOB_ID, jobInstanceId.getJobId());
+	private void acceptGreenSourceForJobExecution(final JobInstanceIdentifier jobInstance, final String protocol) {
+		MDC.put(MDC_JOB_ID, jobInstance.getJobId());
 		logger.info(SERVER_OFFER_ACCEPT_PROPOSAL_GS_LOG);
-		myAgent.send(
-				prepareAcceptReplyWithProtocol(replyMessage, jobInstanceId, jobWithProtocol.getReplyProtocol()));
+		myAgent.send(prepareAcceptJobOfferReply(greenSourceMessage, jobInstance, protocol));
+	}
+
+	private void handleJobRejection(final ClientJob job, final JobInstanceIdentifier jobInstance) {
+		myServerAgent.getServerJobs().remove(job);
+		myServerAgent.getGreenSourceForJobMap().remove(job.getJobId());
+		myServerAgent.send(prepareReply(greenSourceMessage, jobInstance, REJECT_PROPOSAL));
 	}
 }
