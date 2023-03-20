@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.server.behaviour.adaptation.handler;
 
 import static com.greencloud.application.agents.server.behaviour.adaptation.handler.logs.ServerAdaptationHandlerLog.DISABLING_COMPLETED_LOG;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.lang.String.valueOf;
 import static org.slf4j.LoggerFactory.getLogger;

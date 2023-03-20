@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.greenenergy.behaviour.powersupply.handler;
 
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.handler.logs.PowerSupplyHandlerLog.MANUAL_POWER_SUPPLY_FINISH_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareManualFinishMessageForServer;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 import static com.greencloud.application.utils.JobUtils.calculateExpectedJobEndTime;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;

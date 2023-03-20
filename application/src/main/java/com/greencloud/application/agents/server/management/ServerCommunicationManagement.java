@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.server.management;
 
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForCNA;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForCNA;
 
 import java.time.Instant;
 

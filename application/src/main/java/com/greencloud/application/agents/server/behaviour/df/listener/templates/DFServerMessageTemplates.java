@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.server.behaviour.df.listener.templates;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.ASK_FOR_POWER_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.ASK_FOR_POWER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;

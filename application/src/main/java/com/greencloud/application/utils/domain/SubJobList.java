@@ -9,6 +9,7 @@ import com.greencloud.commons.domain.job.PowerJob;
  * Class which represents a job list which is used in algorithm finding set of jobs withing given power
  */
 public class SubJobList<T extends PowerJob> {
+
 	public final int size;
 	public final List<T> subList;
 

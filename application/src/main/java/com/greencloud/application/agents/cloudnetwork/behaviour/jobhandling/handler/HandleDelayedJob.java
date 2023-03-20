@@ -2,7 +2,7 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.han
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.handler.logs.JobHandlingHandlerLog.JOB_DELAY_LOG;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.MAX_ERROR_IN_JOB_START;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToCurrentTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;

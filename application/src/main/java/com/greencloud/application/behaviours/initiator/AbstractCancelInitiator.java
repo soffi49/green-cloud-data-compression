@@ -1,9 +1,9 @@
 package com.greencloud.application.behaviours.initiator;
 
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.COULD_NOT_CANCEL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.constants.MessageContentConstants.COULD_NOT_CANCEL_MESSAGE;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static java.util.Objects.nonNull;
@@ -57,7 +57,7 @@ public abstract class AbstractCancelInitiator<T extends ClientJob> extends Achie
 		postCancellation();
 
 		if (!jobsToCancel.isEmpty()) {
-			myAbstractAgent.send(prepareStringReply(originalRequest, COULD_NOT_CANCEL, REFUSE));
+			myAbstractAgent.send(prepareStringReply(originalRequest, COULD_NOT_CANCEL_MESSAGE, REFUSE));
 		} else {
 			myAbstractAgent.send(prepareReply(originalRequest, cancelledJobParts, INFORM));
 		}

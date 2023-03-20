@@ -2,7 +2,7 @@ package com.greencloud.application.agents.server.behaviour.powershortage.handler
 
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.SERVER_INITIATE_JOB_RE_SUPPLY_LOG;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.SERVER_CHECK_POWER_SHORTAGE_JOBS;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.POWER_SHORTAGE_SOURCE_STATUSES;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;

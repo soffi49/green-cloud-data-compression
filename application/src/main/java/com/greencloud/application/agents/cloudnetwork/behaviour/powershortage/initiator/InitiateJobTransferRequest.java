@@ -4,12 +4,12 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.powershor
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_RESPONSE_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static org.slf4j.LoggerFactory.getLogger;
 

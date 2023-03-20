@@ -3,10 +3,10 @@ package com.greencloud.application.agents.server.behaviour.powershortage.announc
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_DETECTED_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_NO_IMPACT_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.announcer.logs.PowerShortageServerAnnouncerLog.POWER_SHORTAGE_START_TRANSFER_REQUEST_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
+import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static com.greencloud.application.utils.AlgorithmUtils.findJobsWithinPower;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACTIVE_JOB_STATUSES;
 import static java.util.Collections.emptyList;

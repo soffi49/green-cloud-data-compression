@@ -6,11 +6,11 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_REFUSE_NOT_FOUND_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_NOT_FOUND_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
+import static com.greencloud.application.messages.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD;

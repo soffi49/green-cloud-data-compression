@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public interface Forecast {
 
 	/**
-	 * @return A number of timestamps returned in the API response of 5 day 3-hour forecast.
+	 * @return A number of timestamps returned by the API response of 5 day 3-hour forecast.
 	 */
 	Integer getCnt();
 

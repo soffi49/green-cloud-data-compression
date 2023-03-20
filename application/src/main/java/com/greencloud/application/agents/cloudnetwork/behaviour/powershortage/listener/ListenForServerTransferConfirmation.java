@@ -4,12 +4,12 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.powershor
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.logs.PowerShortageCloudListenerLog.SERVER_TRANSFER_FAILED_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.templates.PowerShortageCloudMessageTemplates.SERVER_JOB_TRANSFER_CONFIRMATION_TEMPLATE;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.TRANSFER_EXPIRATION_TIME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.SERVER_INTERNAL_FAILURE_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.messages.constants.MessageContentConstants.SERVER_INTERNAL_FAILURE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToGivenTime;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;

@@ -1,7 +1,7 @@
 package com.greencloud.application.agents;
 
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_CLIENT_NAME;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_CLIENT_NAME;
 import static com.greencloud.commons.agent.AgentType.CLIENT;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;

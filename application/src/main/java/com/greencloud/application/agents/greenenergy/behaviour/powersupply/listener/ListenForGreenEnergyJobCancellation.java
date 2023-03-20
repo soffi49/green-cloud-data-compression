@@ -3,10 +3,10 @@ package com.greencloud.application.agents.greenenergy.behaviour.powersupply.list
 import static com.google.common.collect.Collections2.filter;
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.logs.PowerSupplyListenerLog.CANCEL_JOB_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.template.PowerSupplyMessageTemplates.CANCEL_JOB_ANNOUNCEMENT_GREEN_SOURCE_TEMPLATE;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobName;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;

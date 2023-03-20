@@ -3,9 +3,9 @@ package com.greencloud.application.agents.scheduler.behaviour.job.cancellation;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.JOB_CANCELLATION_COMPLETED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.JOB_CANCELLING_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.cancellation.logs.JobCancellationLogs.NOT_ALL_JOB_PARTS_CANCELLED_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobCancellationMessage;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobCancellationMessage;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static org.slf4j.LoggerFactory.getLogger;
 

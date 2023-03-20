@@ -2,7 +2,7 @@ package com.greencloud.application.agents.server.behaviour.df.listener;
 
 import static com.greencloud.application.agents.server.behaviour.df.listener.logs.ServerDFListenerLog.RECEIVED_POWER_INFORMATION_REQUEST_LOG;
 import static com.greencloud.application.agents.server.behaviour.df.listener.templates.DFServerMessageTemplates.CLOUD_NETWORK_INFORMATION_TEMPLATE;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.lang.String.valueOf;
 import static java.util.Objects.nonNull;

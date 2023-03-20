@@ -8,8 +8,8 @@ import static com.greencloud.application.agents.cloudnetwork.management.logs.Clo
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_START_LOG;
 import static com.greencloud.application.utils.GUIUtils.announceFinishedJob;
 import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
-import static com.greencloud.application.utils.StateManagementUtils.getCurrentPowerInUse;
-import static com.greencloud.application.utils.StateManagementUtils.getPowerPercent;
+import static com.greencloud.application.utils.PowerUtils.getCurrentPowerInUse;
+import static com.greencloud.application.utils.PowerUtils.getPowerPercent;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;

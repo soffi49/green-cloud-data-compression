@@ -3,8 +3,8 @@ package com.greencloud.application.agents.server.behaviour.powershortage.handler
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_BACKUP_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.POWER_SHORTAGE_HANDLE_JOB_ON_HOLD_TEMPORARY_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.StateManagementUtils.updateAgentMaximumCapacity;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.PowerUtils.updateAgentMaximumCapacity;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

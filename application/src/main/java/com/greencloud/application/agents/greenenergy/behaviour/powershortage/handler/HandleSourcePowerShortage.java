@@ -1,8 +1,8 @@
 package com.greencloud.application.agents.greenenergy.behaviour.powershortage.handler;
 
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.handler.logs.PowerShortageSourceHandlerLog.POWER_SHORTAGE_HANDLING_PUT_ON_HOLD_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.StateManagementUtils.updateAgentMaximumCapacity;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.PowerUtils.updateAgentMaximumCapacity;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToCurrentTime;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

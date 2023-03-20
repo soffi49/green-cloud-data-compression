@@ -1,4 +1,4 @@
-package com.greencloud.application.messages.domain.constants;
+package com.greencloud.application.messages.constants;
 
 /**
  * Class store conversation identifiers
@@ -7,19 +7,20 @@ public class MessageConversationConstants {
 
 	/**
 	 * Conversation id used in messages informing that:
-	 * SCHEDULED_JOB_ID		   	   - the job has been scheduled for execution
-	 * RE_SCHEDULED_JOB_ID		   - the job time frames has been adjusted
-	 * PROCESSING_JOB_ID		   - the job execution is being processed
-	 * CONFIRMED_JOB_ID			   - the job execution has been confirmed
-	 * STARTED_JOB_ID			   - the job execution has started
-	 * DELAYED_JOB_ID			   - the job execution is being delayed
-	 * POSTPONED_JOB_ID			   - the job execution is being postponed
-	 * BACK_UP_POWER_JOB_ID  	   - the job is executed using the back-up power
-	 * GREEN_POWER_JOB_ID    	   - the job is executed using green power
-	 * ON_HOLD_JOB_ID			   - the job has been put on hold
-	 * FINISH_JOB_ID			   - the job execution has finished
-	 * FAILED_JOB_ID			   - the job execution has failed
-	 * SPLIT_JOB_ID				   - the job has been split
+	 *
+	 * <p> SCHEDULED_JOB_ID		   	   - the job has been scheduled for execution </p>
+	 * <p> RE_SCHEDULED_JOB_ID		   - the job time frames has been adjusted </p>
+	 * <p> PROCESSING_JOB_ID		   - the job execution is being processed </p>
+	 * <p> CONFIRMED_JOB_ID			   - the job execution has been confirmed </p>
+	 * <p> STARTED_JOB_ID			   - the job execution has started </p>
+	 * <p> DELAYED_JOB_ID			   - the job execution is being delayed </p>
+	 * <p> POSTPONED_JOB_ID			   - the job execution is being postponed </p>
+	 * <p> BACK_UP_POWER_JOB_ID  	   - the job is executed using the back-up power </p>
+	 * <p> GREEN_POWER_JOB_ID    	   - the job is executed using green power </p>
+	 * <p> ON_HOLD_JOB_ID			   - the job has been put on hold </p>
+	 * <p> FINISH_JOB_ID			   - the job execution has finished </p>
+	 * <p> FAILED_JOB_ID			   - the job execution has failed </p>
+	 * <p> SPLIT_JOB_ID				   - the job has been split </p>
 	 */
 	public static final String SCHEDULED_JOB_ID = "SCHEDULED_JOB_ID";
 	public static final String RE_SCHEDULED_JOB_ID = "RE_SCHEDULED_JOB_ID";

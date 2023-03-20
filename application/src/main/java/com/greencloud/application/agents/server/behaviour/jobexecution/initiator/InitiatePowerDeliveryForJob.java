@@ -4,13 +4,13 @@ import static com.greencloud.application.agents.server.behaviour.jobexecution.in
 import static com.greencloud.application.agents.server.behaviour.jobexecution.initiator.logs.JobHandlingInitiatorLog.NEW_JOB_LOOK_FOR_GS_NO_RESPONSE_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.initiator.logs.JobHandlingInitiatorLog.NEW_JOB_LOOK_FOR_GS_NO_SOURCES_AVAILABLE_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.initiator.logs.JobHandlingInitiatorLog.NEW_JOB_LOOK_FOR_GS_SELECTED_GS_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapJobToPowerJob;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static org.slf4j.LoggerFactory.getLogger;
 

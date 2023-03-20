@@ -8,11 +8,11 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powersuppl
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.template.PowerSupplyMessageTemplates.POWER_SUPPLY_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData.createWeatherRequest;
 import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.MAX_NUMBER_OF_SERVER_MESSAGES;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToServerJob;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

@@ -1,16 +1,16 @@
 package com.greencloud.application.utils;
 
-import static com.greencloud.application.agents.greenenergy.domain.GreenEnergyAgentConstants.SUB_INTERVAL_ERROR;
+import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.SUB_INTERVAL_ERROR;
 import static com.greencloud.application.utils.TimeUtils.divideIntoSubIntervals;
 import static com.greencloud.application.utils.domain.JobWithTime.TimeType.START_TIME;
 import static java.lang.Math.max;
+import static java.time.Duration.between;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
@@ -23,13 +23,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 
 import com.greencloud.application.agents.greenenergy.management.GreenPowerManagement;
-import com.greencloud.application.domain.MonitoringData;
+import com.greencloud.application.domain.weather.MonitoringData;
 import com.greencloud.application.utils.domain.JobWithTime;
 import com.greencloud.application.utils.domain.SubJobList;
 import com.greencloud.commons.domain.job.PowerJob;
 
 /**
- * Service used to perform operations using already existing, implemented algorithms
+ * Service used to perform operations using more complex algorithms
  */
 public class AlgorithmUtils {
 
@@ -37,7 +37,6 @@ public class AlgorithmUtils {
 
 	/**
 	 * Method computes the maximum power which will be used by the jobs during given time-stamp
-	 * (full algorithm description can be found on project's Wiki)
 	 *
 	 * @param jobList   list of the jobs of interest
 	 * @param startTime start time of the interval
@@ -72,8 +71,9 @@ public class AlgorithmUtils {
 
 	/**
 	 * Method computes the minimized available power during specific time-stamp.
-	 * The momentum available power is a difference between available green power and the power in use at
+	 * The momentum available power is a difference between available green power and the power in use at the
 	 * specific moment
+	 * <p/>
 	 * IMPORTANT! All time frames used in the calculation refer to the real time (not simulation time). The main
 	 * reason for that is that the weather forecast requires real job execution time
 	 *
@@ -81,30 +81,35 @@ public class AlgorithmUtils {
 	 * @param startTime            start time of the interval (in real time)
 	 * @param endTime              end time of the interval (in real time)
 	 * @param intervalLength       length of single sub-interval in minutes
+	 * @param maximumCapacity      current maximum capacity of given source
 	 * @param greenPowerManagement manager that will compute available capacity
 	 * @param monitoringData       weather data necessary to compute available capacity
 	 */
 	public static <T extends PowerJob> double getMinimalAvailablePowerDuringTimeStamp(
-			final Set<T> jobList, final Instant startTime, final Instant endTime, final long intervalLength,
-			final GreenPowerManagement greenPowerManagement, final MonitoringData monitoringData) {
+			final Set<T> jobList,
+			final Instant startTime,
+			final Instant endTime,
+			final long intervalLength,
+			final GreenPowerManagement greenPowerManagement,
+			final double maximumCapacity,
+			final MonitoringData monitoringData) {
 		final List<JobWithTime<T>> jobsWithTimeMap = getJobsWithTimesForInterval(jobList, startTime, endTime);
 
 		final Deque<Map.Entry<Instant, Integer>> powerInIntervals = jobsWithTimeMap.isEmpty() ?
 				new ArrayDeque<>() :
 				getPowerForJobIntervals(jobsWithTimeMap.subList(0, jobsWithTimeMap.size() - 1));
 		final Set<Instant> subIntervals = divideIntoSubIntervals(startTime, endTime, intervalLength * MILLIS_IN_MIN);
-		final AtomicReference<Double> minimumAvailablePower = new AtomicReference<>(
-				(double) greenPowerManagement.getCurrentMaximumCapacity());
+
+		final AtomicReference<Double> minimumAvailablePower = new AtomicReference<>(maximumCapacity);
 		final AtomicReference<Map.Entry<Instant, Integer>> lastOpenedPowerInterval = new AtomicReference<>(null);
 
 		subIntervals.forEach(time -> {
 			while (!powerInIntervals.isEmpty() && !powerInIntervals.peekFirst().getKey().isAfter(time)) {
 				lastOpenedPowerInterval.set(powerInIntervals.removeFirst());
 			}
-			final double availableCapacity = greenPowerManagement.getAvailablePower(monitoringData, time);
+			final double availableCapacity = greenPowerManagement.getAvailableGreenPower(monitoringData, time);
 			final double powerInUse = nonNull(lastOpenedPowerInterval.get()) ?
-					lastOpenedPowerInterval.get().getValue() :
-					0;
+					lastOpenedPowerInterval.get().getValue() : 0;
 			final double availablePower = availableCapacity - powerInUse;
 
 			if (availablePower >= 0 && availablePower < minimumAvailablePower.get()) {
@@ -124,14 +129,12 @@ public class AlgorithmUtils {
 	 */
 	public static <T extends PowerJob> List<T> findJobsWithinPower(final List<T> jobs, final double finalPower) {
 		if (finalPower == 0) {
-			return Collections.emptyList();
+			return emptyList();
 		}
-
 		final AtomicReference<SubJobList<T>> result = new AtomicReference<>(new SubJobList<>());
-
 		final Set<SubJobList<T>> sums = new HashSet<>();
-		sums.add(result.get());
 
+		sums.add(result.get());
 		jobs.forEach(job -> {
 			final Set<SubJobList<T>> newSums = new HashSet<>();
 			sums.forEach(sum -> {
@@ -152,7 +155,8 @@ public class AlgorithmUtils {
 	}
 
 	/**
-	 * Method computes the probability that the computed maximum value is incorrect (it was assumed that the smallest time interval is equal to 10 min)
+	 * Method computes the probability that the given maximum value is incorrect
+	 * (it was assumed that the smallest time interval is equal to 10 min)
 	 *
 	 * @param startTime      start time of the interval (in real time)
 	 * @param endTime        end time of the interval (in real time)
@@ -163,7 +167,7 @@ public class AlgorithmUtils {
 			final long intervalLength) {
 		final Set<Instant> subIntervals = divideIntoSubIntervals(startTime, endTime, intervalLength * MILLIS_IN_MIN);
 		final long sampleSize = (long) subIntervals.size() - 1;
-		final double populationSize = (double) Duration.between(startTime, endTime).toMinutes() / 10;
+		final double populationSize = (double) between(startTime, endTime).toMinutes() / 10;
 
 		return SUB_INTERVAL_ERROR + max(1 - sampleSize / populationSize, 0);
 
@@ -190,7 +194,7 @@ public class AlgorithmUtils {
 	}
 
 	/**
-	 * Method uses apache.math3.stat to compute Kendall's Tau coefficient used in check the correlation between
+	 * Method uses apache.math3.stat to compute Kendall's Tau coefficient used to check the correlation between
 	 * time and variable
 	 *
 	 * @param timeInstances time instances when the values were computed

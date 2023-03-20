@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum;

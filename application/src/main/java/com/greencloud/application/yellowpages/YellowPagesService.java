@@ -1,15 +1,18 @@
 package com.greencloud.application.yellowpages;
 
-import static java.util.Collections.emptyList;
+import static jade.domain.DFService.createSubscriptionMessage;
+import static jade.domain.DFService.keepRegistered;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toMap;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -24,7 +27,7 @@ import jade.lang.acl.ACLMessage;
  */
 public class YellowPagesService {
 
-	private static final Logger logger = LoggerFactory.getLogger(YellowPagesService.class);
+	private static final Logger logger = getLogger(YellowPagesService.class);
 
 	private YellowPagesService() {
 	}
@@ -40,7 +43,7 @@ public class YellowPagesService {
 	public static void register(Agent agent, String serviceType, String serviceName, String ownership) {
 		try {
 			DFService.register(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
-			DFService.keepRegistered(agent, agent.getDefaultDF(),
+			keepRegistered(agent, agent.getDefaultDF(),
 					prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership), null);
 		} catch (FIPAException e) {
 			logger.info("Couldn't register {} in the directory facilitator", agent);
@@ -63,7 +66,51 @@ public class YellowPagesService {
 	}
 
 	/**
-	 * Method searches the DF for the com.greencloud.application.agents with given service type and ownership
+	 * Method deregisters the given agent in the DF
+	 *
+	 * @param agent agent that is to be deregistered
+	 */
+	public static void deregister(Agent agent) {
+		try {
+			DFService.deregister(agent);
+		} catch (FIPAException e) {
+			logger.info("Couldn't deregister {} from the directory facilitator", agent);
+		}
+	}
+
+	/**
+	 * Method deregisters the given agent in the DF
+	 *
+	 * @param agent       agent that is to be deregistered
+	 * @param serviceType type of the service to be deregistered
+	 * @param serviceName name of the service to be deregistered
+	 */
+	public static void deregister(Agent agent, String serviceType, String serviceName) {
+		try {
+			DFService.deregister(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName));
+		} catch (FIPAException e) {
+			logger.info("Couldn't deregister {} from the directory facilitator", agent);
+		}
+	}
+
+	/**
+	 * Method deregisters the given agent in the DF
+	 *
+	 * @param agent       agent that is to be deregistered
+	 * @param serviceType type of the service to be deregistered
+	 * @param serviceName name of the service to be deregistered
+	 * @param ownership   name of the owner to be deregistered
+	 */
+	public static void deregister(Agent agent, String serviceType, String serviceName, String ownership) {
+		try {
+			DFService.deregister(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
+		} catch (FIPAException e) {
+			logger.info("Couldn't deregister {} in the directory facilitator", agent);
+		}
+	}
+
+	/**
+	 * Method searches the DF for the agents with given service type and ownership
 	 *
 	 * @param agent       agent which is searching through the DF
 	 * @param serviceType type of the service to be searched
@@ -107,7 +154,7 @@ public class YellowPagesService {
 	 * @return subscription ACLMessage
 	 */
 	public static ACLMessage prepareSubscription(final Agent subscriber, final String serviceType) {
-		return DFService.createSubscriptionMessage(subscriber, subscriber.getDefaultDF(),
+		return createSubscriptionMessage(subscriber, subscriber.getDefaultDF(),
 				prepareAgentDescriptionTemplate(serviceType), null);
 	}
 
@@ -121,26 +168,25 @@ public class YellowPagesService {
 	 */
 	public static ACLMessage prepareSubscription(final Agent subscriber, final String serviceType,
 			final String ownership) {
-		return DFService.createSubscriptionMessage(subscriber, subscriber.getDefaultDF(),
+		return createSubscriptionMessage(subscriber, subscriber.getDefaultDF(),
 				prepareAgentDescriptionTemplate(serviceType, ownership), null);
 	}
 
 	/**
-	 * Method decodes the received notification and retrieves newly introduced agents
+	 * Method decodes the received notification and retrieves agent service information
 	 *
 	 * @param inform notification received from DF
-	 * @return AID list of registered agents
+	 * @return Map of agent AIDS along with status if the agent service is registered/deregistered
 	 */
-	public static List<AID> decodeSubscription(final ACLMessage inform) {
+	public static Map<AID, Boolean> decodeSubscription(final ACLMessage inform) {
 		try {
 			return Arrays.stream(DFService.decodeNotification(inform.getContent()))
-					.map(DFAgentDescription::getName)
-					.toList();
+					.collect(toMap(DFAgentDescription::getName, desc -> desc.getAllServices().hasNext()));
 		} catch (FIPAException e) {
 			logger.info("An error occurred while decoding the notification: {}", e.getMessage());
 		}
 
-		return emptyList();
+		return emptyMap();
 	}
 
 	private static DFAgentDescription prepareAgentDescription(AID aid, String serviceType, String serviceName,

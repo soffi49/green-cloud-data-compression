@@ -1,8 +1,8 @@
 package com.greencloud.application.agents.server.behaviour.powershortage.handler;
 
 import static com.greencloud.application.agents.server.behaviour.powershortage.handler.logs.PowerShortageServerHandlerLog.GS_TRANSFER_EXECUTION_LOG;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStartedMessage;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndEndDate;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.common.constant.LoggingConstant;
+import com.greencloud.commons.constants.LoggingConstant;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 

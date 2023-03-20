@@ -1,6 +1,7 @@
 package com.greencloud.application.mapper;
 
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
+import static java.lang.String.format;
 
 import java.time.Instant;
 
@@ -18,7 +19,7 @@ import com.greencloud.commons.domain.job.ServerJob;
 import jade.core.AID;
 
 /**
- * Class provides set of methods mapping job classes
+ * Class provides set of methods mapping job object classes
  */
 public class JobMapper {
 
@@ -37,21 +38,7 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param job server job to be mapped to power job
-	 * @return PowerJob
-	 */
-	public static PowerJob mapServerJobToPowerJob(final ServerJob job) {
-		return ImmutablePowerJob.builder()
-				.jobId(job.getJobId())
-				.power(job.getPower())
-				.startTime(job.getStartTime())
-				.endTime(job.getEndTime())
-				.deadline(job.getDeadline())
-				.build();
-	}
-
-	/**
-	 * @param powerJob  power job to be mapped to job
+	 * @param powerJob  client job to be mapped to power job
 	 * @param startTime new start time
 	 * @return PowerJob
 	 */
@@ -66,7 +53,7 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param serverJob server job to be mapped to job
+	 * @param serverJob server job to be mapped to job with time frames referencing real time
 	 * @return ServerJob
 	 */
 	public static ServerJob mapToServerJobRealTime(final ServerJob serverJob) {
@@ -81,7 +68,7 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param job client job to be mapped to job
+	 * @param job client job to be mapped to job with time frames referencing real time
 	 * @return ClientJob
 	 */
 	public static ClientJob mapToClientJobRealTime(final ClientJob job) {
@@ -98,7 +85,7 @@ public class JobMapper {
 	/**
 	 * @param job       job to be mapped to job
 	 * @param startTime new job start time
-	 * @return Job
+	 * @return ClientJob
 	 */
 	public static ClientJob mapToJobNewStartTime(final ClientJob job, final Instant startTime) {
 		return ImmutableClientJob.builder()
@@ -112,8 +99,9 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param job job to be mapped to job
-	 * @return Job
+	 * @param job     client job to be mapped to client job
+	 * @param endTime new job end time
+	 * @return ClientJob
 	 */
 	public static ClientJob mapToJobNewEndTime(final ClientJob job, final Instant endTime) {
 		return ImmutableClientJob.builder()
@@ -127,8 +115,8 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param serverJob server job to be mapped to job
-	 * @param startTime new power job start time
+	 * @param serverJob server job to be mapped to server job
+	 * @param startTime new server job start time
 	 * @return ServerJob
 	 */
 	public static ServerJob mapToJobNewStartTime(final ServerJob serverJob, final Instant startTime) {
@@ -143,8 +131,8 @@ public class JobMapper {
 	}
 
 	/**
-	 * @param serverJob server job to be mapped to job
-	 * @param endTime   new power job end time
+	 * @param serverJob server job to be mapped to server job
+	 * @param endTime   new server job end time
 	 * @return ServerJob
 	 */
 	public static ServerJob mapToJobNewEndTime(final ServerJob serverJob, final Instant endTime) {
@@ -159,10 +147,34 @@ public class JobMapper {
 	}
 
 	/**
+	 * @param job       job extending PowerJob that is to be mapped to job
+	 * @param startTime new job start time
+	 * @return job extending PowerJob
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends PowerJob> T mapToJobNewStartTime(final T job, final Instant startTime) {
+		return job instanceof ClientJob clientJob ?
+				(T) mapToJobNewStartTime(clientJob, startTime) :
+				(T) mapToJobNewStartTime((ServerJob) job, startTime);
+	}
+
+	/**
+	 * @param job       job extending PowerJob to be mapped to job
+	 * @param startTime new job start time
+	 * @return job extending PowerJob
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends PowerJob> T mapToJobNewEndTime(final T job, final Instant startTime) {
+		return job instanceof ClientJob clientJob ?
+				(T) mapToJobNewEndTime(clientJob, startTime) :
+				(T) mapToJobNewEndTime((ServerJob) job, startTime);
+	}
+
+	/**
 	 * @param job       job to be mapped to job
 	 * @param endTime   new job end time
 	 * @param startTime new job start time
-	 * @return PowerJob
+	 * @return ClientJob
 	 */
 	public static ClientJob mapToJobWithNewTime(final ClientJob job, final Instant startTime, final Instant endTime) {
 		return ImmutableClientJob.builder()
@@ -196,43 +208,15 @@ public class JobMapper {
 	 * @return JobInstanceIdentifier
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final PowerJob powerJob) {
-		return ImmutableJobInstanceIdentifier.of(powerJob.getJobId(), powerJob.getStartTime());
+		return new ImmutableJobInstanceIdentifier(powerJob.getJobId(), powerJob.getStartTime());
 	}
 
 	/**
-	 * @param job       job to map
-	 * @param startTime power shortage start time
-	 * @return PowerShortageJob
-	 */
-	public static JobPowerShortageTransfer mapToPowerShortageJob(final ClientJob job, final Instant startTime) {
-		return ImmutableJobPowerShortageTransfer.of(mapToJobInstanceId(job), startTime);
-	}
-
-	/**
-	 * @param jobInstanceId job identifier
-	 * @param startTime     power shortage start time
-	 * @return PowerShortageJob
-	 */
-	public static JobPowerShortageTransfer mapToPowerShortageJob(final JobInstanceIdentifier jobInstanceId,
-			final Instant startTime) {
-		return ImmutableJobPowerShortageTransfer.of(jobInstanceId, startTime);
-	}
-
-	/**
-	 * @param job       power job to map
-	 * @param startTime power shortage start time
-	 * @return PowerShortageJob
-	 */
-	public static JobPowerShortageTransfer mapToPowerShortageJob(final PowerJob job, final Instant startTime) {
-		return ImmutableJobPowerShortageTransfer.of(mapToJobInstanceId(job), startTime);
-	}
-
-	/**
-	 * @param job Job object
+	 * @param job ClientJob object
 	 * @return JobInstanceIdentifier
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final ClientJob job) {
-		return ImmutableJobInstanceIdentifier.of(job.getJobId(), job.getStartTime());
+		return new ImmutableJobInstanceIdentifier(job.getJobId(), job.getStartTime());
 	}
 
 	/**
@@ -242,7 +226,7 @@ public class JobMapper {
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final JobInstanceIdentifier jobInstanceId,
 			final Instant startTime) {
-		return ImmutableJobInstanceIdentifier.of(jobInstanceId.getJobId(), startTime);
+		return new ImmutableJobInstanceIdentifier(jobInstanceId.getJobId(), startTime);
 	}
 
 	/**
@@ -251,6 +235,47 @@ public class JobMapper {
 	 * @return JobInstanceIdentifier
 	 */
 	public static JobInstanceIdentifier mapToJobInstanceId(final String jobId, final Instant startTime) {
-		return ImmutableJobInstanceIdentifier.of(jobId, startTime);
+		return new ImmutableJobInstanceIdentifier(jobId, startTime);
+	}
+
+	/**
+	 * @param job       ClientJob to map
+	 * @param startTime power shortage start time
+	 * @return JobPowerShortageTransfer
+	 */
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final ClientJob job, final Instant startTime) {
+		return new ImmutableJobPowerShortageTransfer(mapToJobInstanceId(job), startTime);
+	}
+
+	/**
+	 * @param jobInstanceId job identifier
+	 * @param startTime     power shortage start time
+	 * @return JobPowerShortageTransfer
+	 */
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final JobInstanceIdentifier jobInstanceId,
+			final Instant startTime) {
+		return new ImmutableJobPowerShortageTransfer(jobInstanceId, startTime);
+	}
+
+	/**
+	 * @param job       PowerJob to map
+	 * @param startTime power shortage start time
+	 * @return JobPowerShortageTransfer
+	 */
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final PowerJob job, final Instant startTime) {
+		return new ImmutableJobPowerShortageTransfer(mapToJobInstanceId(job), startTime);
+	}
+
+	/**
+	 * @param job    job for splitting
+	 * @param partNo number of job part
+	 * @return job part
+	 */
+	public static ClientJob mapToJobPart(final ClientJob job, final int partNo, final int splitFactor) {
+		return ImmutableClientJob.builder()
+				.from(job)
+				.jobId(format("%s#part%d", job.getJobId(), partNo))
+				.power(job.getPower() / splitFactor)
+				.build();
 	}
 }

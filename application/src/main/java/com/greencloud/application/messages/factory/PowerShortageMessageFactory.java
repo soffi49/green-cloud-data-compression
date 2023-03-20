@@ -1,10 +1,9 @@
-package com.greencloud.application.messages.domain.factory;
+package com.greencloud.application.messages.factory;
 
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_ALERT_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
@@ -13,6 +12,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.application.mapper.JobMapper;
+import com.greencloud.application.mapper.JsonMapper;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.message.MessageBuilder;
 
@@ -29,19 +30,16 @@ public class PowerShortageMessageFactory {
 	 *
 	 * @param powerShortageJob content of the message consisting of the job to transfer and power shortage time
 	 * @param receiver         receivers of the message
-	 * @return request ACLMessage
+	 * @return REQUEST ACLMessage
 	 */
 	public static ACLMessage preparePowerShortageTransferRequest(final JobPowerShortageTransfer powerShortageJob,
 			final AID receiver) {
-		final ACLMessage message = new ACLMessage(REQUEST);
-		try {
-			message.setContent(getMapper().writeValueAsString(powerShortageJob));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		message.setProtocol(POWER_SHORTAGE_ALERT_PROTOCOL);
-		message.addReceiver(receiver);
-		return message;
+		return MessageBuilder.builder()
+				.withPerformative(REQUEST)
+				.withObjectContent(powerShortageJob)
+				.withMessageProtocol(POWER_SHORTAGE_ALERT_PROTOCOL)
+				.withReceivers(receiver)
+				.build();
 	}
 
 	/**
@@ -49,27 +47,24 @@ public class PowerShortageMessageFactory {
 	 *
 	 * @param job      job affected by source power shortage to be supplied again using green power
 	 * @param receiver receiver of the message
-	 * @return request ACLMessage
+	 * @return REQUEST ACLMessage
 	 */
 	public static ACLMessage prepareGreenPowerSupplyRequest(final ClientJob job, final AID receiver) {
-		final ACLMessage message = new ACLMessage(REQUEST);
-		try {
-			message.setContent(getMapper().writeValueAsString(mapToJobInstanceId(job)));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		message.setProtocol(SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL);
-		message.addReceiver(receiver);
-		return message;
+		return MessageBuilder.builder()
+				.withPerformative(REQUEST)
+				.withObjectContent(mapToJobInstanceId(job))
+				.withMessageProtocol(SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL)
+				.withReceivers(receiver)
+				.build();
 	}
 
 	/**
-	 * Method prepares the message about the job transfer update sent to scheduler
+	 * Method prepares the message about the job transfer update that is sent to scheduler
 	 *
 	 * @param jobInstanceId unique job instance
 	 * @param server        server that is sending the message
 	 * @param protocol      protocol used in transfer messages
-	 * @return inform ACLMessage
+	 * @return INFORM ACLMessage
 	 */
 	public static ACLMessage prepareJobTransferUpdateMessageForCNA(final JobInstanceIdentifier jobInstanceId,
 			final String protocol, final ServerAgent server) {
@@ -86,21 +81,17 @@ public class PowerShortageMessageFactory {
 	 * Method prepares the message passing the job affected by the power shortage with provided protocol
 	 *
 	 * @param messageContent message content
-	 * @param receiver       address of a receiver agent
+	 * @param receivers      address of a receiver agents
 	 * @param protocol       message protocol
-	 * @return inform ACLMessage
+	 * @return INFORM ACLMessage
 	 */
-	public static ACLMessage prepareJobPowerShortageInformation(final Object messageContent,
-			final AID receiver,
-			final String protocol) {
-		final ACLMessage message = new ACLMessage(INFORM);
-		try {
-			message.setContent(getMapper().writeValueAsString(messageContent));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		message.setProtocol(protocol);
-		message.addReceiver(receiver);
-		return message;
+	public static ACLMessage prepareJobPowerShortageInformation(final Object messageContent, final String protocol,
+			final AID... receivers) {
+		return MessageBuilder.builder()
+				.withPerformative(INFORM)
+				.withMessageProtocol(protocol)
+				.withObjectContent(messageContent)
+				.withReceivers(receivers)
+				.build();
 	}
 }

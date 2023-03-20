@@ -2,9 +2,9 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.ini
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.CANCEL_JOB_ALL_RESPONSES;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.CANCEL_JOB_IN_CNA;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobCancellationMessage;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobCancellationMessage;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.PRE_EXECUTION;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;

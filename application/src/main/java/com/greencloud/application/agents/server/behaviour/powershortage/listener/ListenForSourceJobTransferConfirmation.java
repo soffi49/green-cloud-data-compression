@@ -4,12 +4,12 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.l
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_JOB_FINISHED_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_CONFIRMATION_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.TRANSFER_EXPIRATION_TIME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.messages.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;

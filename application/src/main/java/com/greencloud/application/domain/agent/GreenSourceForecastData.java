@@ -7,6 +7,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.greencloud.commons.domain.ImmutableConfig;
 import com.greencloud.commons.domain.location.Location;
 
 /**
@@ -15,6 +16,7 @@ import com.greencloud.commons.domain.location.Location;
 @JsonSerialize(as = ImmutableGreenSourceForecastData.class)
 @JsonDeserialize(as = ImmutableGreenSourceForecastData.class)
 @Value.Immutable
+@ImmutableConfig
 public interface GreenSourceForecastData {
 
 	/**

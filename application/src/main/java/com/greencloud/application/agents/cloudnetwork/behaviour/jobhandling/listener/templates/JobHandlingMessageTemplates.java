@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.templates;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CANCEL_JOB_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SCHEDULER_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CANCEL_JOB_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SCHEDULER_JOB_CFP_PROTOCOL;
 import static jade.lang.acl.ACLMessage.CANCEL;
 import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.ACLMessage.FAILURE;

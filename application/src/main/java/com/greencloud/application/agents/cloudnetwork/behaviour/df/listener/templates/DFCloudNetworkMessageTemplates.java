@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.templates;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
 import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.ANNOUNCE_NETWORK_CHANGE_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;

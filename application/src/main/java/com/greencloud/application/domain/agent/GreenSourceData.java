@@ -1,16 +1,18 @@
 package com.greencloud.application.domain.agent;
 
-import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object storing the data passed by the Green Source
  */
 @JsonSerialize(as = ImmutableGreenSourceData.class)
 @JsonDeserialize(as = ImmutableGreenSourceData.class)
-@Immutable
+@Value.Immutable
+@ImmutableConfig
 public interface GreenSourceData {
 
 	/**

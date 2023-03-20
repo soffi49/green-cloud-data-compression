@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request;
 
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.WEATHER_REQUEST_SENT_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.factory.PowerCheckMessageFactory.preparePowerCheckRequest;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.factory.PowerCheckMessageFactory.preparePowerCheckRequest;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 

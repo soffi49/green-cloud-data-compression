@@ -3,9 +3,9 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.lis
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_CFP_NEW_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.templates.JobHandlingMessageTemplates.NEW_JOB_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.MAX_MESSAGE_NUMBER_IN_BATCH;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static org.slf4j.LoggerFactory.getLogger;
 

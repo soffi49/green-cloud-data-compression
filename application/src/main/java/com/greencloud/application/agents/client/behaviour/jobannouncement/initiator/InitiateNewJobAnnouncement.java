@@ -2,7 +2,7 @@ package com.greencloud.application.agents.client.behaviour.jobannouncement.initi
 
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.initiator.logs.JobAnnouncementInitiatorLog.SEND_INFORM_TO_SCHEDULER;
 import static com.greencloud.application.agents.client.constants.ClientAgentConstants.SCHEDULER_AGENT;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobAnnouncementMessage;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobAnnouncementMessage;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;

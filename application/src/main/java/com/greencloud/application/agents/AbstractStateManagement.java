@@ -1,9 +1,9 @@
 package com.greencloud.application.agents;
 
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobNewEndTime;
 import static com.greencloud.application.mapper.JobMapper.mapToJobNewStartTime;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD;

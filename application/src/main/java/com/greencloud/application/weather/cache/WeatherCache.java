@@ -1,5 +1,7 @@
 package com.greencloud.application.weather.cache;
 
+import static java.util.Optional.empty;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +13,7 @@ import com.greencloud.application.weather.domain.Forecast;
 import com.greencloud.commons.domain.location.Location;
 
 /**
- * Class represents a com.greencloud.application.weather cache storing com.greencloud.application.weather forecast for given location
+ * Class represents a weather cache storing weather forecast for given location
  */
 public class WeatherCache {
 
@@ -26,24 +28,24 @@ public class WeatherCache {
 	}
 
 	/**
-	 * Method retrieves com.greencloud.application.weather forecast for given location and timestamp
+	 * Method retrieves weather forecast for given location and timestamp
 	 *
-	 * @param location  location for which the com.greencloud.application.weather is to be retrieved
-	 * @param timestamp time for which the com.greencloud.application.weather is to be retrieved
+	 * @param location  location for which the weather is to be retrieved
+	 * @param timestamp time for which the weather is to be retrieved
 	 * @return AbstractWeather forecast
 	 */
 	public Optional<AbstractWeather> getForecast(Location location, Instant timestamp) {
 		if (CACHE.containsKey(location)) {
 			return CACHE.get(location).getFutureWeather(timestamp);
 		}
-		return Optional.empty();
+		return empty();
 	}
 
 	/**
 	 * Method updates the cache with given forecast
 	 *
 	 * @param location location for given forecast
-	 * @param forecast com.greencloud.application.weather forecast
+	 * @param forecast weather forecast
 	 */
 	public void updateCache(Location location, Forecast forecast) {
 		if (CACHE.containsKey(location)) {
@@ -54,10 +56,10 @@ public class WeatherCache {
 	}
 
 	/**
-	 * Method updates the cache with given current com.greencloud.application.weather
+	 * Method updates the cache with given current weather
 	 *
-	 * @param location       location for given com.greencloud.application.weather
-	 * @param currentWeather com.greencloud.application.weather
+	 * @param location       location for given weather
+	 * @param currentWeather weather
 	 */
 	public void updateCache(Location location, CurrentWeather currentWeather) {
 		if (CACHE.containsKey(location)) {

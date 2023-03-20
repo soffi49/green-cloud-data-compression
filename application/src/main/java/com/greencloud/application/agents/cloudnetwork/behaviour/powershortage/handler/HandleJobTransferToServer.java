@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler;
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler.logs.PowerShortageCloudHandlerLog.SERVER_TRANSFER_EXECUTE_TRANSFER_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToCurrentTime;
 import static java.util.Objects.nonNull;

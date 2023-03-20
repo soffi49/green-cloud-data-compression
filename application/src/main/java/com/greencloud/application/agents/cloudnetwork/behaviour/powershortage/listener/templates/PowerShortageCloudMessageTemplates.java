@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.templates;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CONFIRMED_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CONFIRMED_TRANSFER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
@@ -10,7 +10,7 @@ import static jade.lang.acl.MessageTemplate.MatchProtocol;
 import static jade.lang.acl.MessageTemplate.and;
 import static jade.lang.acl.MessageTemplate.or;
 
-import com.greencloud.application.messages.domain.constants.MessageProtocolConstants;
+import com.greencloud.application.messages.constants.MessageProtocolConstants;
 
 import jade.lang.acl.MessageTemplate;
 

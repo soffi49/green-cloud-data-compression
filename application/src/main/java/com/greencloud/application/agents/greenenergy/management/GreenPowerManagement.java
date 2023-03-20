@@ -8,7 +8,7 @@ import static com.greencloud.application.agents.greenenergy.constants.GreenEnerg
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.AVERAGE_POWER_LOG;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.CURRENT_AVAILABLE_POWER_LOG;
 import static com.greencloud.application.agents.greenenergy.management.logs.GreenEnergyManagementLog.SOLAR_FARM_SHUTDOWN_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.AlgorithmUtils.computeIncorrectMaximumValProbability;
 import static com.greencloud.application.utils.AlgorithmUtils.getMinimalAvailablePowerDuringTimeStamp;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;

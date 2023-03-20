@@ -2,9 +2,10 @@ package com.greencloud.application.yellowpages.domain;
 
 /**
  * Constants describing the services registered in DF.
- * <p>
+ * Used patterns:
+ * <p/>
  * ..._TYPE - type of service
- * <p>
+ * <p/>
  * ..._NAME - name of service
  */
 public class DFServiceConstants {

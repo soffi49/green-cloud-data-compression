@@ -4,10 +4,10 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandli
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVER_AVAILABLE_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVER_RESPONSES_LOG;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
-import static com.greencloud.application.utils.StateManagementUtils.getCurrentPowerInUse;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.utils.PowerUtils.getCurrentPowerInUse;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Vector;

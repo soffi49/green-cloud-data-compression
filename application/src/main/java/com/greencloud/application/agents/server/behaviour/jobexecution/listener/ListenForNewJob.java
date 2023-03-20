@@ -4,9 +4,9 @@ import static com.greencloud.application.agents.server.behaviour.jobexecution.li
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.NEW_JOB_CFP_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static org.slf4j.LoggerFactory.getLogger;
 

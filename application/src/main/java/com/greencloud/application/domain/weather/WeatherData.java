@@ -15,7 +15,7 @@ import com.greencloud.commons.domain.ImmutableConfig;
 public interface WeatherData {
 
 	/**
-	 * @return time for when the com.greencloud.application.weather data is valid
+	 * @return time for when the weather data is valid
 	 */
 	Instant getTime();
 

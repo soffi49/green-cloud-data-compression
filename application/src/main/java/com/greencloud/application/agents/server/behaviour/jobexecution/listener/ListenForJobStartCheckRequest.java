@@ -3,8 +3,8 @@ package com.greencloud.application.agents.server.behaviour.jobexecution.listener
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.JOB_START_STATUS_RECEIVED_REQUEST_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.JOB_STATUS_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getCurrentJobInstance;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static jade.lang.acl.ACLMessage.INFORM;

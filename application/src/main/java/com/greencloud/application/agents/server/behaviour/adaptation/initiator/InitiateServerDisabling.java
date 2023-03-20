@@ -3,9 +3,9 @@ package com.greencloud.application.agents.server.behaviour.adaptation.initiator;
 import static com.greencloud.application.agents.server.behaviour.adaptation.initiator.logs.AdaptationServerLog.DISABLING_FAILED_LOG;
 import static com.greencloud.application.agents.server.behaviour.adaptation.initiator.logs.AdaptationServerLog.DISABLING_LEFT_JOBS_LOG;
 import static com.greencloud.application.agents.server.behaviour.adaptation.initiator.logs.AdaptationServerLog.DISABLING_SUCCEEDED_LOG;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareInformReply;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static org.slf4j.LoggerFactory.getLogger;
 

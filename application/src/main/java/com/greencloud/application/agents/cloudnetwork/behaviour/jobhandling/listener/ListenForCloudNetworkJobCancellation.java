@@ -3,8 +3,8 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.lis
 import static com.google.common.collect.Collections2.filter;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.CANCEL_JOB_IN_SERVERS;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.templates.JobHandlingMessageTemplates.CANCEL_JOB_ANNOUNCEMENT_CNA_TEMPLATE;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.utils.JobUtils.getJobName;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

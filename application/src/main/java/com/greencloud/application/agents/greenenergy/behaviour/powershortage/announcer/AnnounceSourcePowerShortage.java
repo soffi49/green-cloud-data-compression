@@ -4,8 +4,8 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_NO_IMPACT_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_TRANSFER_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.logs.PowerShortageSourceAnnouncerLog.POWER_SHORTAGE_SOURCE_START_WEATHER_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGENT_NAME;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.AlgorithmUtils.findJobsWithinPower;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.PHYSICAL_CAUSE;

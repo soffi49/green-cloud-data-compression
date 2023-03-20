@@ -2,11 +2,11 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.ini
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.ACCEPT_SERVER_PROPOSAL_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.REJECT_SERVER_PROPOSAL_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static jade.lang.acl.ACLMessage.PROPOSE;

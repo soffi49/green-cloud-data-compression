@@ -1,42 +1,46 @@
 package com.greencloud.application.utils;
 
 import static com.greencloud.commons.time.TimeConstants.SECONDS_PER_HOUR;
+import static java.time.Duration.between;
+import static java.time.OffsetDateTime.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.shredzone.commons.suncalc.SunTimes;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.exception.IncorrectTaskDateException;
 import com.greencloud.commons.domain.job.PowerJob;
+import com.greencloud.commons.domain.location.Location;
 
 /**
- * Service used to perform operations on date and time structures.
+ * Class defines set of utilities used to perform operations on date and time structures.
  */
 public class TimeUtils {
 
-	private static final Logger logger = LoggerFactory.getLogger(TimeUtils.class);
+	private static final Logger logger = getLogger(TimeUtils.class);
 	private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm";
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+
 	private static final int MILLISECOND_MULTIPLIER = 1000;
 	private static final int SECONDS_IN_HOUR = 3600;
 	private static final int MINUTES_IN_HOUR = 60;
 	private static final Long TIME_ERROR = 5L;
+
 	public static Instant SYSTEM_START_TIME;
 	private static Clock CLOCK = Clock.systemDefaultZone();
 
@@ -62,14 +66,25 @@ public class TimeUtils {
 	 * @return current time with possible error delay
 	 */
 	public static Instant getCurrentTimeMinusError() {
-		return getCurrentTime().minus(TIME_ERROR, ChronoUnit.MINUTES);
+		return getCurrentTime().minus(TIME_ERROR, MINUTES);
 	}
 
 	/**
 	 * @return current time
 	 */
 	public static Instant getCurrentTime() {
-		return OffsetDateTime.now(CLOCK).toInstant();
+		return now(CLOCK).toInstant();
+	}
+
+	/**
+	 * Method returns sun set and sun rise times
+	 *
+	 * @param dateTime zone used in retrieving sun time stamps
+	 * @param location location for which data is retrieved
+	 * @return SunTimes
+	 */
+	public static SunTimes getSunTimes(final ZonedDateTime dateTime, final Location location) {
+		return SunTimes.compute().on(dateTime).at(location.getLatitude(), location.getLongitude()).execute();
 	}
 
 	/**
@@ -89,7 +104,7 @@ public class TimeUtils {
 	 * @return Instant being a time representing a real time
 	 */
 	public static Instant convertToRealTime(final Instant time) {
-		final long simulationTimeDifference = Duration.between(SYSTEM_START_TIME, time).toMillis();
+		final long simulationTimeDifference = between(SYSTEM_START_TIME, time).toMillis();
 		final double realTimeMultiplier = (double) SECONDS_IN_HOUR / SECONDS_PER_HOUR;
 		final double realTimeDifference = simulationTimeDifference * realTimeMultiplier;
 		return SYSTEM_START_TIME.plusMillis((long) realTimeDifference);
@@ -122,7 +137,7 @@ public class TimeUtils {
 	}
 
 	/**
-	 * Method checks if the given time (in real time) is within given timestamp
+	 * Method checks if the given time (in real time) is within job timestamp
 	 *
 	 * @param job         job for which time will be checked
 	 * @param timeToCheck time which has to be checked
@@ -131,6 +146,28 @@ public class TimeUtils {
 	public static boolean isWithinTimeStamp(final PowerJob job, final Instant timeToCheck) {
 		return !timeToCheck.isBefore(convertToRealTime(job.getStartTime()))
 				&& timeToCheck.isBefore(convertToRealTime(job.getEndTime()));
+	}
+
+	/**
+	 * Method aligns a given start time by comparing it to the current time
+	 * (i.e. if the start time has already passed then it substitutes it with current time)
+	 *
+	 * @param startTime initial start time
+	 * @return Instant being an aligned start time
+	 */
+	public static Instant alignStartTimeToCurrentTime(final Instant startTime) {
+		return alignStartTimeToGivenTime(startTime, getCurrentTime());
+	}
+
+	/**
+	 * Method aligns a given start time by comparing it to the relevant time instant
+	 * (i.e. if the given time instant has passed the start time then it substitutes it with it)
+	 *
+	 * @param startTime initial start time
+	 * @return Instant being an aligned start time
+	 */
+	public static Instant alignStartTimeToGivenTime(final Instant startTime, final Instant relevantTime) {
+		return relevantTime.isAfter(startTime) ? relevantTime : startTime;
 	}
 
 	/**

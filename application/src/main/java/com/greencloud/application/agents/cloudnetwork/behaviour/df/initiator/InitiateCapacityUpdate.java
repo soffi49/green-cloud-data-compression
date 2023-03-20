@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.df.initiator;
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.df.initiator.logs.CloudNetworkDFInitiatorLog.UPDATE_MAX_CAPACITY_LOG;
-import static com.greencloud.application.messages.MessagingUtils.retrieveForPerformative;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.ASK_FOR_POWER_PROTOCOL;
-import static com.greencloud.application.utils.StateManagementUtils.updateAgentMaximumCapacity;
+import static com.greencloud.application.utils.MessagingUtils.retrieveForPerformative;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.ASK_FOR_POWER_PROTOCOL;
+import static com.greencloud.application.utils.PowerUtils.updateAgentMaximumCapacity;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.lang.Double.parseDouble;

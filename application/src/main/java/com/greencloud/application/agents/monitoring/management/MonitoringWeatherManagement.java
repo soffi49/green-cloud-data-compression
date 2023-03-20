@@ -84,9 +84,7 @@ public class MonitoringWeatherManagement extends AbstractAgentManagement impleme
 		final List<WeatherData> weatherData = requestData.getTimetable().stream()
 				.map(time -> getForecastData(location, time))
 				.toList();
-		return ImmutableMonitoringData.builder()
-				.weatherData(weatherData)
-				.build();
+		return new ImmutableMonitoringData(weatherData);
 	}
 
 	private WeatherData getWeatherData(final Location location, final Instant time) {

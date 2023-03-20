@@ -1,6 +1,6 @@
 package com.greencloud.application.behaviours;
 
-import static com.greencloud.application.gui.GuiConnectionProvider.connectAgentObject;
+import static com.greencloud.application.utils.GUIUtils.connectAgentObject;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 
 /**
- * Behaviour responsible for retrieving the GUI controller for agent
+ * Generic behaviour responsible for retrieving the GUI controller for a given agent
  */
 public class ReceiveGUIController extends CyclicBehaviour {
 
@@ -42,7 +42,7 @@ public class ReceiveGUIController extends CyclicBehaviour {
 			connectAgentObject(abstractAgent, objectCounter, object);
 
 			if (objectCounter == 1) {
-				ParallelBehaviour behaviour = new ParallelBehaviour();
+				final ParallelBehaviour behaviour = new ParallelBehaviour();
 				initialBehaviours.forEach(behaviour::addSubBehaviour);
 				behaviour.addSubBehaviour(new ReportHealthCheck(abstractAgent));
 				behaviour.addSubBehaviour(new ListenForAdaptationAction(abstractAgent));

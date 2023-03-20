@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Class contains methods which allow to measure time between two events
+ * Class representing simple timer which allow to measure time between two events
  */
 public class Timer {
 

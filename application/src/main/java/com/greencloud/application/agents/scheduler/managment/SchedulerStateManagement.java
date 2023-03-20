@@ -5,7 +5,7 @@ import static com.greencloud.application.agents.scheduler.constants.SchedulerAge
 import static com.greencloud.application.agents.scheduler.constants.SchedulerAgentConstants.MAX_TRAFFIC_DIFFERENCE;
 import static com.greencloud.application.agents.scheduler.managment.logs.SchedulerManagementLog.FULL_JOBS_QUEUE_LOG;
 import static com.greencloud.application.agents.scheduler.managment.logs.SchedulerManagementLog.JOB_TIME_ADJUSTED_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToClientJobRealTime;
 import static com.greencloud.application.mapper.JobMapper.mapToJobWithNewTime;
 import static com.greencloud.application.utils.TimeUtils.postponeTime;

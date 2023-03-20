@@ -7,8 +7,8 @@ import static com.greencloud.application.agents.greenenergy.behaviour.weatherche
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.POWER_DROP_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.logs.WeatherCheckRequestLog.WEATHER_UNAVAILABLE_LOG;
 import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.PERIODIC_WEATHER_CHECK_TIMEOUT;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
-import static com.greencloud.application.utils.StateManagementUtils.getPowerPercent;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
+import static com.greencloud.application.utils.PowerUtils.getPowerPercent;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.args.event.powershortage.PowerShortageCause.WEATHER_CAUSE;

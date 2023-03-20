@@ -9,8 +9,8 @@ import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.utils.JobUtils.calculateExpectedJobEndTime;
 import static com.greencloud.application.utils.JobUtils.getJobCount;
 import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
-import static com.greencloud.application.utils.StateManagementUtils.getCurrentPowerInUse;
-import static com.greencloud.application.utils.StateManagementUtils.getPowerPercent;
+import static com.greencloud.application.utils.PowerUtils.getCurrentPowerInUse;
+import static com.greencloud.application.utils.PowerUtils.getPowerPercent;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
@@ -150,12 +150,13 @@ public class GreenEnergyStateManagement extends AbstractStateManagement {
 	private void saveMonitoringData() {
 		final double trafficOverall = getPowerPercent(getCurrentPowerInUse(greenEnergyAgent.getServerJobs()),
 				greenEnergyAgent.getCurrentMaximumCapacity());
+		final double successRatio = getJobSuccessRatio(jobCounters.get(ACCEPTED).getCount(),
+				jobCounters.get(FAILED).getCount());
 
 		final GreenSourceMonitoringData greenSourceMonitoring = ImmutableGreenSourceMonitoringData.builder()
 				.currentTraffic(trafficOverall)
 				.weatherPredictionError(greenEnergyAgent.getWeatherPredictionError())
-				.successRatio(
-						getJobSuccessRatio(jobCounters.get(ACCEPTED).getCount(), jobCounters.get(FAILED).getCount()))
+				.successRatio(successRatio)
 				.isBeingDisconnected(greenEnergyAgent.adapt().getDisconnectionState().isBeingDisconnected())
 				.build();
 		greenEnergyAgent.writeMonitoringData(GREEN_SOURCE_MONITORING, greenSourceMonitoring);

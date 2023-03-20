@@ -29,7 +29,7 @@ public interface CurrentWeather extends AbstractWeather {
 	Long getTimezone();
 
 	/**
-	 * @return {@link Instant} timestamp for when the com.greencloud.application.weather is valid
+	 * @return {@link Instant} timestamp for when the weather is valid
 	 */
 	@JsonProperty("dt")
 	@JsonFormat(shape = JsonFormat.Shape.NUMBER, pattern = "s")

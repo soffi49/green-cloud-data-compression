@@ -2,12 +2,12 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.ini
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.JOB_HAS_NOT_STARTED_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.JOB_HAS_STARTED_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.DELAYED_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForScheduler;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.DELAYED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForScheduler;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;

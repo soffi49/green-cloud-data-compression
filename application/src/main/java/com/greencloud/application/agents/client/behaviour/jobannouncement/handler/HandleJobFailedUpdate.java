@@ -1,8 +1,8 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.PART_FAILED_LOG;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;

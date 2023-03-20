@@ -1,12 +1,12 @@
 package com.greencloud.application.agents.client;
 
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.CLIENT_MANAGEMENT;
-import static com.greencloud.application.gui.GuiConnectionProvider.connectToGui;
+import static com.greencloud.application.utils.GUIUtils.connectToGui;
 import static com.greencloud.application.utils.TimeUtils.convertToInstantTime;
 import static com.greencloud.application.utils.TimeUtils.convertToSimulationTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTimeMinusError;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static java.lang.Integer.parseInt;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;

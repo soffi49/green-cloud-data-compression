@@ -7,11 +7,11 @@ import static com.greencloud.application.agents.server.behaviour.df.listener.log
 import static com.greencloud.application.agents.server.behaviour.df.listener.logs.ServerDFListenerLog.GREEN_SOURCE_NOT_CONNECTED_TO_SERVER_LOG;
 import static com.greencloud.application.agents.server.behaviour.df.listener.logs.ServerDFListenerLog.GREEN_SOURCE_NOT_DEACTIVATED_LOG;
 import static com.greencloud.application.agents.server.behaviour.df.listener.templates.DFServerMessageTemplates.GREEN_SOURCE_UPDATE_TEMPLATE;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareInformReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static org.slf4j.LoggerFactory.getLogger;

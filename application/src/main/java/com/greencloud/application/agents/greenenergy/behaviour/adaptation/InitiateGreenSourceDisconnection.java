@@ -2,9 +2,9 @@ package com.greencloud.application.agents.greenenergy.behaviour.adaptation;
 
 import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.DISCONNECTION_FAILED_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.adaptation.logs.AdaptationGreenSourceLog.DISCONNECTION_SUCCEEDED_LOG;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareInformReply;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

@@ -3,8 +3,8 @@ package com.greencloud.application.agents.server.behaviour.jobexecution.listener
 import static com.google.common.collect.Collections2.filter;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.CANCEL_JOB_IN_GREEN_SOURCES;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.CANCEL_JOB_ANNOUNCEMENT_SERVER_TEMPLATE;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.utils.JobUtils.getJobName;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

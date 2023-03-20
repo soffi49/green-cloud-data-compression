@@ -25,7 +25,7 @@ public interface FutureWeather extends AbstractWeather {
 	Double getVisibility();
 
 	/**
-	 * @return {@link Instant} timestamp for when the com.greencloud.application.weather is valid
+	 * @return {@link Instant} timestamp for when the weather is valid
 	 */
 	@JsonProperty("dt")
 	@JsonFormat(shape = JsonFormat.Shape.NUMBER, pattern = "s")

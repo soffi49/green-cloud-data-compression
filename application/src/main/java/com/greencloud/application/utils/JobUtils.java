@@ -1,24 +1,27 @@
 package com.greencloud.application.utils;
 
-import static com.greencloud.application.common.constant.DataConstant.DATA_NOT_AVAILABLE_INDICATOR;
+import static com.greencloud.application.utils.TimeUtils.alignStartTimeToCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.constants.CommonConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_JOB_STATUSES;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.RUNNING_JOB_STATUSES;
+import static java.util.stream.Collectors.toSet;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 import com.greencloud.commons.domain.job.PowerJob;
 import com.greencloud.commons.domain.job.ServerJob;
+import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
 
 import jade.core.AID;
 
@@ -134,6 +137,47 @@ public class JobUtils {
 	}
 
 	/**
+	 * Method returns number of jobs which execution status is contained in the given set
+	 *
+	 * @param jobMap   map of jobs to count
+	 * @param statuses set of job statuses of interest
+	 * @return integer being the number of jobs on hold
+	 */
+	public static <T extends PowerJob> int getJobCount(final Map<T, JobExecutionStatusEnum> jobMap,
+			final Set<JobExecutionStatusEnum> statuses) {
+		return jobMap.entrySet().stream()
+				.filter(job -> statuses.contains(job.getValue()))
+				.map(Map.Entry::getKey)
+				.map(PowerJob::getJobId)
+				.collect(toSet())
+				.size();
+	}
+
+	/**
+	 * Method returns number of currently started jobs
+	 *
+	 * @return integer being the number of currently started jobs
+	 */
+	public static <T extends PowerJob> int getJobCount(final Map<T, JobExecutionStatusEnum> jobMap) {
+		return jobMap.entrySet().stream()
+				.filter(job -> isJobStarted(job.getValue()))
+				.map(Map.Entry::getKey)
+				.map(PowerJob::getJobId)
+				.collect(toSet())
+				.size();
+	}
+
+	/**
+	 * Method returns name of the original job for a given job part
+	 *
+	 * @param jobPart job part
+	 * @return original job name
+	 */
+	public static <T extends PowerJob> String getJobName(final T jobPart) {
+		return jobPart.getJobId().split("#")[0];
+	}
+
+	/**
 	 * Method verifies if the given job has started
 	 *
 	 * @param job    job of interest
@@ -173,7 +217,7 @@ public class JobUtils {
 	 * @return date of expected job end time
 	 */
 	public static Date calculateExpectedJobEndTime(final PowerJob job) {
-		final Instant endDate = getCurrentTime().isAfter(job.getEndTime()) ? getCurrentTime() : job.getEndTime();
+		final Instant endDate = alignStartTimeToCurrentTime(job.getEndTime());
 		return Date.from(endDate.plus(MAX_ERROR_IN_JOB_FINISH, ChronoUnit.MILLIS));
 	}
 

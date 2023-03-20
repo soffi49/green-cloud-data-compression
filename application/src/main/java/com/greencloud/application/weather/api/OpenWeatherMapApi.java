@@ -1,15 +1,15 @@
 package com.greencloud.application.weather.api;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greencloud.application.mapper.JsonMapper;
@@ -21,9 +21,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * Service used to communicate with external weather API
+ */
 public class OpenWeatherMapApi {
 
-	private static final Logger logger = LoggerFactory.getLogger(OpenWeatherMapApi.class);
+	private static final Logger logger = getLogger(OpenWeatherMapApi.class);
 
 	private static final String WEATHER_URL =
 			"https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric";
@@ -34,10 +37,13 @@ public class OpenWeatherMapApi {
 	private final String apiKey;
 	private final OkHttpClient client;
 
+	/**
+	 * Default constructor that establishes the communication with API
+	 */
 	public OpenWeatherMapApi() {
-		Properties properties = new Properties();
+		final Properties properties = new Properties();
 
-		try (InputStream res = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+		try (final InputStream res = getClass().getClassLoader().getResourceAsStream("config.properties")) {
 			properties.load(res);
 		} catch (FileNotFoundException fileNotFoundException) {
 			logger.error("Could not find the properties file", fileNotFoundException);
@@ -45,44 +51,43 @@ public class OpenWeatherMapApi {
 			logger.error("Could not load properties file {}", exception.toString());
 		}
 
-		this.apiKey = Optional.ofNullable(System.getenv("GC_WEATHER_API_KEY"))
+		this.apiKey = ofNullable(System.getenv("GC_WEATHER_API_KEY"))
 				.orElse(properties.getProperty("weather_api_key"));
 		this.client = new OkHttpClient();
 	}
 
 	/**
-	 * Provides com.greencloud.application.weather for the current location for the current moment.
+	 * Provides weather for the current location for the current moment.
 	 *
-	 * @param location to request com.greencloud.application.weather for
+	 * @param location location at which weather is going to be retrieved
 	 * @return {@link CurrentWeather} for the provided location
 	 */
-	public CurrentWeather getWeather(Location location) {
-		var url = format(WEATHER_URL, location.getLatitude(), location.getLongitude(), apiKey);
-		Request request = new Request.Builder().url(url).build();
+	public CurrentWeather getWeather(final Location location) {
+		final String url = format(WEATHER_URL, location.getLatitude(), location.getLongitude(), apiKey);
+		final Request request = new Request.Builder().url(url).build();
 
-		try (Response response = client.newCall(request).execute()) {
+		try (final Response response = client.newCall(request).execute()) {
 			return MAPPER.readValue(response.body().string(), CurrentWeather.class);
-		} catch (IOException | NullPointerException e) {
-			logger.error("Network error fetching com.greencloud.application.weather", e);
+		} catch (final IOException | NullPointerException e) {
+			logger.error("Network error fetching weather", e);
 		}
-
 		return null;
 	}
 
 	/**
 	 * Get 5 day 3-hour forecast for the location.
 	 *
-	 * @param location to request com.greencloud.application.weather for
+	 * @param location location at which weather is going to be retrieved
 	 * @return {@link Forecast} with a list of {@link CurrentWeather}
 	 */
-	public Forecast getForecast(Location location) {
-		var url = format(FORECAST_URL, location.getLatitude(), location.getLongitude(), apiKey);
-		Request request = new Request.Builder().url(url).build();
+	public Forecast getForecast(final Location location) {
+		final String url = format(FORECAST_URL, location.getLatitude(), location.getLongitude(), apiKey);
+		final Request request = new Request.Builder().url(url).build();
 
-		try (Response response = client.newCall(request).execute()) {
+		try (final Response response = client.newCall(request).execute()) {
 			return MAPPER.readValue(response.body().string(), Forecast.class);
 		} catch (IOException | NullPointerException e) {
-			logger.error("Network error fetching com.greencloud.application.weather", e);
+			logger.error("Network error fetching weather", e);
 		}
 
 		return null;

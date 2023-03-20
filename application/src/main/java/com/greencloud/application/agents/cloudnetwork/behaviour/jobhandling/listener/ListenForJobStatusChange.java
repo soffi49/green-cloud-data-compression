@@ -2,11 +2,11 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.lis
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.templates.JobHandlingMessageTemplates.JOB_STATUS_CHANGE_TEMPLATE;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.MAX_MESSAGE_NUMBER_IN_BATCH;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FAILED_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForScheduler;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForScheduler;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

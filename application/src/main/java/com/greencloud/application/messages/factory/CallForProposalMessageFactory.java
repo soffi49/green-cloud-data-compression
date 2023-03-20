@@ -1,9 +1,10 @@
-package com.greencloud.application.messages.domain.factory;
+package com.greencloud.application.messages.factory;
 
-import java.io.IOException;
+import static jade.lang.acl.ACLMessage.CFP;
+
 import java.util.Collection;
 
-import com.greencloud.application.mapper.JsonMapper;
+import com.greencloud.commons.message.MessageBuilder;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -23,14 +24,11 @@ public class CallForProposalMessageFactory {
 	 */
 	public static ACLMessage createCallForProposal(final Object content, final Collection<AID> receiverList,
 			final String protocol) {
-		final ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
-		proposal.setProtocol(protocol);
-		try {
-			proposal.setContent(JsonMapper.getMapper().writeValueAsString(content));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		receiverList.forEach(proposal::addReceiver);
-		return proposal;
+		return MessageBuilder.builder()
+				.withPerformative(CFP)
+				.withMessageProtocol(protocol)
+				.withObjectContent(content)
+				.withReceivers(receiverList)
+				.build();
 	}
 }

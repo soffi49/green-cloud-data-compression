@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
 import static jade.lang.acl.MessageTemplate.MatchProtocol;

@@ -1,4 +1,4 @@
-package com.greencloud.application.messages.domain.factory;
+package com.greencloud.application.messages.factory;
 
 import static com.greencloud.application.utils.JobUtils.getTimetableOfJobs;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -6,9 +6,9 @@ import static jade.lang.acl.ACLMessage.REFUSE;
 import static java.util.Objects.nonNull;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.application.domain.ImmutableGreenSourceForecastData;
-import com.greencloud.application.domain.ImmutableGreenSourceWeatherData;
-import com.greencloud.application.domain.MonitoringData;
+import com.greencloud.application.domain.agent.ImmutableGreenSourceForecastData;
+import com.greencloud.application.domain.agent.ImmutableGreenSourceWeatherData;
+import com.greencloud.application.domain.weather.MonitoringData;
 import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.message.MessageBuilder;
 
@@ -26,7 +26,7 @@ public class PowerCheckMessageFactory {
 	 * @param conversationId   identifier of the conversation
 	 * @param protocol         message protocol
 	 * @param job              (optional) server job
-	 * @return request ACLMessage
+	 * @return REQUEST ACLMessage
 	 */
 	public static ACLMessage preparePowerCheckRequest(final GreenEnergyAgent greenEnergyAgent, final ServerJob job,
 			final String conversationId, final String protocol) {
@@ -44,11 +44,10 @@ public class PowerCheckMessageFactory {
 	 *
 	 * @param monitoringData monitoring data
 	 * @param request        original server request
-	 * @return request ACLMessage
+	 * @return REQUEST ACLMessage
 	 */
 	public static ACLMessage prepareWeatherDataResponse(final MonitoringData monitoringData, final ACLMessage request) {
 		final ACLMessage response = request.createReply();
-
 		return MessageBuilder.builder()
 				.copy(response)
 				.withConversationId(request.getConversationId())
@@ -62,15 +61,10 @@ public class PowerCheckMessageFactory {
 
 	private static Object createMessageContent(final ServerJob job, final GreenEnergyAgent greenEnergyAgent) {
 		final boolean requestForJobInProcessing = nonNull(job);
-
 		return requestForJobInProcessing ?
-				ImmutableGreenSourceForecastData.builder()
-						.location(greenEnergyAgent.getLocation())
-						.timetable(getTimetableOfJobs(job, greenEnergyAgent.getServerJobs()))
-						.build() :
-				ImmutableGreenSourceWeatherData.builder()
-						.location(greenEnergyAgent.getLocation())
-						.predictionError(greenEnergyAgent.getWeatherPredictionError())
-						.build();
+				new ImmutableGreenSourceForecastData(greenEnergyAgent.getLocation(),
+						getTimetableOfJobs(job, greenEnergyAgent.getServerJobs())) :
+				new ImmutableGreenSourceWeatherData(greenEnergyAgent.getLocation(),
+						greenEnergyAgent.getWeatherPredictionError());
 	}
 }
