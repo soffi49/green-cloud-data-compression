@@ -1,4 +1,4 @@
-package com.greencloud.application.domain;
+package com.greencloud.application.domain.agent;
 
 import org.immutables.value.Value.Immutable;
 

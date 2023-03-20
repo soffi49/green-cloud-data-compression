@@ -1,22 +1,22 @@
-package com.greencloud.application.domain;
+package com.greencloud.application.domain.weather;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-
+import com.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object storing the data passed by the Monitoring Agent
  */
 @JsonSerialize(as = ImmutableMonitoringData.class)
 @JsonDeserialize(as = ImmutableMonitoringData.class)
-@Immutable
+@Value.Immutable
+@ImmutableConfig
 public interface MonitoringData {
 
 	/**

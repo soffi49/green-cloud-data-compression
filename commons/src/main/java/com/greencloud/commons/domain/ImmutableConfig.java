@@ -7,9 +7,13 @@ import java.lang.annotation.Target;
 
 import org.immutables.value.Value;
 
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+
+@JacksonAnnotationsInside
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Value.Style(
+		of = "new",
 		privateNoargConstructor = true,
 		allParameters = true,
 		visibility = Value.Style.ImplementationVisibility.PUBLIC

@@ -52,7 +52,4 @@ public enum JobExecutionStatusEnum {
 			EnumSet.of(ON_HOLD, ON_HOLD_TRANSFER, ON_HOLD_TRANSFER_PLANNED, ON_HOLD_SOURCE_SHORTAGE);
 	public static final Set<JobExecutionStatusEnum> POWER_SHORTAGE_SOURCE_STATUSES =
 			EnumSet.of(IN_PROGRESS_BACKUP_ENERGY, ON_HOLD_SOURCE_SHORTAGE);
-	public static final Set<JobExecutionStatusEnum> GREEN_ENERGY_STATUSES = EnumSet.of(IN_PROGRESS, ACCEPTED);
-	public static final Set<JobExecutionStatusEnum> BACK_UP_POWER_STATUSES =
-			EnumSet.of(IN_PROGRESS_BACKUP_ENERGY_PLANNED, IN_PROGRESS_BACKUP_ENERGY);
 }

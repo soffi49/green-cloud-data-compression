@@ -1,4 +1,4 @@
-package com.greencloud.application.domain;
+package com.greencloud.application.domain.agent;
 
 import java.time.Instant;
 import java.util.List;

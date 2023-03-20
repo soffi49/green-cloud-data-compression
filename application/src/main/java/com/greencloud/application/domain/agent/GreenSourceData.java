@@ -1,11 +1,9 @@
-package com.greencloud.application.domain;
+package com.greencloud.application.domain.agent;
 
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-
 
 /**
  * Object storing the data passed by the Green Source

@@ -1,5 +1,7 @@
 package com.greencloud.commons.domain.location;
 
+import java.io.Serializable;
+
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -13,7 +15,7 @@ import com.greencloud.commons.domain.ImmutableConfig;
 @JsonDeserialize(as = ImmutableLocation.class)
 @Value.Immutable
 @ImmutableConfig
-public interface Location {
+public interface Location extends Serializable {
 
 	/**
 	 * @return location latitude

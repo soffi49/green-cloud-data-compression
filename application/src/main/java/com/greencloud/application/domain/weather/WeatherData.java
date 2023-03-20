@@ -1,17 +1,17 @@
-package com.greencloud.application.domain;
+package com.greencloud.application.domain.weather;
 
 import java.time.Instant;
 
-import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-
+import com.greencloud.commons.domain.ImmutableConfig;
 
 @JsonSerialize(as = ImmutableWeatherData.class)
 @JsonDeserialize(as = ImmutableWeatherData.class)
-@Immutable
+@Value.Immutable
+@ImmutableConfig
 public interface WeatherData {
 
 	/**
