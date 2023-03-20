@@ -2,8 +2,6 @@ package com.gui.agents;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.greencloud.commons.args.agent.server.ImmutableServerNodeArgs;
 import com.gui.event.domain.PowerShortageEvent;
@@ -20,8 +18,6 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 
 	private String cloudNetworkAgent;
 	private List<String> greenEnergyAgents;
-	private AtomicReference<Double> backUpTraffic;
-	private AtomicInteger totalNumberOfClients;
 
 	public ServerAgentNode() {
 		super();
@@ -43,8 +39,6 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 		super(name, maximumCapacity);
 		this.cloudNetworkAgent = cloudNetworkAgent;
 		this.greenEnergyAgents = greenEnergyAgents;
-		this.totalNumberOfClients = new AtomicInteger(0);
-		this.backUpTraffic = new AtomicReference<>(0D);
 	}
 
 	@Override
@@ -54,7 +48,7 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 				.agentType("SERVER")
 				.data(ImmutableServerNodeArgs.builder()
 						.name(agentName)
-						.maximumCapacity(initialMaximumCapacity)
+						.maximumCapacity(initialMaximumCapacity.get())
 						.cloudNetworkAgent(cloudNetworkAgent)
 						.greenEnergyAgents(greenEnergyAgents)
 						.build())
@@ -67,7 +61,6 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 	 * @param backUpPowerInUse current power in use coming from back-up energy
 	 */
 	public void updateBackUpTraffic(final double backUpPowerInUse) {
-		this.backUpTraffic.set(initialMaximumCapacity != 0 ? ((backUpPowerInUse / initialMaximumCapacity) * 100) : 0);
 		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
 				.data(backUpPowerInUse)
 				.agentName(agentName)
@@ -81,7 +74,6 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 	 * @param value new clients count
 	 */
 	public void updateClientNumber(final int value) {
-		this.totalNumberOfClients.set(value);
 		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
 				.data(value)
 				.agentName(agentName)

@@ -2,7 +2,6 @@ package com.gui.agents;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 
-import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +22,6 @@ import com.gui.message.domain.ImmutableAdaptationLog;
  */
 public class ManagingAgentNode extends AbstractAgentNode {
 
-	final double qualityThreshold;
-
 	/**
 	 * Managing agent node constructor
 	 *
@@ -32,8 +29,6 @@ public class ManagingAgentNode extends AbstractAgentNode {
 	 */
 	public ManagingAgentNode(ManagingAgentArgs args) {
 		super(args.getName());
-
-		this.qualityThreshold = args.getSystemQualityThreshold();
 	}
 
 	/**
@@ -89,7 +84,6 @@ public class ManagingAgentNode extends AbstractAgentNode {
 		return switch (actionType) {
 			case RECONFIGURE -> "INCREMENT_WEAK_ADAPTATIONS";
 			case ADD_COMPONENT, REMOVE_COMPONENT -> "INCREMENT_STRONG_ADAPTATIONS";
-			default -> throw new InvalidParameterException(String.format("Invalid action type %s", actionType));
 		};
 	}
 }

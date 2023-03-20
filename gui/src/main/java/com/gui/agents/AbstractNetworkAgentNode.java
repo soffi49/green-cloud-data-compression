@@ -1,10 +1,8 @@
 package com.gui.agents;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.gui.message.ImmutableIsActiveMessage;
 import com.gui.message.ImmutableSetMaximumCapacityMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
@@ -15,14 +13,9 @@ import com.gui.message.domain.ImmutableCapacity;
  */
 public abstract class AbstractNetworkAgentNode extends AbstractAgentNode implements Serializable {
 
-	protected double initialMaximumCapacity;
-	protected AtomicReference<Double> currentMaximumCapacity;
-	protected AtomicBoolean isActive;
-	protected AtomicInteger numberOfExecutedJobs;
-	protected AtomicInteger numberOfJobsOnHold;
+	protected AtomicDouble initialMaximumCapacity;
 
 	protected AbstractNetworkAgentNode() {
-
 	}
 
 	/**
@@ -33,20 +26,16 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 */
 	protected AbstractNetworkAgentNode(final String agentName, final double maximumCapacity) {
 		super(agentName);
-		this.initialMaximumCapacity = maximumCapacity;
-		this.currentMaximumCapacity = new AtomicReference<>(maximumCapacity);
-		this.isActive = new AtomicBoolean(false);
-		this.numberOfExecutedJobs = new AtomicInteger(0);
-		this.numberOfJobsOnHold = new AtomicInteger(0);
+		this.initialMaximumCapacity = new AtomicDouble(maximumCapacity);
 	}
 
 	/**
 	 * Function updates the current maximum capacity to given value
 	 *
 	 * @param maxCapacity new maximum capacity
+	 * @param powerInUse  current power in use
 	 */
 	public void updateMaximumCapacity(final int maxCapacity, final int powerInUse) {
-		this.currentMaximumCapacity.set((double) maxCapacity);
 		webSocketClient.send(ImmutableSetMaximumCapacityMessage.builder()
 				.agentName(agentName)
 				.data(ImmutableCapacity.builder()
@@ -75,10 +64,12 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 * @param isActive information if the network node is active
 	 */
 	public void updateIsActive(final boolean isActive) {
-		webSocketClient.send(ImmutableIsActiveMessage.builder()
-				.data(isActive)
-				.agentName(agentName)
-				.build());
+		if (!(this instanceof CloudNetworkAgentNode)) {
+			webSocketClient.send(ImmutableIsActiveMessage.builder()
+					.data(isActive)
+					.agentName(agentName)
+					.build());
+		}
 	}
 
 	/**
@@ -100,11 +91,13 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 * @param value number of jobs that are on hold
 	 */
 	public void updateJobsOnHoldCount(final int value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
-				.data(value)
-				.agentName(agentName)
-				.type("SET_ON_HOLD_JOBS_COUNT")
-				.build());
+		if (!(this instanceof CloudNetworkAgentNode)) {
+			webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+					.data(value)
+					.agentName(agentName)
+					.type("SET_ON_HOLD_JOBS_COUNT")
+					.build());
+		}
 	}
 
 	/**

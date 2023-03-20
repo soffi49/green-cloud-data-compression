@@ -37,8 +37,13 @@ public class SchedulerAgentNode extends AbstractAgentNode {
 	public void addToGraph(GuiWebSocketClient webSocketClient) {
 		this.webSocketClient = webSocketClient;
 		webSocketClient.send(ImmutableRegisterAgentMessage.builder().agentType("SCHEDULER")
-				.data(ImmutableSchedulerNodeArgs.builder().name(agentName).deadlinePriority(deadlinePriorityWeight)
-						.powerPriority(powerPriorityWeight).maxQueueSize(maxQueueSize).build()).build());
+				.data(ImmutableSchedulerNodeArgs.builder()
+						.name(agentName)
+						.deadlinePriority(deadlinePriorityWeight)
+						.powerPriority(powerPriorityWeight)
+						.maxQueueSize(maxQueueSize)
+						.build())
+				.build());
 	}
 
 	/**

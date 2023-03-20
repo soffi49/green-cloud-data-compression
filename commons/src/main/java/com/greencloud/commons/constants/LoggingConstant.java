@@ -1,4 +1,4 @@
-package com.greencloud.application.common.constant;
+package com.greencloud.commons.constants;
 
 public class LoggingConstant {
 

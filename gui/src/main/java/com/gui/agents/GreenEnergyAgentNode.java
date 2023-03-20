@@ -1,6 +1,7 @@
 package com.gui.agents;
 
 import static java.lang.Double.parseDouble;
+import static java.util.Optional.ofNullable;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	 */
 	public GreenEnergyAgentNode(GreenEnergyAgentArgs args) {
 		super(args.getName(), parseDouble(args.getMaximumCapacity()));
-		this.location = ImmutableLocation.of(parseDouble(args.getLatitude()), parseDouble(args.getLongitude()));
+		this.location = new ImmutableLocation(parseDouble(args.getLatitude()), parseDouble(args.getLongitude()));
 		this.serverAgent = args.getOwnerSever();
 		this.monitoringAgent = args.getMonitoringAgent();
 		this.energyType = args.getEnergyType();
@@ -93,6 +94,6 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	}
 
 	public Optional<PowerShortageEvent> getEvent() {
-		return Optional.ofNullable((PowerShortageEvent) eventsQueue.poll());
+		return ofNullable((PowerShortageEvent) eventsQueue.poll());
 	}
 }
