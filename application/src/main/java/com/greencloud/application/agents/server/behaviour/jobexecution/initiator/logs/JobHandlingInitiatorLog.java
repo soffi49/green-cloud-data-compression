@@ -20,4 +20,9 @@ public class JobHandlingInitiatorLog {
 	public static final String SERVER_OFFER_ACCEPT_PROPOSAL_GS_LOG = "Sending ACCEPT_PROPOSAL to Green Source Agent";
 	public static final String SERVER_OFFER_REJECT_LOG = "Cloud Network {} rejected the job volunteering offer";
 
+	// JOB CANCELLING LOG MESSAGES
+	public static final String CANCEL_JOB_IN_SERVER = "Cancelling job part {}!";
+	public static final String CANCEL_JOB_ALL_GS_RESPONSES =
+			"All responses from Green Sources received. Remaining jobs that were not cancelled: {}!";
+
 }

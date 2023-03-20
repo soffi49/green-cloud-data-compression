@@ -1,7 +1,11 @@
 package com.greencloud.application.agents.scheduler;
 
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
+import static com.greencloud.commons.agent.AgentType.SCHEDULER;
+import static java.util.Comparator.comparingDouble;
+
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,16 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
-import com.database.knowledge.domain.action.AdaptationAction;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.greencloud.application.agents.AbstractAgent;
-import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
+import com.greencloud.application.agents.scheduler.managment.SchedulerAdaptationManagement;
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
-import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
-import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 
 import jade.core.AID;
 
@@ -31,95 +32,90 @@ public abstract class AbstractSchedulerAgent extends AbstractAgent {
 	protected ConcurrentMap<ClientJob, JobExecutionStatusEnum> clientJobs;
 	protected ConcurrentMap<String, AID> cnaForJobMap;
 	protected List<AID> availableCloudNetworks;
-	protected SchedulerConfigurationManagement configManagement;
-	protected SchedulerStateManagement stateManagement;
-
 	protected Multimap<String, ClientJob> jobParts;
 	protected Set<String> failedJobs;
+
+	protected int deadlinePriority;
+	protected int powerPriority;
+	protected int maximumQueueSize;
+	protected int jobSplitThreshold;
+	protected int splittingFactor;
 
 	/**
 	 * Default constructor.
 	 */
 	protected AbstractSchedulerAgent() {
 		super();
+
+		this.jobParts = ArrayListMultimap.create();
 		this.clientJobs = new ConcurrentHashMap<>();
 		this.cnaForJobMap = new ConcurrentHashMap<>();
 		this.availableCloudNetworks = new ArrayList<>();
-		this.jobParts = ArrayListMultimap.create();
 		this.failedJobs = new HashSet<>();
-		agentType = AgentType.SCHEDULER;
+		this.agentType = SCHEDULER;
 	}
 
 	/**
-	 * Method initialized priority queue
+	 * Method initializes priority queue
 	 */
 	public void setUpPriorityQueue() {
-		this.jobsToBeExecuted = new PriorityBlockingQueue<>(configManagement.getMaximumQueueSize(),
-				Comparator.comparingDouble(job -> configManagement.getJobPriority(job)));
+		this.jobsToBeExecuted = new PriorityBlockingQueue<>(maximumQueueSize,
+				comparingDouble(job -> manage().getJobPriority(job)));
 	}
 
-	/**
-	 * @return jobs that are to be introduced in Cloud Network
-	 */
+	public SchedulerAdaptationManagement adapt() {
+		return (SchedulerAdaptationManagement) agentManagementServices.get(ADAPTATION_MANAGEMENT);
+	}
+
+	public SchedulerStateManagement manage() {
+		return (SchedulerStateManagement) agentManagementServices.get(STATE_MANAGEMENT);
+	}
+
 	public PriorityBlockingQueue<ClientJob> getJobsToBeExecuted() {
 		return jobsToBeExecuted;
 	}
 
-	/**
-	 * @return jobs introduced to the Scheduler Agent
-	 */
 	public ConcurrentMap<ClientJob, JobExecutionStatusEnum> getClientJobs() {
 		return clientJobs;
 	}
 
-	/**
-	 * @return cloud networks assigned for specific job execution
-	 */
 	public ConcurrentMap<String, AID> getCnaForJobMap() {
 		return cnaForJobMap;
 	}
 
-	/**
-	 * @return list of available cloud networks
-	 */
 	public List<AID> getAvailableCloudNetworks() {
 		return availableCloudNetworks;
 	}
 
-	/**
-	 * @return multimap of jobs parts
-	 */
 	public Multimap<String, ClientJob> getJobParts() {
 		return jobParts;
 	}
 
-	/**
-	 * @return a set of all failed jobs
-	 */
 	public Set<String> getFailedJobs() {
 		return failedJobs;
 	}
 
-	/**
-	 * @return configuration manager
-	 */
-	public SchedulerConfigurationManagement config() {
-		return configManagement;
+	public int getJobSplitThreshold() {
+		return jobSplitThreshold;
 	}
 
-	/**
-	 * @return state manager
-	 */
-	public SchedulerStateManagement manage() {
-		return stateManagement;
+	public int getSplittingFactor() {
+		return splittingFactor;
 	}
 
-	@Override
-	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
-		return switch (adaptationAction.getAction()) {
-			case INCREASE_DEADLINE_PRIORITY -> config().increaseDeadlineWeight();
-			case INCREASE_POWER_PRIORITY -> config().increasePowerWeight();
-			default -> false;
-		};
+	public int getDeadlinePriority() {
+		return deadlinePriority;
+	}
+
+	public void setDeadlinePriority(int deadlinePriority) {
+		this.deadlinePriority = deadlinePriority;
+	}
+
+	public int getPowerPriority() {
+		return powerPriority;
+	}
+
+	public void setPowerPriority(int powerPriority) {
+		this.powerPriority = powerPriority;
 	}
 }

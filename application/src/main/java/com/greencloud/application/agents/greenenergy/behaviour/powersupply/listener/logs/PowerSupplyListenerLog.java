@@ -20,4 +20,7 @@ public class PowerSupplyListenerLog {
 	// POWER SUPPLY STATUS LOG MESSAGES
 	public static final String FINISH_POWER_SUPPLY_LOG = "Finish the execution of the job {}";
 	public static final String START_POWER_SUPPLY_LOG = "Started the execution of the job with id {}";
+
+	// JOB CANCELLING LOG MESSAGES
+	public static final String CANCEL_JOB_LOG = "Cancelling job part {}!";
 }

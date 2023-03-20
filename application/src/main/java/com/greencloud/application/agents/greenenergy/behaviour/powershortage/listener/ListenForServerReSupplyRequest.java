@@ -10,11 +10,11 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.weathercheck.request.RequestWeatherData.createWeatherRequest;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.NOT_ENOUGH_GREEN_POWER_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.RE_SUPPLY_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.WEATHER_UNAVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_RE_SUPPLY_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NOT_ENOUGH_GREEN_POWER_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.RE_SUPPLY_SUCCESSFUL_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.WEATHER_UNAVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;

@@ -6,8 +6,8 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.l
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.TRANSFER_EXPIRATION_TIME;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;

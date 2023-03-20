@@ -11,7 +11,7 @@ import static com.greencloud.application.messages.domain.constants.MessageConver
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.ON_HOLD_JOB_ID;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.NO_SOURCES_AVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;

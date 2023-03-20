@@ -9,8 +9,8 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_AGE
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobNewStartTime;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToGivenTime;

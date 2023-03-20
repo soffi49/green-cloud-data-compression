@@ -7,5 +7,8 @@ public class SchedulerDFLog {
 
 	// SUBSCRIBE CLOUD NETWORK SERVICE LOG MESSAGES
 	public static final String SUBSCRIBE_CNA_SERVICE_LOG = "Subscribing to Cloud Network Service";
-	public static final String RECEIVE_CNA_ANNOUNCEMENT_LOG = "Received message that new Cloud Network registered its service";
+	public static final String RECEIVE_CNA_ANNOUNCEMENT_LOG =
+			"Received message that {} new Cloud Networks registered its service";
+	public static final String RECEIVE_CNA_DEREGISTRATION_LOG =
+			"Received message that {} Cloud Networks deregistered its service";
 }

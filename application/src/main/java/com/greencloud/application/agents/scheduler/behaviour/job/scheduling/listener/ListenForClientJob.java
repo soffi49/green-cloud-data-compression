@@ -6,25 +6,24 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.scheduli
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.QUEUE_THRESHOLD_EXCEEDED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates.JobSchedulingMessageTemplates.NEW_JOB_ANNOUNCEMENT_TEMPLATE;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.mapper.JobMapper.mapToJobPart;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.SCHEDULED_JOB_ID;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareSplitJobMessageForClient;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
-import static java.lang.String.format;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.domain.job.ImmutableJobParts;
 import com.greencloud.commons.domain.job.ClientJob;
-import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -34,7 +33,7 @@ import jade.lang.acl.ACLMessage;
  */
 public class ListenForClientJob extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForClientJob.class);
+	private static final Logger logger = getLogger(ListenForClientJob.class);
 
 	private SchedulerAgent myScheduler;
 
@@ -55,62 +54,50 @@ public class ListenForClientJob extends CyclicBehaviour {
 	public void action() {
 		final ACLMessage message = myAgent.receive(NEW_JOB_ANNOUNCEMENT_TEMPLATE);
 
-		if (Objects.nonNull(message)) {
+		if (nonNull(message)) {
 			final ClientJob job = readMessageContent(message, ClientJob.class);
 			final String jobId = job.getJobId();
+
 			MDC.put(MDC_JOB_ID, jobId);
 			logger.info(JOB_RECEIVED_LOG, jobId);
-			addJobToPriorityQueue(job, message.getSender().getName());
+
+			if (myScheduler.getClientJobs().containsKey(job)) {
+				logger.info(JOB_ALREADY_EXISTING_LOG, job.getJobId(), myScheduler.getClientJobs().get(job));
+				return;
+			}
+
+			if (job.getPower() >= myScheduler.getJobSplitThreshold()) {
+				final List<ClientJob> jobParts = splitJob(job);
+				jobParts.forEach(jobPart -> {
+					myScheduler.getJobParts().put(job.getJobId(), jobPart);
+					putJobToQueue(jobPart);
+				});
+				myScheduler.send(prepareSplitJobMessageForClient(job.getClientIdentifier(),
+						new ImmutableJobParts(jobParts)));
+			} else {
+				putJobToQueue(job);
+			}
+
 		} else {
 			block();
 		}
 	}
 
-	private void addJobToPriorityQueue(final ClientJob job, final String client) {
-		if (myScheduler.getClientJobs().containsKey(job)) {
-			logger.info(JOB_ALREADY_EXISTING_LOG, job.getJobId(), myScheduler.getClientJobs().get(job));
-			return;
-		}
-
-		if (job.getPower() >= myScheduler.config().getJobSplitThreshold()) {
-			splitJobAndPutToQueue(job, client);
-		} else {
-			putJobToQueue(job);
-		}
-	}
-
-	private void splitJobAndPutToQueue(ClientJob job, String client) {
-		var jobParts = splitJob(job);
-		var messageContent = ImmutableJobParts.of(jobParts);
-		myScheduler.send(prepareSplitJobMessageForClient(client, messageContent));
-		jobParts.forEach(jobPart -> {
-			myScheduler.getJobParts().put(job.getJobId(), jobPart);
-			putJobToQueue(jobPart);
-		});
-	}
-
-	private void putJobToQueue(ClientJob job) {
+	private void putJobToQueue(final ClientJob job) {
 		myScheduler.getClientJobs().put(job, CREATED);
 		if (myScheduler.getJobsToBeExecuted().offer(job)) {
 			logger.info(JOB_ENQUEUED_SUCCESSFULLY_LOG, job.getJobId());
-			myScheduler.manage().updateJobQueue();
+			myScheduler.manage().updateJobQueueGUI();
 			myScheduler.send(prepareJobStatusMessageForClient(job, SCHEDULED_JOB_ID));
 		} else {
 			logger.info(QUEUE_THRESHOLD_EXCEEDED_LOG);
 		}
 	}
 
-	private List<ClientJob> splitJob(ClientJob clientJob) {
-		return IntStream.range(0, myScheduler.config().getSplittingFactor())
-				.mapToObj(i -> createJobPart(clientJob, i + 1))
+	private List<ClientJob> splitJob(final ClientJob job) {
+		return IntStream.range(0, myScheduler.getSplittingFactor())
+				.mapToObj(i -> mapToJobPart(job, i + 1, myScheduler.getSplittingFactor()))
 				.toList();
 	}
 
-	private ClientJob createJobPart(ClientJob clientJob, int partNumber) {
-		return ImmutableClientJob.builder()
-				.from(clientJob)
-				.jobId(format("%s#part%d", clientJob.getJobId(), partNumber))
-				.power(clientJob.getPower() / myScheduler.config().getSplittingFactor())
-				.build();
-	}
 }

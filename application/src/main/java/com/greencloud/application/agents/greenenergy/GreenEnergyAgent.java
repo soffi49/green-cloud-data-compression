@@ -19,7 +19,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 import com.database.knowledge.domain.action.AdaptationAction;
-import com.greencloud.application.agents.greenenergy.behaviour.cancellation.ListenForGreenEnergyJobCancellation;
+import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForGreenEnergyJobCancellation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerReSupplyRequest;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;

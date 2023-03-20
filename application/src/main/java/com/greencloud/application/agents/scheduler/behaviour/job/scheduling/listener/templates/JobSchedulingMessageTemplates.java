@@ -14,8 +14,8 @@ import jade.lang.acl.MessageTemplate;
  */
 public class JobSchedulingMessageTemplates {
 
-	public static final MessageTemplate NEW_JOB_ANNOUNCEMENT_TEMPLATE = and(MatchPerformative(INFORM),
-			MatchProtocol(ANNOUNCED_JOB_PROTOCOL));
-	public static final MessageTemplate JOB_UPDATE_TEMPLATE = and(MatchPerformative(INFORM),
-			MatchProtocol(CHANGE_JOB_STATUS_PROTOCOL));
+	public static final MessageTemplate NEW_JOB_ANNOUNCEMENT_TEMPLATE = and(
+			MatchPerformative(INFORM), MatchProtocol(ANNOUNCED_JOB_PROTOCOL));
+	public static final MessageTemplate JOB_UPDATE_TEMPLATE = and(
+			MatchPerformative(INFORM), MatchProtocol(CHANGE_JOB_STATUS_PROTOCOL));
 }

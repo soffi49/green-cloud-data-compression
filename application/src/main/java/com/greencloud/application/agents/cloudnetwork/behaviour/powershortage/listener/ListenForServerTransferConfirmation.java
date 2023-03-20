@@ -7,8 +7,8 @@ import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetw
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.SERVER_INTERNAL_FAILURE_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.SERVER_INTERNAL_FAILURE_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToGivenTime;
 import static jade.lang.acl.ACLMessage.FAILURE;

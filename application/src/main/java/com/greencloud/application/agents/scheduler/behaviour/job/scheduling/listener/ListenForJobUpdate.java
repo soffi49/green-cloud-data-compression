@@ -13,12 +13,10 @@ import static com.greencloud.application.messages.domain.factory.JobStatusMessag
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
-import static java.util.Objects.isNull;
-
-import java.util.Objects;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
@@ -33,7 +31,7 @@ import jade.lang.acl.ACLMessage;
  */
 public class ListenForJobUpdate extends CyclicBehaviour {
 
-	private static final Logger logger = LoggerFactory.getLogger(ListenForJobUpdate.class);
+	private static final Logger logger = getLogger(ListenForJobUpdate.class);
 
 	private SchedulerAgent mySchedulerAgent;
 
@@ -54,12 +52,12 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	public void action() {
 		final ACLMessage message = myAgent.receive(JOB_UPDATE_TEMPLATE);
 
-		if (Objects.nonNull(message)) {
+		if (nonNull(message)) {
 			final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
+
 			MDC.put(MDC_JOB_ID, jobStatusUpdate.getJobInstance().getJobId());
 			logger.info(JOB_UPDATE_RECEIVED_LOG, jobStatusUpdate.getJobInstance().getJobId());
 			handleJobStatusChange(jobStatusUpdate, message.getConversationId());
-			MDC.clear();
 		} else {
 			block();
 		}
@@ -68,20 +66,16 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	private void handleJobStatusChange(final JobStatusUpdate jobStatusUpdate, final String type) {
 		final ClientJob job = getJobById(jobStatusUpdate.getJobInstance().getJobId(), mySchedulerAgent.getClientJobs());
 
-		if (isNull(job)) {
-			// do nothing
-			return;
-		}
-
-		switch (type) {
-			case STARTED_JOB_ID -> mySchedulerAgent.getClientJobs().replace(job, PROCESSING, IN_PROGRESS);
-			case FINISH_JOB_ID -> mySchedulerAgent.manage().handleJobCleanUp(job);
-			case FAILED_JOB_ID -> handleJobFailure(jobStatusUpdate, job);
-		}
-		if (!type.equals(FAILED_JOB_ID)) {
-			final ACLMessage messageToClient = prepareJobStatusMessageForClient(job.getClientIdentifier(),
-					jobStatusUpdate, type);
-			mySchedulerAgent.send(messageToClient);
+		if (nonNull(job)) {
+			switch (type) {
+				case STARTED_JOB_ID -> mySchedulerAgent.getClientJobs().replace(job, PROCESSING, IN_PROGRESS);
+				case FINISH_JOB_ID -> mySchedulerAgent.manage().handleJobCleanUp(job);
+				case FAILED_JOB_ID -> handleJobFailure(jobStatusUpdate, job);
+			}
+			if (!type.equals(FAILED_JOB_ID)) {
+				mySchedulerAgent.send(
+						prepareJobStatusMessageForClient(job.getClientIdentifier(), jobStatusUpdate, type));
+			}
 		}
 	}
 
@@ -90,7 +84,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 			logger.info(JOB_FAILED_RETRY_LOG, job.getJobId());
 			mySchedulerAgent.send(preparePostponeJobMessageForClient(job));
 		} else {
-			mySchedulerAgent.manage().handleFailedJobCleanUp(job, parent);
+			mySchedulerAgent.manage().jobFailureCleanUp(job);
 			mySchedulerAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), jobStatusUpdate,
 					FAILED_JOB_ID));
 		}

@@ -3,7 +3,7 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.ini
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.ACCEPT_SERVER_PROPOSAL_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.REJECT_SERVER_PROPOSAL_LOG;
 import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
+import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
@@ -76,12 +76,11 @@ public class InitiateNewJobOffer extends ProposeInitiator {
 	 */
 	@Override
 	protected void handleAcceptProposal(final ACLMessage accept) {
-		final String jobId = accept.getContent();
-		final ClientJob job = getJobById(jobId, myCloudNetworkAgent.getNetworkJobs());
+		final JobInstanceIdentifier jobInstance = readMessageContent(accept, JobInstanceIdentifier.class);
+		final ClientJob job = getJobById(jobInstance.getJobId(), myCloudNetworkAgent.getNetworkJobs());
 
 		if (nonNull(job)) {
-			final JobInstanceIdentifier jobInstance = mapToJobInstanceId(job);
-			MDC.put(MDC_JOB_ID, jobId);
+			MDC.put(MDC_JOB_ID, jobInstance.getJobId());
 			logger.info(ACCEPT_SERVER_PROPOSAL_LOG);
 
 			myCloudNetworkAgent.manage().incrementJobCounter(jobInstance, ACCEPTED);
@@ -97,15 +96,15 @@ public class InitiateNewJobOffer extends ProposeInitiator {
 	 */
 	@Override
 	protected void handleRejectProposal(final ACLMessage reject) {
-		final String jobId = reject.getContent();
-		final ClientJob job = getJobById(jobId, myCloudNetworkAgent.getNetworkJobs());
-		MDC.put(MDC_JOB_ID, jobId);
+		final JobInstanceIdentifier jobInstance = readMessageContent(reject, JobInstanceIdentifier.class);
+		final ClientJob job = getJobById(jobInstance.getJobId(), myCloudNetworkAgent.getNetworkJobs());
+		MDC.put(MDC_JOB_ID, jobInstance.getJobId());
 		logger.info(REJECT_SERVER_PROPOSAL_LOG, reject.getSender().getName());
 
 		if (nonNull(job)) {
-			myCloudNetworkAgent.getServerForJobMap().remove(jobId);
-			myCloudNetworkAgent.getNetworkJobs().remove(getJobById(jobId, myCloudNetworkAgent.getNetworkJobs()));
-			myCloudNetworkAgent.send(prepareReply(serverMessage, mapToJobInstanceId(job), REJECT_PROPOSAL));
+			myCloudNetworkAgent.getServerForJobMap().remove(jobInstance.getJobId());
+			myCloudNetworkAgent.getNetworkJobs().remove(job);
+			myCloudNetworkAgent.send(prepareReply(serverMessage, jobInstance, REJECT_PROPOSAL));
 		}
 	}
 }

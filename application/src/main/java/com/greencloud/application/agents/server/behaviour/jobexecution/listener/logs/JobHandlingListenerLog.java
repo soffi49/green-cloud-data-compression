@@ -25,4 +25,8 @@ public class JobHandlingListenerLog {
 
 	// JOB START STATUS REQUEST LOG MESSAGES
 	public static final String JOB_START_STATUS_RECEIVED_REQUEST_LOG = "Received request to verify job start status {}";
+
+	// JOB CANCELLING LOG MESSAGES
+	public static final String CANCEL_JOB_IN_GREEN_SOURCES =
+			"Sending request to cancel {} job parts of job with id {} in underlying Green Sources!";
 }

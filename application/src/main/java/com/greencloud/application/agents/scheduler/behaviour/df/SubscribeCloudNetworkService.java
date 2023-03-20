@@ -1,28 +1,28 @@
 package com.greencloud.application.agents.scheduler.behaviour.df;
 
 import static com.greencloud.application.agents.scheduler.behaviour.df.logs.SchedulerDFLog.RECEIVE_CNA_ANNOUNCEMENT_LOG;
+import static com.greencloud.application.agents.scheduler.behaviour.df.logs.SchedulerDFLog.RECEIVE_CNA_DEREGISTRATION_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.df.logs.SchedulerDFLog.SUBSCRIBE_CNA_SERVICE_LOG;
-import static com.greencloud.application.yellowpages.YellowPagesService.decodeSubscription;
 import static com.greencloud.application.yellowpages.YellowPagesService.prepareSubscription;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
+import com.greencloud.application.behaviours.df.AbstractSubscriptionInitiator;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import jade.proto.SubscriptionInitiator;
 
 /**
  * Behaviours subscribes CNA service in the DF
  */
-public class SubscribeCloudNetworkService extends SubscriptionInitiator {
+public class SubscribeCloudNetworkService extends AbstractSubscriptionInitiator {
 
-	private static final Logger logger = LoggerFactory.getLogger(SubscribeCloudNetworkService.class);
+	private static final Logger logger = getLogger(SubscribeCloudNetworkService.class);
 
 	private final SchedulerAgent mySchedulerAgent;
 
@@ -43,10 +43,14 @@ public class SubscribeCloudNetworkService extends SubscriptionInitiator {
 	}
 
 	@Override
-	protected void handleInform(ACLMessage inform) {
-		final List<AID> announcedCNAList = decodeSubscription(inform);
+	protected void handleAddedAgents(Map<AID, Boolean> addedAgents) {
+		logger.info(RECEIVE_CNA_ANNOUNCEMENT_LOG, addedAgents.size());
+		mySchedulerAgent.getAvailableCloudNetworks().addAll(addedAgents.keySet());
+	}
 
-		logger.info(RECEIVE_CNA_ANNOUNCEMENT_LOG);
-		mySchedulerAgent.getAvailableCloudNetworks().addAll(announcedCNAList);
+	@Override
+	protected void handleRemovedAgents(Map<AID, Boolean> removedAgents) {
+		logger.info(RECEIVE_CNA_DEREGISTRATION_LOG, removedAgents.size());
+		mySchedulerAgent.getAvailableCloudNetworks().removeAll(removedAgents.keySet());
 	}
 }

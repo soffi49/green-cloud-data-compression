@@ -8,8 +8,8 @@ import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB
 import static com.greencloud.application.mapper.JobMapper.mapToPowerJob;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
 import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.DELAYED_JOB_ALREADY_FINISHED_CAUSE_MESSAGE;
-import static com.greencloud.application.messages.domain.constants.PowerShortageMessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.DELAYED_JOB_ALREADY_FINISHED_CAUSE_MESSAGE;
+import static com.greencloud.application.messages.domain.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToGivenTime;

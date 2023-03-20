@@ -1,23 +1,30 @@
 package com.greencloud.application.agents.scheduler;
 
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
+import static com.greencloud.application.yellowpages.YellowPagesService.deregister;
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SCHEDULER_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SCHEDULER_SERVICE_TYPE;
 import static com.greencloud.commons.utils.CommonUtils.isFibonacci;
 import static java.lang.Integer.parseInt;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.database.knowledge.domain.action.AdaptationAction;
 import com.greencloud.application.agents.scheduler.behaviour.df.SubscribeCloudNetworkService;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.handler.HandleJobAnnouncement;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.ListenForClientJob;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.ListenForJobUpdate;
-import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
+import com.greencloud.application.agents.scheduler.managment.SchedulerAdaptationManagement;
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
+import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 
 import jade.core.behaviours.Behaviour;
 
@@ -26,21 +33,18 @@ import jade.core.behaviours.Behaviour;
  */
 public class SchedulerAgent extends AbstractSchedulerAgent {
 
-	private static final Logger logger = LoggerFactory.getLogger(SchedulerAgent.class);
+	private static final Logger logger = getLogger(SchedulerAgent.class);
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (Objects.nonNull(args) && args.length == 5) {
+		if (nonNull(args) && args.length == 5) {
 			try {
-				final int deadlineWeight = parseInt(args[0].toString());
-				final int powerWeight = parseInt(args[1].toString());
-				final int maxQueueSize = parseInt(args[2].toString());
-				final int jobSplitThreshold = parseInt(args[3].toString());
-				final int splittingFactor = parseInt(args[4].toString());
+				this.deadlinePriority = parseInt(args[0].toString());
+				this.powerPriority = parseInt(args[1].toString());
+				this.maximumQueueSize = parseInt(args[2].toString());
+				this.jobSplitThreshold = parseInt(args[3].toString());
+				this.splittingFactor = parseInt(args[4].toString());
 
-				this.configManagement = new SchedulerConfigurationManagement(this, deadlineWeight, powerWeight,
-						maxQueueSize, jobSplitThreshold, splittingFactor);
-				this.stateManagement = new SchedulerStateManagement(this);
 				this.setUpPriorityQueue();
 				register(this, SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);
 
@@ -54,17 +58,28 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 		}
 	}
 
-	/**
-	 * Abstract method used to validate if arguments of the given agent are correct
-	 */
+	@Override
+	protected void initializeAgentManagements() {
+		this.agentManagementServices = new EnumMap<>(Map.of(
+				STATE_MANAGEMENT, new SchedulerStateManagement(this),
+				ADAPTATION_MANAGEMENT, new SchedulerAdaptationManagement(this)
+		));
+		manage().updateWeightsGUI();
+	}
+
+	@Override
+	protected void takeDown() {
+		deregister(this, SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);
+		super.takeDown();
+	}
+
 	@Override
 	protected void validateAgentArguments() {
-		if (!isFibonacci((int) configManagement.getPowerWeightPriority()) ||
-				!isFibonacci((int) configManagement.getDeadlineWeightPriority())) {
+		if (!isFibonacci(powerPriority) || !isFibonacci(deadlinePriority)) {
 			logger.info("Incorrect arguments: Weights must be in a Fibonacci sequence");
 			doDelete();
 		}
-		if (configManagement.getMaximumQueueSize() < 1) {
+		if (maximumQueueSize < 1) {
 			logger.info("Incorrect arguments: Queue size must be a positive integer!");
 			doDelete();
 		}
@@ -78,5 +93,15 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 				new ListenForClientJob(),
 				new ListenForJobUpdate()
 		);
+	}
+
+	@Override
+	public boolean executeAction(final AdaptationAction adaptationAction,
+			final AdaptationActionParameters actionParameters) {
+		return switch (adaptationAction.getAction()) {
+			case INCREASE_DEADLINE_PRIORITY -> adapt().increaseDeadlineWeight();
+			case INCREASE_POWER_PRIORITY -> adapt().increasePowerWeight();
+			default -> false;
+		};
 	}
 }

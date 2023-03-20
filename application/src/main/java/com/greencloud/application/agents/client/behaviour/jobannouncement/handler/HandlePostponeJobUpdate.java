@@ -1,6 +1,6 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
-import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentConstants.JOB_RETRY_MINUTES_ADJUSTMENT;
+import static com.greencloud.application.agents.scheduler.constants.SchedulerAgentConstants.JOB_RETRY_MINUTES_ADJUSTMENT;
 import static com.greencloud.application.utils.TimeUtils.postponeTime;
 
 import java.time.Instant;

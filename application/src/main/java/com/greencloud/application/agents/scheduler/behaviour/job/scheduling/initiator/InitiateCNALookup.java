@@ -1,131 +1,97 @@
 package com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator;
 
-import static com.greencloud.application.agents.scheduler.domain.SchedulerAgentConstants.MAX_TRAFFIC_DIFFERENCE;
-import static com.greencloud.application.common.constant.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.messages.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.MessagingUtils.rejectJobOffers;
-import static com.greencloud.application.messages.MessagingUtils.retrieveProposals;
-import static com.greencloud.application.messages.MessagingUtils.retrieveValidMessages;
+import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.logs.JobSchedulingInitiatorLog.NO_CLOUD_AVAILABLE_NO_RETRY_LOG;
+import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.logs.JobSchedulingInitiatorLog.NO_CLOUD_AVAILABLE_RETRY_LOG;
+import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.logs.JobSchedulingInitiatorLog.NO_CLOUD_RESPONSES_LOG;
+import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.logs.JobSchedulingInitiatorLog.SEND_ACCEPT_TO_CLOUD_LOG;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FAILED_JOB_ID;
+import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SCHEDULER_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.domain.factory.CallForProposalMessageFactory.createCallForProposal;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.domain.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
-
-import java.util.List;
-import java.util.Vector;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.initiator.logs.JobSchedulingInitiatorLog;
+import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
 import com.greencloud.application.domain.job.JobWithPrice;
-import com.greencloud.application.exception.IncorrectMessageContentException;
 import com.greencloud.commons.domain.job.ClientJob;
 
-import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.proto.ContractNetInitiator;
 
 /**
  * Behaviour looks for the Cloud Network that will handle the job execution
  */
-public class InitiateCNALookup extends ContractNetInitiator {
+public class InitiateCNALookup extends AbstractCFPInitiator<JobWithPrice> {
 
-	private static final Logger logger = LoggerFactory.getLogger(InitiateCNALookup.class);
+	private static final Logger logger = getLogger(InitiateCNALookup.class);
 	private final SchedulerAgent myScheduler;
 	private final ClientJob job;
 
-	/**
-	 * Behaviour constructor.
-	 *
-	 * @param agent scheduler agent executing behaviour
-	 * @param cfp   call for proposal sent to the Cloud Networks
-	 * @param job   job of interest
-	 */
 	public InitiateCNALookup(final SchedulerAgent agent, final ACLMessage cfp, final ClientJob job) {
-		super(agent, cfp);
+		super(agent, cfp, null, mapToJobInstanceId(job), agent.manage().offerComparator(), JobWithPrice.class);
+
 		this.myScheduler = agent;
 		this.job = job;
 	}
 
 	/**
-	 * Method handles the responses retrieved from the Cloud Network Agents.
-	 * It selects one Cloud Network Agent that will execute the job and rejects the remaining ones.
+	 * Method creates behaviour
 	 *
-	 * @param responses   all retrieved Cloud Network Agents' responses
-	 * @param acceptances vector containing accept proposal message that will be sent back to the chosen
-	 *                    Cloud Network Agent
+	 * @param scheduler agent executing the behaviour
+	 * @param job       job of interest
+	 * @return InitiateCNALookup
+	 */
+	public static InitiateCNALookup create(final SchedulerAgent scheduler, final ClientJob job) {
+		final ACLMessage cfp = createCallForProposal(job, scheduler.getAvailableCloudNetworks(),
+				SCHEDULER_JOB_CFP_PROTOCOL);
+
+		return new InitiateCNALookup(scheduler, cfp, job);
+	}
+
+	/**
+	 * Method calls failure handler which verifies whether job can be postponed or if it fails
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	protected void handleAllResponses(final Vector responses, final Vector acceptances) {
-		final List<ACLMessage> proposals = retrieveProposals(responses);
-		MDC.put(MDC_JOB_ID, job.getJobId());
+	protected void handleNoResponses() {
+		logger.info(NO_CLOUD_RESPONSES_LOG);
+		handleFailure();
+	}
 
-		if (responses.isEmpty()) {
-			logger.info(JobSchedulingInitiatorLog.NO_CLOUD_RESPONSES_LOG);
-			handleFailure();
-		} else if (proposals.isEmpty()) {
-			handleFailure();
-		} else {
-			List<ACLMessage> validProposals = retrieveValidMessages(proposals, JobWithPrice.class);
+	/**
+	 * Method calls failure handler which verifies whether job can be postponed or if it fails
+	 */
+	@Override
+	protected void handleNoAvailableAgents() {
+		handleFailure();
+	}
 
-			if (!validProposals.isEmpty()) {
-				final ACLMessage chosenOffer = chooseCNAToExecuteJob(validProposals);
-				final JobWithPrice pricedJob = readMessageContent(chosenOffer, JobWithPrice.class);
-				logger.info(JobSchedulingInitiatorLog.SEND_ACCEPT_TO_CLOUD_LOG, chosenOffer.getSender().getName());
+	/**
+	 * Method responds with accept proposal to selected CNA and updates job status
+	 */
+	@Override
+	protected void handleSelectedOffer(final JobWithPrice chosenOfferData) {
+		logger.info(SEND_ACCEPT_TO_CLOUD_LOG, bestProposal.getSender().getName());
 
-				myScheduler.getClientJobs().replace(job, PROCESSING, ACCEPTED);
-				myScheduler.getCnaForJobMap().put(job.getJobId(), chosenOffer.getSender());
-
-				myScheduler.send(prepareStringReply(chosenOffer.createReply(), pricedJob.getJobId(), ACCEPT_PROPOSAL));
-				rejectJobOffers(myScheduler, pricedJob.getJobId(), chosenOffer, proposals);
-			} else {
-				handleInvalidProposals(proposals);
-			}
-		}
-		((ParallelBehaviour) parent).removeSubBehaviour(this);
+		myScheduler.getClientJobs().replace(job, PROCESSING, ACCEPTED);
+		myScheduler.getCnaForJobMap().put(job.getJobId(), bestProposal.getSender());
+		myScheduler.send(prepareReply(bestProposal, jobInstance, ACCEPT_PROPOSAL));
 	}
 
 	private void handleFailure() {
 		if (myScheduler.manage().postponeJobExecution(job)) {
-			logger.info(JobSchedulingInitiatorLog.NO_CLOUD_AVAILABLE_RETRY_LOG);
+			logger.info(NO_CLOUD_AVAILABLE_RETRY_LOG);
 			myScheduler.send(preparePostponeJobMessageForClient(job));
 		} else {
-			logger.info(JobSchedulingInitiatorLog.NO_CLOUD_AVAILABLE_NO_RETRY_LOG);
-			myScheduler.manage().handleFailedJobCleanUp(job, parent);
+			logger.info(NO_CLOUD_AVAILABLE_NO_RETRY_LOG);
+			myScheduler.manage().jobFailureCleanUp(job);
 			myScheduler.send(prepareJobStatusMessageForClient(job, FAILED_JOB_ID));
-		}
-	}
-
-	private void handleInvalidProposals(final List<ACLMessage> proposals) {
-		logger.info(JobSchedulingInitiatorLog.INVALID_CLOUD_PROPOSAL_LOG);
-		rejectJobOffers(myScheduler, job.getJobId(), null, proposals);
-		handleFailure();
-	}
-
-	private ACLMessage chooseCNAToExecuteJob(final List<ACLMessage> receivedOffers) {
-		return receivedOffers.stream().min(this::compareCNAOffers).orElseThrow();
-	}
-
-	private int compareCNAOffers(final ACLMessage cnaOffer1, final ACLMessage cnaOffer2) {
-		try {
-			final JobWithPrice cna1 = readMessageContent(cnaOffer1, JobWithPrice.class);
-			final JobWithPrice cna2 = readMessageContent(cnaOffer2, JobWithPrice.class);
-
-			double powerDifference = cna2.getAvailablePower() - cna1.getAvailablePower();
-			int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());
-			return MAX_TRAFFIC_DIFFERENCE.isValidIntValue((int) powerDifference) ?
-					priceDifference :
-					(int) powerDifference;
-
-		} catch (IncorrectMessageContentException e) {
-			return Integer.MAX_VALUE;
 		}
 	}
 }
