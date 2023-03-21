@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.PowerJob;
 import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
@@ -48,52 +47,17 @@ public class JobUtils {
 	}
 
 	/**
-	 * Method retrieves the job by the job id and start time from job map
+	 * Method retrieves the job by the job id from job map
 	 *
-	 * @param jobId     job identifier
-	 * @param startTime job start time
-	 * @param jobMap    map to traverse
-	 * @return job
-	 */
-	@Nullable
-	public static <T extends PowerJob> T getJobByIdAndStartDate(final String jobId, final Instant startTime,
-			final Map<T, JobExecutionStatusEnum> jobMap) {
-		return jobMap.keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getStartTime().equals(startTime))
-				.findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Method retrieves the job by the job id and start time from job map
-	 *
-	 * @param jobInstanceId unique identifier of the job instance
+	 * @param jobInstanceId job instance identifier
 	 * @param jobMap        map to traverse
 	 * @return job
 	 */
 	@Nullable
-	public static <T extends PowerJob> T getJobByIdAndStartDate(final JobInstanceIdentifier jobInstanceId,
+	public static <T extends PowerJob> T getJobByInstanceId(final String jobInstanceId,
 			final Map<T, JobExecutionStatusEnum> jobMap) {
 		return jobMap.keySet().stream()
-				.filter(job -> job.getJobId().equals(jobInstanceId.getJobId())
-						&& job.getStartTime().equals(jobInstanceId.getStartTime()))
-				.findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Method retrieves the job by the job id and end time from job map
-	 *
-	 * @param jobId   job identifier
-	 * @param endTime job end time
-	 * @param jobMap  map to traverse
-	 * @return job
-	 */
-	@Nullable
-	public static <T extends PowerJob> T getJobByIdAndEndDate(final String jobId, final Instant endTime,
-			final Map<T, JobExecutionStatusEnum> jobMap) {
-		return jobMap.keySet().stream()
-				.filter(job -> job.getJobId().equals(jobId) && job.getEndTime().equals(endTime))
+				.filter(job -> job.getJobInstanceId().equals(jobInstanceId))
 				.findFirst()
 				.orElse(null);
 	}
@@ -107,12 +71,10 @@ public class JobUtils {
 	 * @return ServerJob
 	 */
 	@Nullable
-	public static ServerJob getJobByIdAndStartDateAndServer(final JobInstanceIdentifier jobInstanceId, final AID server,
+	public static ServerJob getJobByInstanceIdAndServer(final String jobInstanceId, final AID server,
 			final Map<ServerJob, JobExecutionStatusEnum> jobMap) {
 		return jobMap.keySet().stream()
-				.filter(job -> job.getJobId().equals(jobInstanceId.getJobId())
-						&& job.getStartTime().equals(jobInstanceId.getStartTime())
-						&& job.getServer().equals(server))
+				.filter(job -> job.getJobInstanceId().equals(jobInstanceId) && job.getServer().equals(server))
 				.findFirst()
 				.orElse(null);
 	}

@@ -34,6 +34,8 @@ import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.adaptation.InitiateGreenSourceDisconnection;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.handler.HandleManualPowerSupplyFinish;
 import com.greencloud.application.domain.job.JobCounter;
+import com.greencloud.application.domain.job.JobDivided;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.commons.domain.job.PowerJob;
 import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionResultEnum;
@@ -90,10 +92,23 @@ public class GreenEnergyStateManagement extends AbstractStateManagement {
 	 *
 	 * @param job                job that is to be divided into instances
 	 * @param powerShortageStart time when the power shortage will start
-	 * @return job instance for transfer
+	 * @return Pair consisting of previous job instance and job instance for transfer (if there is only job instance
+	 * * for transfer then previous job instance element is null)
 	 */
-	public ServerJob divideJobForPowerShortage(final ServerJob job, final Instant powerShortageStart) {
+	public JobDivided<ServerJob> divideJobForPowerShortage(final ServerJob job, final Instant powerShortageStart) {
 		return super.divideJobForPowerShortage(job, powerShortageStart, greenEnergyAgent.getServerJobs());
+	}
+
+	/**
+	 * Method substitutes existing job instance with new instances associated with power shortage transfer
+	 *
+	 * @param jobTransfer job transfer information
+	 * @param originalJob original job that is to be divided
+	 * @return Pair of new job instances
+	 */
+	public JobDivided<ServerJob> divideJobForPowerShortage(final JobPowerShortageTransfer jobTransfer,
+			final ServerJob originalJob) {
+		return super.divideJobForPowerShortage(jobTransfer, originalJob, greenEnergyAgent.getServerJobs());
 	}
 
 	@Override
@@ -116,7 +131,13 @@ public class GreenEnergyStateManagement extends AbstractStateManagement {
 	protected <T extends PowerJob> void processJobDivision(T affectedJob, T nonAffectedJob) {
 		incrementJobCounter(mapToJobInstanceId(affectedJob), ACCEPTED);
 		greenEnergyAgent.addBehaviour(HandleManualPowerSupplyFinish.create(greenEnergyAgent,
-				calculateExpectedJobEndTime(affectedJob), (ServerJob) nonAffectedJob));
+				calculateExpectedJobEndTime(nonAffectedJob), (ServerJob) nonAffectedJob));
+	}
+
+	@Override
+	protected <T extends PowerJob> void processJobSubstitution(boolean hasStarted, T newJobInstance) {
+		greenEnergyAgent.addBehaviour(HandleManualPowerSupplyFinish.create(greenEnergyAgent,
+				calculateExpectedJobEndTime(newJobInstance), (ServerJob) newJobInstance));
 	}
 
 	@Override

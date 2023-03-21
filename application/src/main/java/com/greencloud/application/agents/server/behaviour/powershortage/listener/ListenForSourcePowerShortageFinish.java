@@ -3,10 +3,10 @@ package com.greencloud.application.agents.server.behaviour.powershortage.listene
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_SHORTAGE_FINISH_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.GREEN_POWER_JOB_ID;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.POWER_SHORTAGE_SOURCE_STATUSES;
 import static java.util.Objects.nonNull;
@@ -18,8 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.commons.constants.LoggingConstant;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
+import com.greencloud.commons.constants.LoggingConstant;
 import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.behaviours.CyclicBehaviour;
@@ -54,7 +54,7 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 		if (nonNull(messages)) {
 			messages.stream().parallel().forEach(message -> {
 				final JobInstanceIdentifier jobInstance = readMessageContent(message, JobInstanceIdentifier.class);
-				final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
+				final ClientJob job = getJobByInstanceId(jobInstance.getJobInstanceId(), myServerAgent.getServerJobs());
 
 				if (nonNull(job) && POWER_SHORTAGE_SOURCE_STATUSES.contains(myServerAgent.getServerJobs().get(job))) {
 					MDC.put(LoggingConstant.MDC_JOB_ID, job.getJobId());

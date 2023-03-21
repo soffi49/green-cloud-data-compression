@@ -7,7 +7,6 @@ import static com.greencloud.application.agents.server.management.logs.ServerMan
 import static com.greencloud.application.agents.server.management.logs.ServerManagementLog.COUNT_JOB_PROCESS_LOG;
 import static com.greencloud.application.agents.server.management.logs.ServerManagementLog.COUNT_JOB_START_LOG;
 import static com.greencloud.application.agents.server.management.logs.ServerManagementLog.SUPPLY_JOB_WITH_BACK_UP;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobFinishMessage;
 import static com.greencloud.application.utils.AlgorithmUtils.getMaximumUsedPowerDuringTimeStamp;
@@ -22,6 +21,7 @@ import static com.greencloud.application.utils.PowerUtils.getPowerPercent;
 import static com.greencloud.application.utils.TimeUtils.differenceInHours;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.isWithinTimeStamp;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
@@ -62,7 +62,9 @@ import com.greencloud.application.agents.server.behaviour.jobexecution.handler.H
 import com.greencloud.application.agents.server.behaviour.jobexecution.handler.HandleJobStart;
 import com.greencloud.application.domain.agent.GreenSourceData;
 import com.greencloud.application.domain.job.JobCounter;
+import com.greencloud.application.domain.job.JobDivided;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
+import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.application.exception.JobNotFoundException;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.PowerJob;
@@ -172,10 +174,23 @@ public class ServerStateManagement extends AbstractStateManagement {
 	 *
 	 * @param job                job that is to be divided into instances
 	 * @param powerShortageStart time when the power shortage will start
-	 * @return job instance for transfer
+	 * @return Pair consisting of previous job instance and job instance for transfer (if there is only job instance
+	 * * for transfer then previous job instance element is null)
 	 */
-	public ClientJob divideJobForPowerShortage(final ClientJob job, final Instant powerShortageStart) {
+	public JobDivided<ClientJob> divideJobForPowerShortage(final ClientJob job, final Instant powerShortageStart) {
 		return super.divideJobForPowerShortage(job, powerShortageStart, serverAgent.getServerJobs());
+	}
+
+	/**
+	 * Method substitutes existing job instance with new instances associated with power shortage transfer
+	 *
+	 * @param jobTransfer job transfer information
+	 * @param originalJob original job that is to be divided
+	 * @return Pair of new job instances
+	 */
+	public JobDivided<ClientJob> divideJobForPowerShortage(final JobPowerShortageTransfer jobTransfer,
+			final ClientJob originalJob) {
+		return super.divideJobForPowerShortage(jobTransfer, originalJob, serverAgent.getServerJobs());
 	}
 
 	/**
@@ -304,6 +319,16 @@ public class ServerStateManagement extends AbstractStateManagement {
 	}
 
 	@Override
+	protected <T extends PowerJob> void processJobSubstitution(final boolean hasStarted, T newJobInstance) {
+		if (hasStarted) {
+			serverAgent.addBehaviour(HandleJobFinish.createFor(serverAgent, (ClientJob) newJobInstance, true));
+		} else {
+			serverAgent.addBehaviour(
+					HandleJobStart.createFor(serverAgent, (ClientJob) newJobInstance, true, true));
+		}
+	}
+
+	@Override
 	public void updateGUI() {
 		final ServerAgentNode serverAgentNode = (ServerAgentNode) serverAgent.getAgentNode();
 
@@ -329,7 +354,7 @@ public class ServerStateManagement extends AbstractStateManagement {
 		final List<AID> receivers = informCNA ?
 				List.of(greenSource, serverAgent.getOwnerCloudNetworkAgent()) :
 				singletonList(greenSource);
-		serverAgent.send(prepareJobFinishMessage(job.getJobId(), job.getStartTime(), receivers.toArray(new AID[0])));
+		serverAgent.send(prepareJobFinishMessage(job, receivers.toArray(new AID[0])));
 	}
 
 	private void updateStateAfterJobIsDone(final ClientJob jobToBeDone, final JobExecutionResultEnum result) {

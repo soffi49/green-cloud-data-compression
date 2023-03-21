@@ -6,11 +6,11 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.powershor
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.templates.PowerShortageCloudMessageTemplates.SERVER_JOB_TRANSFER_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.cloudnetwork.constants.CloudNetworkAgentConstants.MAX_MESSAGE_NUMBER_IN_BATCH;
 import static com.greencloud.application.mapper.JobMapper.mapToJobNewStartTime;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobById;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToGivenTime;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
@@ -67,7 +67,7 @@ public class ListenForServerJobTransferRequest extends CyclicBehaviour {
 				MDC.put(MDC_AGENT_NAME, myAgent.getLocalName());
 				final JobPowerShortageTransfer transferData = readMessageContent(request,
 						JobPowerShortageTransfer.class);
-				final String jobId = transferData.getJobInstanceId().getJobId();
+				final String jobId = transferData.getSecondJobInstanceId().getJobId();
 				final ClientJob job = getJobById(jobId, myCloudNetworkAgent.getNetworkJobs());
 
 				MDC.put(MDC_JOB_ID, jobId);

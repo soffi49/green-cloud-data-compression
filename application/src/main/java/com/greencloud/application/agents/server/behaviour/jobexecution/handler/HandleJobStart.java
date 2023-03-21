@@ -95,7 +95,7 @@ public class HandleJobStart extends WakerBehaviour {
 			final String logMessage = informCNAStart ? JOB_START_LOG : JOB_START_NO_INFORM_LOG;
 			logger.info(logMessage, jobId);
 
-			sendJobStartMessage(jobId);
+			sendJobStartMessage();
 			substituteJobStatus();
 			myServerAgent.manage().incrementJobCounter(mapToJobInstanceId(jobToExecute), STARTED);
 			myAgent.addBehaviour(HandleJobFinish.createFor(myServerAgent, jobToExecute, informCNAFinish));
@@ -104,13 +104,13 @@ public class HandleJobStart extends WakerBehaviour {
 		}
 	}
 
-	private void sendJobStartMessage(final String jobId) {
-		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(jobId);
+	private void sendJobStartMessage() {
+		final AID greenSource = myServerAgent.getGreenSourceForJobMap().get(jobToExecute.getJobId());
 		final List<AID> receivers = informCNAStart ?
 				List.of(greenSource, myServerAgent.getOwnerCloudNetworkAgent()) :
 				singletonList(greenSource);
 
-		myAgent.send(prepareJobStartedMessage(jobId, jobToExecute.getStartTime(), receivers.toArray(new AID[0])));
+		myAgent.send(prepareJobStartedMessage(jobToExecute, receivers.toArray(new AID[0])));
 	}
 
 	private void substituteJobStatus() {

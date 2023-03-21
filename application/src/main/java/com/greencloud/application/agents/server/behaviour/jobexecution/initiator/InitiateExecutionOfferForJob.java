@@ -3,8 +3,6 @@ package com.greencloud.application.agents.server.behaviour.jobexecution.initiato
 import static com.greencloud.application.agents.server.behaviour.jobexecution.initiator.logs.JobHandlingInitiatorLog.SERVER_OFFER_ACCEPT_PROPOSAL_FAILURE_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.initiator.logs.JobHandlingInitiatorLog.SERVER_OFFER_ACCEPT_PROPOSAL_GS_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.initiator.logs.JobHandlingInitiatorLog.SERVER_OFFER_REJECT_LOG;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
@@ -12,8 +10,10 @@ import static com.greencloud.application.messages.factory.OfferMessageFactory.ma
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED_BY_SERVER;
@@ -81,7 +81,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 	protected void handleAcceptProposal(final ACLMessage accept) {
 		final JobWithProtocol jobWithProtocol = readMessageContent(accept, JobWithProtocol.class);
 		final JobInstanceIdentifier jobInstance = jobWithProtocol.getJobInstanceIdentifier();
-		final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
+		final ClientJob job = getJobByInstanceId(jobInstance.getJobInstanceId(), myServerAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			final int availableCapacity = myServerAgent.manage().getAvailableCapacity(job, null, null);
@@ -106,7 +106,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 	@Override
 	protected void handleRejectProposal(final ACLMessage reject) {
 		final JobInstanceIdentifier jobInstance = readMessageContent(reject, JobInstanceIdentifier.class);
-		final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
+		final ClientJob job = getJobByInstanceId(jobInstance.getJobInstanceId(), myServerAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());

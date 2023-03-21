@@ -63,7 +63,15 @@ public class ClientJobExecution {
 	 */
 	public ClientJobExecution(final String clientAID, final Instant start, final Instant end,
 			final Instant deadline, final int power, final String jobId) {
-		this(new ImmutableClientJob(jobId, start, end, deadline, power, clientAID), start, end, deadline, CREATED);
+		this(ImmutableClientJob.builder()
+						.jobId(jobId)
+						.startTime(start)
+						.endTime(end)
+						.deadline(deadline)
+						.power(power)
+						.clientIdentifier(clientAID)
+						.build(),
+				start, end, deadline, CREATED);
 	}
 
 	public ClientJob getJob() {

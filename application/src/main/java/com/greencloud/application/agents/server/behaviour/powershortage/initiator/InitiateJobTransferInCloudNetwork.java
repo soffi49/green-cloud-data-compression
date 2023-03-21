@@ -6,21 +6,21 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.i
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_PUT_ON_HOLD_SOURCE_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_REFUSE_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.initiator.logs.PowerShortageServerInitiatorLog.CNA_JOB_TRANSFER_SUCCESSFUL_LOG;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.messages.constants.MessageConversationConstants.BACK_UP_POWER_JOB_ID;
-import static com.greencloud.application.messages.constants.MessageConversationConstants.ON_HOLD_JOB_ID;
-import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.constants.MessageContentConstants.TRANSFER_SUCCESSFUL_MESSAGE;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.BACK_UP_POWER_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.ON_HOLD_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobFinishMessage;
 import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.prepareJobPowerShortageInformation;
 import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.JobUtils.isJobUnique;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_BACK_UP;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD;
@@ -57,12 +57,12 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private static final Logger logger = getLogger(InitiateJobTransferInCloudNetwork.class);
 
 	private final ServerAgent myServerAgent;
-	private final JobPowerShortageTransfer jobToTransfer;
+	private final JobInstanceIdentifier jobToTransfer;
 	private final ACLMessage greenSourceRequest;
 	private final boolean handleForGreenSource;
 
 	public InitiateJobTransferInCloudNetwork(final ServerAgent agent, final ACLMessage transferMessage,
-			final ACLMessage greenSourceRequest, final JobPowerShortageTransfer jobToTransfer) {
+			final ACLMessage greenSourceRequest, final JobInstanceIdentifier jobToTransfer) {
 		super(agent, transferMessage);
 
 		this.myServerAgent = agent;
@@ -75,16 +75,16 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	 * Method creates behaviour
 	 *
 	 * @param agent              agent executing the behaviour
-	 * @param originalJob        transfer data which includes original job (i.e. job instance before its division)
-	 * @param jobToTransfer      transfer data which includes job instance that is to be transferred
+	 * @param jobTransfer        transfer data which includes original job (i.e. job instance before its division)
+	 * @param jobToTransfer      job instance that is to be transferred
 	 * @param greenSourceRequest (optional) job transfer request received from Green Source
 	 * @return InitiateJobTransferInCloudNetwork
 	 */
 	public static InitiateJobTransferInCloudNetwork create(final ServerAgent agent,
-			final JobPowerShortageTransfer originalJob, final JobPowerShortageTransfer jobToTransfer,
+			final JobPowerShortageTransfer jobTransfer, final JobInstanceIdentifier jobToTransfer,
 			final ACLMessage greenSourceRequest) {
 		final AID cloudNetwork = agent.getOwnerCloudNetworkAgent();
-		final ACLMessage transferMessage = preparePowerShortageTransferRequest(originalJob, cloudNetwork);
+		final ACLMessage transferMessage = preparePowerShortageTransferRequest(jobTransfer, cloudNetwork);
 
 		return new InitiateJobTransferInCloudNetwork(agent, transferMessage, greenSourceRequest, jobToTransfer);
 	}
@@ -99,7 +99,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	 */
 	@Override
 	protected void handleInform(ACLMessage inform) {
-		final ClientJob job = getJobByIdAndStartDate(jobToTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
+		final ClientJob job = getJobByInstanceId(jobToTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
@@ -124,7 +124,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	@Override
 	protected void handleRefuse(final ACLMessage refuse) {
 		final String cause = refuse.getContent();
-		final ClientJob job = getJobByIdAndStartDate(jobToTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
+		final ClientJob job = getJobByInstanceId(jobToTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
@@ -148,7 +148,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	 */
 	@Override
 	protected void handleFailure(final ACLMessage failure) {
-		final ClientJob job = getJobByIdAndStartDate(jobToTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
+		final ClientJob job = getJobByInstanceId(jobToTransfer.getJobInstanceId(), myServerAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
@@ -162,7 +162,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private void informGreenSourceUponJobFinish(final ClientJob job, final String refuseCause) {
 		if (nonNull(refuseCause)) {
 			final AID receiver = myServerAgent.getGreenSourceForJobMap().get(job.getJobId());
-			myServerAgent.send(prepareJobFinishMessage(job.getJobId(), job.getStartTime(), receiver));
+			myServerAgent.send(prepareJobFinishMessage(job, receiver));
 
 			if (handleForGreenSource) {
 				myServerAgent.send(prepareStringReply(greenSourceRequest, refuseCause, REFUSE));
@@ -186,7 +186,7 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	private void informGreenSourceUponJobOnHold(final String jobId, final String failureCause) {
 		if (isNull(greenSourceRequest)) {
 			final AID receiver = myServerAgent.getGreenSourceForJobMap().get(jobId);
-			myServerAgent.send(prepareJobPowerShortageInformation(jobToTransfer.getJobInstanceId(),
+			myServerAgent.send(prepareJobPowerShortageInformation(jobToTransfer,
 					SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL, receiver));
 		} else {
 			myServerAgent.send(prepareStringReply(greenSourceRequest, failureCause, REFUSE));
@@ -199,9 +199,9 @@ public class InitiateJobTransferInCloudNetwork extends AchieveREInitiator {
 	}
 
 	private Triple<JobExecutionStateEnum, String, String> getFieldsForJobState(final ClientJob job) {
-		final JobInstanceIdentifier jobInstance = jobToTransfer.getJobInstanceId();
 		final Set<JobExecutionStatusEnum> backUpStatuses = EXECUTING_ON_BACK_UP.getStatuses();
-		final int availableBackUpPower = myServerAgent.manage().getAvailableCapacity(job, jobInstance, backUpStatuses);
+		final int availableBackUpPower = myServerAgent.manage().getAvailableCapacity(job, jobToTransfer,
+				backUpStatuses);
 
 		if (!handleForGreenSource) {
 			return new ImmutableTriple<>(EXECUTING_ON_HOLD, CNA_JOB_TRANSFER_PUT_ON_HOLD_LOG, ON_HOLD_JOB_ID);

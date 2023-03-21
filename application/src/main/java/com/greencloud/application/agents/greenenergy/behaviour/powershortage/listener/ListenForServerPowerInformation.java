@@ -8,19 +8,18 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.logs.PowerShortageSourceListenerLog.SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.templates.PowerShortageSourceMessageTemplates.SERVER_POWER_SHORTAGE_INFORMATION_TEMPLATE;
 import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.MAX_NUMBER_OF_SERVER_MESSAGES;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_FINISH_ALERT_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ALERT_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_POWER_SHORTAGE_ON_HOLD_PROTOCOL;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceIdAndServer;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.time.Instant;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -88,26 +87,26 @@ public class ListenForServerPowerInformation extends CyclicBehaviour {
 	}
 
 	private void handleServerPowerShortageStart(final ACLMessage inform) {
-		final JobPowerShortageTransfer powerShortageJob = readMessageContent(inform, JobPowerShortageTransfer.class);
-		final JobInstanceIdentifier jobInstance = powerShortageJob.getJobInstanceId();
+		final JobPowerShortageTransfer jobTransfer = readMessageContent(inform, JobPowerShortageTransfer.class);
+		final String jobInstanceId = jobTransfer.getOriginalJobInstanceId();
+		final String jobId = jobTransfer.getSecondJobInstanceId().getJobId();
 
-		final ServerJob affectedJob =
-				getJobByIdAndStartDateAndServer(jobInstance, inform.getSender(), myGreenEnergyAgent.getServerJobs());
-		final Instant shortageStartTime = powerShortageJob.getPowerShortageStart();
+		final ServerJob affectedJob = getJobByInstanceIdAndServer(jobInstanceId, inform.getSender(),
+				myGreenEnergyAgent.getServerJobs());
 
-		MDC.put(MDC_JOB_ID, jobInstance.getJobId());
+		MDC.put(MDC_JOB_ID, jobId);
 		if (nonNull(affectedJob)) {
-			logger.info(SERVER_POWER_SHORTAGE_START_LOG, jobInstance.getJobId());
-			myGreenEnergyAgent.manage().divideJobForPowerShortage(affectedJob, shortageStartTime);
+			logger.info(SERVER_POWER_SHORTAGE_START_LOG, affectedJob.getJobId());
+			myGreenEnergyAgent.manage().divideJobForPowerShortage(jobTransfer, affectedJob);
 		} else {
-			logger.info(SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG, jobInstance.getJobId());
+			logger.info(SERVER_POWER_SHORTAGE_START_NOT_FOUND_LOG, jobId);
 		}
 	}
 
 	private void handlePowerSupplyUpdate(final ACLMessage inform, final String notFoundLog, final String updateLog,
 			final JobExecutionStateEnum jobState) {
 		final JobInstanceIdentifier jobInstanceId = readMessageContent(inform, JobInstanceIdentifier.class);
-		final ServerJob job = getJobByIdAndStartDateAndServer(jobInstanceId, inform.getSender(),
+		final ServerJob job = getJobByInstanceIdAndServer(jobInstanceId.getJobInstanceId(), inform.getSender(),
 				myGreenEnergyAgent.getServerJobs());
 
 		MDC.put(MDC_JOB_ID, jobInstanceId.getJobId());

@@ -1,19 +1,20 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler;
 
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.handler.logs.PowerShortageCloudHandlerLog.SERVER_TRANSFER_EXECUTE_TRANSFER_LOG;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.TimeUtils.alignStartTimeToCurrentTime;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.time.Instant;
 import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
-import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
@@ -42,15 +43,15 @@ public class HandleJobTransferToServer extends WakerBehaviour {
 	 * Method creates the behaviour
 	 *
 	 * @param cloudNetworkAgent cloud network executing the behaviour
-	 * @param powerShortageJob  job to be transferred
+	 * @param jobToTransfer     job to be transferred
+	 * @param shortageTime      time when the power shortage starts
 	 * @param newServer         server which will take over the job execution
 	 * @return HandleJobTransferToServer
 	 */
 	public static HandleJobTransferToServer createFor(final CloudNetworkAgent cloudNetworkAgent,
-			final JobPowerShortageTransfer powerShortageJob, final AID newServer) {
-		final Date transferTime = Date.from(alignStartTimeToCurrentTime(powerShortageJob.getPowerShortageStart()));
-		return new HandleJobTransferToServer(cloudNetworkAgent, transferTime,
-				powerShortageJob.getJobInstanceId().getJobId(), newServer);
+			final JobInstanceIdentifier jobToTransfer, final Instant shortageTime, final AID newServer) {
+		final Date transferTime = Date.from(alignStartTimeToCurrentTime(shortageTime));
+		return new HandleJobTransferToServer(cloudNetworkAgent, transferTime, jobToTransfer.getJobId(), newServer);
 	}
 
 	/**

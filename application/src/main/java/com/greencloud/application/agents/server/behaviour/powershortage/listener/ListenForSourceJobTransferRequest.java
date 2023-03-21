@@ -4,22 +4,18 @@ import static com.greencloud.application.agents.server.behaviour.powershortage.l
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.logs.PowerShortageServerListenerLog.GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG;
 import static com.greencloud.application.agents.server.behaviour.powershortage.listener.templates.PowerShortageServerMessageTemplates.SOURCE_JOB_TRANSFER_REQUEST_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.mapper.JobMapper.mapToPowerJob;
-import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageContentConstants.DELAYED_JOB_ALREADY_FINISHED_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
-import static com.greencloud.application.utils.TimeUtils.alignStartTimeToGivenTime;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.time.Instant;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -29,9 +25,10 @@ import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.powershortage.handler.HandleServerPowerShortage;
 import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInCloudNetwork;
 import com.greencloud.application.agents.server.behaviour.powershortage.initiator.InitiateJobTransferInGreenSources;
+import com.greencloud.application.domain.job.JobDivided;
+import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.commons.domain.job.ClientJob;
-import com.greencloud.commons.domain.job.PowerJob;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -73,7 +70,7 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 
 	private void processTransferMessage(final ACLMessage message) {
 		final JobPowerShortageTransfer transfer = readMessageContent(message, JobPowerShortageTransfer.class);
-		final ClientJob job = getJobByIdAndStartDate(transfer.getJobInstanceId(), myServerAgent.getServerJobs());
+		final ClientJob job = getJobByInstanceId(transfer.getOriginalJobInstanceId(), myServerAgent.getServerJobs());
 
 		if (nonNull(job)) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
@@ -81,18 +78,17 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 			if (!job.getEndTime().isAfter(getCurrentTime())) {
 				myAgent.send(prepareStringReply(message, DELAYED_JOB_ALREADY_FINISHED_CAUSE_MESSAGE, REFUSE));
 			} else {
-				schedulePowerShortageHandling(transfer, job);
-				final PowerJob powerJob = createJobTransferInstance(transfer, job);
+				final JobDivided<ClientJob> newJobInstances = schedulePowerShortageHandling(transfer, job);
 				final List<AID> greenSources = myServerAgent.manage().getRemainingAgents(message.getSender(),
 						myServerAgent.manage().getOwnedActiveGreenSources());
 
 				if (!greenSources.isEmpty()) {
-					logger.info(GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG, powerJob.getJobId());
-					myAgent.addBehaviour(InitiateJobTransferInGreenSources.create(myServerAgent, powerJob,
+					logger.info(GS_TRANSFER_REQUEST_ASK_OTHER_GS_LOG, job.getJobId());
+					myAgent.addBehaviour(InitiateJobTransferInGreenSources.create(myServerAgent, newJobInstances,
 							greenSources, message, transfer.getPowerShortageStart()));
 				} else {
 					logger.info(GS_TRANSFER_REQUEST_NO_GS_AVAILABLE_LOG);
-					passTransferRequestToCNA(transfer, powerJob, message);
+					passTransferRequestToCNA(transfer, transfer.getSecondJobInstanceId(), message);
 				}
 			}
 		} else {
@@ -100,21 +96,16 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 		}
 	}
 
-	private PowerJob createJobTransferInstance(final JobPowerShortageTransfer transfer, final ClientJob originalJob) {
-		final Instant start = alignStartTimeToGivenTime(transfer.getPowerShortageStart(), originalJob.getStartTime());
-		return mapToPowerJob(originalJob, start);
-	}
-
-	private void passTransferRequestToCNA(final JobPowerShortageTransfer affectedJob, final PowerJob job,
-			final ACLMessage transferRequest) {
-		final JobPowerShortageTransfer jobToTransfer = mapToPowerShortageJob(job, affectedJob.getPowerShortageStart());
-		myServerAgent.addBehaviour(InitiateJobTransferInCloudNetwork.create(myServerAgent, affectedJob, jobToTransfer,
+	private void passTransferRequestToCNA(final JobPowerShortageTransfer affectedJob,
+			final JobInstanceIdentifier jobInstance, final ACLMessage transferRequest) {
+		myServerAgent.addBehaviour(InitiateJobTransferInCloudNetwork.create(myServerAgent, affectedJob, jobInstance,
 				transferRequest));
 	}
 
-	private void schedulePowerShortageHandling(final JobPowerShortageTransfer jobTransfer, final ClientJob job) {
-		myServerAgent.manage().divideJobForPowerShortage(job, jobTransfer.getPowerShortageStart());
+	private JobDivided<ClientJob> schedulePowerShortageHandling(final JobPowerShortageTransfer jobTransfer,
+			final ClientJob job) {
 		myServerAgent.addBehaviour(HandleServerPowerShortage.createFor(singletonList(job),
 				jobTransfer.getPowerShortageStart(), myServerAgent, null));
+		return myServerAgent.manage().divideJobForPowerShortage(jobTransfer, job);
 	}
 }

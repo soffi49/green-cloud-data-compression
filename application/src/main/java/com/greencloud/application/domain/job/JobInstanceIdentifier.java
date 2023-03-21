@@ -23,6 +23,11 @@ public interface JobInstanceIdentifier {
 	String getJobId();
 
 	/**
+	 * @return unique identifier of job instance
+	 */
+	String getJobInstanceId();
+
+	/**
 	 * @return job start time
 	 */
 	Instant getStartTime();

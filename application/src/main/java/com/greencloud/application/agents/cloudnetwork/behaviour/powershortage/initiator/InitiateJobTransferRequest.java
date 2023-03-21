@@ -3,7 +3,7 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.i
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_CHOSEN_SERVER_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_RESPONSE_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.initiator.logs.PowerShortageCloudInitiatorLog.SERVER_TRANSFER_NO_SERVERS_AVAILABLE_LOG;
-import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
+import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
@@ -22,7 +22,7 @@ import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.cloudnetwork.behaviour.powershortage.listener.ListenForServerTransferConfirmation;
 import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
 import com.greencloud.application.domain.agent.ServerData;
-import com.greencloud.application.domain.job.JobPowerShortageTransfer;
+import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.core.AID;
@@ -36,15 +36,15 @@ public class InitiateJobTransferRequest extends AbstractCFPInitiator<ServerData>
 
 	private static final Logger logger = getLogger(InitiateJobTransferRequest.class);
 
-	private final JobPowerShortageTransfer jobTransfer;
+	private final Instant powerShortageStart;
 	private final CloudNetworkAgent myCloudNetworkAgent;
 
 	private InitiateJobTransferRequest(final CloudNetworkAgent agent, final ACLMessage cfp,
-			final ACLMessage serverRequest, final JobPowerShortageTransfer jobTransfer) {
-		super(agent, cfp, serverRequest, jobTransfer.getJobInstanceId(), agent.manage().offerComparator(),
-				ServerData.class);
+			final ACLMessage serverRequest, final JobInstanceIdentifier jobToTransfer,
+			final Instant powerShortageStart) {
+		super(agent, cfp, serverRequest, jobToTransfer, agent.manage().offerComparator(), ServerData.class);
 
-		this.jobTransfer = jobTransfer;
+		this.powerShortageStart = powerShortageStart;
 		this.myCloudNetworkAgent = agent;
 	}
 
@@ -60,9 +60,9 @@ public class InitiateJobTransferRequest extends AbstractCFPInitiator<ServerData>
 	 */
 	public static InitiateJobTransferRequest create(final CloudNetworkAgent agent, final ACLMessage serverRequest,
 			final ClientJob jobToTransfer, final Instant shortageStartTime, final List<AID> servers) {
-		final JobPowerShortageTransfer jobTransfer = mapToPowerShortageJob(jobToTransfer, shortageStartTime);
 		final ACLMessage cfp = createCallForProposal(jobToTransfer, servers, CNA_JOB_CFP_PROTOCOL);
-		return new InitiateJobTransferRequest(agent, cfp, serverRequest, jobTransfer);
+		return new InitiateJobTransferRequest(agent, cfp, serverRequest, mapToJobInstanceId(jobToTransfer),
+				shortageStartTime);
 	}
 
 	/**
@@ -94,10 +94,10 @@ public class InitiateJobTransferRequest extends AbstractCFPInitiator<ServerData>
 		final AID chosenServer = bestProposal.getSender();
 		logger.info(SERVER_TRANSFER_CHOSEN_SERVER_LOG, serverData.getJobId(), chosenServer.getName());
 
-		final ACLMessage replyToChosenOffer = prepareAcceptJobOfferReply(bestProposal, jobTransfer.getJobInstanceId(),
+		final ACLMessage replyToChosenOffer = prepareAcceptJobOfferReply(bestProposal, jobInstance,
 				POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL);
 		myAgent.addBehaviour(ListenForServerTransferConfirmation.create(myCloudNetworkAgent, originalMessage,
-				jobTransfer, chosenServer));
+				jobInstance, powerShortageStart, chosenServer));
 		myAgent.send(replyToChosenOffer);
 	}
 

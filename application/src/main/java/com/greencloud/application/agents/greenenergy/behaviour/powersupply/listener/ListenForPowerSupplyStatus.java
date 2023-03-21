@@ -4,12 +4,12 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powersuppl
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.logs.PowerSupplyListenerLog.START_POWER_SUPPLY_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.template.PowerSupplyMessageTemplates.POWER_SUPPLY_STATUS_TEMPLATE;
 import static com.greencloud.application.agents.greenenergy.constants.GreenEnergyAgentConstants.MAX_NUMBER_OF_SERVER_MESSAGES;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceIdAndServer;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.replaceStatusToActive;
@@ -60,8 +60,8 @@ public class ListenForPowerSupplyStatus extends CyclicBehaviour {
 			messages.forEach(message -> {
 				final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
 				final JobInstanceIdentifier jobInstanceId = jobStatusUpdate.getJobInstance();
-				final ServerJob serverJob = getJobByIdAndStartDateAndServer(jobInstanceId, message.getSender(),
-						myGreenEnergyAgent.getServerJobs());
+				final ServerJob serverJob = getJobByInstanceIdAndServer(jobInstanceId.getJobInstanceId(),
+						message.getSender(), myGreenEnergyAgent.getServerJobs());
 
 				if (nonNull(serverJob)) {
 					MDC.put(MDC_JOB_ID, serverJob.getJobId());

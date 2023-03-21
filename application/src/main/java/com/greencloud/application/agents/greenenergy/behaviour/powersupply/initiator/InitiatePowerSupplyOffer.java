@@ -3,8 +3,6 @@ package com.greencloud.application.agents.greenenergy.behaviour.powersupply.init
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.initiator.logs.PowerSupplyInitiatorLog.POWER_SUPPLY_PROPOSAL_REJECTED_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.initiator.logs.PowerSupplyInitiatorLog.SEND_POWER_SUPPLY_FAILURE_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powersupply.initiator.logs.PowerSupplyInitiatorLog.SEND_POWER_SUPPLY_RESPONSE_LOG;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_SOURCE_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
@@ -13,7 +11,9 @@ import static com.greencloud.application.messages.constants.MessageProtocolConst
 import static com.greencloud.application.messages.factory.OfferMessageFactory.makeGreenEnergyPowerSupplyOffer;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceIdAndServer;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -81,7 +81,7 @@ public class InitiatePowerSupplyOffer extends ProposeInitiator {
 	protected void handleAcceptProposal(final ACLMessage acceptProposal) {
 		final JobWithProtocol jobWithProtocol = readMessageContent(acceptProposal, JobWithProtocol.class);
 		final JobInstanceIdentifier jobInstance = jobWithProtocol.getJobInstanceIdentifier();
-		final ServerJob job = getJobByIdAndStartDateAndServer(jobInstance, acceptProposal.getSender(),
+		final ServerJob job = getJobByInstanceIdAndServer(jobInstance.getJobInstanceId(), acceptProposal.getSender(),
 				myGreenEnergyAgent.getServerJobs());
 
 		if (nonNull(job)) {
@@ -106,8 +106,8 @@ public class InitiatePowerSupplyOffer extends ProposeInitiator {
 	@Override
 	protected void handleRejectProposal(final ACLMessage rejectProposal) {
 		final JobInstanceIdentifier jobInstanceId = readMessageContent(rejectProposal, JobInstanceIdentifier.class);
-		final ServerJob serverJob = getJobByIdAndStartDateAndServer(jobInstanceId, rejectProposal.getSender(),
-				myGreenEnergyAgent.getServerJobs());
+		final ServerJob serverJob = getJobByInstanceIdAndServer(jobInstanceId.getJobInstanceId(),
+				rejectProposal.getSender(), myGreenEnergyAgent.getServerJobs());
 
 		if (nonNull(serverJob)) {
 			myGreenEnergyAgent.manage().removeJob(serverJob);

@@ -8,12 +8,9 @@ import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobPowerShortageTransfer;
-import com.greencloud.application.mapper.JobMapper;
-import com.greencloud.application.mapper.JsonMapper;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.message.MessageBuilder;
 

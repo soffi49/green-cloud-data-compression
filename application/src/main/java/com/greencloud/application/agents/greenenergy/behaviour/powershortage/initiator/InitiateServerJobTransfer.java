@@ -6,12 +6,12 @@ import static com.greencloud.application.agents.greenenergy.behaviour.powershort
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_REFUSE_NOT_FOUND_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_LOG;
 import static com.greencloud.application.agents.greenenergy.behaviour.powershortage.initiator.logs.PowerShortageSourceInitiatorLog.SOURCE_JOB_TRANSFER_SUCCESSFUL_NOT_FOUND_LOG;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
 import static com.greencloud.application.messages.constants.MessageContentConstants.JOB_NOT_FOUND_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.preparePowerShortageTransferRequest;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_HOLD;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
+import com.greencloud.application.domain.job.JobDivided;
 import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.commons.domain.job.ServerJob;
 
@@ -56,11 +57,13 @@ public class InitiateServerJobTransfer extends AchieveREInitiator {
 	 */
 	public static InitiateServerJobTransfer create(final GreenEnergyAgent agent, final ServerJob originalJob,
 			final Instant shortageStartTime) {
-		final ServerJob jobToTransfer = agent.manage().divideJobForPowerShortage(originalJob, shortageStartTime);
-		final JobPowerShortageTransfer transfer = mapToPowerShortageJob(originalJob, shortageStartTime);
+		final JobDivided<ServerJob> newJobInstances = agent.manage()
+				.divideJobForPowerShortage(originalJob, shortageStartTime);
+		final JobPowerShortageTransfer transfer = mapToPowerShortageJob(originalJob.getJobInstanceId(), newJobInstances,
+				shortageStartTime);
 		final ACLMessage transferMessage = preparePowerShortageTransferRequest(transfer, originalJob.getServer());
 
-		return new InitiateServerJobTransfer(agent, transferMessage, jobToTransfer);
+		return new InitiateServerJobTransfer(agent, transferMessage, newJobInstances.getSecondInstance());
 	}
 
 	/**

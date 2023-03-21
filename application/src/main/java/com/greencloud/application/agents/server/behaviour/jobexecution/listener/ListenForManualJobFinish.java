@@ -3,9 +3,9 @@ package com.greencloud.application.agents.server.behaviour.jobexecution.listener
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_FINISHED_MANUALLY_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.MANUAL_FINISH_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
 import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -52,7 +52,7 @@ public class ListenForManualJobFinish extends CyclicBehaviour {
 		if (nonNull(messages)) {
 			messages.forEach(message -> {
 				final JobInstanceIdentifier identifier = readMessageContent(message, JobInstanceIdentifier.class);
-				final ClientJob job = getJobByIdAndStartDate(identifier, myServerAgent.getServerJobs());
+				final ClientJob job = getJobByInstanceId(identifier.getJobInstanceId(), myServerAgent.getServerJobs());
 
 				if (nonNull(job) && myServerAgent.getServerJobs().containsKey(job)) {
 					final JobExecutionStatusEnum statusEnum = myServerAgent.getServerJobs().get(job);

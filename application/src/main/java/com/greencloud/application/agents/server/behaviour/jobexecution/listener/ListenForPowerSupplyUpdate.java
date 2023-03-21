@@ -8,8 +8,6 @@ import static com.greencloud.application.agents.server.behaviour.jobexecution.li
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.logs.JobHandlingListenerLog.SUPPLY_UPDATE_JOB_FINISHED_LOG;
 import static com.greencloud.application.agents.server.behaviour.jobexecution.listener.templates.JobHandlingMessageTemplates.POWER_SUPPLY_UPDATE_TEMPLATE;
 import static com.greencloud.application.agents.server.constants.ServerAgentConstants.MAX_MESSAGE_NUMBER;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.CONFIRMED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CONFIRMED_TRANSFER_PROTOCOL;
@@ -19,8 +17,10 @@ import static com.greencloud.application.messages.constants.MessageProtocolConst
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.prepareJobTransferUpdateMessageForCNA;
 import static com.greencloud.application.utils.GUIUtils.announceBookedJob;
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDate;
+import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
 import static com.greencloud.application.utils.JobUtils.isJobUnique;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PLANNED_JOB_STATUSES;
@@ -71,7 +71,7 @@ public class ListenForPowerSupplyUpdate extends CyclicBehaviour {
 		if (nonNull(messages)) {
 			messages.forEach(message -> {
 				final JobInstanceIdentifier jobInstance = readMessageContent(message, JobInstanceIdentifier.class);
-				final ClientJob job = getJobByIdAndStartDate(jobInstance, myServerAgent.getServerJobs());
+				final ClientJob job = getJobByInstanceId(jobInstance.getJobInstanceId(), myServerAgent.getServerJobs());
 
 				if (nonNull(job)) {
 					MDC.put(MDC_JOB_ID, job.getJobId());

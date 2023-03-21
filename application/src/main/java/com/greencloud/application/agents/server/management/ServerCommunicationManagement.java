@@ -34,7 +34,7 @@ public class ServerCommunicationManagement extends AbstractAgentManagement {
 	public void passTransferRequestToCloudNetwork(final JobInstanceIdentifier jobInstanceId,
 			final Instant powerShortageStart, final ACLMessage request) {
 		final JobPowerShortageTransfer job = mapToPowerShortageJob(jobInstanceId, powerShortageStart);
-		serverAgent.addBehaviour(InitiateJobTransferInCloudNetwork.create(serverAgent, job, job, request));
+		serverAgent.addBehaviour(InitiateJobTransferInCloudNetwork.create(serverAgent, job, jobInstanceId, request));
 	}
 
 	/**

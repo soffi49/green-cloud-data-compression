@@ -10,10 +10,8 @@ import static jade.lang.acl.ACLMessage.CANCEL;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 
-import java.time.Instant;
 import java.util.Objects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
@@ -22,7 +20,6 @@ import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobParts;
 import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.application.domain.job.JobTimeFrames;
-import com.greencloud.application.mapper.JsonMapper;
 import com.greencloud.application.messages.constants.MessageConversationConstants;
 import com.greencloud.application.messages.constants.MessageProtocolConstants;
 import com.greencloud.commons.domain.job.ClientJob;
@@ -172,14 +169,12 @@ public class JobStatusMessageFactory {
 	 * Method prepares the information message about the job execution finish which is to be sent
 	 * to the list of receivers
 	 *
-	 * @param jobId        unique identifier of the kob of interest
-	 * @param jobStartTime time when the job execution started
-	 * @param receivers    list of AID addresses of the message receivers
+	 * @param job       job of interest
+	 * @param receivers list of AID addresses of the message receivers
 	 * @return INFORM ACLMessage
 	 */
-	public static ACLMessage prepareJobFinishMessage(final String jobId, final Instant jobStartTime,
-			final AID... receivers) {
-		final JobInstanceIdentifier jobInstanceId = mapToJobInstanceId(jobId, jobStartTime);
+	public static ACLMessage prepareJobFinishMessage(final ClientJob job, final AID... receivers) {
+		final JobInstanceIdentifier jobInstanceId = mapToJobInstanceId(job);
 		return prepareJobStatusMessage(new ImmutableJobStatusUpdate(jobInstanceId, getCurrentTime()), FINISH_JOB_ID,
 				receivers);
 	}
@@ -187,14 +182,12 @@ public class JobStatusMessageFactory {
 	/**
 	 * Method prepares the information message stating that the job execution has started
 	 *
-	 * @param jobId        unique identifier of the kob of interest
-	 * @param jobStartTime time when the job execution started
-	 * @param receivers    list of AID addresses of the message receivers
+	 * @param job       job of interest
+	 * @param receivers list of AID addresses of the message receivers
 	 * @return INFORM ACLMessage
 	 */
-	public static ACLMessage prepareJobStartedMessage(final String jobId, final Instant jobStartTime,
-			final AID... receivers) {
-		final JobInstanceIdentifier jobInstanceId = mapToJobInstanceId(jobId, jobStartTime);
+	public static ACLMessage prepareJobStartedMessage(final ClientJob job, final AID... receivers) {
+		final JobInstanceIdentifier jobInstanceId = mapToJobInstanceId(job);
 		return prepareJobStatusMessage(new ImmutableJobStatusUpdate(jobInstanceId, getCurrentTime()), STARTED_JOB_ID,
 				receivers);
 	}
