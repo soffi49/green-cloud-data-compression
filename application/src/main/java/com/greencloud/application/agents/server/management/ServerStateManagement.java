@@ -312,7 +312,7 @@ public class ServerStateManagement extends AbstractStateManagement {
 		incrementJobCounter(mapToJobInstanceId(affectedJob), ACCEPTED);
 		serverAgent.addBehaviour(HandleJobStart.createFor(serverAgent, (ClientJob) affectedJob, false, true));
 		serverAgent.addBehaviour(HandleJobFinish.createFor(serverAgent, (ClientJob) nonAffectedJob, false));
-		if (getCurrentTime().isBefore(nonAffectedJob.getStartTime())) {
+		if (!isJobStarted((ClientJob) nonAffectedJob, serverAgent.getServerJobs())) {
 			serverAgent.addBehaviour(
 					HandleJobStart.createFor(serverAgent, (ClientJob) nonAffectedJob, true, false));
 		}
