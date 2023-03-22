@@ -84,10 +84,10 @@ public class HandleJobStart extends WakerBehaviour {
 		MDC.put(MDC_JOB_ID, jobId);
 
 		if (!myServerAgent.getServerJobs().containsKey(jobToExecute)) {
-			logger.info(JOB_START_NO_PRESENT_LOG, jobId);
+			logger.info(JOB_START_NO_PRESENT_LOG, mapToJobInstanceId(jobToExecute));
 			return;
 		} else if (!myServerAgent.getGreenSourceForJobMap().containsKey(jobId)) {
-			logger.info(JOB_START_NO_GREEN_SOURCE_LOG, jobId);
+			logger.info(JOB_START_NO_GREEN_SOURCE_LOG, mapToJobInstanceId(jobToExecute));
 			return;
 		}
 

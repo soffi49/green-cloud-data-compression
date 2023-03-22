@@ -52,7 +52,7 @@ public class ListenForNewJob extends CyclicBehaviour {
 		final List<ACLMessage> messages = myAgent.receive(NEW_JOB_CFP_TEMPLATE, MAX_MESSAGE_NUMBER);
 
 		if (Objects.nonNull(messages)) {
-			messages.stream().parallel().forEach(message -> {
+			messages.forEach(message -> {
 				final ClientJob job = readMessageContent(message, ClientJob.class);
 				MDC.put(MDC_JOB_ID, job.getJobId());
 

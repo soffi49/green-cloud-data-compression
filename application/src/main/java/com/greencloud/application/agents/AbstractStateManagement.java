@@ -137,10 +137,14 @@ public abstract class AbstractStateManagement extends AbstractAgentManagement {
 		final JobInstanceIdentifier newJobInstanceId = jobTransfer.getSecondJobInstanceId();
 		final JobInstanceIdentifier previousInstanceId = jobTransfer.getFirstJobInstanceId();
 
+		logger.info("Dividing jobs for original job: {}", originalJob);
+
 		if (isNull(previousInstanceId)) {
 			final T newJobInstance = mapToJobStartTimeAndInstanceId(originalJob, newJobInstanceId);
 			final boolean hasStarted = isJobStarted(originalJob, jobMap);
 			final JobExecutionStatusEnum newStatus = EXECUTING_TRANSFER.getStatus(hasStarted);
+
+			logger.info("Current status: {}", newStatus);
 
 			jobMap.remove(originalJob);
 			jobMap.put(newJobInstance, newStatus);
@@ -169,7 +173,8 @@ public abstract class AbstractStateManagement extends AbstractAgentManagement {
 			final T prevJobInstance, final ConcurrentMap<T, JobExecutionStatusEnum> jobMap) {
 		final JobExecutionStatusEnum currentJobStatus = jobMap.get(job);
 
-		logger.info("Job before shortage: {} Job after shortage {}", nextJobInstance, prevJobInstance);
+		logger.info("Current status: {}", currentJobStatus);
+		logger.info("Job before shortage: {} Job after shortage {}", prevJobInstance, nextJobInstance);
 
 		jobMap.remove(job);
 		jobMap.put(nextJobInstance, ON_HOLD_TRANSFER_PLANNED);

@@ -6,7 +6,6 @@ import static com.greencloud.application.agents.cloudnetwork.management.logs.Clo
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_FINISH_LOG;
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_PROCESS_LOG;
 import static com.greencloud.application.agents.cloudnetwork.management.logs.CloudNetworkManagementLog.COUNT_JOB_START_LOG;
-import static com.greencloud.application.utils.GUIUtils.announceFinishedJob;
 import static com.greencloud.application.utils.JobUtils.getJobSuccessRatio;
 import static com.greencloud.application.utils.PowerUtils.getCurrentPowerInUse;
 import static com.greencloud.application.utils.PowerUtils.getPowerPercent;
@@ -103,11 +102,9 @@ public class CloudNetworkStateManagement extends AbstractStateManagement {
 							jobCounters.get(ACCEPTED).getCount());
 					cloudNetworkAgent.getGuiController().updateActiveJobsCountByValue(1);
 				}),
-				FINISH, new JobCounter(jobId -> {
-					logger.info(COUNT_JOB_FINISH_LOG, jobId, jobCounters.get(FINISH).getCount(),
-							jobCounters.get(STARTED).getCount());
-					announceFinishedJob(cloudNetworkAgent);
-				})
+				FINISH,
+				new JobCounter(jobId -> logger.info(COUNT_JOB_FINISH_LOG, jobId, jobCounters.get(FINISH).getCount(),
+						jobCounters.get(STARTED).getCount()))
 		));
 	}
 

@@ -7,5 +7,5 @@ public class PowerSupplyHandlerLog {
 
 	// HANDLING MANUAL JOB FINISH LOG MESSAGES
 	public static final String MANUAL_POWER_SUPPLY_FINISH_LOG =
-			"The power delivery should be finished! Finishing power delivery by hand.";
+			"The power delivery of {} should be finished! Finishing power delivery by hand.";
 }

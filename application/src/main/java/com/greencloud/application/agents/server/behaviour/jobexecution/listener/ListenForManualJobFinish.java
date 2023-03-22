@@ -24,7 +24,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Behaviour listens for power message informing that the power supply was finished manually
+ * Behaviour listens for power message informing that the power supply has finished manually
  */
 public class ListenForManualJobFinish extends CyclicBehaviour {
 

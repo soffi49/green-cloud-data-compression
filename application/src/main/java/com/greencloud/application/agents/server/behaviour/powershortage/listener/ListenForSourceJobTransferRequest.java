@@ -62,7 +62,7 @@ public class ListenForSourceJobTransferRequest extends CyclicBehaviour {
 		final List<ACLMessage> messages = myAgent.receive(SOURCE_JOB_TRANSFER_REQUEST_TEMPLATE, MAX_MESSAGE_NUMBER);
 
 		if (nonNull(messages)) {
-			messages.stream().parallel().forEach(this::processTransferMessage);
+			messages.forEach(this::processTransferMessage);
 		} else {
 			block();
 		}

@@ -52,7 +52,7 @@ public class ListenForSourcePowerShortageFinish extends CyclicBehaviour {
 		final List<ACLMessage> messages = myAgent.receive(SOURCE_POWER_SHORTAGE_FINISH_TEMPLATE, MAX_MESSAGE_NUMBER);
 
 		if (nonNull(messages)) {
-			messages.stream().parallel().forEach(message -> {
+			messages.forEach(message -> {
 				final JobInstanceIdentifier jobInstance = readMessageContent(message, JobInstanceIdentifier.class);
 				final ClientJob job = getJobByInstanceId(jobInstance.getJobInstanceId(), myServerAgent.getServerJobs());
 

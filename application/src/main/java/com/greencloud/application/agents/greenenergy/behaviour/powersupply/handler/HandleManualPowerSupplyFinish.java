@@ -73,7 +73,7 @@ public class HandleManualPowerSupplyFinish extends WakerBehaviour {
 
 		if (isJobPresent && ACCEPTED_JOB_STATUSES.contains(myGreenEnergyAgent.getServerJobs().get(job))) {
 			MDC.put(MDC_JOB_ID, job.getJobId());
-			logger.error(MANUAL_POWER_SUPPLY_FINISH_LOG);
+			logger.error(MANUAL_POWER_SUPPLY_FINISH_LOG, mapToJobInstanceId(job));
 
 			if (isJobStarted(job, myGreenEnergyAgent.getServerJobs())) {
 				myGreenEnergyAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FINISH);
