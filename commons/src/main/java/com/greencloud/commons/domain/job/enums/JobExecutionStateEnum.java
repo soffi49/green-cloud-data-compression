@@ -53,7 +53,7 @@ public enum JobExecutionStateEnum {
 	public static <T extends PowerJob> void replaceStatusToActive(
 			final ConcurrentMap<T, JobExecutionStatusEnum> jobsMap, final T job) {
 		final JobExecutionStateEnum currentState = findStateByPlannedStatus(jobsMap.get(job));
-		jobsMap.replace(job, currentState.activeStatus);
+		jobsMap.replace(job, nonNull(currentState) ? currentState.activeStatus : jobsMap.get(job));
 	}
 
 	/**
@@ -105,7 +105,7 @@ public enum JobExecutionStateEnum {
 		return stream(JobExecutionStateEnum.values())
 				.filter(state -> state.plannedStatus.equals(status))
 				.findFirst()
-				.orElseThrow();
+				.orElse(null);
 	}
 
 	private static JobExecutionStateEnum findStateByAnyStatus(final JobExecutionStatusEnum status) {

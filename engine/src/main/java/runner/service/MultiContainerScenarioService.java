@@ -1,6 +1,5 @@
 package runner.service;
 
-import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static runner.service.domain.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
 import static runner.service.domain.ScenarioConstants.CLIENT_NUMBER;
 
@@ -68,7 +67,7 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 	public void run() {
 		File scenarioFile = readFile(scenarioStructureFileName);
 		scenario = parseScenarioStructure(scenarioFile);
-		setSystemStartTime(timescaleDatabase.readSystemStartTime());
+		updateSystemStartTime();
 
 		if (mainHost) {
 			runCommonAgentContainers(scenario);

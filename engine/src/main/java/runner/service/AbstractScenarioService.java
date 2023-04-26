@@ -1,5 +1,6 @@
 package runner.service;
 
+import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.commons.args.agent.client.ClientTimeType.REAL_TIME;
 import static jade.core.Runtime.instance;
 import static java.lang.String.format;
@@ -20,6 +21,7 @@ import static runner.service.domain.ScenarioConstants.START_TIME_MIN;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -251,6 +253,12 @@ public abstract class AbstractScenarioService {
 			}
 			throw new JadeContainerException("Failed to create CloudNetwork container", e);
 		}
+	}
+
+	protected void updateSystemStartTime() {
+		final Instant systemStart = timescaleDatabase.readSystemStartTime();
+		setSystemStartTime(systemStart);
+		guiController.reportSystemStartTime(systemStart);
 	}
 
 	private void runJadeGui() throws StaleProxyException {

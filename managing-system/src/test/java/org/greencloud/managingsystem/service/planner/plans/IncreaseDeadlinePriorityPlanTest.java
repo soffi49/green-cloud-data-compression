@@ -8,7 +8,6 @@ import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONIT
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;

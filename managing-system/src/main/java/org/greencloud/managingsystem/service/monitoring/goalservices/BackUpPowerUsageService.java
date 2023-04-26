@@ -1,9 +1,9 @@
 package org.greencloud.managingsystem.service.monitoring.goalservices;
 
 import static com.database.knowledge.domain.goal.GoalEnum.MINIMIZE_USED_BACKUP_POWER;
+import static com.greencloud.commons.constants.CommonConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
-import static org.greencloud.managingsystem.domain.ManagingSystemConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_AGGREGATED_PERIOD;
 import static org.greencloud.managingsystem.service.monitoring.logs.ManagingAgentMonitoringLog.BACKUP_POWER_LOG;
 import static org.greencloud.managingsystem.service.monitoring.logs.ManagingAgentMonitoringLog.READ_BACKUP_POWER_QUALITY_LOG;
@@ -36,7 +36,7 @@ public class BackUpPowerUsageService extends AbstractGoalService {
 		double aggregatedBackupPowerQuality = computeCurrentGoalQuality(MONITOR_SYSTEM_DATA_AGGREGATED_PERIOD);
 
 		if (currentBackupPowerQuality == DATA_NOT_AVAILABLE_INDICATOR
-			|| aggregatedBackupPowerQuality == DATA_NOT_AVAILABLE_INDICATOR) {
+				|| aggregatedBackupPowerQuality == DATA_NOT_AVAILABLE_INDICATOR) {
 			logger.info(READ_BACKUP_POWER_QUALITY_NO_DATA_YET_LOG);
 			return true;
 		}

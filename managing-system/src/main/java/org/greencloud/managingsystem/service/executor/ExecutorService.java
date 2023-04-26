@@ -2,11 +2,7 @@ package org.greencloud.managingsystem.service.executor;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.application.yellowpages.YellowPagesService.search;
-import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
-import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.ANNOUNCE_NETWORK_CHANGE_PROTOCOL;
 import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_PROTOCOL;
-import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Optional.empty;
 import static org.greencloud.managingsystem.agent.behaviour.executor.VerifyAdaptationActionResult.createForSystemAction;
@@ -14,7 +10,6 @@ import static org.greencloud.managingsystem.service.executor.logs.ManagingAgentE
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.agent.ManagingAgent;
@@ -34,7 +29,6 @@ import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.message.MessageBuilder;
 import com.gui.agents.ManagingAgentNode;
 
-import jade.core.AID;
 import jade.core.Location;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.AgentController;
@@ -101,7 +95,6 @@ public class ExecutorService extends AbstractManagingService {
 
 		agentRunner.runAgents(createdAgents);
 		managingAgent.move().moveContainers(location, createdAgents);
-		announceNetworkChange();
 		((ManagingAgentNode) managingAgent.getAgentNode()).logNewAdaptation(actionToBeExecuted.getAction(),
 				getCurrentTime(), empty());
 		managingAgent.addBehaviour(createForSystemAction(managingAgent,
@@ -115,17 +108,6 @@ public class ExecutorService extends AbstractManagingService {
 		return args.stream()
 				.map(agentRunner::runAgentController)
 				.toList();
-	}
-
-	private void announceNetworkChange() {
-		final Set<AID> cloudNetworkAgents = search(managingAgent, CNA_SERVICE_TYPE);
-		final ACLMessage announcementMessage = MessageBuilder.builder()
-				.withPerformative(INFORM)
-				.withMessageProtocol(ANNOUNCE_NETWORK_CHANGE_PROTOCOL)
-				.withStringContent(ANNOUNCE_NETWORK_CHANGE_PROTOCOL)
-				.withReceivers(cloudNetworkAgents)
-				.build();
-		managingAgent.send(announcementMessage);
 	}
 
 }

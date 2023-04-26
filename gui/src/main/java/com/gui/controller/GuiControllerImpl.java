@@ -1,11 +1,15 @@
 package com.gui.controller;
 
+import static com.greencloud.commons.time.TimeConstants.SECONDS_PER_HOUR;
+
 import java.net.URI;
+import java.time.Instant;
 import java.util.Objects;
 
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableRemoveAgentMessage;
+import com.gui.message.ImmutableReportSystemStartTimeMessage;
 import com.gui.message.ImmutableUpdateSingleValueMessage;
 import com.gui.websocket.GuiWebSocketClient;
 import com.gui.websocket.GuiWebSocketListener;
@@ -18,7 +22,7 @@ public class GuiControllerImpl implements GuiController {
 	public GuiControllerImpl() {
 	}
 
-	public GuiControllerImpl(String mainHostUri) {
+	public GuiControllerImpl(final String mainHostUri) {
 		if (webSocketClient == null) {
 			webSocketClient = new GuiWebSocketClient(URI.create(mainHostUri));
 		}
@@ -34,7 +38,15 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void addAgentNodeToGraph(AbstractAgentNode agent) {
+	public void reportSystemStartTime(final Instant time) {
+		webSocketClient.send(ImmutableReportSystemStartTimeMessage.builder()
+				.time(time.toEpochMilli())
+				.secondsPerHour(SECONDS_PER_HOUR)
+				.build());
+	}
+
+	@Override
+	public void addAgentNodeToGraph(final AbstractAgentNode agent) {
 		if (Objects.nonNull(agent)) {
 			webSocketListener.addAgentNode(agent);
 			agent.addToGraph(webSocketClient);
@@ -42,14 +54,14 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void removeAgentNodeFromGraph(AbstractAgentNode agentNode) {
+	public void removeAgentNodeFromGraph(final AbstractAgentNode agentNode) {
 		webSocketClient.send(ImmutableRemoveAgentMessage.builder()
 				.agentName(agentNode.getAgentName())
 				.build());
 	}
 
 	@Override
-	public void updateClientsCountByValue(int value) {
+	public void updateClientsCountByValue(final int value) {
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_CLIENTS")
@@ -57,7 +69,7 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void updateActiveJobsCountByValue(int value) {
+	public void updateActiveJobsCountByValue(final int value) {
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_ACTIVE_JOBS")
@@ -65,7 +77,7 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void updateAllJobsCountByValue(int value) {
+	public void updateAllJobsCountByValue(final int value) {
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_PLANNED_JOBS")
@@ -73,7 +85,7 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void updateFailedJobsCountByValue(int value) {
+	public void updateFailedJobsCountByValue(final int value) {
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("INCREMENT_FAILED_JOBS")
@@ -81,7 +93,7 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void updateFinishedJobsCountByValue(int value) {
+	public void updateFinishedJobsCountByValue(final int value) {
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("INCREMENT_FINISHED_JOBS")

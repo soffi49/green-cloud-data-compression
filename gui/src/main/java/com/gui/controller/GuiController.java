@@ -1,6 +1,7 @@
 package com.gui.controller;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
@@ -21,6 +22,13 @@ public interface GuiController extends Runnable, Serializable {
 	 * @param agent node of the specified agent
 	 */
 	void addAgentNodeToGraph(final AbstractAgentNode agent);
+
+	/**
+	 * Method reports to the socket server time when the system was started
+	 *
+	 * @param time time of system start
+	 */
+	void reportSystemStartTime(final Instant time);
 
 	/**
 	 * Method remove agent node from the graph

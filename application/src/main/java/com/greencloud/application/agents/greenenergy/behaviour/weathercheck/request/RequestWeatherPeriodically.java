@@ -24,6 +24,7 @@ import com.database.knowledge.domain.agent.greensource.AvailableGreenEnergy;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.announcer.AnnounceSourcePowerShortage;
 import com.greencloud.application.domain.weather.MonitoringData;
+import com.gui.agents.GreenEnergyAgentNode;
 
 import jade.core.behaviours.TickerBehaviour;
 
@@ -85,5 +86,6 @@ public class RequestWeatherPeriodically extends TickerBehaviour {
 		final double currentMaximumCapacity = myGreenEnergyAgent.getCurrentMaximumCapacity();
 		final double energyPercentage = getPowerPercent(availablePower, currentMaximumCapacity);
 		myGreenEnergyAgent.writeMonitoringData(AVAILABLE_GREEN_ENERGY, new AvailableGreenEnergy(energyPercentage));
+		((GreenEnergyAgentNode) myGreenEnergyAgent.getAgentNode()).updateGreenEnergyAmount(availablePower);
 	}
 }

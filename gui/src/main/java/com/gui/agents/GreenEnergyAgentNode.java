@@ -77,6 +77,19 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	}
 
 	/**
+	 * Function updates the amount of available green energy for given agent
+	 *
+	 * @param value amount of available green energy
+	 */
+	public void updateGreenEnergyAmount(final double value) {
+		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+				.data(value)
+				.agentName(agentName)
+				.type("SET_AVAILABLE_GREEN_ENERGY")
+				.build());
+	}
+
+	/**
 	 * Function updates in the GUI the connection state for given server
 	 *
 	 * @param serverName  name of the server connected/disconnected to Green Source

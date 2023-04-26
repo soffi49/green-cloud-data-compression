@@ -2,10 +2,10 @@ package org.greencloud.managingsystem.agent.behaviour.executor;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.constants.CommonConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static java.util.stream.Collectors.toMap;
 import static org.greencloud.managingsystem.agent.behaviour.executor.logs.ManagingExecutorLog.VERIFY_ACTION_END_LOG;
 import static org.greencloud.managingsystem.agent.behaviour.executor.logs.ManagingExecutorLog.VERIFY_ACTION_START_LOG;
-import static org.greencloud.managingsystem.domain.ManagingSystemConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.SYSTEM_ADAPTATION_PLAN_VERIFY_DELAY;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.VERIFY_ADAPTATION_ACTION_DELAY_IN_SECONDS;
 

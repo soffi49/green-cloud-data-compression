@@ -1,8 +1,10 @@
 package com.greencloud.commons.domain.job;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import org.immutables.value.Value;
+import org.immutables.value.internal.$processor$.meta.$CriteriaMirrors;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -21,6 +23,15 @@ public interface PowerJob {
 	 * @return unique job identifier
 	 */
 	String getJobId();
+
+	/**
+	 * @return unique job instance identifier
+	 */
+	@$CriteriaMirrors.CriteriaId
+	@Value.Default
+	default String getJobInstanceId() {
+		return UUID.randomUUID().toString();
+	}
 
 	/**
 	 * @return time when the power delivery should start

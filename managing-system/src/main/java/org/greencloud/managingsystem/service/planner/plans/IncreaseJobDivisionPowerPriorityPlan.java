@@ -25,6 +25,7 @@ public class IncreaseJobDivisionPowerPriorityPlan extends AbstractPlan {
 	/**
 	 * Method verifies if the plan is executable. The plan is executable if:
 	 * 1. the Scheduler Agent is alive
+	 * 2. power priority percentage is less than 100
 	 *
 	 * @return boolean information if the plan is executable in current conditions
 	 */
