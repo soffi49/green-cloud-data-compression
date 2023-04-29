@@ -1,5 +1,5 @@
 import { styles } from './dropdown-styles'
-import Select, { ActionMeta, MultiValue, Options, SingleValue } from 'react-select'
+import Select, { ActionMeta, MultiValue, Options, SingleValue, StylesConfig } from 'react-select'
 import { useState } from 'react'
 import { FilterOptionOption } from 'react-select/dist/declarations/src/filters'
 import { GroupedOption, SelectOption } from './dropdown-config'
@@ -16,6 +16,8 @@ interface Props {
    placeholder?: string
    noOptionsMessage?: () => string
    isMulti?: boolean
+   isClearable?: boolean
+   selectStyle?: StylesConfig<SelectOption>
 }
 
 /**
@@ -29,6 +31,8 @@ interface Props {
  * @param {string | undefined}[placeholder] - optional placeholder
  * @param {func | undefined}[noOptionsMessage] - optional message displayed when no option is selected
  * @param {boolean | undefined}[isMulti] - optional value indicating if choice of multiple options is possible
+ * @param {boolean | undefined}[isClearable] - optional value indicating if input is clearable
+ * @param {StylesConfig<SelectOption>}[selectStyle] - optional styling of the select component
  * @returns JSX Element
  */
 const Dropdown = ({
@@ -40,10 +44,13 @@ const Dropdown = ({
    placeholder,
    noOptionsMessage,
    isMulti,
+   isClearable = true,
+   selectStyle,
 }: Props) => {
    const [isFocus, setIsFocus] = useState(false)
    const { select, selectTheme, headerStyle } = styles
 
+   const styleSelect = selectStyle ? { ...select, ...selectStyle } : select
    const customFilter = (option: FilterOptionOption<SelectOption>, inputValue: string) =>
       option.label.includes(inputValue.toUpperCase())
 
@@ -71,12 +78,12 @@ const Dropdown = ({
                onChange: handleOnChange,
                placeholder,
                noOptionsMessage,
-               styles: select,
+               styles: styleSelect,
                theme: selectTheme,
                maxMenuHeight: MAX_DROPDOWN_HEIGHT,
                minMenuHeight: MIN_DROPDOWN_HEIGHT,
                isSearchable: true,
-               isClearable: true,
+               isClearable,
                isOptionSelected,
                isMulti,
                menuPortalTarget: document.getElementById('root'),

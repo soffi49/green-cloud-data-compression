@@ -18,7 +18,8 @@ interface Props {
 const MultiCheckBox = ({ options, onChange, header }: Props) => {
    const { checkContainer, headerStyle } = styles
 
-   const generateJobSplitCheckBoxFields = () => options.map((option) => <SingleCheckBox {...{ option, onChange }} />)
+   const generateJobSplitCheckBoxFields = () =>
+      options.map((option, idx) => <SingleCheckBox key={'option-' + idx} {...{ option, onChange }} />)
 
    return (
       <>

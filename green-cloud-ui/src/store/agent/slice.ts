@@ -3,7 +3,6 @@ import { AgentStore, FetchStateMessage, PowerShortageEventData } from '@types'
 import { getAgentByName, triggerPowerShortage } from './api'
 
 const INITIAL_STATE: AgentStore = {
-   scheduler: null,
    agents: [],
    clients: [],
    selectedAgent: null,
@@ -28,7 +27,7 @@ export const agentSlice = createSlice({
          Object.assign(state, { ...state, ...action.payload })
       },
       setSelectedAgent(state, action: PayloadAction<string>) {
-         state.selectedAgent = action.payload
+         Object.assign(state, { ...state, selectedAgent: action.payload })
       },
       setSelectedClient(state, action: PayloadAction<string | null>) {
          state.selectedClient = action.payload

@@ -1,13 +1,10 @@
 package com.greencloud.application.mapper;
 
 import static com.greencloud.application.mapper.JobMapper.mapJobToPowerJob;
-import static com.greencloud.application.mapper.JobMapper.mapServerJobToPowerJob;
 import static com.greencloud.application.mapper.JobMapper.mapToClientJobRealTime;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
-import static com.greencloud.application.mapper.JobMapper.mapToJobNewEndTime;
 import static com.greencloud.application.mapper.JobMapper.mapToJobNewStartTime;
 import static com.greencloud.application.mapper.JobMapper.mapToJobWithNewTime;
-import static com.greencloud.application.mapper.JobMapper.mapToPowerJob;
 import static com.greencloud.application.mapper.JobMapper.mapToPowerShortageJob;
 import static com.greencloud.application.mapper.JobMapper.mapToServerJob;
 import static com.greencloud.application.mapper.JobMapper.mapToServerJobRealTime;
@@ -69,23 +66,6 @@ class JobMapperUnitTest {
 	}
 
 	@Test
-	@DisplayName("Test map client job to power job with new start time")
-	void testMapClientJobAndStartTimeToPowerJob() {
-		final Instant newStart = parse("2022-01-01T07:00:00.000Z");
-
-		final PowerJob result = mapToPowerJob(MOCK_CLIENT_JOB, newStart);
-
-		final Instant expectedEnd = parse("2022-01-01T10:00:00.000Z");
-		final Instant expectedDeadline = parse("2022-01-01T12:00:00.000Z");
-
-		assertThat(result.getDeadline()).isEqualTo(expectedDeadline);
-		assertThat(result.getStartTime()).isEqualTo(newStart);
-		assertThat(result.getEndTime()).isEqualTo(expectedEnd);
-		assertThat(result.getPower()).isEqualTo(10);
-		assertThat(result.getJobId()).isEqualTo("1");
-	}
-
-	@Test
 	@DisplayName("Test map to server job with real time")
 	void testMapToServerJobRealTime() {
 		setSystemStartTime(parse("2022-01-01T08:00:00.000Z"));
@@ -137,24 +117,6 @@ class JobMapperUnitTest {
 	}
 
 	@Test
-	@DisplayName("Test map to client job with new end time")
-	void testMapToJobNewEndTime() {
-		final Instant newEnd = parse("2022-01-01T11:00:00.000Z");
-
-		final ClientJob result = mapToJobNewEndTime(MOCK_CLIENT_JOB, newEnd);
-
-		final Instant expectedStart = parse("2022-01-01T09:00:00.000Z");
-		final Instant expectedDeadline = parse("2022-01-01T12:00:00.000Z");
-
-		assertThat(result.getDeadline()).isEqualTo(expectedDeadline);
-		assertThat(result.getStartTime()).isEqualTo(expectedStart);
-		assertThat(result.getEndTime()).isEqualTo(newEnd);
-		assertThat(result.getPower()).isEqualTo(10);
-		assertThat(result.getJobId()).isEqualTo("1");
-		assertThat(result.getClientIdentifier()).isEqualTo("test_client");
-	}
-
-	@Test
 	@DisplayName("Test map to client job with new time frames")
 	void testMapToJobNewTime() {
 		final Instant newStart = parse("2022-01-01T07:00:00.000Z");
@@ -169,42 +131,6 @@ class JobMapperUnitTest {
 		assertThat(result.getPower()).isEqualTo(10);
 		assertThat(result.getJobId()).isEqualTo("1");
 		assertThat(result.getClientIdentifier()).isEqualTo("test_client");
-	}
-
-	@Test
-	@DisplayName("Test map to server job with new start time")
-	void testMapServerJobToJobNewStartTime() {
-		final Instant newStart = parse("2022-01-01T07:00:00.000Z");
-
-		final ServerJob result = mapToJobNewStartTime(MOCK_SERVER_JOB, newStart);
-
-		final Instant expectedEnd = parse("2022-01-01T10:00:00.000Z");
-		final Instant expectedDeadline = parse("2022-01-01T20:00:00.000Z");
-
-		assertThat(result.getDeadline()).isEqualTo(expectedDeadline);
-		assertThat(result.getStartTime()).isEqualTo(newStart);
-		assertThat(result.getEndTime()).isEqualTo(expectedEnd);
-		assertThat(result.getPower()).isEqualTo(10);
-		assertThat(result.getJobId()).isEqualTo("1");
-		assertThat(result.getServer().getLocalName()).isEqualTo("test_aid");
-	}
-
-	@Test
-	@DisplayName("Test map to server job with new end time")
-	void testMapServerJobToJobNewEndTime() {
-		final Instant newEnd = parse("2022-01-01T11:00:00.000Z");
-
-		final ServerJob result = mapToJobNewEndTime(MOCK_SERVER_JOB, newEnd);
-
-		final Instant expectedStart = parse("2022-01-01T09:00:00.000Z");
-		final Instant expectedDeadline = parse("2022-01-01T20:00:00.000Z");
-
-		assertThat(result.getDeadline()).isEqualTo(expectedDeadline);
-		assertThat(result.getStartTime()).isEqualTo(expectedStart);
-		assertThat(result.getEndTime()).isEqualTo(newEnd);
-		assertThat(result.getPower()).isEqualTo(10);
-		assertThat(result.getJobId()).isEqualTo("1");
-		assertThat(result.getServer().getLocalName()).isEqualTo("test_aid");
 	}
 
 	@Test
@@ -252,17 +178,6 @@ class JobMapperUnitTest {
 	}
 
 	@Test
-	@DisplayName("Test map to power shortage job")
-	void testMapToPowerShortageJob() {
-		final Instant startTime = parse("2022-01-01T07:00:00.000Z");
-		final JobPowerShortageTransfer result = mapToPowerShortageJob(MOCK_CLIENT_JOB, startTime);
-
-		assertThat(result.getPowerShortageStart()).isEqualTo(startTime);
-		assertThat(result.getJobInstanceId().getJobId()).isEqualTo("1");
-		assertThat(result.getJobInstanceId().getStartTime()).isEqualTo(parse("2022-01-01T09:00:00.000Z"));
-	}
-
-	@Test
 	@DisplayName("Test map job instance to power shortage job")
 	void testMapJobInstanceToPowerShortageJob() {
 		final Instant startTime = parse("2022-01-01T07:00:00.000Z");
@@ -277,8 +192,8 @@ class JobMapperUnitTest {
 		final JobPowerShortageTransfer result = mapToPowerShortageJob(powerJob, startTime);
 
 		assertThat(result.getPowerShortageStart()).isEqualTo(startTime);
-		assertThat(result.getJobInstanceId().getJobId()).isEqualTo("1");
-		assertThat(result.getJobInstanceId().getStartTime()).isEqualTo(parse("2022-01-01T10:00:00.000Z"));
+		assertThat(result.getJobInstance().getJobId()).isEqualTo("1");
+		assertThat(result.getJobInstance().getStartTime()).isEqualTo(parse("2022-01-01T10:00:00.000Z"));
 	}
 
 	@Test
@@ -291,8 +206,8 @@ class JobMapperUnitTest {
 		final JobPowerShortageTransfer result = mapToPowerShortageJob(jobInstant, startTime);
 
 		assertThat(result.getPowerShortageStart()).isEqualTo(startTime);
-		assertThat(result.getJobInstanceId().getJobId()).isEqualTo("1");
-		assertThat(result.getJobInstanceId().getStartTime()).isEqualTo(parse("2022-01-01T09:00:00.000Z"));
+		assertThat(result.getJobInstance().getJobId()).isEqualTo("1");
+		assertThat(result.getJobInstance().getStartTime()).isEqualTo(parse("2022-01-01T09:00:00.000Z"));
 	}
 
 	@Test
@@ -314,16 +229,6 @@ class JobMapperUnitTest {
 		final JobInstanceIdentifier result = mapToJobInstanceId(jobInstant, startTime);
 
 		assertThat(result.getStartTime()).isEqualTo(startTime);
-		assertThat(result.getJobId()).isEqualTo("1");
-	}
-
-	@Test
-	@DisplayName("Test map to job instance id")
-	void testMapToJobInstanceId() {
-		final Instant mockStart = parse("2022-01-01T08:00:00.000Z");
-		final JobInstanceIdentifier result = mapToJobInstanceId("1", mockStart);
-
-		assertThat(result.getStartTime()).isEqualTo(parse("2022-01-01T08:00:00.000Z"));
 		assertThat(result.getJobId()).isEqualTo("1");
 	}
 }

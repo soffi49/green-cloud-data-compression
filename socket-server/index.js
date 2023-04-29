@@ -9,8 +9,11 @@ const { MESSAGE_HANDLERS } = require("./utils/message-utils");
 var { parseData } = require("./utils/parse-utils");
 var { logNewMessage, logStateReset, logUserConnected, logState } = require('./utils/logger-utils');
 const { handlePowerShortage } = require("./utils/event-utils");
+const { getNewReportsState } = require("./utils/report-utils");
 
 let STATE = {
+  systemStartTime: null,
+  secondsPerHour: 0,
   network: {
     finishedJobsNo: 0,
     failedJobsNo: 0,
@@ -19,7 +22,6 @@ let STATE = {
     currClientsNo: 0
   },
   agents: {
-    scheduler: null,
     agents: [],
     clients: []
   },
@@ -35,8 +37,22 @@ let STATE = {
   graph: {
     nodes: [],
     connections: []
-  }
+  },
 }
+
+let REPORTS_STATE = {
+  failJobsReport: [],
+  finishJobsReport: [],
+  executedJobsReport: [],
+  clientsReport: [],
+  systemTrafficReport: [],
+  avgJobSizeReport: [],
+  minJobSizeReport: [],
+  maxJobSizeReport: [],
+  agentsReports: []
+}
+
+const REPORTING_TIME = 1
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -54,7 +70,7 @@ app.ws("/", function (ws, req) {
 
     if (messageHandler) {
       logNewMessage(STATE, message)
-      messageHandler(STATE, message)
+      messageHandler(STATE, message, REPORTS_STATE)
     }
   });
 });
@@ -70,8 +86,10 @@ app.get(ROUTE_TYPES.FRONT, (req, res) => {
   res.send(JSON.stringify(STATE))
 })
 
-app.get(ROUTE_TYPES.FRONT + '/reset', async(req, res) => {
+app.get(ROUTE_TYPES.FRONT + '/reset', async (req, res) => {
   const newState = {
+    systemStartTime: null,
+    secondsPerHour: 0,
     network: {
       finishedJobsNo: 0,
       failedJobsNo: 0,
@@ -80,7 +98,6 @@ app.get(ROUTE_TYPES.FRONT + '/reset', async(req, res) => {
       currClientsNo: 0
     },
     agents: {
-      scheduler: null,
       agents: [],
       clients: [],
     },
@@ -98,9 +115,28 @@ app.get(ROUTE_TYPES.FRONT + '/reset', async(req, res) => {
       connections: []
     }
   }
+  const newReportsState = {
+    failJobsReport: [],
+    finishJobsReport: [],
+    executedJobsReport: [],
+    clientsReport: [],
+    systemTrafficReport: [],
+    avgJobSizeReport: [],
+    minJobSizeReport: [],
+    maxJobSizeReport: [],
+    agentsReports: []
+  }
+
   await Object.assign(STATE, newState)
+  await Object.assign(REPORTS_STATE, newReportsState)
+
   logStateReset()
   logState(STATE)
+  logState(REPORTS_STATE)
+})
+
+app.get(ROUTE_TYPES.FRONT + '/reports', async (req, res) => {
+  res.send(JSON.stringify(REPORTS_STATE))
 })
 
 app.post(ROUTE_TYPES.FRONT + '/powerShortage', (req, res) => {
@@ -112,5 +148,11 @@ app.post(ROUTE_TYPES.FRONT + '/powerShortage', (req, res) => {
     }
   })
 })
+
+setInterval(function () {
+  if (STATE.systemStartTime !== null) {
+    Object.assign(REPORTS_STATE, getNewReportsState(STATE, REPORTS_STATE))
+  }
+}, REPORTING_TIME * 1000);
 
 app.listen(8080);  

@@ -8,7 +8,9 @@ interface Props {
    children?: React.ReactNode | React.ReactNode[]
    header: React.ReactNode | string
    contentStyle?: React.CSSProperties
+   headerStyle?: React.CSSProperties
    isNested?: boolean
+   disableScroll?: boolean
 }
 
 /**
@@ -19,10 +21,12 @@ interface Props {
  * @param {React.ReactNode | React.ReactNode[] | undefined}[children] - content of the modal
  * @param {React.ReactNode | string}[header] - title of the modal
  * @param {React.CSSProperties}[contentStyle] - optional modal style
+ * @param {React.CSSProperties}[headerStyle] - optional header style
  * @param {boolean}[isNested] - optional flag indicating if the modal is nested
+ * @param {boolean}[disableScroll] - optional flag indicating if the modal content should have scroll
  * @returns JSX Element
  */
-const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, isNested }: Props) => {
+const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, headerStyle, isNested, disableScroll }: Props) => {
    const { modalStyle, modalTitle, mainContainer, contentWrapper, nested } = styles
    const { content, overlay, ...otherStyles } = modalStyle
    const styleModal = {
@@ -30,6 +34,9 @@ const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, isNested }: 
       overlay: { ...overlay, ...(isNested ? nested : undefined) },
       ...otherStyles,
    }
+   const styleHeader = { ...modalTitle, ...headerStyle }
+   const scroll: React.CSSProperties = { overflowY: disableScroll ? 'hidden' : 'auto' }
+   const styleMainContainer = { ...mainContainer, ...scroll }
 
    return (
       <ReactModal
@@ -42,8 +49,8 @@ const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, isNested }: 
          }}
       >
          <div style={contentWrapper}>
-            <div style={modalTitle}>{header}</div>
-            <div style={mainContainer}>{children}</div>
+            <div style={styleHeader}>{header}</div>
+            <div style={styleMainContainer}>{children}</div>
          </div>
       </ReactModal>
    )

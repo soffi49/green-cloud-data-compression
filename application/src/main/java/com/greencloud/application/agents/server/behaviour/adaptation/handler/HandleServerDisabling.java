@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.commons.message.MessageBuilder;
+import com.gui.agents.ServerAgentNode;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -46,5 +47,6 @@ public class HandleServerDisabling extends OneShotBehaviour {
 				.build();
 
 		myServerAgent.send(disableServerMessage);
+		((ServerAgentNode) myServerAgent.getAgentNode()).disableServer();
 	}
 }

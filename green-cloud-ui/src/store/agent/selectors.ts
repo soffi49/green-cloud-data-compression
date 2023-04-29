@@ -1,14 +1,22 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { ClientAgent } from '@types'
+import { ClientAgent, SchedulerAgent } from '@types'
 import { RootState } from 'store/store'
 
-const agentSelector = (state: RootState) => state.agents
+export const agentSelector = (state: RootState) => state.agents
 
 /**
  * Method returns selected network agent
  */
 export const selectChosenNetworkAgent = createSelector([agentSelector], (agentSelector) =>
    agentSelector.agents.find((agent) => agent.name === agentSelector.selectedAgent)
+)
+
+/**
+ * Method returns selected network agent id
+ */
+export const selectChosenNetworkAgentId = createSelector(
+   [agentSelector],
+   (agentSelector) => agentSelector.selectedAgent
 )
 
 /**
@@ -28,14 +36,11 @@ export const selectChosenClient = createSelector(
 )
 
 /**
- * Method returns network scheduler
- */
-export const selectScheduler = createSelector([agentSelector], (agentSelector) => agentSelector.scheduler)
-
-/**
  * Method returns scheduled jobs
  */
 export const selectScheduledJobs = createSelector(
    [agentSelector],
-   (agentSelector) => agentSelector.scheduler?.scheduledJobs
+   (agentSelector) =>
+      (agentSelector.agents.find((agent) => agent.name === agentSelector.selectedAgent) as SchedulerAgent)
+         .scheduledJobs ?? null
 )

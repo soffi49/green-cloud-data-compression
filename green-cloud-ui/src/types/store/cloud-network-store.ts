@@ -4,5 +4,6 @@ export type CloudNetworkStore = {
    currPlannedJobsNo: number
    finishedJobsNo: number
    failedJobsNo: number
-   isServerConnected?: boolean
+   isServerConnected?: boolean | null
+   connectionToast: boolean
 }

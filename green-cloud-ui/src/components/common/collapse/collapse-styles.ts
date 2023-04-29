@@ -1,8 +1,10 @@
 import React from 'react'
+import { IconProps } from 'types/assets/icon-props'
 
 interface Styles {
    collapseStyle: React.CSSProperties
    collapseContentStyle: React.CSSProperties
+   triggerIcon: IconProps
 }
 
 export const styles: Styles = {
@@ -19,5 +21,9 @@ export const styles: Styles = {
       width: '90%',
       margin: 'auto',
       marginBottom: '10px',
+   },
+   triggerIcon: {
+      size: '25px',
+      color: 'var(--gray-3)',
    },
 }

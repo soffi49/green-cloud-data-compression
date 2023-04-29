@@ -12,7 +12,7 @@ export const styles: Styles = {
       fontSize: 'var(--font-size-4)',
       fontFamily: 'var(--font-1)',
       color: 'var(--gray-3)',
-      fontWeight: 500,
+      fontWeight: 600,
       paddingLeft: '5px',
       paddingBottom: '10px',
    },
@@ -20,6 +20,7 @@ export const styles: Styles = {
       container: (styles: any) => ({
          ...styles,
          paddingBottom: '10px',
+         width: '100%',
       }),
       control: (styles: any) => ({
          ...styles,
@@ -57,6 +58,16 @@ export const styles: Styles = {
          marginTop: '2px',
          paddingBottom: '5px',
          border: '1px solid var(--gray-5)',
+      }),
+      menuPortal: (styles: any) => ({
+         ...styles,
+         zIndex: 999999,
+      }),
+      multiValueRemove: (styles: any) => ({
+         ...styles,
+         ':hover': {
+            backgroundColor: 'var(--gray-8)',
+         },
       }),
    },
    selectTheme: (theme: Theme) => {

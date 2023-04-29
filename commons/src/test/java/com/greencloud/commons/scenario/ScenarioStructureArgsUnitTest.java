@@ -4,17 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.greencloud.commons.args.agent.AgentArgs;
-import com.greencloud.commons.args.agent.cloudnetwork.ImmutableCloudNetworkArgs;
 import com.greencloud.commons.args.agent.greenenergy.ImmutableGreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.managing.ImmutableManagingAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.ImmutableMonitoringAgentArgs;
 import com.greencloud.commons.args.agent.scheduler.ImmutableSchedulerAgentArgs;
 import com.greencloud.commons.args.agent.server.ImmutableServerAgentArgs;
+import com.greencloud.commons.args.agent.cloudnetwork.ImmutableCloudNetworkArgs;
 
 class ScenarioStructureArgsUnitTest {
 
@@ -112,7 +113,7 @@ class ScenarioStructureArgsUnitTest {
 		);
 		var result = scenarioStructureArgs.getAgentsArgs();
 
-		assertThat(result)
+		Assertions.assertThat(result)
 				.as("Result has a correct size equal 15")
 				.hasSize(15)
 				.map(AgentArgs::getName)

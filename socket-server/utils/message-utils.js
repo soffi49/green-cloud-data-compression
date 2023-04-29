@@ -1,5 +1,6 @@
-const { AGENT_TYPES, JOB_STATUES } = require("../constants/constants")
+const { AGENT_TYPES, JOB_STATUSES } = require("../constants/constants")
 const { getAgentByName, getAgentNodeById, getNewTraffic, createAgentConnections, registerAgent, createEdge, createNodeForAgent, getNodeState, getNewCloudNetworkTraffic } = require("./agent-utils")
+const { changeCloudNetworkCapacityEvent } = require("./report-utils")
 const sleep = require('util').promisify(setTimeout)
 
 const handleIncrementFinishJobs = (state, msg) => {
@@ -22,15 +23,15 @@ const handleUpdateCurrentActiveJobs = (state, msg) => {
     state.network.currActiveJobsNo += msg.data
 }
 
-const handleSetMaximumCapacity = (state, msg) => {
+const handleSetMaximumCapacity = (state, msg, reportsState) => {
     const agent = getAgentByName(state.agents.agents, msg.agentName)
     const node = getAgentNodeById(state.graph.nodes, msg.agentName)
     const { maximumCapacity, powerInUse } = msg.data
 
-    if (agent) {    
+    if (agent) {
         if (agent.type === AGENT_TYPES.CLOUD_NETWORK) {
             agent.maximumCapacity = maximumCapacity
-            getNewCloudNetworkTraffic(agent, powerInUse, state)
+            getNewCloudNetworkTraffic(agent, powerInUse, state)    
         } else {
             agent.currentMaximumCapacity = maximumCapacity
             agent.traffic = getNewTraffic(maximumCapacity, powerInUse)
@@ -165,7 +166,7 @@ const handleSetClientJobStatus = (state, msg) => {
     const splitJobId = msg.data.splitJobId
 
     if (agent) {
-        if (jobStatus === JOB_STATUES.FAILED) {
+        if (jobStatus === JOB_STATUSES.FAILED) {
             agent.status = jobStatus
             if (agent.isSplit) {
                 agent.splitJobs.forEach(job => job.status = jobStatus)
@@ -212,24 +213,19 @@ const handleSetClientJobDurationMap = (state, msg) => {
 }
 
 const handleUpdateJobQueue = (state, msg) => {
-    if (state.agents.scheduler !== null) {
-        const scheduler = state.agents.scheduler
-        scheduler.scheduledJobs = msg.data.map(job => job.jobId)
+    const agent = state.agents.agents.find(agent => agent.type === AGENT_TYPES.SCHEDULER)
+
+    if (agent && agent.type === AGENT_TYPES.SCHEDULER) {
+        agent.scheduledJobs = msg.data.map(job => job.jobId)
     }
 }
 
-const handleRegisterAgent = (state, msg) => {
+const handleRegisterAgent = (state, msg, reportsState) => {
     const agentType = msg.agentType
     const registerData = msg.data
 
-    if (agentType === AGENT_TYPES.SCHEDULER) {
-        const newAgent = registerAgent(registerData, agentType)
-
-        state.agents.scheduler = newAgent
-        state.graph.nodes.push(createNodeForAgent(newAgent))
-    }
-    else if (!getAgentByName(state.agents.agents, registerData.name)) {
-        const newAgent = registerAgent(registerData, agentType)
+    if (!getAgentByName(state.agents.agents, registerData.name)) {
+        const newAgent = registerAgent(registerData, agentType, state, reportsState)
 
         if (newAgent) {
             if (agentType === AGENT_TYPES.CLIENT)
@@ -245,7 +241,7 @@ const handleRegisterAgent = (state, msg) => {
     }
 }
 
-const handleUpdateServerConnection = (state, msg) => {
+const handleUpdateServerConnection = (state, msg, reportsState) => {
     const agent = getAgentByName(state.agents.agents, msg.agentName)
 
     if (agent) {
@@ -306,14 +302,27 @@ const handleJobSplit = (state, msg) => {
     const clientForSplit = clients.find(client => client.job.jobId === msg.jobId)
 
     if (clientForSplit) {
-        const splitData = msg.data.map(splitJob => ({ status: JOB_STATUES.CREATED, ...splitJob }))
+        const splitData = msg.data.map(splitJob => ({ status: JOB_STATUSES.CREATED, ...splitJob }))
         clientForSplit.isSplit = true
         clientForSplit.splitJobs = splitData
     }
 }
 
-const handleUpdatePowerPriority = (state, msg) => state.agents.scheduler.powerPriority = msg.data
-const handleUpdateDeadlinePriority = (state, msg) => state.agents.scheduler.deadlinePriority = msg.data
+const handleUpdatePowerPriority = (state, msg) => {
+    const agent = getAgentByName(state.agents.agents, msg.agentName)
+
+    if (agent && agent.type === AGENT_TYPES.SCHEDULER) {
+        agent.powerPriority = msg.data
+    }
+}
+
+const handleUpdateDeadlinePriority = (state, msg) => {
+    const agent = getAgentByName(state.agents.agents, msg.agentName)
+
+    if (agent && agent.type === AGENT_TYPES.SCHEDULER) {
+        agent.deadlinePriority = msg.data
+    }
+}
 
 const handleRemoveAgent = (state, msg) => {
     const agentName = msg.agentName
@@ -323,6 +332,22 @@ const handleRemoveAgent = (state, msg) => {
     state.graph.connections =
         state.graph.connections.filter(edge => edge.data.target !== agentName && edge.data.source !== agentName)
 }
+
+const handleSystemTimeMesaage = (state, msg) => {
+    state.systemStartTime = msg.time
+    state.secondsPerHour = msg.secondsPerHour
+}
+
+const handleUpdateGreenEnergy = (state, msg) => {
+    const agent = getAgentByName(state.agents.agents, msg.agentName)
+
+    if (agent && agent.type === AGENT_TYPES.GREEN_ENERGY) {
+        agent.availableGreenEnergy = msg.data
+    }
+}
+
+const handleServerDisabling = (state, msg, reportsState) => 
+    changeCloudNetworkCapacityEvent(state, reportsState, msg.cna, msg.server, msg.capacity,false)
 
 module.exports = {
     MESSAGE_HANDLERS: {
@@ -350,10 +375,13 @@ module.exports = {
         SET_SERVER_BACK_UP_TRAFFIC: handleSetBackUpTraffic,
         SET_JOB_SUCCESS_RATIO: handleSetSuccessRatio,
         SET_WEATHER_PREDICTION_ERROR: handleWeatherPredictionError,
+        SET_AVAILABLE_GREEN_ENERGY: handleUpdateGreenEnergy,
         SPLIT_JOB: handleJobSplit,
         REGISTER_AGENT: handleRegisterAgent,
         REMOVE_AGENT: handleRemoveAgent,
         REGISTER_MANAGING: handleRegisterManaging,
         ADD_ADAPTATION_LOG: handleAddAdaptationLog,
+        REPORT_SYSTEM_START_TIME: handleSystemTimeMesaage,
+        DISABLE_SERVER: handleServerDisabling
     }
 }

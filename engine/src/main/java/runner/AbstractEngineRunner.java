@@ -1,24 +1,24 @@
 package runner;
 
 import static java.io.File.separator;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractEngineRunner {
 
-	private static final Logger logger = LoggerFactory.getLogger(AbstractEngineRunner.class);
+	private static final Logger logger = getLogger(AbstractEngineRunner.class);
 
 	private static final Integer GUI_SETUP_MILLISECONDS_DELAY = 5000;
 
 	protected static String scenarioName = "multipleCNAsScenario";
 
 	protected static boolean verify = false;
-	protected static String adaptationToVerify = "change_green_source_weight";
-	protected static String verifyScenario = "singleServerMultipleGreenSourcesScenario";
+	protected static String adaptationToVerify = "add_server";
+	protected static String verifyScenario = "brokenServerScenario";
 
 	protected static boolean events = false;
 	protected static String eventsScenario = "triggerChangeWeight";

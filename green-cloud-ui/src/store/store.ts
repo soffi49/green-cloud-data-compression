@@ -6,6 +6,7 @@ import { crashMiddleware, loggingMiddleware } from '@middleware'
 import { agentSlice } from './agent'
 import { managingSystemSlice } from './managing-system'
 import { graphSlice } from './graph'
+import { reportsSlice } from './reports'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -17,6 +18,7 @@ export const store = configureStore({
       cloudNetwork: cloudNetworkSlice.reducer,
       agents: agentSlice.reducer,
       graph: graphSlice.reducer,
+      reports: reportsSlice.reducer,
       managingSystem: managingSystemSlice.reducer,
    },
    middleware: (getDefaultMiddleware) => {

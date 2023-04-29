@@ -1,6 +1,5 @@
 package com.greencloud.application.utils;
 
-import static com.greencloud.application.utils.JobUtils.getJobByIdAndStartDateAndServer;
 import static com.greencloud.application.utils.JobUtils.getTimetableOfJobs;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
@@ -35,7 +34,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
-import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.greencloud.commons.domain.job.ImmutablePowerJob;
@@ -119,95 +117,6 @@ class JobUtilsUnitTest {
 				.build();
 
 		final ClientJob jobResult = JobUtils.getJobById(jobId, Map.of(mockJob1, IN_PROGRESS));
-		assertThat(Objects.nonNull(jobResult)).isEqualTo(result);
-	}
-
-	@ParameterizedTest
-	@MethodSource("parametersGetByIdAndStart")
-	@DisplayName("Test getting power job by id and start time")
-	void testGettingJobByIdAndStartTime(final Instant startTime, final String jobId, final boolean result) {
-		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(parse("2022-01-01T08:00:00.000Z"))
-				.endTime(parse("2022-01-01T10:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(10).build();
-		final PowerJob mockJob2 = ImmutablePowerJob.builder().jobId("2")
-				.startTime(parse("2022-01-01T07:00:00.000Z"))
-				.endTime(parse("2022-01-01T11:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(20).build();
-
-		final PowerJob jobResult = JobUtils.getJobByIdAndStartDate(jobId, startTime,
-				Map.of(mockJob1, CREATED, mockJob2, IN_PROGRESS));
-		assertThat(Objects.nonNull(jobResult)).isEqualTo(result);
-	}
-
-	@ParameterizedTest
-	@MethodSource("parametersGetByIdAndEnd")
-	@DisplayName("Test getting power job by id and end time")
-	void testGettingJobByIdAndEndTime(final Instant endTime, final String jobId, final boolean result) {
-		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(parse("2022-01-01T08:00:00.000Z"))
-				.endTime(parse("2022-01-01T10:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(10).build();
-		final PowerJob mockJob3 = ImmutablePowerJob.builder().jobId("3")
-				.startTime(parse("2022-01-01T11:00:00.000Z"))
-				.endTime(parse("2022-01-01T12:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(25).build();
-
-		final PowerJob jobResult = JobUtils.getJobByIdAndEndDate(jobId, endTime,
-				Map.of(mockJob1, CREATED, mockJob3, ACCEPTED));
-		assertThat(Objects.nonNull(jobResult)).isEqualTo(result);
-	}
-
-	@ParameterizedTest
-	@MethodSource("parametersGetByIdAndStartInstant")
-	@DisplayName("Test getting power job by id and start time instant")
-	void testGettingJobByIdAndStartTimeInstant(final JobInstanceIdentifier jobInstance, final boolean result) {
-		final PowerJob mockJob1 = ImmutablePowerJob.builder().jobId("1")
-				.startTime(parse("2022-01-01T08:00:00.000Z"))
-				.endTime(parse("2022-01-01T10:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(10).build();
-		final PowerJob mockJob2 = ImmutablePowerJob.builder().jobId("2")
-				.startTime(parse("2022-01-01T07:00:00.000Z"))
-				.endTime(parse("2022-01-01T11:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(20).build();
-
-		final PowerJob jobResult = JobUtils.getJobByIdAndStartDate(jobInstance,
-				Map.of(mockJob1, CREATED, mockJob2, IN_PROGRESS));
-		assertThat(Objects.nonNull(jobResult)).isEqualTo(result);
-	}
-
-	@ParameterizedTest
-	@MethodSource("parametersGetByIdAndStartAndServer")
-	@DisplayName("Test getting power job by id and start time instant")
-	void testGettingJobByIdAndStartAndServer(final JobInstanceIdentifier jobInstance, final int serverIdx,
-			final boolean result) {
-		final AID mockServer1 = mock(AID.class);
-		final AID mockServer2 = mock(AID.class);
-
-		final ServerJob mockJob1 = ImmutableServerJob.builder()
-				.jobId("1")
-				.server(mockServer1)
-				.startTime(parse("2022-01-01T08:00:00.000Z"))
-				.endTime(parse("2022-01-01T10:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(10).build();
-		final ServerJob mockJob2 = ImmutableServerJob.builder()
-				.jobId("2")
-				.server(mockServer2)
-				.startTime(parse("2022-01-01T07:00:00.000Z"))
-				.endTime(parse("2022-01-01T11:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(20).build();
-
-		final AID serverToUse = serverIdx == 1 ? mockServer1 : mockServer2;
-		final PowerJob jobResult = getJobByIdAndStartDateAndServer(jobInstance, serverToUse,
-				Map.of(mockJob1, CREATED, mockJob2, IN_PROGRESS));
 		assertThat(Objects.nonNull(jobResult)).isEqualTo(result);
 	}
 

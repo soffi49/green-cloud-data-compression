@@ -2,43 +2,61 @@ import React from 'react'
 
 interface Styles {
    mainContainer: React.CSSProperties
+   menuContainer: React.CSSProperties
    contentContainer: React.CSSProperties
-   leftContentContainer: React.CSSProperties
-   rightContentContainer: React.CSSProperties
+   sectionContainer: React.CSSProperties
+   leftSectionContainer: React.CSSProperties
+   rightSectionContainer: React.CSSProperties
+   mainPanelContainer: React.CSSProperties
+   livePanelContainer: React.CSSProperties
+   graphPanelContainer: React.CSSProperties
 }
 
 export const styles: Styles = {
    mainContainer: {
       backgroundColor: 'var(--beige-1)',
       height: '100%',
+      width: '100%',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
       overflow: 'hidden',
       marginBottom: '5px',
    },
+   menuContainer: {
+      width: '50px',
+      height: '100%',
+      minWidth: 'fit-content',
+      minHeight: 'fit-content',
+   },
    contentContainer: {
       display: 'flex',
-      height: '75%',
-      minHeight: 0,
-      marginTop: '-7%',
-      minWidth: 'fit-content',
-   },
-   leftContentContainer: {
-      width: '10%',
-      flexGrow: 1,
-      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       height: '100%',
+      flexGrow: 1,
+   },
+   sectionContainer: {
+      display: 'flex',
       flexDirection: 'column',
-      minWidth: '0',
+      justifyContent: 'center',
+      height: '95%',
+   },
+   leftSectionContainer: {
+      width: '45%',
+   },
+   rightSectionContainer: {
+      width: '55%',
+   },
+   mainPanelContainer: {
+      height: '40%',
+      marginBottom: '20px',
+   },
+   livePanelContainer: {
+      height: '56%',
+   },
+   graphPanelContainer: {
+      height: '100%',
       marginLeft: '20px',
-   },
-   rightContentContainer: {
-      width: '10%',
-      flexGrow: 1,
-      display: 'flex',
-      height: '100%',
-      flexDirection: 'column',
-      minWidth: '0',
       marginRight: '20px',
    },
 }

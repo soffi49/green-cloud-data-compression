@@ -12,6 +12,14 @@ export const selectConnectionState = createSelector(
 )
 
 /**
+ * Method returns currect connection toast state
+ */
+export const selectConnectionToast = createSelector(
+   [cloudNetworkSelect],
+   (cloudNetworkSelect) => cloudNetworkSelect.connectionToast
+)
+
+/**
  * Method returns currect connection state
  */
 export const selectNetworkStatistics = createSelector([cloudNetworkSelect], (cloudNetworkSelect) => {

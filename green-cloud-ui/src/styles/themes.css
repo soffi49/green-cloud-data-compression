@@ -6,13 +6,18 @@
   --black: #000000;
   --black-transparent: #000000c5;
   --black-transparent-2: #00000091;
+  --black-transparent-3: #00000028;
+  --black-transparent-4: #00000044;
+  --gray-3-transparent: #3e3e3ebe;
 
-  --green-1: #4ba146;
-  --green-2: #76cd5c;
-  --green-3: #70bd6a;
+  --green-1: #609a63;
+  --green-2: #6d9c70;
+  --green-3: #49774b;
   --green-4: #7fc77a;
   --green-5: #266e22;
   --green-6: #55b14e;
+
+  --olive-1: #9cc12b;
 
   --gray-1: #878787;
   --gray-2: #5e5e5e;
@@ -23,7 +28,9 @@
   --gray-7: #f1f1f1;
   --gray-8: #cfcfcf;
   --gray-9: #fdfcfc;
-  --gray-10: #383737;
+  --gray-10: #e3e3e3;
+  --gray-11: #afafaf;
+  --gray-12: #464646;
 
   --red-1: #cc2020;
   --red-2: #dd3030;
@@ -46,13 +53,15 @@
   --font-size-7: 0.65rem;
   --font-size-8: 1.1rem;
   --font-size-9: 0.85rem;
+  --font-size-10: 0.55em;
+  --font-size-11: 1.3rem;
 
   /* SHADOWS */
 
   --banner-shadow: 0px 6px 6px -6px rgba(0, 0, 0, 0.4);
   --card-shadow: 3px 3px 13px -3px rgba(0, 0, 0, 0.3);
   --button-shadow: 0px 1px 4px 0px #8c8c8c;
-  --event-shadow: 0px 2px 9px 0px rgba(0, 0, 0, 0.2);
+  --event-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.3);
 
   /* BORDERS */
 
@@ -61,9 +70,10 @@
   --border-event: 4px solid var(--gray-1);
   --border-detail: 6px solid var(--gray-2);
   --border-left-green: 10px solid var(--green-1);
+  --border-green-semi-bold: 8px solid var(--green-1);
   --border-gray: 1px solid var(--gray-2);
   --border-gray-bold: 10px solid var(--gray-2);
-  --border-card: 4px solid var(--green-1);
+  --border-card: 8px solid var(--green-2);
   --border-banner-button: 10px solid var(--green-1) !important;
   --border-modal: 1.5px solid var(--gray-1);
 }
@@ -143,6 +153,9 @@ input[type=number] {
   width: 100% !important;
 }
 
+.pretty.checkbox-selected input:checked~.state.p-success label:after {
+  background-color: var(--green-1)!important;
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

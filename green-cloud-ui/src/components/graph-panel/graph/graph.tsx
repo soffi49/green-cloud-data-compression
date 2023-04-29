@@ -6,15 +6,15 @@ import { GRAPH_LAYOUT, GRAPH_STYLE, GRAPH_STYLESHEET } from './graph-config'
 
 import { constructEdges, setCore } from '@utils'
 
-import { AgentNode, GraphEdge, SchedulerAgent } from '@types'
+import { AgentNode, GraphEdge } from '@types'
 
 Cytoscape.use(fcose)
 
 interface Props {
    nodes: AgentNode[]
    connections: GraphEdge[]
-   scheduler: SchedulerAgent | null
    setSelectedAgent: (id: string) => void
+   selectedAgent: string | null
 }
 
 /**
@@ -22,7 +22,7 @@ interface Props {
  *
  * @returns Cytoscape graph
  */
-export const DisplayGraph = ({ nodes, connections, scheduler, setSelectedAgent }: Props) => {
+export const DisplayGraph = ({ nodes, connections, setSelectedAgent, selectedAgent }: Props) => {
    const [core, setCyCore] = useState<Cytoscape.Core>()
    const nodesRef = useRef<number>(-1)
    const elements = useMemo(
@@ -44,15 +44,22 @@ export const DisplayGraph = ({ nodes, connections, scheduler, setSelectedAgent }
       }
    }, [nodes])
 
+   useEffect(() => {
+      if (core) {
+         core.on('tap', 'node', function (event: any) {
+            const id = event.target.id()
+            console.warn(event)
+
+            if (!selectedAgent || selectedAgent !== id) {
+               setSelectedAgent(id)
+            }
+         })
+      }
+   }, [core])
+
    const cy = (core: Cytoscape.Core): void => {
       setCore(core)
       setCyCore(core)
-
-      core.on('tap', 'node', (event) => {
-         if (event.target.id() !== scheduler?.name) {
-            setSelectedAgent(event.target.id())
-         }
-      })
    }
 
    return (

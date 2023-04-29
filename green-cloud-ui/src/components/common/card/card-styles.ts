@@ -3,6 +3,10 @@ import React from 'react'
 interface Styles {
    cardContainer: React.CSSProperties
    cardHeader: React.CSSProperties
+   cardHeaderWithSubheader: React.CSSProperties
+   cardSubHeader: React.CSSProperties
+   cardSubHeaderText: React.CSSProperties
+   cardHeaderContainer: React.CSSProperties
    cardContent: React.CSSProperties
    cardContentScroll: React.CSSProperties
 }
@@ -13,12 +17,34 @@ export const styles: Styles = {
       flexDirection: 'column',
       padding: '15px',
       boxShadow: 'var(--card-shadow)',
-      borderBottom: 'var(--border-card)',
-      borderRadius: 10,
+      borderRadius: 20,
+      boxSizing: 'border-box',
    },
    cardHeader: {
       color: 'var(--gray-2)',
-      fontWeight: '300',
+      fontWeight: '500',
+   },
+   cardHeaderWithSubheader: {
+      width: '60%',
+   },
+   cardSubHeader: {
+      width: '30%',
+      paddingRight: '10px',
+      minWidth: 'fit-content',
+      margin: '0 15px',
+      borderLeft: 'none',
+      borderRight: 'var(--border-left-green)',
+   },
+   cardSubHeaderText: {
+      textAlign: 'right',
+      width: '100%',
+      fontWeight: 500,
+      fontSize: 'var(--font-size-3)',
+   },
+   cardHeaderContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
    },
    cardContent: {
       flexGrow: 1,

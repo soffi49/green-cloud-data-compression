@@ -2,20 +2,26 @@ import React from 'react'
 
 interface Styles {
    graphContainer: React.CSSProperties
-   graphContent: React.CSSProperties
+   headerContainer: React.CSSProperties
+   headerStyle: React.CSSProperties
 }
 
 export const styles: Styles = {
    graphContainer: {
       flexGrow: 1,
-      height: '105%',
       backgroundColor: 'var(--white)',
-      minWidth: 'min-content',
-      marginTop: '-2.5%',
-      marginLeft: '10px',
-      marginRight: '10px',
+      height: '100%',
+      minWidth: 'fit-content',
    },
-   graphContent: {
-      borderTop: 'var(--border-gray)',
+   headerContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingBottom: '10px',
+      borderBottom: 'var(--border-gray)',
+   },
+   headerStyle: {
+      color: 'var(--gray-2)',
+      fontWeight: 500,
    },
 }

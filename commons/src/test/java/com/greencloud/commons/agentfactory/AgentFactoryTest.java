@@ -1,11 +1,9 @@
 package com.greencloud.commons.agentfactory;
 
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_SERVER_MAXIMUM_CAPACITY;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_SERVER_PRICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum;
+import com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
@@ -34,9 +33,9 @@ class AgentFactoryTest {
 	void testCreateTemplateServerDefaultValues() {
 		ServerAgentArgs result = factory.createServerAgent("OwnerCna1", null, null, null);
 
-		assertThat(result.getName()).isEqualTo("ExtraServer1");
-		assertThat(result.getMaximumCapacity()).isEqualTo(TEMPLATE_SERVER_MAXIMUM_CAPACITY);
-		assertThat(result.getPrice()).isEqualTo(TEMPLATE_SERVER_PRICE);
+		Assertions.assertThat(result.getName()).isEqualTo("ExtraServer1");
+		assertThat(result.getMaximumCapacity()).isEqualTo(AgentTemplatesConstants.TEMPLATE_SERVER_MAXIMUM_CAPACITY);
+		assertThat(result.getPrice()).isEqualTo(AgentTemplatesConstants.TEMPLATE_SERVER_PRICE);
 		assertThat(result.getOwnerCloudNetwork()).isEqualTo("OwnerCna1");
 		assertThat(result.getJobProcessingLimit()).isEqualTo("20");
 	}
@@ -53,7 +52,7 @@ class AgentFactoryTest {
 				null);
 
 		assertThat(result.getName()).isEqualTo("ExtraGreenEnergy1");
-		assertThat(result.getMaximumCapacity()).isEqualTo(TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY);
+		assertThat(result.getMaximumCapacity()).isEqualTo(AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY);
 		assertThat(result.getLatitude()).isEqualTo("50");
 		assertThat(result.getLongitude()).isEqualTo("20");
 		assertThat(result.getPricePerPowerUnit()).isEqualTo("10");
@@ -66,9 +65,9 @@ class AgentFactoryTest {
 		ServerAgentArgs result2 = factory.createServerAgent("1", null, null, null);
 		MonitoringAgentArgs result3 = factory.createMonitoringAgent();
 
-		assertThat(result1.getName()).isEqualTo("ExtraServer1");
-		assertThat(result2.getName()).isEqualTo("ExtraServer2");
-		assertThat(result3.getName()).isEqualTo("ExtraMonitoring1");
+		Assertions.assertThat(result1.getName()).isEqualTo("ExtraServer1");
+		Assertions.assertThat(result2.getName()).isEqualTo("ExtraServer2");
+		Assertions.assertThat(result3.getName()).isEqualTo("ExtraMonitoring1");
 	}
 
 	@Test
@@ -90,14 +89,14 @@ class AgentFactoryTest {
 	void testCreatingMonitoringAgent() {
 		MonitoringAgentArgs result = factory.createMonitoringAgent();
 
-		assertThat(result.getName()).isEqualTo("ExtraMonitoring1");
+		Assertions.assertThat(result.getName()).isEqualTo("ExtraMonitoring1");
 	}
 
 	@Test
 	void testCreatingServerCustomValues() {
 		ServerAgentArgs result = factory.createServerAgent("OwnerCna1", 150, 25, 10);
 
-		assertThat(result.getName()).isEqualTo("ExtraServer1");
+		Assertions.assertThat(result.getName()).isEqualTo("ExtraServer1");
 		assertThat(result.getMaximumCapacity()).isEqualTo("150");
 		assertThat(result.getPrice()).isEqualTo("25");
 		assertThat(result.getOwnerCloudNetwork()).isEqualTo("OwnerCna1");

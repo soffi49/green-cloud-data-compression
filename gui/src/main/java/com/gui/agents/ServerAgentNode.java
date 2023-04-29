@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.greencloud.commons.args.agent.server.ImmutableServerNodeArgs;
 import com.gui.event.domain.PowerShortageEvent;
+import com.gui.message.ImmutableDisableServerMessage;
 import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
 import com.gui.websocket.GuiWebSocketClient;
@@ -78,6 +79,17 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 				.data(value)
 				.agentName(agentName)
 				.type("SET_CLIENT_NUMBER")
+				.build());
+	}
+
+	/**
+	 * Function disables the server
+	 */
+	public void disableServer() {
+		webSocketClient.send(ImmutableDisableServerMessage.builder()
+				.cna(cloudNetworkAgent)
+				.server(agentName)
+				.capacity(initialMaximumCapacity.get())
 				.build());
 	}
 

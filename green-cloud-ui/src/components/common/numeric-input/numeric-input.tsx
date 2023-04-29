@@ -6,6 +6,7 @@ interface Props {
    placeholder: string
    value?: number
    disabled?: boolean
+   max?: number
    handleChange: ChangeEventHandler<HTMLInputElement>
 }
 
@@ -16,10 +17,11 @@ interface Props {
  * @param {string}[placeholder] - placeholder describing the field
  * @param {number | undefined}[value] - value being the current input
  * @param {boolean}[disabled] - optional parameter indicating whether the field should be disabled
+ * @param {number}[max] - maximal value that can be passed as input
  * @param {void}[handleChange] - callback function to handle input change
  * @returns JSX Element
  */
-const NumericInput = ({ label, placeholder, value, handleChange, disabled }: Props) => {
+const NumericInput = ({ label, placeholder, value, max = 0, handleChange, disabled }: Props) => {
    const numericInputStyle = disabled ? 'numeric-input numeric-input-inactive' : 'numeric-input numeric-input-active'
    const labelStyle = [
       'numeric-input-label',
@@ -37,6 +39,7 @@ const NumericInput = ({ label, placeholder, value, handleChange, disabled }: Pro
                type: 'number',
                className: numericInputStyle,
                min: 0,
+               max,
                disabled,
             }}
          />

@@ -1,7 +1,20 @@
-const { AGENT_TYPES, JOB_STATUES } = require("../constants/constants")
+const { AGENT_TYPES, JOB_STATUSES } = require("../constants/constants")
+const state = require("../constants/state")
 const { INITIAL_NETWORK_AGENT_STATE, INITIAL_POWER_SHORTAGE_STATE } = require("../constants/state")
+const { changeCloudNetworkCapacityEvent } = require("./report-utils")
 
-const registerScheduler = (data) => {
+const registerScheduler = (data, reportsState) => {
+    reportsState.agentsReports.push({
+        name: data.name,
+        type: AGENT_TYPES.SCHEDULER,
+        reports: {
+            deadlinePriorityReport: [],
+            powerPriorityReport: [],
+            clientRequestReport: [],
+            queueCapacityReport: []
+        },
+        events: []
+    })
     return {
         type: AGENT_TYPES.SCHEDULER,
         scheduledJobs: [],
@@ -16,7 +29,7 @@ const registerClient = (data) => {
     const { name, ...jobData } = data
     return {
         type: AGENT_TYPES.CLIENT,
-        status: JOB_STATUES.CREATED,
+        status: JOB_STATUSES.CREATED,
         events: [],
         name,
         isActive: false,
@@ -28,7 +41,19 @@ const registerClient = (data) => {
     }
 }
 
-const registerCloudNetwork = (data) => {
+const registerCloudNetwork = (data, reportsState) => {
+    reportsState.agentsReports.push({
+        name: data.name,
+        type: AGENT_TYPES.CLOUD_NETWORK,
+        reports: {
+            clientsReport: [],
+            capacityReport: [],
+            trafficReport: [],
+            successRatioReport: []
+        },
+        events: []
+    })
+
     return {
         type: AGENT_TYPES.CLOUD_NETWORK,
         traffic: 0,
@@ -41,22 +66,66 @@ const registerCloudNetwork = (data) => {
     }
 }
 
-const registerGreenEnergy = (data) => {
+const registerGreenEnergy = (data, state, reportsState) => {
     const events = [structuredClone(INITIAL_POWER_SHORTAGE_STATE)]
+
+    reportsState.agentsReports.push({
+        name: data.name,
+        type: AGENT_TYPES.GREEN_ENERGY,
+        reports: {
+            trafficReport: [],
+            availableGreenPowerReport: [],
+            capacityReport: [],
+            jobsOnGreenPowerReport: [],
+            jobsOnHoldReport: [],
+            successRatioReport: []
+        },
+        events: []
+    })
+
+    state.agents.agents
+        .filter(el => el.type === AGENT_TYPES.SERVER && el.name === data.serverAgent && !el.greenEnergyAgents.includes(data.name))
+        .forEach(server => server.greenEnergyAgents.push(data.name))
 
     return {
         type: AGENT_TYPES.GREEN_ENERGY,
         events,
         isActive: false,
         adaptation: 'inactive',
+        availableGreenEnergy: 0,
         connectedServers: [data.serverAgent],
         ...INITIAL_NETWORK_AGENT_STATE(data),
         ...data
     }
 }
 
-const registerServer = (data) => {
+const registerServer = (data, state, reportsState) => {
     const events = [structuredClone(INITIAL_POWER_SHORTAGE_STATE)]
+
+    reportsState.agentsReports.push({
+        name: data.name,
+        type: AGENT_TYPES.SERVER,
+        reports: {
+            trafficReport: [],
+            capacityReport: [],
+            successRatioReport: [],
+            greenPowerUsageReport: [],
+            backUpPowerUsageReport: []
+        },
+        events: []
+    })
+
+    state.agents.agents
+        .filter(el => el.type === AGENT_TYPES.CLOUD_NETWORK && el.name === data.cloudNetworkAgent && !el.serverAgents.includes(data.name))
+        .forEach(cna => cna.serverAgents.push(data.name))
+
+    changeCloudNetworkCapacityEvent(
+        state, 
+        reportsState, 
+        data.cloudNetworkAgent, 
+        data.name, 
+        data.initialMaximumCapacity,
+        true)
 
     return {
         type: AGENT_TYPES.SERVER,
@@ -133,7 +202,8 @@ const getGreenEnergyState = (greenEnergy) => {
 
 
 const createCloudNetworkEdges = (agent, state) => {
-    const schedulerEdge = createEdge(agent.name, state.agents.scheduler.name)
+    const scheduler = state.agents.agents.find(agent => agent.type === AGENT_TYPES.SCHEDULER)
+    const schedulerEdge = createEdge(agent.name, scheduler.name)
 
     return [schedulerEdge]
 }
@@ -179,20 +249,20 @@ module.exports = {
     },
     getNewTraffic,
     getNewCloudNetworkTraffic,
-    registerAgent: function (data, type) {
+    registerAgent: function (data, type, state, reportsState) {
         switch (type) {
             case AGENT_TYPES.CLIENT:
                 return registerClient(data)
             case AGENT_TYPES.CLOUD_NETWORK:
-                return registerCloudNetwork(data)
+                return registerCloudNetwork(data, reportsState)
             case AGENT_TYPES.GREEN_ENERGY:
-                return registerGreenEnergy(data)
+                return registerGreenEnergy(data, state, reportsState)
             case AGENT_TYPES.MONITORING:
                 return registerMonitoring(data)
             case AGENT_TYPES.SERVER:
-                return registerServer(data)
+                return registerServer(data, state, reportsState)
             case AGENT_TYPES.SCHEDULER:
-                return registerScheduler(data)
+                return registerScheduler(data, reportsState)
         }
     },
     createAgentConnections: function (agent, state) {

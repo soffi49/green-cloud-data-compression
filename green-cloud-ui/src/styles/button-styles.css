@@ -94,18 +94,19 @@
 /* MENU BUTTON */
 
 .menu-button {
-	padding: 5px;
-    padding-bottom: 2px !important;
-    margin-right: 15px;
+	padding: 10px;
+    padding-bottom: 8px !important;
     margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 100px!important;
 }
 
 .menu-button:hover {
-    background-color: var(--green-3);
+    background-color: var(--gray-3-transparent);
 }
 
 .menu-button:active {
-    background-color: var(--green-4);
+    background-color: var(--black-transparent-4);
 }
 
 /* EVENT BUTTON */
@@ -179,3 +180,43 @@
 .more-button:active {
     background-color: var(--gray-6);
 }
+
+/* FILTER BUTTON */
+
+.filter-button:hover {
+    background-color: var(--black-transparent-3);
+    border-radius: 200px;
+}
+
+.filter-button:active {
+    background-color: var(--black-transparent-4);
+}
+
+/* EVENT MODAL BUTTON */
+
+.medium-green-button {
+    font-family: var(--font-1);
+    font-size: var(--font-size-4);
+    font-weight: 400;
+    padding: 5px 20px;
+}
+
+.medium-green-button-active {
+    color: var(--white);
+    background-color: var(--green-1);
+}
+
+.medium-green-button-disabled {
+    cursor: auto;
+    color: var(--gray-11);
+    background-color: var(--gray-10);
+}
+
+ 
+ .medium-green-button-active:hover {
+    background-color: var(--green-3);
+ }
+ 
+ .medium-green-button-active:active {
+    background-color: var(--green-4);
+ }

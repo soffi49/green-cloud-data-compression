@@ -18,13 +18,14 @@ export const styles: Styles = {
          borderRadius: 15,
          display: 'flex',
          flexDirection: 'column',
+         minWidth: 'fit-content',
          overflowY: 'hidden',
       },
    },
    modalTitle: {
       fontSize: 'var(--font-size-8)',
       fontFamily: 'var(--font-1)',
-      fontWeight: 300,
+      fontWeight: 400,
       color: 'var(--gray-2)',
       width: '100%',
       borderBottom: 'var(--border-modal)',
@@ -36,8 +37,8 @@ export const styles: Styles = {
    },
    mainContainer: {
       overflowY: 'auto',
-      height: 'auto',
-      marginTop: '10px',
+      height: '100%',
+      marginTop: '15px',
    },
    contentWrapper: {
       height: '100%',

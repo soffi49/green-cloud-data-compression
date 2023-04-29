@@ -2,9 +2,9 @@ import {
    agentsActions,
    AppDispatch,
    RootState,
+   selectChosenNetworkAgentId,
    selectExistingConnections,
    selectNetworkNodes,
-   selectScheduler,
 } from '@store'
 import { connect } from 'react-redux'
 import { DisplayGraph } from './graph'
@@ -19,7 +19,7 @@ const mapStateToProps = (state: RootState) => {
    return {
       nodes: selectNetworkNodes(state),
       connections: selectExistingConnections(state),
-      scheduler: selectScheduler(state),
+      selectedAgent: selectChosenNetworkAgentId(state),
    }
 }
 

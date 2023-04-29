@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
    return {
-      openServerConnection: () => dispatch(cloudNetworkActions.openServerConnection()),
+      resetServerConnection: () => dispatch(cloudNetworkActions.resetServerConnection()),
    }
 }
 

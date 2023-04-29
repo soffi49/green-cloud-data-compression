@@ -22,15 +22,16 @@ export const styles: Styles = {
       borderRadius: 7,
    },
    headerLabel: {
+      color: 'var(--gray-3)',
       fontSize: 'var(--font-size-8)',
-      fontWeight: '400',
+      fontWeight: '500',
    },
    headerContainer: {
       borderLeft: 'var(--border-left-green)',
    },
    label: {
       textAlign: 'left',
-      width: '50%',
+      width: '70%',
       paddingLeft: '10px',
       fontWeight: '300',
       fontSize: 'var(--font-size-2)',

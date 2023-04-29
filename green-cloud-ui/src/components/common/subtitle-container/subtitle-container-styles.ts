@@ -7,7 +7,7 @@ interface Styles {
 
 export const styles: Styles = {
    descriptionContainer: {
-      width: '70%',
+      width: '100%',
       paddingTop: '15px',
       paddingBottom: '10px',
       display: 'flex',

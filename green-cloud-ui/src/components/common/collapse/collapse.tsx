@@ -1,9 +1,10 @@
 import { styles } from './collapse-styles'
 import { useState } from 'react'
 import Collapsible from 'react-collapsible'
+import { IconArrowDown, IconArrowUp } from '@assets'
 
 interface Props {
-   title: string
+   title: string | React.ReactNode
    titleClosed?: string
    triggerStyle?: React.CSSProperties
    triggerClosedStyle?: React.CSSProperties
@@ -15,7 +16,7 @@ interface Props {
 /**
  * Component representing generic collapsible node
  *
- * @param {string}[title] - title displayed on the collapse
+ * @param {string | React.ReactNode}[title] - title displayed on the collapse
  * @param {string}[titleClosed] - optional title for closed collapse
  * @param {React.CSSProperties}[triggerStyle] - optional additional trigger style
  * @param {React.CSSProperties}[triggerClosedStyle] - optional additional style for closed trigger
@@ -33,7 +34,7 @@ const Collapse = ({
    contentStyle,
    children,
 }: Props) => {
-   const { collapseStyle, collapseContentStyle } = styles
+   const { collapseStyle, collapseContentStyle, triggerIcon } = styles
    const [isOpen, setIsOpen] = useState(false)
 
    const styleTrigger = { ...collapseStyle, ...triggerStyle }
@@ -43,8 +44,8 @@ const Collapse = ({
 
    const trigger = (
       <>
-         <span>{!isOpen && titleClosed ? titleClosed : title}</span>
-         <span>{isOpen ? '\u25B2' : '\u25BC'}</span>
+         {typeof title === 'string' ? <span>{!isOpen && titleClosed ? titleClosed : title}</span> : title}
+         <span>{isOpen ? <IconArrowUp {...triggerIcon} /> : <IconArrowDown {...triggerIcon} />}</span>
       </>
    )
 
@@ -54,8 +55,8 @@ const Collapse = ({
             trigger,
             triggerStyle: styleCollapse,
             containerElementProps: { style: { ...wrapperStyle } },
-            onClose: () => setIsOpen(false),
-            onOpen: () => setIsOpen(true),
+            onClosing: () => setIsOpen(false),
+            onOpening: () => setIsOpen(true),
          }}
       >
          <div style={styleContent}>{children}</div>

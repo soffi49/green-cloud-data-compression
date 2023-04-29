@@ -6,7 +6,7 @@ export interface GroupedOption {
 }
 
 export interface SelectOption {
-   value: Agent | null | string
+   value: Agent | null | string | number
    label: string
    isSelected?: boolean
 }

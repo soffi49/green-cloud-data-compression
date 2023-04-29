@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { styles } from './main-view-style'
-import { Banner, AgentSystemPanel, GraphPanel, AdaptationPanel } from '@components'
+import { Menu, GraphPanel, MainPanel, LivePanel } from '@components'
 
 interface Props {
-   openServerConnection: () => void
+   resetServerConnection: () => void
 }
 
 /**
@@ -11,21 +11,42 @@ interface Props {
  *
  * @returns JSX Element
  */
-export const MainView = ({ openServerConnection }: Props) => {
+export const MainView = ({ resetServerConnection }: Props) => {
+   const {
+      mainContainer,
+      menuContainer,
+      contentContainer,
+      mainPanelContainer,
+      livePanelContainer,
+      graphPanelContainer,
+      leftSectionContainer,
+      rightSectionContainer,
+      sectionContainer,
+   } = styles
+   const [selectedTabId, setSelectedTabId] = useState<string>('cloud')
+
    useEffect(() => {
-      openServerConnection()
-   })
+      resetServerConnection()
+   }, [])
 
    return (
-      <div style={styles.mainContainer}>
-         <Banner />
-         <div style={styles.contentContainer}>
-            <div style={styles.leftContentContainer}>
-               <AgentSystemPanel />
+      <div style={mainContainer}>
+         <div style={menuContainer}>
+            <Menu {...{ changeTab: setSelectedTabId }} />
+         </div>
+         <div style={contentContainer}>
+            <div style={{ ...sectionContainer, ...leftSectionContainer }}>
+               <div style={mainPanelContainer}>
+                  <MainPanel {...{ selectedTabId }} />
+               </div>
+               <div style={livePanelContainer}>
+                  <LivePanel {...{ selectedTabId }} />
+               </div>
             </div>
-            <GraphPanel />
-            <div style={styles.rightContentContainer}>
-               <AdaptationPanel />
+            <div style={{ ...sectionContainer, ...rightSectionContainer }}>
+               <div style={graphPanelContainer}>
+                  <GraphPanel />
+               </div>
             </div>
          </div>
       </div>

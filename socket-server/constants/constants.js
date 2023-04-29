@@ -14,14 +14,14 @@ module.exports = {
         MONITORING: 'MONITORING',
         SCHEDULER: 'SCHEDULER'
     },
-    JOB_STATUES: {
+    JOB_STATUSES: {
         CREATED: "CREATED",
         PROCESSED: "PROCESSED",
-        IN_PROGRESS: "IN_PROGRESS",
+        IN_PROGRESS: "IN PROGRESS",
         DELAYED: "DELAYED",
         FINISHED: "FINISHED",
-        ON_BACK_UP: "ON_BACK_UP",
-        ON_HOLD: "ON_HOLD",
+        ON_BACK_UP: "ON BACK UP",
+        ON_HOLD: "ON HOLD",
         FAILED: "FAILED",
         REJECTED: "REJECTED"
     },

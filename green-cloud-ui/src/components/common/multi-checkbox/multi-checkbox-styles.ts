@@ -10,7 +10,7 @@ export const styles: Styles = {
       fontSize: 'var(--font-size-4)',
       fontFamily: 'var(--font-1)',
       color: 'var(--gray-3)',
-      fontWeight: 500,
+      fontWeight: 600,
       paddingLeft: '5px',
       paddingBottom: '10px',
    },

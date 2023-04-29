@@ -215,7 +215,7 @@ class JobStatusMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo(conversationId);
 		assertThat(result.getPerformative()).isEqualTo(INFORM);
 		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).allMatch(aid1 -> "test_scheduler" .equals(aid1.getName()));
+		assertThat(receiverIt).allMatch(aid1 -> "test_scheduler".equals(aid1.getName()));
 	}
 
 	@Test

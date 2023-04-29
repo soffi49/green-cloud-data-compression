@@ -22,6 +22,7 @@ const SingleCheckBox = ({ option, onChange }: Props) => {
    return (
       <Checkbox
          {...{
+            className: isSelected ? 'checkbox-selected' : '',
             key: value as any,
             value: value as string,
             style: checkBoxStyle,
