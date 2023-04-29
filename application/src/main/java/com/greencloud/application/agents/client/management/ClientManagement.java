@@ -77,8 +77,11 @@ public class ClientManagement extends AbstractAgentManagement {
 				.collect(filtering(entry -> List.of(ON_BACK_UP, IN_PROGRESS).contains(entry.getKey()),
 						toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-		final ClientMonitoringData data = ImmutableClientMonitoringData.of(isFinished,
-				clientAgent.getJobExecution().getJobStatus(), jobDurationMap);
+		final ClientMonitoringData data = ImmutableClientMonitoringData.builder()
+				.isFinished(isFinished)
+				.currentJobStatus(clientAgent.getJobExecution().getJobStatus())
+				.jobStatusDurationMap(jobDurationMap)
+				.build();
 
 		clientAgent.writeMonitoringData(CLIENT_MONITORING, data);
 		updateJobDurationMapGUI();

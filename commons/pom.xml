@@ -117,5 +117,7 @@
 				<version>3.0.0-M9</version>
 			</plugin>
 		</plugins>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/test/java</testSourceDirectory>
 	</build>
 </project>
