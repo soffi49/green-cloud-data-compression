@@ -6,6 +6,7 @@ import static jade.core.Runtime.instance;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static runner.domain.EngineConstants.databaseHostIp;
+import static runner.domain.EngineConstants.hostId;
 import static runner.domain.EngineConstants.localHostIp;
 import static runner.domain.EngineConstants.mainHost;
 import static runner.domain.EngineConstants.newPlatform;
@@ -231,10 +232,14 @@ public abstract class AbstractScenarioService {
 	}
 
 	private ContainerController runMainController() throws ExecutionException, InterruptedException {
+		final String platformId = mainHost ? "MainPlatform" : format("Platform%d", hostId);
 		final Profile profile = new ProfileImpl();
 		profile.setParameter(Profile.CONTAINER_NAME, "Main-Container");
 		profile.setParameter(Profile.MAIN_HOST, "localhost");
 		profile.setParameter(Profile.MAIN_PORT, "6996");
+		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
+		profile.setParameter(Profile.PLATFORM_ID, platformId);
+
 		if (localHostIp != null) {
 			profile.setParameter(Profile.EXPORT_HOST, localHostIp);
 		}
