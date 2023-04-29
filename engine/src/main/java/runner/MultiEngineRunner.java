@@ -28,8 +28,12 @@ public class MultiEngineRunner extends AbstractEngineRunner {
 
 	public static void main(String[] args) throws InterruptedException {
 		logger.info("Passed arguments: {}", Arrays.stream(args).toList());
-		String[] multiHostArguments = args[0].split("_");
-		parseMultiHostArgs(multiHostArguments);
+
+		if (args.length != 0) {
+			String[] multiHostArguments = args[0].split("_");
+			parseMultiHostArgs(multiHostArguments);
+		}
+
 		parseArguments(args, 1);
 		runScenario(MultiEngineRunner::runMultiContainerService);
 	}
