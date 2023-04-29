@@ -52,7 +52,7 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 	 * @param scenarioEventsFileName (optional) name of the XML scenario document containing list of events triggered during scenario execution
 	 */
 	public MultiContainerScenarioService(String fileName, Optional<String> scenarioEventsFileName, Integer hostId,
-			String mainHostIp) {
+			String mainHostIp) throws ExecutionException, InterruptedException {
 		super(fileName, hostId, mainHostIp, scenarioEventsFileName);
 		mainHost = false;
 		this.hostId = hostId;
@@ -76,7 +76,7 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 
 		if (hostId == CLIENTS_CONTAINER_ID.ordinal()) {
 			if (Objects.nonNull(scenarioEventsFileName)) {
-				var factory = new AgentControllerFactoryImpl(mainContainer);
+				var factory = new AgentControllerFactoryImpl(agentContainer);
 				eventService.runScenarioEvents(factory);
 			} else {
 				runClients();
@@ -88,7 +88,7 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 	}
 
 	private void runClients() {
-		AgentControllerFactory clientFactory = new AgentControllerFactoryImpl(mainContainer);
+		AgentControllerFactory clientFactory = new AgentControllerFactoryImpl(agentContainer);
 		runClientAgents(CLIENT_NUMBER, clientFactory);
 	}
 
@@ -115,7 +115,7 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 			ScenarioStructureArgs scenario,
 			List<ServerAgentArgs> serversArgs, List<GreenEnergyAgentArgs> sourcesArgs,
 			List<MonitoringAgentArgs> monitorsArgs) {
-		var factory = new AgentControllerFactoryImpl(mainContainer);
+		var factory = new AgentControllerFactoryImpl(agentContainer);
 		var servers = serversArgs.stream()
 				.filter(server -> server.getOwnerCloudNetwork().equals(cloudNetworkArgs.getName()))
 				.toList();

@@ -8,6 +8,11 @@ public final class EngineConstants {
 	public static boolean mainHost = true;
 
 	/**
+	 * Boolean value denoting if the container should be started in a new JADE platform.
+	 */
+	public static boolean newPlatform = false;
+
+	/**
 	 * Host id value denoting which CNA from scenario will run on given host, e.g. for hostId = 1 host will run
 	 * all agents defined under CNA1.
 	 */

@@ -8,6 +8,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static runner.domain.EngineConstants.databaseHostIp;
 import static runner.domain.EngineConstants.localHostIp;
 import static runner.domain.EngineConstants.mainHost;
+import static runner.domain.EngineConstants.newPlatform;
 import static runner.domain.EngineConstants.websocketHostIp;
 import static runner.service.domain.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
 import static runner.service.domain.ScenarioConstants.DEADLINE_MAX;
@@ -79,6 +80,7 @@ public abstract class AbstractScenarioService {
 	protected final String scenarioEventsFileName;
 	protected final Runtime jadeRuntime;
 	protected final ContainerController mainContainer;
+	protected final ContainerController agentContainer;
 	protected final TimescaleDatabase timescaleDatabase;
 
 	protected ScenarioStructureArgs scenario;
@@ -102,6 +104,7 @@ public abstract class AbstractScenarioService {
 		timescaleDatabase.initDatabase();
 		executorService.execute(guiController);
 		mainContainer = runMainController();
+		agentContainer = null;
 		runJadeGui();
 	}
 
@@ -113,7 +116,7 @@ public abstract class AbstractScenarioService {
 	 * @param mainHostIp                IP address of the main host
 	 */
 	protected AbstractScenarioService(String scenarioStructureFileName, Integer hostId, String mainHostIp,
-			Optional<String> scenarioEventsFileName) {
+			Optional<String> scenarioEventsFileName) throws ExecutionException, InterruptedException {
 		this.guiController = new GuiControllerImpl(format("ws://%s:8080/", websocketHostIp));
 		this.eventService = new ScenarioEventService(this);
 		this.scenarioStructureFileName = scenarioStructureFileName;
@@ -125,7 +128,9 @@ public abstract class AbstractScenarioService {
 			timescaleDatabase.initDatabase();
 		}
 		executorService.execute(guiController);
-		mainContainer = runAgentsContainer(CONTAINER_NAME_PREFIX + hostId.toString(), mainHostIp);
+
+		mainContainer = newPlatform ? runMainController() : null;
+		agentContainer = runAgentsContainer(CONTAINER_NAME_PREFIX + hostId.toString(), mainHostIp);
 	}
 
 	protected File readFile(final String fileName) {

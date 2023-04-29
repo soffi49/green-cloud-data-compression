@@ -40,17 +40,19 @@ public class MultiEngineRunner extends AbstractEngineRunner {
 
 	public static void runMultiContainerService(String scenarioStructure, Optional<String> scenarioEvents) {
 		MultiContainerScenarioService scenarioService;
-		if (mainHost) {
-			try {
+
+		try {
+			if (mainHost) {
 				scenarioService = new MultiContainerScenarioService(scenarioStructure);
 				scenarioService.run();
-			} catch (StaleProxyException | ExecutionException | InterruptedException exception) {
-				Thread.currentThread().interrupt();
-				logger.error("Failed to run scenario due to exception {}", exception.getMessage());
+			} else {
+				scenarioService = new MultiContainerScenarioService(scenarioStructure, scenarioEvents, hostId,
+						mainHostIp);
+				scenarioService.run();
 			}
-		} else {
-			scenarioService = new MultiContainerScenarioService(scenarioStructure, scenarioEvents, hostId, mainHostIp);
-			scenarioService.run();
+		} catch (StaleProxyException | ExecutionException | InterruptedException exception) {
+			Thread.currentThread().interrupt();
+			logger.error("Failed to run scenario due to exception {}", exception.getMessage());
 		}
 	}
 
