@@ -235,13 +235,13 @@ public abstract class AbstractScenarioService {
 		final String platformId = mainHost ? "MainPlatform" : format("Platform%d", hostId);
 		final Profile profile = new ProfileImpl();
 		profile.setParameter(Profile.CONTAINER_NAME, "Main-Container");
-		profile.setParameter(Profile.MAIN_HOST, "localhost");
-		profile.setParameter(Profile.MAIN_PORT, "6996");
-		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
+		profile.setParameter(Profile.MAIN_HOST, localHostIp);
+		profile.setParameter(Profile.MAIN_PORT, "1099");
 		profile.setParameter(Profile.PLATFORM_ID, platformId);
 
 		if (localHostIp != null) {
 			profile.setParameter(Profile.EXPORT_HOST, localHostIp);
+			profile.setParameter(Profile.MTPS, format("jade.mtp.http.MessageTransportProtocol(http://%s:7778/acc)", localHostIp));
 		}
 		return executorService.submit(() -> jadeRuntime.createMainContainer(profile)).get();
 	}

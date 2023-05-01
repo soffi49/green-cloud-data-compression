@@ -135,6 +135,7 @@ class AddGreenSourcePlanUnitTest {
 						.availablePower(30D)
 						.currentBackUpPowerUsage(backUpPowerValue1)
 						.isDisabled(false)
+						.serverJobs(10)
 						.build()),
 				new AgentData(now(), serverName, SERVER_MONITORING, ImmutableServerMonitoringData.builder()
 						.successRatio(1.0)
@@ -142,6 +143,7 @@ class AddGreenSourcePlanUnitTest {
 						.currentTraffic(CURRENT_TRAFFIC)
 						.availablePower(30D)
 						.currentBackUpPowerUsage(backUpPowerValue2)
+						.serverJobs(10)
 						.isDisabled(false)
 						.build()));
 	}

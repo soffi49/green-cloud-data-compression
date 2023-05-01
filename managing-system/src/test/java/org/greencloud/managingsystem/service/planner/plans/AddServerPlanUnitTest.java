@@ -116,6 +116,7 @@ class AddServerPlanUnitTest {
 				.currentTraffic(trafficValue)
 				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
+				.serverJobs(10)
 				.build()));
 	}
 }

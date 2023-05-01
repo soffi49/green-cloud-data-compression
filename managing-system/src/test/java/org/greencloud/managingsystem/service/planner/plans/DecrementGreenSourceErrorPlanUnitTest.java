@@ -399,6 +399,7 @@ class DecrementGreenSourceErrorPlanUnitTest {
 				.currentBackUpPowerUsage(0.8)
 				.currentMaximumCapacity(100)
 				.isDisabled(false)
+				.serverJobs(10)
 				.build();
 		var data2 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.7)
@@ -407,6 +408,7 @@ class DecrementGreenSourceErrorPlanUnitTest {
 				.currentBackUpPowerUsage(0.7)
 				.currentMaximumCapacity(100)
 				.isDisabled(false)
+				.serverJobs(10)
 				.build();
 		var data3 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.7)
@@ -415,6 +417,7 @@ class DecrementGreenSourceErrorPlanUnitTest {
 				.currentBackUpPowerUsage(0.8)
 				.currentMaximumCapacity(100)
 				.isDisabled(false)
+				.serverJobs(10)
 				.build();
 		var data4 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.7)
@@ -423,6 +426,7 @@ class DecrementGreenSourceErrorPlanUnitTest {
 				.currentBackUpPowerUsage(0.1)
 				.currentMaximumCapacity(100)
 				.isDisabled(false)
+				.serverJobs(10)
 				.build();
 
 		return List.of(

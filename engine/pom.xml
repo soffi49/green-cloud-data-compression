@@ -28,6 +28,11 @@
 			<groupId>com.tilab.jade</groupId>
 			<artifactId>jade</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.jade.xmpp</groupId>
+			<artifactId>jade-xmpp</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- Main Application Module-->
 		<dependency>
 			<groupId>org.greencloud.application</groupId>
@@ -96,7 +101,6 @@
 		</dependency>
 	</dependencies>
 
-
 	<build>
 		<plugins>
 			<plugin>
@@ -117,23 +121,6 @@
 						</manifest>
 					</archive>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.5.0</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 		<sourceDirectory>src/main/java</sourceDirectory>

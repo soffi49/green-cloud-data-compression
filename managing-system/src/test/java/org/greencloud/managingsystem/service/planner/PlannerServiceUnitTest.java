@@ -231,6 +231,7 @@ class PlannerServiceUnitTest {
 				.availablePower(30D)
 				.currentMaximumCapacity(200)
 				.isDisabled(false)
+				.serverJobs(10)
 				.build();
 
 		return List.of(

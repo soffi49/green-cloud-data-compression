@@ -9,6 +9,8 @@ import static runner.domain.EngineConstants.mainHost;
 import static runner.domain.EngineConstants.mainHostIp;
 import static runner.domain.EngineConstants.websocketHostIp;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -35,6 +37,7 @@ public class MultiEngineRunner extends AbstractEngineRunner {
 		}
 
 		parseArguments(args, 1);
+		retrieveLocalHostIp();
 		runScenario(MultiEngineRunner::runMultiContainerService);
 	}
 
@@ -53,6 +56,14 @@ public class MultiEngineRunner extends AbstractEngineRunner {
 		} catch (StaleProxyException | ExecutionException | InterruptedException exception) {
 			Thread.currentThread().interrupt();
 			logger.error("Failed to run scenario due to exception {}", exception.getMessage());
+		}
+	}
+
+	private static void retrieveLocalHostIp() {
+		try {
+			localHostIp = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			logger.warn("Couldn't retrieve localhostIp");
 		}
 	}
 
