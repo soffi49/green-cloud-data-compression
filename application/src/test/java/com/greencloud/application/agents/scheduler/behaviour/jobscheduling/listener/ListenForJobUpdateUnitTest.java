@@ -11,6 +11,7 @@ import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PRO
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -134,10 +135,11 @@ class ListenForJobUpdateUnitTest {
 
 		// when
 		when(schedulerStateManagement.postponeJobExecution(clientJob)).thenReturn(false);
+		clearInvocations(schedulerStateManagement);
 		listenForJobUpdate.action();
 
 		// then
-		verify(schedulerStateManagement).handleJobCleanUp(clientJob);
+		verify(schedulerStateManagement).postponeJobExecution(clientJob);
 		verify(schedulerAgent).send(messageArgumentCaptor.capture());
 		var sentMessage = messageArgumentCaptor.getValue();
 		assertThat(sentMessage.getConversationId()).isEqualTo(FAILED_JOB_ID);

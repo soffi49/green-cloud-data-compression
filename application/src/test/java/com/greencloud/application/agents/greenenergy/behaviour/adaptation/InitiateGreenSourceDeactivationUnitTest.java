@@ -18,6 +18,7 @@ import static org.mockito.quality.Strictness.LENIENT;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,7 +62,7 @@ class InitiateGreenSourceDeactivationUnitTest {
 		var testDisconnection = new GreenSourceDisconnection(null, mockAdaptationRequest, true);
 		greenEnergyAdaptationManagement.setDisconnectionState(testDisconnection);
 
-		doReturn(prepareGreenEnergyJobs()).when(greenEnergyAgent).getServerJobs();
+		doReturn(new ConcurrentHashMap<>(prepareGreenEnergyJobs())).when(greenEnergyAgent).getServerJobs();
 	}
 
 	@Test

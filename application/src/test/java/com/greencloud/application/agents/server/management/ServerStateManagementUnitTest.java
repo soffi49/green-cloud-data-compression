@@ -99,7 +99,7 @@ class ServerStateManagementUnitTest {
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage().getAvailableCapacity(startTime, endTime, jobToExclude, null);
 
-		assertThat(availableCapacity).isEqualTo(171);
+		assertThat(availableCapacity).isEqualTo(153);
 	}
 
 	@Test

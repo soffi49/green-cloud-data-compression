@@ -1,8 +1,8 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.buildJobStatusUpdate;
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.setUpClient;
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.setUpClientMultipleJobParts;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobStatusUpdate;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClientMultipleJobParts;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_BEFORE_DEADLINE_DELAY_LOG;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_BEFORE_DEADLINE_LOG;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_LOG;

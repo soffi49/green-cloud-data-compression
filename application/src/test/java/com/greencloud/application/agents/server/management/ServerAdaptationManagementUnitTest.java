@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
@@ -33,15 +34,16 @@ class ServerAdaptationManagementUnitTest {
 	private static Stream<Arguments> weightsMapProvider() {
 		return Stream.of(
 				arguments(
-						Map.of(aid("gs1"), 1, aid("gs2"), 1, aid("gs3"), 1), "gs3",
-						Map.of(aid("gs1"), 2, aid("gs2"), 2, aid("gs3"), 1), true, 1
+						new ConcurrentHashMap<>(Map.of(aid("gs1"), 1, aid("gs2"), 1, aid("gs3"), 1)), "gs3",
+						new ConcurrentHashMap<>(Map.of(aid("gs1"), 2, aid("gs2"), 2, aid("gs3"), 1)), true, 1
 				),
 				arguments(
-						Map.of(aid("gs1"), 1, aid("gs2"), 1, aid("gs3"), 1), "gs4",
-						Map.of(aid("gs1"), 1, aid("gs2"), 1, aid("gs3"), 1), false, 0
+						new ConcurrentHashMap<>(Map.of(aid("gs1"), 1, aid("gs2"), 1, aid("gs3"), 1)), "gs4",
+								new ConcurrentHashMap<>(Map.of(aid("gs1"), 1, aid("gs2"), 1, aid("gs3"), 1)), false, 0
 				),
 				arguments(
-						Map.of(aid("gs1"), 1), "gs1", Map.of(aid("gs1"), 1), true, 1
+						new ConcurrentHashMap<>(Map.of(aid("gs1"), 1)), "gs1",
+						new ConcurrentHashMap<>(Map.of(aid("gs1"), 1)), true, 1
 				)
 		);
 	}

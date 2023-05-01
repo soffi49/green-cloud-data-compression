@@ -1,4 +1,4 @@
-package com.greencloud.application.agents.client.behaviour.jobannouncement.domain;
+package com.greencloud.application.agents.client.fixtures;
 
 import static java.time.Instant.parse;
 import static org.mockito.Mockito.doReturn;

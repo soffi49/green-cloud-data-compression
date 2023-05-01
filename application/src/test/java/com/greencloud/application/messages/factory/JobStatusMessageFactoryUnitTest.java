@@ -1,17 +1,20 @@
 package com.greencloud.application.messages.factory;
 
-import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.POSTPONED_JOB_ID;
-import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.RE_SCHEDULED_JOB_ID;
-import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.SPLIT_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.DELAYED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.POSTPONED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.RE_SCHEDULED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.SPLIT_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CANCEL_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL;
-import static com.greencloud.application.messages.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobAdjustmentMessage;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobAnnouncementMessage;
+import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobCancellationMessage;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobFinishMessage;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStartedMessage;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForCNA;
@@ -20,66 +23,41 @@ import static com.greencloud.application.messages.factory.JobStatusMessageFactor
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareManualFinishMessageForServer;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareSplitJobMessageForClient;
-import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.application.messages.fixtures.Fixtures.TEST_CNA;
+import static com.greencloud.application.messages.fixtures.Fixtures.TEST_SCHEDULER;
+import static com.greencloud.application.messages.fixtures.Fixtures.TEST_SERVER;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildAdjustedJobContent;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildClientJob;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildClientJobContent;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildClientJobPart;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobInstance;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobInstanceContent;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobParts;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobPartsContent;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobStatusUpdate;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobStatusUpdateContent;
 import static com.greencloud.application.utils.TimeUtils.useMockTime;
+import static jade.lang.acl.ACLMessage.CANCEL;
+import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static java.time.Instant.parse;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import java.time.Instant;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
-import com.greencloud.application.domain.job.ImmutableJobParts;
-import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
-import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.job.JobParts;
-import com.greencloud.application.domain.job.JobStatusUpdate;
-import com.greencloud.application.messages.constants.MessageConversationConstants;
-import com.greencloud.commons.domain.job.ClientJob;
-import com.greencloud.commons.domain.job.ImmutableClientJob;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
 class JobStatusMessageFactoryUnitTest {
-
-	private static Stream<Arguments> parametersForJobStatusUpdateMessage() {
-		var jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.build();
-		var job = ImmutableClientJob.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.endTime(parse("2022-01-01T14:30:00.000Z"))
-				.deadline(parse("2022-01-01T15:30:00.000Z"))
-				.power(10)
-				.clientIdentifier("test_client")
-				.build();
-
-		return Stream.of(
-				arguments(ImmutableJobStatusUpdate.builder()
-						.jobInstance(jobInstance)
-						.changeTime(getCurrentTime())
-						.build(), false),
-				arguments(job, true)
-		);
-	}
 
 	@BeforeEach
 	void init() {
@@ -87,146 +65,58 @@ class JobStatusMessageFactoryUnitTest {
 	}
 
 	@Test
-	@DisplayName("Test prepare job status message for CNA")
-	void testPrepareJobStatusMessageForCNA() {
-		final AID aid = mock(AID.class);
-		doReturn("CNA").when(aid).getName();
+	@DisplayName("Test prepare job announcement message")
+	void testPrepareJobAnnouncementMessage() {
+		// given
+		var mockJob = buildClientJob();
+		var expectedContent = buildClientJobContent();
 
-		final ServerAgent server = mock(ServerAgent.class);
-		doReturn(aid).when(server).getOwnerCloudNetworkAgent();
-
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.build();
-		final String expectedResult =
-				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
-						+ "\"changeTime\":1641043800.000000000}";
-
-		final ACLMessage result = prepareJobStatusMessageForCNA(jobInstance, DELAYED_JOB_ID,
-				server);
+		// when
+		final ACLMessage result = prepareJobAnnouncementMessage(TEST_SCHEDULER, mockJob);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
-		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(DELAYED_JOB_ID);
+		// then
+		assertThat(result.getProtocol()).isEqualTo(ANNOUNCED_JOB_PROTOCOL);
 		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> aid.getName().equals(aid1.getName()));
-	}
-
-	@ParameterizedTest
-	@MethodSource("parametersForJobStatusUpdateMessage")
-	@DisplayName("Test prepare job status message for Client with JobStatusUpdate as content")
-	void testPrepareJobStatusMessageForClient(final Object content, boolean useJob) {
-		final String client = "test_client";
-		final String conversationId = STARTED_JOB_ID;
-
-		var result = useJob ?
-				prepareJobStatusMessageForClient((ClientJob) content, conversationId) :
-				prepareJobStatusMessageForClient(client, (JobStatusUpdate) content, conversationId);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		final String expectedResult =
-				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
-						+ "\"changeTime\":1641043800.000000000}";
-
-		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(conversationId);
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> client.equals(aid1.getName()));
+		assertThat(result.getContent()).isEqualTo(expectedContent);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SCHEDULER));
 	}
 
 	@Test
-	@DisplayName("Test prepare split job message for client")
-	void testPrepareSplitJobMessageForClient() {
-		final String client = "test_client";
-		var jobPart1 = ImmutableClientJob.builder()
-				.jobId("1#part1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.endTime(parse("2022-01-01T14:30:00.000Z"))
-				.deadline(parse("2022-01-01T15:30:00.000Z"))
-				.power(10)
-				.clientIdentifier("test_client")
-				.build();
-		var jobPart2 = ImmutableClientJob.builder()
-				.jobId("1#part2")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.endTime(parse("2022-01-01T14:30:00.000Z"))
-				.deadline(parse("2022-01-01T15:30:00.000Z"))
-				.power(10)
-				.clientIdentifier("test_client")
-				.build();
-		final JobParts content = ImmutableJobParts.builder().jobParts(List.of(jobPart1, jobPart2)).build();
+	@DisplayName("Test prepare job cancellation message")
+	void testPrepareJobCancellationMessage() {
+		// given
+		var receiver1 = new AID("test_receiver1", AID.ISGUID);
+		var receiver2 = new AID("test_receiver2", AID.ISGUID);
 
-		final ACLMessage result = prepareSplitJobMessageForClient(client, content);
+		// when
+		final ACLMessage result = prepareJobCancellationMessage("1", receiver1, receiver2);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
-		final String expectedContent = "{\"jobParts\":["
-				+ "{\"jobId\":\"1#part1\",\"startTime\":1641043800.000000000,\"endTime\":1641047400.000000000,"
-				+ "\"deadline\":1641051000.000000000,\"power\":10,\"clientIdentifier\":\"test_client\"}"
-				+ ","
-				+ "{\"jobId\":\"1#part2\",\"startTime\":1641043800.000000000,\"endTime\":1641047400.000000000,"
-				+ "\"deadline\":1641051000.000000000,\"power\":10,\"clientIdentifier\":\"test_client\"}"
-				+ "]}";
-
-		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(MessageConversationConstants.SPLIT_JOB_ID);
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> client.equals(aid1.getName()));
-	}
-
-	@Test
-	@DisplayName("Test prepare postpone job message for client")
-	void testPreparePostponeJobMessageForClient() {
-		final String client = "test_client";
-		var jobPart1 = ImmutableClientJob.builder()
-				.jobId("1#part1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.endTime(parse("2022-01-01T14:30:00.000Z"))
-				.deadline(parse("2022-01-01T15:30:00.000Z"))
-				.power(10)
-				.clientIdentifier("test_client")
-				.build();
-		final String expectedContent = "1#part1";
-
-		final ACLMessage result = preparePostponeJobMessageForClient(jobPart1);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(MessageConversationConstants.POSTPONED_JOB_ID);
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> client.equals(aid1.getName()));
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CANCEL_JOB_PROTOCOL);
+		assertThat(result.getPerformative()).isEqualTo(CANCEL);
+		assertThat(result.getContent()).isEqualTo("1");
+		assertThat(receiverIt).isNotEmpty().containsExactlyInAnyOrder(receiver1, receiver2);
 	}
 
 	@Test
 	@DisplayName("Test prepare job status message for Scheduler")
 	void testPrepareJobStatusMessageForScheduler() {
-		final AID mockScheduler = mock(AID.class);
-		doReturn("test_scheduler").when(mockScheduler).getName();
+		// given
+		var jobStatusUpdate = buildJobStatusUpdate();
+		var conversationId = FINISH_JOB_ID;
+		var expectedResult = buildJobStatusUpdateContent();
 
-		final CloudNetworkAgent mockCloudNetwork = mock(CloudNetworkAgent.class);
-		doReturn(mockScheduler).when(mockCloudNetwork).getScheduler();
+		var mockCloudNetwork = mock(CloudNetworkAgent.class);
+		doReturn(TEST_SCHEDULER).when(mockCloudNetwork).getScheduler();
 
-		final JobStatusUpdate jobStatusUpdate = ImmutableJobStatusUpdate.builder()
-				.jobInstance(ImmutableJobInstanceIdentifier.builder()
-						.jobId("1")
-						.startTime(parse("2022-01-01T13:30:00.000Z"))
-						.build())
-				.changeTime(parse("2022-01-01T13:30:00.000Z"))
-				.build();
-		final String conversationId = FINISH_JOB_ID;
-
+		// when
 		final ACLMessage result = prepareJobStatusMessageForScheduler(mockCloudNetwork, jobStatusUpdate,
 				conversationId);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
-		final String expectedResult =
-				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
-						+ "\"changeTime\":1641043800.000000000}";
-
+		// then
 		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
 		assertThat(result.getConversationId()).isEqualTo(conversationId);
 		assertThat(result.getPerformative()).isEqualTo(INFORM);
@@ -235,149 +125,197 @@ class JobStatusMessageFactoryUnitTest {
 	}
 
 	@Test
-	@DisplayName("Test prepare job announcement message")
-	void testPrepareJobAnnouncementMessage() {
-		final AID mockScheduler = mock(AID.class);
-		doReturn("test_scheduler").when(mockScheduler).getName();
+	@DisplayName("Test prepare job status message for Client with ClientJob as content")
+	void testPrepareJobStatusMessageForClientWithClientJob() {
+		// given
+		var job = buildClientJob();
+		var conversationId = STARTED_JOB_ID;
+		var expectedResult = buildJobStatusUpdateContent();
 
-		final ClientJob mockJob = ImmutableClientJob.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.endTime(parse("2022-01-01T14:30:00.000Z"))
-				.deadline(parse("2022-01-01T16:30:00.000Z"))
-				.clientIdentifier("test_client")
-				.power(10)
-				.build();
-
-		final String expectedContent =
-				"{\"jobId\":\"1\","
-						+ "\"startTime\":1641043800.000000000,"
-						+ "\"endTime\":1641047400.000000000,"
-						+ "\"deadline\":1641054600.000000000,"
-						+ "\"power\":10,"
-						+ "\"clientIdentifier\":\"test_client\"}";
-
-		final ACLMessage result = prepareJobAnnouncementMessage(mockScheduler, mockJob);
+		// when
+		var result = prepareJobStatusMessageForClient(job, conversationId);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
-		assertThat(result.getProtocol()).isEqualTo(ANNOUNCED_JOB_PROTOCOL);
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(conversationId);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> "test_client".equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare job status message for Client with JobStatusUpdate as content")
+	void testPrepareJobStatusMessageForClientWithJobStatusUpdate() {
+		// given
+		var jobUpdate = buildJobStatusUpdate();
+		var conversationId = STARTED_JOB_ID;
+		var expectedResult = buildJobStatusUpdateContent();
+
+		// when
+		var result = prepareJobStatusMessageForClient("test_client", jobUpdate, conversationId);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(conversationId);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> "test_client".equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare split job status message for Client")
+	void testPrepareSplitJobMessageForClient() {
+		// given
+		var jobParts = buildJobParts();
+		var expectedResult = buildJobPartsContent();
+
+		// when
+		var result = prepareSplitJobMessageForClient("test_client", jobParts);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(SPLIT_JOB_ID);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> "test_client".equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare postpone job message for client")
+	void testPreparePostponeJobMessageForClient() {
+		// given
+		var jobPart = buildClientJobPart();
+		var expectedContent = "1#part1";
+
+		// when
+		final ACLMessage result = preparePostponeJobMessageForClient(jobPart);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(POSTPONED_JOB_ID);
 		assertThat(result.getPerformative()).isEqualTo(INFORM);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(mockScheduler));
-	}
-
-	@Test
-	@DisplayName("Test prepare job status finish message")
-	void testPrepareJobFinishMessage() {
-		final AID aid = mock(AID.class);
-		doReturn("Sender").when(aid).getName();
-		final String id = "1";
-		final String instanceId = "f1";
-		final String clientId = "test_aid";
-		final int power = 10;
-		final Instant start = parse("2022-01-01T13:30:00.000Z");
-		final Instant end = parse("2022-01-01T14:30:00.000Z");
-		final Instant deadline = parse("2022-01-01T15:30:00.000Z");
-
-		final String expectedResult =
-				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
-						+ "\"changeTime\":1641043800.000000000}";
-
-		final ACLMessage result = prepareJobFinishMessage(ImmutableClientJob.builder()
-				.jobId(id)
-				.clientIdentifier(clientId)
-				.power(power)
-				.startTime(start)
-				.endTime(end)
-				.deadline(deadline)
-				.jobInstanceId(instanceId)
-				.build(), aid);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(FINISH_JOB_ID);
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> aid.getName().equals(aid1.getName()));
-	}
-
-	@Test
-	@DisplayName("Test prepare job status started message")
-	void testPrepareJobStartedMessage() {
-		final AID aid = mock(AID.class);
-		doReturn("Sender").when(aid).getName();
-		final String id = "1";
-		final String instanceId = "f1";
-		final String clientId = "test_aid";
-		final int power = 10;
-		final Instant start = parse("2022-01-01T13:30:00.000Z");
-		final Instant end = parse("2022-01-01T14:30:00.000Z");
-		final Instant deadline = parse("2022-01-01T15:30:00.000Z");
-
-		final String expectedResult =
-				"{\"jobInstance\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
-						+ "\"changeTime\":1641043800.000000000}";
-
-		final ACLMessage result = prepareJobStartedMessage(ImmutableClientJob.builder()
-				.jobId(id)
-				.clientIdentifier(clientId)
-				.power(power)
-				.startTime(start)
-				.endTime(end)
-				.deadline(deadline)
-				.jobInstanceId(instanceId)
-				.build(), aid);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(STARTED_JOB_ID);
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> aid.getName().equals(aid1.getName()));
-	}
-
-	@Test
-	@DisplayName("Test prepare job manual finish message")
-	void testPrepareJobManualFinishMessage() {
-		final AID aid = mock(AID.class);
-		doReturn("Sender").when(aid).getName();
-
-		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.build();
-		final String expectedResult = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
-
-		final ACLMessage result = prepareManualFinishMessageForServer(jobInstance, aid);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		assertThat(result.getProtocol()).isEqualTo(MANUAL_JOB_FINISH_PROTOCOL);
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).anyMatch(aid1 -> aid.getName().equals(aid1.getName()));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> "test_client".equals(aid1.getName()));
 	}
 
 	@Test
 	@DisplayName("Test prepare job adjustment message")
 	void testPrepareJobAdjustmentMessage() {
-		final String client = "test_client";
-		final ClientJob adjustedJob = ImmutableClientJob.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.endTime(parse("2022-01-01T14:30:00.000Z"))
-				.deadline(parse("2022-01-01T16:30:00.000Z"))
-				.clientIdentifier("test_client")
-				.power(10)
-				.build();
-		final String expectedResult =
-				"{\"newJobStart\":1641043800.000000000,\"newJobEnd\":1641047400.000000000,\"jobId\":\"1\"}";
+		// given
+		var adjustedJob = buildClientJob();
+		var expectedResult = buildAdjustedJobContent();
 
-		final ACLMessage result = prepareJobAdjustmentMessage(client, adjustedJob);
+		// when
+		final ACLMessage result = prepareJobAdjustmentMessage("test_client", adjustedJob);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
+		// then
 		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
-		assertThat(result.getConversationId()).isEqualTo(MessageConversationConstants.RE_SCHEDULED_JOB_ID);
+		assertThat(result.getConversationId()).isEqualTo(RE_SCHEDULED_JOB_ID);
 		assertThat(result.getContent()).isEqualTo(expectedResult);
-		assertThat(receiverIt).anyMatch(aid1 -> client.equals(aid1.getName()));
+		assertThat(receiverIt).anyMatch(aid1 -> "test_client".equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare job status message for CNA")
+	void testPrepareJobStatusMessageForCNA() {
+		// given
+		var jobInstance = buildJobInstance();
+		var expectedResult = buildJobStatusUpdateContent();
+
+		var server = mock(ServerAgent.class);
+		doReturn(TEST_CNA).when(server).getOwnerCloudNetworkAgent();
+
+		// when
+		final ACLMessage result = prepareJobStatusMessageForCNA(jobInstance, DELAYED_JOB_ID, server);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(DELAYED_JOB_ID);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> TEST_CNA.getName().equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare job status message for CNA and failed job")
+	void testPrepareJobStatusMessageForCNAFailedJob() {
+		// given
+		var jobInstance = buildJobInstance();
+		var expectedResult = buildJobStatusUpdateContent();
+
+		var server = mock(ServerAgent.class);
+		doReturn(TEST_CNA).when(server).getOwnerCloudNetworkAgent();
+
+		// when
+		final ACLMessage result = prepareJobStatusMessageForCNA(jobInstance, FAILED_JOB_ID, server);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(FAILED_JOB_PROTOCOL);
+		assertThat(result.getPerformative()).isEqualTo(FAILURE);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> TEST_CNA.getName().equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare job status finish message")
+	void testPrepareJobFinishMessage() {
+		// given
+		var job = buildClientJob();
+		var expectedResult = buildJobStatusUpdateContent();
+
+		// when
+		final ACLMessage result = prepareJobFinishMessage(job, TEST_CNA);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(FINISH_JOB_ID);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> TEST_CNA.getName().equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare job status started message")
+	void testPrepareJobStartedMessage() {
+		// given
+		var job = buildClientJob();
+		var expectedResult = buildJobStatusUpdateContent();
+
+		// when
+		final ACLMessage result = prepareJobStartedMessage(job, TEST_CNA);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getProtocol()).isEqualTo(CHANGE_JOB_STATUS_PROTOCOL);
+		assertThat(result.getConversationId()).isEqualTo(STARTED_JOB_ID);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid1 -> TEST_CNA.getName().equals(aid1.getName()));
+	}
+
+	@Test
+	@DisplayName("Test prepare job manual finish message")
+	void testPrepareJobManualFinishMessage() {
+		//given
+		var jobInstance = buildJobInstance();
+		var expectedResult = buildJobInstanceContent();
+
+		// when
+		final ACLMessage result = prepareManualFinishMessageForServer(jobInstance, TEST_SERVER);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// given
+		assertThat(result.getProtocol()).isEqualTo(MANUAL_JOB_FINISH_PROTOCOL);
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo(expectedResult);
+		assertThat(receiverIt).anyMatch(aid1 -> TEST_SERVER.getName().equals(aid1.getName()));
 	}
 }

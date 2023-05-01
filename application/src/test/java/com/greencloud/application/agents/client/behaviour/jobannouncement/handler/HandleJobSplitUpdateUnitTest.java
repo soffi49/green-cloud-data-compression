@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.buildJobParts;
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.setUpClient;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobParts;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
 import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.SPLIT_JOB_ID;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;

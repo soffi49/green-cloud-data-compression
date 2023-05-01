@@ -216,7 +216,7 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 	}
 
 	void prepareOwnedGreenSources() {
-		var testGreenSources = new HashMap<>(Map.of(
+		var testGreenSources = new ConcurrentHashMap<>(Map.of(
 				new AID("test_gs1", AID.ISGUID), true,
 				new AID("test_gs2", AID.ISGUID), false,
 				new AID("test_gs3", AID.ISGUID), true

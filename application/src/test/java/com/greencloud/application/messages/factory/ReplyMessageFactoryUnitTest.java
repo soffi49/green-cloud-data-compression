@@ -1,13 +1,23 @@
 package com.greencloud.application.messages.factory;
 
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CONFIRMED_TRANSFER_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareInformReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
+import static com.greencloud.application.messages.fixtures.Fixtures.TEST_SERVER;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobInstance;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobInstanceContent;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildJobWithProtocolContent;
+import static com.greencloud.application.messages.fixtures.Fixtures.buildRequest;
+import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static jade.lang.acl.ACLMessage.AGREE;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
+import static jade.lang.acl.ACLMessage.PROPOSE;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.time.Instant.parse;
@@ -27,120 +37,154 @@ import jade.lang.acl.ACLMessage;
 
 class ReplyMessageFactoryUnitTest {
 
-	AID MOCK_SENDER;
-	ACLMessage MOCK_REQUEST;
-
-	@BeforeEach
-	void init() {
-		prepareTestRequestMessage();
-	}
-
 	@Test
 	@DisplayName("Test prepare reply")
 	void testPrepareReply() {
-		final int performative = REFUSE;
-		final JobInstanceIdentifier content = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		// given
+		var performative = REFUSE;
+		var content = buildJobInstance();
+		var expectedContent = buildJobInstanceContent();
 
-		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
-
-		var result = prepareReply(MOCK_REQUEST, content, performative);
+		// when
+		var result = prepareReply(buildRequest(), content, performative);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
+		// then
 		assertThat(result.getPerformative()).isEqualTo(performative);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
+	}
+
+	@Test
+	@DisplayName("Test prepare reply with protocol")
+	void testPrepareReplyWithProtocol() {
+		// given
+		var performative = REFUSE;
+		var protocol = "response_protocol";
+		var content = buildJobInstance();
+		var expectedContent = buildJobInstanceContent();
+
+		// when
+		var result = prepareReply(buildRequest(), content, performative, protocol);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getPerformative()).isEqualTo(performative);
+		assertThat(result.getContent()).isEqualTo(expectedContent);
+		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
+		assertThat(result.getProtocol()).isEqualTo(protocol);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
 	}
 
 	@Test
 	@DisplayName("Test prepare string reply")
 	void testPrepareStringReply() {
+		// given
 		final int performative = AGREE;
 		final String content = "test_content";
 
-		var result = prepareStringReply(MOCK_REQUEST, content, performative);
+		// when
+		var result = prepareStringReply(buildRequest(), content, performative);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
+		// then
 		assertThat(result.getPerformative()).isEqualTo(performative);
 		assertThat(result.getContent()).isEqualTo(content);
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
 	}
 
 	@Test
 	@DisplayName("Test prepare refuse reply")
 	void testPrepareRefuseReply() {
-		var result = prepareRefuseReply(MOCK_REQUEST);
+		// when
+		var result = prepareRefuseReply(buildRequest());
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
+		// then
 		assertThat(result.getPerformative()).isEqualTo(REFUSE);
 		assertThat(result.getContent()).isEqualTo("REFUSE");
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
 	}
 
 	@Test
 	@DisplayName("Test prepare failure reply with default content")
 	void testPrepareFailureNoContentReply() {
-		var result = prepareFailureReply(MOCK_REQUEST);
+		// when
+		var result = prepareFailureReply(buildRequest());
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
+		// then
 		assertThat(result.getPerformative()).isEqualTo(FAILURE);
 		assertThat(result.getContent()).isEqualTo("FAILURE");
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
-	}
-
-	@Test
-	@DisplayName("Test prepare inform reply")
-	void testPrepareInformReply() {
-		var result = prepareInformReply(MOCK_REQUEST);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		assertThat(result.getPerformative()).isEqualTo(INFORM);
-		assertThat(result.getContent()).isEqualTo("INFORM");
-		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
-		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
 	}
 
 	@Test
 	@DisplayName("Test prepare failure reply message")
 	void testPrepareFailureReply() {
-		var content = ImmutableJobInstanceIdentifier.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T13:30:00.000Z"))
-				.build();
+		// given
+		var protocol = "response_protocol";
+		var content = buildJobInstance();
+		var expectedContent = buildJobInstanceContent();
 
-		var result = prepareFailureReply(MOCK_REQUEST, content, "TEST_PROTOCOL");
+		// when
+		var result = prepareFailureReply(buildRequest(), content, protocol);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
 
 		assertThat(result.getPerformative()).isEqualTo(FAILURE);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
-		assertThat(result.getProtocol()).isEqualTo("TEST_PROTOCOL");
-		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(result.getProtocol()).isEqualTo(protocol);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
 	}
 
-	private void prepareTestRequestMessage() {
-		final AID testAID = mock(AID.class);
-		doReturn("test_receiver").when(testAID).getName();
+	@Test
+	@DisplayName("Test prepare inform reply")
+	void testPrepareInformReply() {
+		// when
+		var result = prepareInformReply(buildRequest());
+		final Iterable<AID> receiverIt = result::getAllReceiver;
 
-		final ACLMessage testMessage = new ACLMessage(REQUEST);
-		testMessage.setProtocol("test_protocol");
-		testMessage.setConversationId("test_conversationId");
-		testMessage.addReceiver(testAID);
+		// then
+		assertThat(result.getPerformative()).isEqualTo(INFORM);
+		assertThat(result.getContent()).isEqualTo("INFORM");
+		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
+		assertThat(result.getProtocol()).isEqualTo("test_protocol");
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
+	}
 
-		MOCK_REQUEST = testMessage;
-		MOCK_SENDER = testAID;
+	@Test
+	@DisplayName("Test prepare accept job offer reply")
+	void testPrepareAcceptJobOfferReply() {
+		// given
+		var message = new ACLMessage(PROPOSE);
+		message.setSender(TEST_SERVER);
+		message.setProtocol(SERVER_JOB_CFP_PROTOCOL);
+		message.setReplyWith("P1671062222360_1");
+		message.setConversationId("C805691330_Server_1671062222359_0");
+
+		var jobInstance = buildJobInstance();
+		var protocol = CONFIRMED_TRANSFER_PROTOCOL;
+		var expectedContent = buildJobWithProtocolContent(protocol);
+
+		// when
+		var result = prepareAcceptJobOfferReply(message, jobInstance, protocol);
+		final Iterable<AID> receiverIt = result::getAllReceiver;
+
+		// then
+		assertThat(result.getPerformative()).isEqualTo(ACCEPT_PROPOSAL);
+		assertThat(result.getContent()).isEqualTo(expectedContent);
+		assertThat(result.getInReplyTo()).isEqualTo("P1671062222360_1");
+		assertThat(result.getConversationId()).isEqualTo("C805691330_Server_1671062222359_0");
+		assertThat(result.getProtocol()).isEqualTo(SERVER_JOB_CFP_PROTOCOL);
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(TEST_SERVER));
 	}
 }

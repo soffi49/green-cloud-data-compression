@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.buildJobTimeFrames;
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.setUpClient;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobTimeFrames;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
 import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.RE_SCHEDULED_JOB_ID;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static jade.lang.acl.ACLMessage.INFORM;

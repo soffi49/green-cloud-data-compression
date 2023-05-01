@@ -1,9 +1,8 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.initiator;
 
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.domain.Fixtures.buildJobExecutionInstance;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobExecutionInstance;
 import static com.greencloud.application.agents.client.constants.ClientAgentConstants.SCHEDULER_AGENT;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
-import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobAnnouncementMessage;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;

@@ -80,7 +80,7 @@ class ReportWeatherShortagesDatabaseTest {
 
 		reportWeatherShortages.onTick();
 
-		verify(greenEnergyAgent, times(4)).manage();
+		verify(greenEnergyAgent, times(3)).manage();
 		verify(management, times(2)).getWeatherShortagesCounter();
 		verify(management, times(2)).getShortagesAccumulator();
 

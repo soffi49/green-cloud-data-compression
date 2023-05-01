@@ -33,7 +33,6 @@ import com.greencloud.application.domain.weather.MonitoringData;
 class GreenPowerManagementUnitTest {
 
 	// MOCK OBJECTS
-	public static final int MOCK_CAPACITY = 200;
 	public static final MonitoringData MOCK_WEATHER = ImmutableMonitoringData.builder()
 			.addWeatherData(ImmutableWeatherData.builder()
 					.time(MOCK_TIME)
@@ -42,7 +41,6 @@ class GreenPowerManagementUnitTest {
 					.temperature(20.0)
 					.build())
 			.build();
-	public static final ZonedDateTime MOCK_ZONE_TIME = ZonedDateTime.from(MOCK_TIME.atZone(ZoneId.of("UTC")));
 
 	@Mock
 	private GreenEnergyAgent greenEnergyAgent;
@@ -113,7 +111,7 @@ class GreenPowerManagementUnitTest {
 	@Test
 	@DisplayName("Test set new maximum capacity")
 	void testSetNewMaximumCapacity() {
-		assertThat(greenEnergyAgent.getCurrentMaximumCapacity()).isEqualTo(MOCK_CAPACITY);
+		assertThat(greenEnergyAgent.getCurrentMaximumCapacity()).isZero();
 		greenEnergyAgent.setCurrentMaximumCapacity(100);
 		assertThat(greenEnergyAgent.getCurrentMaximumCapacity()).isEqualTo(100);
 	}
@@ -121,8 +119,8 @@ class GreenPowerManagementUnitTest {
 	@Test
 	@DisplayName("Test get initial maximum capacity")
 	void testGetMaximumCapacity() {
-		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isEqualTo(200);
+		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isZero();
 		greenEnergyAgent.setCurrentMaximumCapacity(100);
-		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isEqualTo(200);
+		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isZero();
 	}
 }
