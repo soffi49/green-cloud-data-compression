@@ -1,9 +1,13 @@
 package com.greencloud.application.messages.factory;
 
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CANCEL_JOB_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static jade.core.AID.ISGUID;
@@ -60,7 +64,7 @@ public class JobStatusMessageFactory {
 	public static ACLMessage prepareJobCancellationMessage(final String jobId, final AID... receivers) {
 		return MessageBuilder.builder()
 				.withPerformative(CANCEL)
-				.withMessageProtocol(MessageProtocolConstants.CANCEL_JOB_PROTOCOL)
+				.withMessageProtocol(CANCEL_JOB_PROTOCOL)
 				.withStringContent(jobId)
 				.withReceivers(receivers)
 				.build();
@@ -155,10 +159,10 @@ public class JobStatusMessageFactory {
 		final JobStatusUpdate jobStatusUpdate = new ImmutableJobStatusUpdate(jobInstanceId, getCurrentTime());
 		final AID cna = server.getOwnerCloudNetworkAgent();
 
-		if (Objects.equals(conversationId, MessageConversationConstants.FAILED_JOB_ID)) {
+		if (Objects.equals(conversationId, FAILED_JOB_ID)) {
 			return MessageBuilder.builder()
 					.withPerformative(FAILURE)
-					.withMessageProtocol(MessageProtocolConstants.FAILED_JOB_PROTOCOL)
+					.withMessageProtocol(FAILED_JOB_PROTOCOL)
 					.withObjectContent(jobStatusUpdate)
 					.withReceivers(cna)
 					.build();
@@ -214,7 +218,7 @@ public class JobStatusMessageFactory {
 			final AID... receivers) {
 		final MessageBuilder messageBasis = MessageBuilder.builder()
 				.withPerformative(INFORM)
-				.withMessageProtocol(MessageProtocolConstants.CHANGE_JOB_STATUS_PROTOCOL)
+				.withMessageProtocol(CHANGE_JOB_STATUS_PROTOCOL)
 				.withConversationId(conversationId)
 				.withReceivers(receivers);
 

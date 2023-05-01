@@ -3,6 +3,7 @@ package com.greencloud.application.messages.factory;
 import static com.greencloud.application.utils.JobUtils.getTimetableOfJobs;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
+import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Objects.nonNull;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
@@ -31,7 +32,7 @@ public class PowerCheckMessageFactory {
 	public static ACLMessage preparePowerCheckRequest(final GreenEnergyAgent greenEnergyAgent, final ServerJob job,
 			final String conversationId, final String protocol) {
 		return MessageBuilder.builder()
-				.withPerformative(ACLMessage.REQUEST)
+				.withPerformative(REQUEST)
 				.withObjectContent(createMessageContent(job, greenEnergyAgent))
 				.withReceivers(greenEnergyAgent.getMonitoringAgent())
 				.withMessageProtocol(protocol)

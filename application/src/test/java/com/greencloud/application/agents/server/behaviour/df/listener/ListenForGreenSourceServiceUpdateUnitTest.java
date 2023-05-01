@@ -17,7 +17,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.LENIENT;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,10 +25,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.agents.server.management.ServerAdaptationManagement;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -38,17 +39,21 @@ import jade.lang.acl.ACLMessage;
 @MockitoSettings(strictness = LENIENT)
 class ListenForGreenSourceServiceUpdateUnitTest {
 
-	@Mock
+	@Spy
 	private ServerAgent mockServerAgent;
+	@Mock
+	private ServerAdaptationManagement mockAdaptationManagement;
 
 	private ListenForGreenSourceServiceUpdate listenForGreenSourceServiceUpdate;
 
 	@BeforeEach
 	void init() {
 		mockServerAgent = spy(ServerAgent.class);
-
-		doReturn(new HashMap<>()).when(mockServerAgent).getGreenSourceForJobMap();
+		doReturn(new ConcurrentHashMap<>()).when(mockServerAgent).getGreenSourceForJobMap();
 		prepareOwnedGreenSources();
+
+		mockAdaptationManagement = spy(new ServerAdaptationManagement(mockServerAgent));
+		doReturn(mockAdaptationManagement).when(mockServerAgent).adapt();
 
 		listenForGreenSourceServiceUpdate = new ListenForGreenSourceServiceUpdate(mockServerAgent);
 	}
@@ -184,7 +189,7 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 		receivedInfo.setProtocol(CONNECT_GREEN_SOURCE_PROTOCOL);
 		receivedInfo.setSender(testAID);
 
-		doReturn(Map.of(testAID, true)).when(mockServerAgent).getOwnedGreenSources();
+		doReturn(new ConcurrentHashMap<>(Map.of(testAID, true))).when(mockServerAgent).getOwnedGreenSources();
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -201,7 +206,7 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 		receivedInfo.setProtocol(CONNECT_GREEN_SOURCE_PROTOCOL);
 		receivedInfo.setSender(testAID);
 
-		doReturn(new HashMap<>()).when(mockServerAgent).getOwnedGreenSources();
+		doReturn(new ConcurrentHashMap<>()).when(mockServerAgent).getOwnedGreenSources();
 		mockServerAgent.setWeightsForGreenSourcesMap(new ConcurrentHashMap<>());
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
@@ -42,7 +43,7 @@ class GreenPowerManagementUnitTest {
 					.build())
 			.build();
 
-	@Mock
+	@Spy
 	private GreenEnergyAgent greenEnergyAgent;
 
 	private GreenPowerManagement greenPowerManagement;
@@ -50,6 +51,9 @@ class GreenPowerManagementUnitTest {
 	@BeforeEach
 	void init() {
 		doReturn(MOCK_LOCATION).when(greenEnergyAgent).getLocation();
+		greenEnergyAgent.setCurrentMaximumCapacity(200);
+		greenEnergyAgent.setInitialMaximumCapacity(200);
+
 		greenPowerManagement = new GreenPowerManagement(greenEnergyAgent);
 	}
 
@@ -57,18 +61,18 @@ class GreenPowerManagementUnitTest {
 	@DisplayName("Test get available power for wind source")
 	void testGetAvailablePowerWindSource() {
 		doReturn(WIND).when(greenEnergyAgent).getEnergyType();
-		final Optional<Double> result = greenPowerManagement.getAvailablePower(MOCK_TIME, MOCK_WEATHER);
+		final double result = greenPowerManagement.getAvailableGreenPower(MOCK_WEATHER, MOCK_TIME);
 
-		assertThat(result).contains(200D);
+		assertThat(result).isEqualTo(200D);
 	}
 
 	@Test
 	@DisplayName("Test get available power for solar source")
 	void testGetAvailablePowerSolarSource() {
 		doReturn(SOLAR).when(greenEnergyAgent).getEnergyType();
-		final Optional<Double> result = greenPowerManagement.getAvailablePower(MOCK_TIME, MOCK_WEATHER);
+		final double result = greenPowerManagement.getAvailableGreenPower(MOCK_WEATHER, MOCK_TIME);
 
-		assertThat(result).contains(30D);
+		assertThat(result).isCloseTo(30D, Offset.offset(0.001));
 	}
 
 	@Test
@@ -76,9 +80,9 @@ class GreenPowerManagementUnitTest {
 	void testGetAvailablePowerSolarSourceNightTime() {
 		doReturn(SOLAR).when(greenEnergyAgent).getEnergyType();
 		final Instant testTime = parse("2022-01-01T00:00:00.000Z");
-		final Optional<Double> result = greenPowerManagement.getAvailablePower(testTime, MOCK_WEATHER);
+		final double result = greenPowerManagement.getAvailableGreenPower(MOCK_WEATHER, testTime);
 
-		assertThat(result).contains(0D);
+		assertThat(result).isEqualTo(0D);
 	}
 
 	@Test
@@ -104,14 +108,14 @@ class GreenPowerManagementUnitTest {
 						.build())
 				.build();
 
-		final Optional<Double> result = greenPowerManagement.getAvailablePower(MOCK_TIME, mockMonitoringData);
-		assertThat(result).contains(200D);
+		final double result = greenPowerManagement.getAvailableGreenPower(mockMonitoringData, MOCK_TIME);
+		assertThat(result).isEqualTo(200D);
 	}
 
 	@Test
 	@DisplayName("Test set new maximum capacity")
 	void testSetNewMaximumCapacity() {
-		assertThat(greenEnergyAgent.getCurrentMaximumCapacity()).isZero();
+		assertThat(greenEnergyAgent.getCurrentMaximumCapacity()).isEqualTo(200);
 		greenEnergyAgent.setCurrentMaximumCapacity(100);
 		assertThat(greenEnergyAgent.getCurrentMaximumCapacity()).isEqualTo(100);
 	}
@@ -119,8 +123,8 @@ class GreenPowerManagementUnitTest {
 	@Test
 	@DisplayName("Test get initial maximum capacity")
 	void testGetMaximumCapacity() {
-		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isZero();
+		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isEqualTo(200);
 		greenEnergyAgent.setCurrentMaximumCapacity(100);
-		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isZero();
+		assertThat(greenEnergyAgent.getInitialMaximumCapacity()).isEqualTo(200);
 	}
 }

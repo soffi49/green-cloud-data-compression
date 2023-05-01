@@ -1,7 +1,10 @@
 package com.greencloud.application.agents.scheduler;
 
+import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIORITY;
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -11,51 +14,82 @@ import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Spy;
 
-import com.database.knowledge.domain.action.AdaptationActionEnum;
+import com.greencloud.application.agents.scheduler.managment.SchedulerAdaptationManagement;
+import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.gui.agents.SchedulerAgentNode;
 
 class AbstractSchedulerAgentTest {
+
 	SchedulerAgent schedulerAgent;
 	SchedulerAgentNode schedulerAgentNode;
+	@Spy
+	private SchedulerAdaptationManagement mockAdaptationManagement;
+	@Spy
+	private SchedulerStateManagement mockStateManagement;
 
 	@BeforeEach
 	void init() {
 		schedulerAgent = spy(SchedulerAgent.class);
 		schedulerAgentNode = mock(SchedulerAgentNode.class);
 
-		doReturn(schedulerAgentNode).when(schedulerAgent).getAgentNode();
+		schedulerAgent.setMaximumQueueSize(10);
 		schedulerAgent.setUpPriorityQueue();
+		schedulerAgent.setDeadlinePriority(1);
+		schedulerAgent.setPowerPriority(1);
+
+		doReturn(schedulerAgentNode).when(schedulerAgent).getAgentNode();
+
+		mockAdaptationManagement = spy(new SchedulerAdaptationManagement(schedulerAgent));
+		mockStateManagement = spy(new SchedulerStateManagement(schedulerAgent));
+
+		doReturn(mockAdaptationManagement).when(schedulerAgent).adapt();
+		doReturn(mockStateManagement).when(schedulerAgent).manage();
+
+		doNothing().when(mockStateManagement).updateJobQueueGUI();
 	}
 
 	@Test
 	@DisplayName("Test executing adaptation action for incrementing deadline weight")
 	void testExecuteIncreaseDeadline() {
-		var adaptationAction = getAdaptationAction(AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY);
+		var adaptationAction = getAdaptationAction(INCREASE_DEADLINE_PRIORITY);
 		schedulerAgent.executeAction(adaptationAction, null);
 
-		assertThat(schedulerAgent.getDeadlinePriority()).isZero();
+		assertThat(schedulerAgent.getDeadlinePriority()).isEqualTo(2);
 	}
 
 	@Test
 	@DisplayName("Test executing adaptation action for incrementing power division weight")
 	void testExecuteIncreasePowerDivision() {
-		var adaptationAction = getAdaptationAction(AdaptationActionEnum.INCREASE_POWER_PRIORITY);
+		var adaptationAction = getAdaptationAction(INCREASE_POWER_PRIORITY);
 		schedulerAgent.executeAction(adaptationAction, null);
 
-		assertThat(schedulerAgent.getDeadlinePriority()).isZero();
+		assertThat(schedulerAgent.getPowerPriority()).isEqualTo(2);
 	}
 
 	@Test
 	@DisplayName("Test adding job to the queue - test deadline priority")
 	void testAddJobToTheQueueDeadlinePriority() {
-		var mockJob = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T12:00:00.000Z")).power(100).build();
-		var mockJob2 = ImmutableClientJob.builder().jobId("2").clientIdentifier("Client2")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T14:00:00.000Z")).power(100).build();
+		var mockJob = ImmutableClientJob.builder()
+				.jobId("1")
+				.jobInstanceId("jobInstance1")
+				.clientIdentifier("Client1")
+				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
+				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
+				.deadline(Instant.parse("2022-01-01T12:00:00.000Z"))
+				.power(100)
+				.build();
+		var mockJob2 = ImmutableClientJob.builder()
+				.jobId("2")
+				.jobInstanceId("jobInstance2")
+				.clientIdentifier("Client2")
+				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
+				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
+				.deadline(Instant.parse("2022-01-01T14:00:00.000Z"))
+				.power(100)
+				.build();
 
 		schedulerAgent.getJobsToBeExecuted().put(mockJob2);
 		schedulerAgent.getJobsToBeExecuted().put(mockJob);
@@ -66,12 +100,24 @@ class AbstractSchedulerAgentTest {
 	@Test
 	@DisplayName("Test adding job to the queue - test power priority")
 	void testAddJobToTheQueuePowerPriority() {
-		var mockJob = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T12:00:00.000Z")).power(100).build();
-		var mockJob2 = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
-				.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
-				.deadline(Instant.parse("2022-01-01T12:00:00.000Z")).power(110).build();
+		var mockJob = ImmutableClientJob.builder()
+				.jobId("1")
+				.jobInstanceId("jobInstance1")
+				.clientIdentifier("Client1")
+				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
+				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
+				.deadline(Instant.parse("2022-01-01T12:00:00.000Z"))
+				.power(100)
+				.build();
+		var mockJob2 = ImmutableClientJob.builder()
+				.jobId("2")
+				.jobInstanceId("jobInstance2")
+				.clientIdentifier("Client2")
+				.startTime(Instant.parse("2022-01-01T08:00:00.000Z"))
+				.endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
+				.deadline(Instant.parse("2022-01-01T14:00:00.000Z"))
+				.power(110)
+				.build();
 
 		schedulerAgent.getJobsToBeExecuted().put(mockJob2);
 		schedulerAgent.getJobsToBeExecuted().put(mockJob);

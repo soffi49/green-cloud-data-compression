@@ -138,7 +138,7 @@ class GreenEnergyStateManagementUnitTest {
 	@Test
 	@DisplayName("Test get available capacity at given moment for positive power")
 	void testGetAvailableCapacityAtGivenMoment() {
-		doReturn(100.0).when(MOCK_POWER_MANAGEMENT).getAvailablePower(any(), any());
+		doReturn(100.0).when(MOCK_POWER_MANAGEMENT).getAvailableGreenPower(any(), any());
 		final Instant mockMoment = convertToRealTime(Instant.parse("2022-01-01T09:00:00.000Z"));
 		final MonitoringData monitoringData = ImmutableMonitoringData.builder().addWeatherData(MOCK_WEATHER).build();
 		final Optional<Double> result = mockGreenEnergyAgent.power().getAvailablePower(mockMoment, monitoringData);
@@ -149,7 +149,7 @@ class GreenEnergyStateManagementUnitTest {
 	@Test
 	@DisplayName("Test get available capacity at given moment for negative power")
 	void testGetAvailableCapacityAtGivenMomentNoPower() {
-		doReturn(10.0).when(MOCK_POWER_MANAGEMENT).getAvailablePower(any(), any());
+		doReturn(10.0).when(MOCK_POWER_MANAGEMENT).getAvailableGreenPower(any(), any());
 		final Instant mockMoment = convertToRealTime(Instant.parse("2022-01-01T09:00:00.000Z"));
 		final MonitoringData monitoringData = ImmutableMonitoringData.builder().addWeatherData(MOCK_WEATHER).build();
 		final Optional<Double> result = mockGreenEnergyAgent.power().getAvailablePower(mockMoment, monitoringData);
@@ -226,7 +226,7 @@ class GreenEnergyStateManagementUnitTest {
 		mockGreenEnergyAgent.manage().removeJob(mockJob);
 
 		verify(MOCK_ADAPTATION_MANAGEMENT, times(2)).getDisconnectionState();
-		verify(mockGreenEnergyAgent, times(1)).getServerJobs();
+		verify(mockGreenEnergyAgent, times(2)).getServerJobs();
 		verify(mockGreenEnergyAgent, times(0)).addBehaviour(any());
 	}
 
@@ -254,8 +254,8 @@ class GreenEnergyStateManagementUnitTest {
 
 		mockGreenEnergyAgent.manage().removeJob(mockJob);
 
-		verify(MOCK_ADAPTATION_MANAGEMENT, times(4)).getDisconnectionState();
-		verify(mockGreenEnergyAgent, times(1)).getServerJobs();
+		verify(MOCK_ADAPTATION_MANAGEMENT, times(3)).getDisconnectionState();
+		verify(mockGreenEnergyAgent, times(2)).getServerJobs();
 		verify(mockGreenEnergyAgent, times(1)).addBehaviour(
 				argThat(behaviour -> behaviour instanceof InitiateGreenSourceDisconnection));
 	}
@@ -283,7 +283,7 @@ class GreenEnergyStateManagementUnitTest {
 
 		mockGreenEnergyAgent.manage().removeJob(testJob);
 
-		verify(MOCK_ADAPTATION_MANAGEMENT, times(4)).getDisconnectionState();
+		verify(MOCK_ADAPTATION_MANAGEMENT, times(3)).getDisconnectionState();
 		verify(mockGreenEnergyAgent, times(2)).getServerJobs();
 		verify(mockGreenEnergyAgent, times(1)).addBehaviour(
 				argThat(behaviour -> behaviour instanceof InitiateGreenSourceDisconnection));
@@ -350,13 +350,15 @@ class GreenEnergyStateManagementUnitTest {
 		final GreenEnergyStateManagement management = new GreenEnergyStateManagement(mockGreenEnergyAgent);
 		MOCK_MANAGEMENT = spy(management);
 		MOCK_ADAPTATION_MANAGEMENT = spy(new GreenEnergyAdaptationManagement(mockGreenEnergyAgent));
-		mockGreenEnergyAgent.addAgentManagement(MOCK_POWER_MANAGEMENT, POWER_MANAGEMENT);
 
+		doReturn(100).when(mockGreenEnergyAgent).getCurrentMaximumCapacity();
 		doReturn(WIND).when(mockGreenEnergyAgent).getEnergyType();
 		doReturn(MOCK_PRICE).when(mockGreenEnergyAgent).getPricePerPowerUnit();
 		doReturn(MOCK_MANAGEMENT).when(mockGreenEnergyAgent).manage();
 		doReturn(MOCK_ADAPTATION_MANAGEMENT).when(mockGreenEnergyAgent).adapt();
 		doNothing().when(mockGreenEnergyAgent).addBehaviour(any());
 		doNothing().when(mockGreenEnergyAgent).send(any());
+
+		mockGreenEnergyAgent.addAgentManagement(MOCK_POWER_MANAGEMENT, POWER_MANAGEMENT);
 	}
 }

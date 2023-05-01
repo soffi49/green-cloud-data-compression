@@ -9,6 +9,7 @@ import static java.util.Objects.nonNull;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyAdaptationManagement;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyStateManagement;
@@ -101,6 +102,11 @@ public abstract class AbstractGreenEnergyAgent extends AbstractAgent {
 
 	public int getInitialMaximumCapacity() {
 		return initialMaximumCapacity;
+	}
+
+	@VisibleForTesting
+	public void setInitialMaximumCapacity(int initialMaximumCapacity) {
+		this.initialMaximumCapacity = initialMaximumCapacity;
 	}
 
 	public int getCurrentMaximumCapacity() {

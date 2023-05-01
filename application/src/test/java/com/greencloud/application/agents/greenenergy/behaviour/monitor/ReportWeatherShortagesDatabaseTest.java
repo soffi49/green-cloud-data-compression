@@ -82,7 +82,7 @@ class ReportWeatherShortagesDatabaseTest {
 
 		verify(greenEnergyAgent, times(3)).manage();
 		verify(management, times(2)).getWeatherShortagesCounter();
-		verify(management, times(2)).getShortagesAccumulator();
+		verify(management, times(1)).getShortagesAccumulator();
 
 		var result = database.readLastMonitoringDataForDataTypes(singletonList(WEATHER_SHORTAGES), 10);
 

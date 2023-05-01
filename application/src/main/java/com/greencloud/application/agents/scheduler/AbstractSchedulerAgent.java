@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.greencloud.application.agents.AbstractAgent;
@@ -117,5 +118,10 @@ public abstract class AbstractSchedulerAgent extends AbstractAgent {
 
 	public void setPowerPriority(int powerPriority) {
 		this.powerPriority = powerPriority;
+	}
+
+	@VisibleForTesting
+	public void setMaximumQueueSize(int maximumQueueSize) {
+		this.maximumQueueSize = maximumQueueSize;
 	}
 }

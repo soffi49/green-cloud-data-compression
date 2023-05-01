@@ -6,6 +6,7 @@ import static com.greencloud.application.utils.AlgorithmUtils.getMaximumUsedPowe
 import static com.greencloud.application.utils.AlgorithmUtils.getMinimalAvailablePowerDuringTimeStamp;
 import static com.greencloud.application.utils.AlgorithmUtils.nextFibonacci;
 import static com.greencloud.application.utils.AlgorithmUtils.previousFibonacci;
+import static com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum.WIND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +20,7 @@ import static org.mockito.quality.Strictness.LENIENT;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -753,12 +755,12 @@ class AlgorithmUtilsUnitTest {
 	@DisplayName("Test minimal available power calculation for 2 jobs with changing available capacity")
 	void testMinimalAvailablePowerForTwoJobsChangingCapacity() {
 		prepareMockManagement();
-		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T11:00:00Z")))),
-				any());
-		doReturn(150.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:00:00Z")))),
-				any());
+		doReturn(100.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T11:00:00Z")))));
+		doReturn(150.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:00:00Z")))));
 		final PowerJob mockPowerJob1 = ImmutablePowerJob.builder().jobId("1")
 				.startTime(Instant.parse("2022-01-01T10:00:00Z"))
 				.endTime(Instant.parse("2022-01-01T12:00:00Z"))
@@ -825,27 +827,27 @@ class AlgorithmUtilsUnitTest {
 	}
 
 	private void capacityForComplicatedScenario() {
-		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T08:15:00Z")))),
-				any());
-		doReturn(200.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:15:00Z")))),
-				any());
-		doReturn(120.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:50:00Z")))),
-				any());
-		doReturn(220.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T09:00:00Z")))),
-				any());
-		doReturn(150.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:50:00Z")))),
-				any());
-		doReturn(230.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T12:30:00Z")))),
-				any());
-		doReturn(110.0).when(POWER_MANAGEMENT).getAvailablePower(
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T15:00:00Z")))),
-				any());
+		doReturn(100.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T08:15:00Z")))));
+		doReturn(200.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:15:00Z")))));
+		doReturn(120.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:50:00Z")))));
+		doReturn(220.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T09:00:00Z")))));
+		doReturn(150.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:50:00Z")))));
+		doReturn(230.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T12:30:00Z")))));
+		doReturn(110.0).when(POWER_MANAGEMENT).getAvailableGreenPower(
+				any(),
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T15:00:00Z")))));
 	}
 
 	// Error calculation tests
@@ -903,7 +905,8 @@ class AlgorithmUtilsUnitTest {
 		POWER_MANAGEMENT = spy(new GreenPowerManagement(mockAgent));
 		doReturn(MOCK_CAPACITY).when(mockAgent).getCurrentMaximumCapacity();
 		doReturn(MOCK_CAPACITY).when(mockAgent).getInitialMaximumCapacity();
-		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower(any(), any());
+		doReturn(WIND).when(mockAgent).getEnergyType();
+		doReturn(Optional.of(100.0)).when(POWER_MANAGEMENT).getAvailablePower(any(), any());
 	}
 
 	// Kendall Tau correlation test
