@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import java.time.Instant;
@@ -31,10 +33,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
+import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.management.GreenPowerManagement;
-import com.greencloud.application.domain.ImmutableMonitoringData;
-import com.greencloud.application.domain.ImmutableWeatherData;
-import com.greencloud.application.domain.MonitoringData;
+import com.greencloud.application.domain.weather.ImmutableMonitoringData;
+import com.greencloud.application.domain.weather.ImmutableWeatherData;
+import com.greencloud.application.domain.weather.MonitoringData;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.greencloud.commons.domain.job.ImmutablePowerJob;
@@ -51,6 +54,8 @@ class AlgorithmUtilsUnitTest {
 	private static MonitoringData MOCK_MONITORING_DATA;
 	@Mock
 	private GreenPowerManagement POWER_MANAGEMENT;
+	@Mock
+	private GreenEnergyAgent mockAgent;
 
 	// GETTING MAXIMUM POWER WITHIN TIMESTAMP TESTS
 
@@ -555,8 +560,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T10:30:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobList, startTime, endTime,
-				MOCK_INTERVALS_LENGTH, POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobList,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(100);
 	}
@@ -574,8 +585,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T10:30:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(90);
 	}
@@ -598,8 +615,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T08:30:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T10:30:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(70);
 	}
@@ -622,8 +645,15 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T07:30:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T10:30:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA
+		);
 
 		assertThat(result).isEqualTo(50);
 	}
@@ -646,8 +676,15 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T07:30:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T11:30:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA
+		);
 
 		assertThat(result).isEqualTo(50);
 	}
@@ -670,8 +707,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T10:00:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:00:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(50);
 	}
@@ -694,8 +737,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T10:30:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:45:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(70);
 	}
@@ -704,10 +753,12 @@ class AlgorithmUtilsUnitTest {
 	@DisplayName("Test minimal available power calculation for 2 jobs with changing available capacity")
 	void testMinimalAvailablePowerForTwoJobsChangingCapacity() {
 		prepareMockManagement();
-		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T11:00:00Z")))));
-		doReturn(150.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:00:00Z")))));
+		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T11:00:00Z")))),
+				any());
+		doReturn(150.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:00:00Z")))),
+				any());
 		final PowerJob mockPowerJob1 = ImmutablePowerJob.builder().jobId("1")
 				.startTime(Instant.parse("2022-01-01T10:00:00Z"))
 				.endTime(Instant.parse("2022-01-01T12:00:00Z"))
@@ -722,8 +773,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T07:30:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:45:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(80);
 	}
@@ -737,8 +794,14 @@ class AlgorithmUtilsUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T08:00:00Z");
 		final Instant endTime = Instant.parse("2022-01-01T16:45:00Z");
 
-		final double result = getMinimalAvailablePowerDuringTimeStamp(jobSet, startTime, endTime, MOCK_INTERVALS_LENGTH,
-				POWER_MANAGEMENT, MOCK_MONITORING_DATA);
+		final double result = getMinimalAvailablePowerDuringTimeStamp(
+				jobSet,
+				startTime,
+				endTime,
+				MOCK_INTERVALS_LENGTH,
+				POWER_MANAGEMENT,
+				MOCK_CAPACITY,
+				MOCK_MONITORING_DATA);
 
 		assertThat(result).isEqualTo(65);
 	}
@@ -762,20 +825,27 @@ class AlgorithmUtilsUnitTest {
 	}
 
 	private void capacityForComplicatedScenario() {
-		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T08:15:00Z")))));
-		doReturn(200.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:15:00Z")))));
-		doReturn(120.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:50:00Z")))));
-		doReturn(220.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T09:00:00Z")))));
-		doReturn(150.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:50:00Z")))));
-		doReturn(230.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T12:30:00Z")))));
-		doReturn(110.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(),
-				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T15:00:00Z")))));
+		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isBefore(Instant.parse("2022-01-01T08:15:00Z")))),
+				any());
+		doReturn(200.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:15:00Z")))),
+				any());
+		doReturn(120.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T08:50:00Z")))),
+				any());
+		doReturn(220.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T09:00:00Z")))),
+				any());
+		doReturn(150.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T11:50:00Z")))),
+				any());
+		doReturn(230.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T12:30:00Z")))),
+				any());
+		doReturn(110.0).when(POWER_MANAGEMENT).getAvailablePower(
+				argThat((instant -> instant.isAfter(Instant.parse("2022-01-01T15:00:00Z")))),
+				any());
 	}
 
 	// Error calculation tests
@@ -821,13 +891,19 @@ class AlgorithmUtilsUnitTest {
 	}
 
 	private void prepareMockManagement() {
-		MOCK_MONITORING_DATA = ImmutableMonitoringData.builder().addWeatherData(
-				ImmutableWeatherData.builder().cloudCover(5.5).temperature(10.0).windSpeed(20.0).time(MOCK_TIME)
-						.build()).build();
+		MOCK_MONITORING_DATA = ImmutableMonitoringData.builder()
+				.addWeatherData(ImmutableWeatherData.builder()
+						.cloudCover(5.5)
+						.temperature(10.0)
+						.windSpeed(20.0)
+						.time(MOCK_TIME)
+						.build())
+				.build();
 
-		doReturn(MOCK_CAPACITY).when(POWER_MANAGEMENT).getCurrentMaximumCapacity();
-		doReturn(MOCK_CAPACITY).when(POWER_MANAGEMENT).getInitialMaximumCapacity();
-		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower((MonitoringData) any(), any());
+		POWER_MANAGEMENT = spy(new GreenPowerManagement(mockAgent));
+		doReturn(MOCK_CAPACITY).when(mockAgent).getCurrentMaximumCapacity();
+		doReturn(MOCK_CAPACITY).when(mockAgent).getInitialMaximumCapacity();
+		doReturn(100.0).when(POWER_MANAGEMENT).getAvailablePower(any(), any());
 	}
 
 	// Kendall Tau correlation test

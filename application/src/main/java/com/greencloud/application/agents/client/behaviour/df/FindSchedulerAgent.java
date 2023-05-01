@@ -23,15 +23,16 @@ import jade.core.behaviours.OneShotBehaviour;
 public class FindSchedulerAgent extends OneShotBehaviour {
 
 	private static final Logger logger = getLogger(FindSchedulerAgent.class);
-	private ClientAgent myClientAgent;
+	private final ClientAgent myClientAgent;
 
 	/**
-	 * Method casts the abstract agent to agent of type ClientAgent.
+	 * Behaviour constructor
+	 *
+	 * @param clientAgent - agent executing the behaviour
 	 */
-	@Override
-	public void onStart() {
-		super.onStart();
-		this.myClientAgent = (ClientAgent) myAgent;
+	public FindSchedulerAgent(final ClientAgent clientAgent) {
+		super(clientAgent);
+		this.myClientAgent = clientAgent;
 	}
 
 	/**
@@ -39,17 +40,18 @@ public class FindSchedulerAgent extends OneShotBehaviour {
 	 */
 	@Override
 	public void action() {
-		final List<AID> schedulerAgents = new ArrayList<>(search(myAgent, SCHEDULER_SERVICE_TYPE));
+		final List<AID> schedulerAgents = new ArrayList<>(search(myClientAgent, SCHEDULER_SERVICE_TYPE));
 
 		if (schedulerAgents.isEmpty()) {
 			logger.info(NO_SCHEDULER_FOUND_LOG);
 			myClientAgent.doDelete();
-		}
+		} else {
 
-		if (!myClientAgent.isAnnounced()) {
-			announceNewClient(myClientAgent);
-			myClientAgent.announce();
+			if (!myClientAgent.isAnnounced()) {
+				announceNewClient(myClientAgent);
+				myClientAgent.announce();
+			}
+			getParent().getDataStore().put(SCHEDULER_AGENT, schedulerAgents.get(0));
 		}
-		getParent().getDataStore().put(SCHEDULER_AGENT, schedulerAgents.get(0));
 	}
 }

@@ -1,7 +1,7 @@
 package com.greencloud.application.gui;
 
-import static com.greencloud.application.gui.GuiConnectionProvider.connectAgentObject;
-import static com.greencloud.application.gui.GuiConnectionProvider.connectToGui;
+import static com.greencloud.application.utils.GUIUtils.connectAgentObject;
+import static com.greencloud.application.utils.GUIUtils.connectToGui;
 import static jade.wrapper.AgentController.ASYNC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;

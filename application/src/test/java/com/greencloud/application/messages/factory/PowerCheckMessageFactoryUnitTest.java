@@ -1,7 +1,7 @@
-package com.greencloud.application.messages.domain.factory;
+package com.greencloud.application.messages.factory;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.PowerCheckMessageFactory.preparePowerCheckRequest;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
+import static com.greencloud.application.messages.factory.PowerCheckMessageFactory.preparePowerCheckRequest;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -11,9 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
-import com.greencloud.application.domain.GreenSourceWeatherData;
-import com.greencloud.application.domain.ImmutableGreenSourceWeatherData;
-import com.greencloud.commons.location.ImmutableLocation;
+import com.greencloud.commons.domain.location.ImmutableLocation;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -46,6 +44,6 @@ class PowerCheckMessageFactoryUnitTest {
 		assertThat(result.getConversationId()).isEqualTo(conversationId);
 		assertThat(result.getPerformative()).isEqualTo(REQUEST);
 		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(receiverIt).allMatch(aid -> aid.equals(mockMonitoring));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(mockMonitoring));
 	}
 }

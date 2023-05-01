@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.greenenergy.behaviour.adaptation;
 
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
@@ -29,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.domain.GreenSourceDisconnection;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyAdaptationManagement;
+import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.domain.job.ImmutableServerJob;
 import com.greencloud.commons.domain.job.ServerJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
@@ -54,10 +56,10 @@ class InitiateGreenSourceDeactivationUnitTest {
 		mockAdaptationRequest = spy(new ACLMessage(REQUEST));
 		greenEnergyAgent = spy(GreenEnergyAgent.class);
 		greenEnergyAdaptationManagement = spy(new GreenEnergyAdaptationManagement(greenEnergyAgent));
-		greenEnergyAgent.setAdaptationManagement(greenEnergyAdaptationManagement);
+		greenEnergyAgent.addAgentManagement(greenEnergyAdaptationManagement, ADAPTATION_MANAGEMENT);
 
 		var testDisconnection = new GreenSourceDisconnection(null, mockAdaptationRequest, true);
-		greenEnergyAdaptationManagement.setGreenSourceDisconnection(testDisconnection);
+		greenEnergyAdaptationManagement.setDisconnectionState(testDisconnection);
 
 		doReturn(prepareGreenEnergyJobs()).when(greenEnergyAgent).getServerJobs();
 	}
@@ -75,10 +77,10 @@ class InitiateGreenSourceDeactivationUnitTest {
 
 		initiateGreenSourceDeactivation.handleRefuse(refuse);
 
-		verify(greenEnergyAdaptationManagement).getGreenSourceDisconnectionState();
+		verify(greenEnergyAdaptationManagement).getDisconnectionState();
 		verify(greenEnergyAgent).send(argThat(message -> message.getPerformative() == FAILURE));
 
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState().isBeingDisconnected()).isFalse();
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState().isBeingDisconnected()).isFalse();
 	}
 
 	@Test
@@ -95,12 +97,12 @@ class InitiateGreenSourceDeactivationUnitTest {
 		initiateGreenSourceDeactivation.handleInform(inform);
 
 		verify(greenEnergyAgent).getServerJobs();
-		verify(greenEnergyAdaptationManagement, times(1)).getGreenSourceDisconnectionState();
+		verify(greenEnergyAdaptationManagement, times(1)).getDisconnectionState();
 		verify(greenEnergyAgent).addBehaviour(
 				argThat(behaviour -> behaviour instanceof InitiateGreenSourceDisconnection));
 
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState().isBeingDisconnected()).isTrue();
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState().isBeingDisconnected()).isTrue();
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()
 				.getServerToBeDisconnected()).isNull();
 	}
 
@@ -118,11 +120,11 @@ class InitiateGreenSourceDeactivationUnitTest {
 		initiateGreenSourceDeactivation.handleInform(inform);
 
 		verify(greenEnergyAgent).getServerJobs();
-		verify(greenEnergyAdaptationManagement, times(1)).getGreenSourceDisconnectionState();
+		verify(greenEnergyAdaptationManagement, times(1)).getDisconnectionState();
 		verify(greenEnergyAgent, times(0)).addBehaviour(any());
 
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState().isBeingDisconnected()).isTrue();
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState().isBeingDisconnected()).isTrue();
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()
 				.getServerToBeDisconnected().getName()).isEqualTo("test_server1");
 	}
 

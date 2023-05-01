@@ -3,9 +3,9 @@ package com.greencloud.application.agents.greenenergy;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DISCONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -37,11 +37,10 @@ class AbstractGreenEnergyAgentUnitTest {
 	void init() {
 		agent = spy(GreenEnergyAgent.class);
 		mockAdaptationManagement = spy(new GreenEnergyAdaptationManagement(agent));
-		agent.adaptationManagement = mockAdaptationManagement;
+		agent.addAgentManagement(mockAdaptationManagement, ADAPTATION_MANAGEMENT);
 		var manager = spy(new GreenEnergyStateManagement(agent));
 
 		doReturn(manager).when(agent).manage();
-		doNothing().when(manager).updateGreenSourceGUI();
 	}
 
 	@Test
@@ -95,7 +94,7 @@ class AbstractGreenEnergyAgentUnitTest {
 
 		verify(mockAdaptationManagement).disconnectGreenSourceFromServer(adaptationParams, message);
 
-		assertThat(mockAdaptationManagement.getGreenSourceDisconnectionState()).satisfies(state -> {
+		assertThat(mockAdaptationManagement.getDisconnectionState()).satisfies(state -> {
 			assertThat(state.getOriginalAdaptationMessage()).isEqualTo(message);
 			assertThat(state.isBeingDisconnected()).isTrue();
 		});

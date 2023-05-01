@@ -50,7 +50,6 @@ class GreenEnergyAdaptationManagementUnitTest {
 
 		doReturn(manager).when(mockGreenEnergyAgent).manage();
 		doReturn(greenEnergyAdaptationManagement).when(mockGreenEnergyAgent).adapt();
-		doNothing().when(manager).updateGreenSourceGUI();
 	}
 
 	@ParameterizedTest
@@ -86,7 +85,7 @@ class GreenEnergyAdaptationManagementUnitTest {
 		greenEnergyAdaptationManagement.disconnectGreenSourceFromServer(adaptationParams, message);
 		verify(mockGreenEnergyAgent).addBehaviour(argThat(arg -> arg instanceof InitiateGreenSourceDeactivation));
 
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()).satisfies(state -> {
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()).satisfies(state -> {
 			assertThat(state.getOriginalAdaptationMessage()).isEqualTo(message);
 			assertThat(state.isBeingDisconnected()).isTrue();
 		});

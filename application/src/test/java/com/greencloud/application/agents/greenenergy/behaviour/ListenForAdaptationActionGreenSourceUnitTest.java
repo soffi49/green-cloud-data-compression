@@ -4,6 +4,7 @@ import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DECREASE_GREEN_SOURCE_ERROR;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DISCONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_ERROR;
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
 import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_PROTOCOL;
 import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_REQUEST;
 import static jade.lang.acl.ACLMessage.REQUEST;
@@ -34,6 +35,7 @@ import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyAdaptationManagement;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyStateManagement;
 import com.greencloud.application.behaviours.ListenForAdaptationAction;
+import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceConnectionParameters;
 import com.greencloud.commons.managingsystem.planner.ImmutableAdjustGreenSourceErrorParameters;
@@ -60,12 +62,11 @@ class ListenForAdaptationActionGreenSourceUnitTest {
 		greenEnergyAgent = spy(GreenEnergyAgent.class);
 		greenEnergyAdaptationManagement = spy(new GreenEnergyAdaptationManagement(greenEnergyAgent));
 
-		greenEnergyAgent.setAdaptationManagement(greenEnergyAdaptationManagement);
+		greenEnergyAgent.addAgentManagement(greenEnergyAdaptationManagement, ADAPTATION_MANAGEMENT);
 		greenEnergyAgent.setWeatherPredictionError(INITIAL_WEATHER_PREDICTION_ERROR);
 		var manager = spy(new GreenEnergyStateManagement(greenEnergyAgent));
 
 		doReturn(manager).when(greenEnergyAgent).manage();
-		doNothing().when(manager).updateGreenSourceGUI();
 
 		listenForAdaptationAction = new ListenForAdaptationAction(greenEnergyAgent);
 	}

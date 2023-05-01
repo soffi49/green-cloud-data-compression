@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.greenenergy.behaviour.adaptation;
 
+import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.ADAPTATION_MANAGEMENT;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.greenenergy.domain.GreenSourceDisconnection;
 import com.greencloud.application.agents.greenenergy.management.GreenEnergyAdaptationManagement;
+import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.gui.agents.GreenEnergyAgentNode;
 
 import jade.core.AID;
@@ -50,12 +52,12 @@ class InitiateGreenSourceDisconnectionUnitTest {
 		mockAdaptationRequest = spy(new ACLMessage(REQUEST));
 		greenEnergyAgent = spy(GreenEnergyAgent.class);
 		greenEnergyAdaptationManagement = spy(new GreenEnergyAdaptationManagement(greenEnergyAgent));
-		greenEnergyAgent.setAdaptationManagement(greenEnergyAdaptationManagement);
+		greenEnergyAgent.addAgentManagement(greenEnergyAdaptationManagement, ADAPTATION_MANAGEMENT);
 
 		doReturn(mockNode).when(greenEnergyAgent).getAgentNode();
 
 		var testDisconnection = new GreenSourceDisconnection(null, mockAdaptationRequest, true);
-		greenEnergyAdaptationManagement.setGreenSourceDisconnection(testDisconnection);
+		greenEnergyAdaptationManagement.setDisconnectionState(testDisconnection);
 	}
 
 	@Test
@@ -72,13 +74,13 @@ class InitiateGreenSourceDisconnectionUnitTest {
 
 		initiateGreenSourceDisconnection.handleRefuse(refuse);
 
-		verify(greenEnergyAdaptationManagement).getGreenSourceDisconnectionState();
+		verify(greenEnergyAdaptationManagement).getDisconnectionState();
 		verify(greenEnergyAgent).send(argThat(message -> message.getPerformative() == FAILURE));
 
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState().isBeingDisconnected()).isFalse();
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState().isBeingDisconnected()).isFalse();
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()
 				.getServerToBeDisconnected()).isNull();
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()
 				.getOriginalAdaptationMessage()).isNull();
 	}
 
@@ -96,14 +98,14 @@ class InitiateGreenSourceDisconnectionUnitTest {
 
 		initiateGreenSourceDisconnection.handleInform(inform);
 
-		verify(greenEnergyAdaptationManagement).getGreenSourceDisconnectionState();
+		verify(greenEnergyAdaptationManagement).getDisconnectionState();
 		verify(greenEnergyAgent).send(argThat(message -> message.getPerformative() == INFORM));
 		verify(mockNode).updateServerConnection("test_server1", false);
 
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState().isBeingDisconnected()).isFalse();
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState().isBeingDisconnected()).isFalse();
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()
 				.getServerToBeDisconnected()).isNull();
-		assertThat(greenEnergyAdaptationManagement.getGreenSourceDisconnectionState()
+		assertThat(greenEnergyAdaptationManagement.getDisconnectionState()
 				.getOriginalAdaptationMessage()).isNull();
 	}
 }

@@ -27,11 +27,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-import com.greencloud.application.domain.GreenSourceForecastData;
-import com.greencloud.application.domain.GreenSourceWeatherData;
-import com.greencloud.application.domain.ImmutableGreenSourceForecastData;
-import com.greencloud.application.domain.ImmutableGreenSourceWeatherData;
-import com.greencloud.application.domain.MonitoringData;
+import com.greencloud.application.domain.agent.GreenSourceForecastData;
+import com.greencloud.application.domain.agent.GreenSourceWeatherData;
+import com.greencloud.application.domain.agent.ImmutableGreenSourceForecastData;
+import com.greencloud.application.domain.agent.ImmutableGreenSourceWeatherData;
+import com.greencloud.application.domain.weather.MonitoringData;
 import com.greencloud.application.exception.APIFetchInternalException;
 import com.greencloud.application.utils.TimeUtils;
 import com.greencloud.application.weather.api.OpenWeatherMapApi;

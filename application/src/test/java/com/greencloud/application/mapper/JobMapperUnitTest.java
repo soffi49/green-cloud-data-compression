@@ -153,22 +153,6 @@ class JobMapperUnitTest {
 	}
 
 	@Test
-	@DisplayName("Test map to power job from server job")
-	void testMapServerJobToPowerJob() {
-		final PowerJob expectedJob = ImmutablePowerJob.builder()
-				.jobId("1")
-				.startTime(parse("2022-01-01T09:00:00.000Z"))
-				.endTime(parse("2022-01-01T10:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(10)
-				.build();
-
-		final PowerJob result = mapServerJobToPowerJob(MOCK_SERVER_JOB);
-
-		assertThat(result).isEqualTo(expectedJob);
-	}
-
-	@Test
 	@DisplayName("Test map to job instance id from power job")
 	void testMapToJobInstanceIdFromPowerJob() {
 		final JobInstanceIdentifier result = mapToJobInstanceId(MOCK_SERVER_JOB);
@@ -181,33 +165,17 @@ class JobMapperUnitTest {
 	@DisplayName("Test map job instance to power shortage job")
 	void testMapJobInstanceToPowerShortageJob() {
 		final Instant startTime = parse("2022-01-01T07:00:00.000Z");
-		final PowerJob powerJob = ImmutablePowerJob.builder()
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
 				.jobId("1")
 				.startTime(parse("2022-01-01T10:00:00.000Z"))
-				.endTime(parse("2022-01-01T11:00:00.000Z"))
-				.deadline(parse("2022-01-01T20:00:00.000Z"))
-				.power(10)
+				.jobInstanceId("40f")
 				.build();
 
-		final JobPowerShortageTransfer result = mapToPowerShortageJob(powerJob, startTime);
+		final JobPowerShortageTransfer result = mapToPowerShortageJob(jobInstance, startTime);
 
 		assertThat(result.getPowerShortageStart()).isEqualTo(startTime);
-		assertThat(result.getJobInstance().getJobId()).isEqualTo("1");
-		assertThat(result.getJobInstance().getStartTime()).isEqualTo(parse("2022-01-01T10:00:00.000Z"));
-	}
-
-	@Test
-	@DisplayName("Test map power job to power shortage job")
-	void testMapPowerJobToPowerShortageJob() {
-		final Instant startTime = parse("2022-01-01T07:00:00.000Z");
-		final JobInstanceIdentifier jobInstant = ImmutableJobInstanceIdentifier.of("1",
-				parse("2022-01-01T09:00:00.000Z"));
-
-		final JobPowerShortageTransfer result = mapToPowerShortageJob(jobInstant, startTime);
-
-		assertThat(result.getPowerShortageStart()).isEqualTo(startTime);
-		assertThat(result.getJobInstance().getJobId()).isEqualTo("1");
-		assertThat(result.getJobInstance().getStartTime()).isEqualTo(parse("2022-01-01T09:00:00.000Z"));
+		assertThat(result.getFirstJobInstanceId().getJobId()).isEqualTo("1");
+		assertThat(result.getFirstJobInstanceId().getStartTime()).isEqualTo(parse("2022-01-01T10:00:00.000Z"));
 	}
 
 	@Test
@@ -223,10 +191,13 @@ class JobMapperUnitTest {
 	@DisplayName("Test to job instance id with new start")
 	void testMapToJobInstanceIdWithStartTime() {
 		final Instant startTime = parse("2022-01-01T07:00:00.000Z");
-		final JobInstanceIdentifier jobInstant = ImmutableJobInstanceIdentifier.of("1",
-				parse("2022-01-01T09:00:00.000Z"));
+		final JobInstanceIdentifier jobInstance = ImmutableJobInstanceIdentifier.builder()
+				.jobId("1")
+				.startTime(parse("2022-01-01T09:00:00.000Z"))
+				.jobInstanceId("40f")
+				.build();
 
-		final JobInstanceIdentifier result = mapToJobInstanceId(jobInstant, startTime);
+		final JobInstanceIdentifier result = mapToJobInstanceId(jobInstance, startTime);
 
 		assertThat(result.getStartTime()).isEqualTo(startTime);
 		assertThat(result.getJobId()).isEqualTo("1");

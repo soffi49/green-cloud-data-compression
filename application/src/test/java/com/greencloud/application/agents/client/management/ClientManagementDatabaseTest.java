@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.client.management;
 
+import static com.database.knowledge.timescale.TimescaleDatabase.setUpForTests;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
@@ -14,6 +15,7 @@ import static org.mockito.quality.Strictness.LENIENT;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
@@ -35,34 +38,34 @@ import jade.core.AID;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
-class ClientStateManagementDatabaseTest {
+class ClientManagementDatabaseTest {
 
-	@Mock
+	@Spy
 	private static ClientAgent mockClient;
+	@Spy
+	private static ClientAgentNode mockNode;
+	@Spy
+	private static ClientJobExecution mockOriginalJob;
+
 	@Mock
 	private static AID mockAID;
 	@Mock
-	private static ClientAgentNode mockNode;
-	@Mock
-	private static ClientStateManagement mockClientManagement;
-	@Mock
-	private static ClientJobExecution originalJob;
+	private static ClientManagement mockClientManagement;
+
 	private TimescaleDatabase database;
 
 	@BeforeEach
 	void init() {
-		database = TimescaleDatabase.setUpForTests();
+		database = setUpForTests();
 		database.initDatabase();
 
-		mockClient = spy(ClientAgent.class);
-		mockNode = spy(ClientAgentNode.class);
-		mockClientManagement = spy(new ClientStateManagement(mockClient));
+		mockClientManagement = spy(new ClientManagement(mockClient));
 		mockClient.setAgentNode(mockNode);
 
 		doReturn(mockAID).when(mockClient).getAID();
 		doReturn("ClientMock").when(mockAID).getName();
 		doReturn(database).when(mockNode).getDatabaseClient();
-		doReturn(originalJob).when(mockClient).getJobExecution();
+		doReturn(mockOriginalJob).when(mockClient).getJobExecution();
 		doNothing().when(mockNode).updateJobDurationMap(anyMap());
 	}
 
@@ -74,17 +77,20 @@ class ClientStateManagementDatabaseTest {
 	@Test
 	@DisplayName("Test writing client data to database - no job split")
 	void testWriteClientDataNoSplit() {
-		originalJob.setJobStatus(IN_PROGRESS);
-		originalJob.setJobDurationMap(Map.of(
+		// given
+		mockOriginalJob.setJobStatus(IN_PROGRESS);
+		mockOriginalJob.setJobDurationMap(Map.of(
 				ON_BACK_UP, 100L,
 				PROCESSED, 50L,
 				SCHEDULED, 200L
 		));
 		doReturn(false).when(mockClient).isSplit();
 
+		// when
 		mockClientManagement.writeClientData(false);
 		List<AgentData> result = database.readMonitoringData();
 
+		// then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0))
 				.matches(data -> data.aid().contains("ClientMock"))
@@ -100,13 +106,16 @@ class ClientStateManagementDatabaseTest {
 	@Test
 	@DisplayName("Test writing client data to database - with split")
 	void testWriteClientDataWithSplit() {
-		originalJob.setJobStatus(FINISHED);
+		// given
+		mockOriginalJob.setJobStatus(FINISHED);
 		doReturn(true).when(mockClient).isSplit();
 		prepareJobParts();
 
+		// when
 		mockClientManagement.writeClientData(true);
 		List<AgentData> result = database.readMonitoringData();
 
+		// then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0))
 				.matches(data -> data.aid().contains("ClientMock"))
@@ -127,7 +136,7 @@ class ClientStateManagementDatabaseTest {
 		doReturn(Map.of(IN_PROGRESS, 100L, ON_BACK_UP, 50L)).when(jobPart1).getJobDurationMap();
 		doReturn(Map.of(IN_PROGRESS, 200L, ON_BACK_UP, 150L)).when(jobPart2).getJobDurationMap();
 
-		doReturn(Map.of("1#1", jobPart1, "1#2", jobPart2)).when(mockClient).getJobParts();
+		doReturn(new ConcurrentHashMap<>(Map.of("1#1", jobPart1, "1#2", jobPart2))).when(mockClient).getJobParts();
 	}
 
 }

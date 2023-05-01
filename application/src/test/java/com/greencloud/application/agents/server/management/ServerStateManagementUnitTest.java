@@ -2,8 +2,8 @@ package com.greencloud.application.agents.server.management;
 
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.BACK_UP_POWER_STATUSES;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.GREEN_ENERGY_STATUSES;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_BACK_UP;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.EXECUTING_ON_GREEN;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS_BACKUP_ENERGY_PLANNED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER_PLANNED;
@@ -56,8 +56,6 @@ class ServerStateManagementUnitTest {
 	// MOCKED OBJECTS
 	private static final Instant MOCK_NOW = parse("2022-01-01T11:00:00.000Z");
 	private static final int MOCK_CAPACITY = 200;
-	private static final double MOCK_PRICE = 10;
-	private static ServerStateManagement MOCK_MANAGEMENT;
 	private static Map<ClientJob, JobExecutionStatusEnum> MOCK_JOBS;
 
 	@Mock
@@ -92,8 +90,11 @@ class ServerStateManagementUnitTest {
 	@Test
 	@DisplayName("Test getting available capacity for ALL jobs with excluded job")
 	void testGettingAvailableCapacityForAllJobsWithOneExcluded() {
-		final JobInstanceIdentifier jobToExclude = ImmutableJobInstanceIdentifier.of("5",
-				Instant.parse("2022-01-01T11:00:00.000Z"));
+		final JobInstanceIdentifier jobToExclude = ImmutableJobInstanceIdentifier.builder()
+				.jobId("5")
+				.startTime(parse("2022-01-01T11:00:00.000Z"))
+				.jobInstanceId("50f")
+				.build();
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00.000Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage().getAvailableCapacity(startTime, endTime, jobToExclude, null);
@@ -107,7 +108,7 @@ class ServerStateManagementUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00.000Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage()
-				.getAvailableCapacity(startTime, endTime, null, BACK_UP_POWER_STATUSES);
+				.getAvailableCapacity(startTime, endTime, null, EXECUTING_ON_BACK_UP.getStatuses());
 
 		assertThat(availableCapacity).isEqualTo(188);
 	}
@@ -118,7 +119,7 @@ class ServerStateManagementUnitTest {
 		final Instant startTime = Instant.parse("2022-01-01T09:00:00.000Z");
 		final Instant endTime = Instant.parse("2022-01-01T12:30:00.000Z");
 		final int availableCapacity = serverAgent.manage()
-				.getAvailableCapacity(startTime, endTime, null, GREEN_ENERGY_STATUSES);
+				.getAvailableCapacity(startTime, endTime, null, EXECUTING_ON_GREEN.getStatuses());
 
 		assertThat(availableCapacity).isEqualTo(173);
 	}
@@ -140,26 +141,6 @@ class ServerStateManagementUnitTest {
 		final int availableCapacity = serverAgent.manage().getAvailableCapacity(startTime, endTime, null, null);
 
 		assertThat(availableCapacity).isEqualTo(153);
-	}
-
-	@ParameterizedTest
-	@EnumSource(JobExecutionResultEnum.class)
-	@DisplayName("Test increment started unique job")
-	void testIncrementCounter(JobExecutionResultEnum type) {
-		final JobInstanceIdentifier jobInstanceId = ImmutableJobInstanceIdentifier.of("1",
-				parse("2022-01-01T13:30:00.000Z"));
-
-		serverAgent.manage().incrementJobCounter(jobInstanceId, type);
-		assertThat(MOCK_MANAGEMENT.getJobCounters()).containsEntry(type, 1L);
-	}
-
-	@Test
-	@DisplayName("Test update maximum capacity")
-	void testUpdateMaximumCapacity() {
-		final int newCapacity = 50;
-
-		serverAgent.manage().updateMaximumCapacity(newCapacity);
-		assertThat(serverAgent.getCurrentMaximumCapacity()).isEqualTo(newCapacity);
 	}
 
 	@Test
@@ -225,7 +206,6 @@ class ServerStateManagementUnitTest {
 
 		assertThat(serverAgent.getServerJobs()).hasSize(5);
 		assertThat(serverAgent.getGreenSourceForJobMap()).isEmpty();
-		assertThat(MOCK_MANAGEMENT.getJobCounters()).containsEntry(FINISH, 1L);
 	}
 
 	@Test
@@ -244,7 +224,6 @@ class ServerStateManagementUnitTest {
 				.findFirst().orElse(null);
 
 		assertThat(serverAgent.getServerJobs()).hasSize(5);
-		assertThat(MOCK_MANAGEMENT.getJobCounters()).containsEntry(FINISH, 0L);
 		assertNotNull(updatedStatus);
 		assertThat(updatedStatus).isEqualTo(IN_PROGRESS_BACKUP_ENERGY_PLANNED);
 	}
@@ -343,15 +322,11 @@ class ServerStateManagementUnitTest {
 		serverAgent.getServerJobs().putAll(MOCK_JOBS);
 		serverAgent.setCurrentMaximumCapacity(MOCK_CAPACITY);
 
-		final ServerConfigManagement configManagement = spy(new ServerConfigManagement(serverAgent));
-		MOCK_MANAGEMENT = spy(new ServerStateManagement(serverAgent));
+		ServerStateManagement MOCK_MANAGEMENT = spy(new ServerStateManagement(serverAgent));
 		serverAgent.setAgentNode(null);
 
-		doReturn(MOCK_PRICE).when(configManagement).getPricePerHour();
 		doReturn(MOCK_CAPACITY).when(serverAgent).getInitialMaximumCapacity();
-
 		doReturn(MOCK_MANAGEMENT).when(serverAgent).manage();
-		doReturn(configManagement).when(serverAgent).manageConfig();
 
 		doNothing().when(serverAgent).addBehaviour(any());
 		doNothing().when(serverAgent).send(any());

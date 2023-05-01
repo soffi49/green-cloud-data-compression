@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
-import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
@@ -41,8 +40,6 @@ class SchedulerStateManagementUnitTest {
 
 		doReturn(setUpCloudNetworkJobs()).when(mockSchedulerAgent).getClientJobs();
 		doReturn(schedulerStateManagement).when(mockSchedulerAgent).manage();
-		doReturn(new SchedulerConfigurationManagement(mockSchedulerAgent, 8, 3, 10, 1000, 1)).when(mockSchedulerAgent)
-				.config();
 	}
 
 	@Test
@@ -58,7 +55,7 @@ class SchedulerStateManagementUnitTest {
 	@DisplayName("Test postponing job for full job queue")
 	void testPostponeJobExecutionFullQueue() {
 		final Comparator<ClientJob> testComparator = Comparator.comparingDouble(
-				job -> mockSchedulerAgent.config().getJobPriority(job));
+				job -> mockSchedulerAgent.manage().getJobPriority(job));
 		final ClientJob mockJob1 = ImmutableClientJob.builder().jobId("1").clientIdentifier("Client1")
 				.startTime(Instant.parse("2022-01-01T08:00:00.000Z")).endTime(Instant.parse("2022-01-01T10:00:00.000Z"))
 				.deadline(Instant.parse("2022-01-01T15:00:00.000Z")).power(10).build();

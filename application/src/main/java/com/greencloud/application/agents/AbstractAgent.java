@@ -1,8 +1,8 @@
 package com.greencloud.application.agents;
 
+import static com.greencloud.commons.agent.AgentType.CLIENT;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_CLIENT_NAME;
-import static com.greencloud.commons.agent.AgentType.CLIENT;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 
@@ -181,5 +181,12 @@ public abstract class AbstractAgent extends Agent {
 
 	public void writeMonitoringData(DataType dataType, MonitoringData monitoringData) {
 		agentNode.getDatabaseClient().writeMonitoringData(this.getAID().getName(), dataType, monitoringData);
+	}
+
+	/**
+	 * Method used primarily in testing
+	 */
+	public void addAgentManagement(final AbstractAgentManagement management, final AgentManagementEnum type) {
+		agentManagementServices.put(type, management);
 	}
 }

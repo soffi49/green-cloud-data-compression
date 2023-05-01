@@ -6,7 +6,6 @@ import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.application.utils.TimeUtils.useMockTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
-import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_HOLD_TRANSFER;
 import static java.time.Instant.now;
@@ -33,7 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.greencloud.commons.domain.job.ImmutablePowerJob;
@@ -57,26 +55,6 @@ class JobUtilsUnitTest {
 				Arguments.of(parse("2022-01-01T07:00:00.000Z"), "2", true),
 				Arguments.of(parse("2022-01-01T04:30:00.000Z"), "1", false)
 		);
-	}
-
-	private static Stream<Arguments> parametersGetByIdAndEnd() {
-		return Stream.of(
-				Arguments.of(parse("2022-01-01T10:00:00.000Z"), "1", true),
-				Arguments.of(parse("2022-01-01T14:00:00.000Z"), "3", false)
-		);
-	}
-
-	private static Stream<Arguments> parametersGetByIdAndStartInstant() {
-		return Stream.of(
-				arguments(ImmutableJobInstanceIdentifier.of("2", parse("2022-01-01T07:00:00.000Z")), true),
-				Arguments.of(ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T06:00:00.000Z")), false));
-	}
-
-	private static Stream<Arguments> parametersGetByIdAndStartAndServer() {
-		return Stream.of(
-				arguments(ImmutableJobInstanceIdentifier.of("2", parse("2022-01-01T07:00:00.000Z")), 2, true),
-				arguments(ImmutableJobInstanceIdentifier.of("2", parse("2022-01-01T07:00:00.000Z")), 1, false),
-				arguments(ImmutableJobInstanceIdentifier.of("1", parse("2022-01-01T06:00:00.000Z")), 1, false));
 	}
 
 	private static Stream<Arguments> parametersIsJobUnique() {

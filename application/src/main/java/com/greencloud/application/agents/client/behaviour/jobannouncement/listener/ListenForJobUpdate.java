@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.handler.AbstractJobUpdateHandler;
 import com.greencloud.application.agents.client.behaviour.jobannouncement.handler.HandleGenericJobStatusUpdate;
@@ -63,23 +64,29 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 		final ACLMessage message = myAgent.receive(CLIENT_JOB_UPDATE_TEMPLATE);
 
 		if (Objects.nonNull(message)) {
-			final ClientJobUpdateEnum updateEnum = ClientJobUpdateEnum.valueOf(message.getConversationId());
-			final AbstractJobUpdateHandler updateHandler = getUpdateHandler(message, updateEnum);
+			try {
+				final ClientJobUpdateEnum updateEnum = ClientJobUpdateEnum.valueOf(message.getConversationId());
+				final AbstractJobUpdateHandler updateHandler = getUpdateHandler(message, updateEnum);
 
-			if (isNull(updateHandler)) {
+				if (isNull(updateHandler)) {
+					logger.info(CLIENT_UNKNOWN_UPDATE_LOG, message.getConversationId());
+					return;
+				}
+				if (nonNull(updateEnum.getLogMessage())) {
+					logger.info(updateEnum.getLogMessage());
+				}
+				myClientAgent.addBehaviour(updateHandler);
+
+			} catch (IllegalArgumentException e) {
 				logger.info(CLIENT_UNKNOWN_UPDATE_LOG, message.getConversationId());
-				return;
 			}
-			if (nonNull(updateEnum.getLogMessage())) {
-				logger.info(updateEnum.getLogMessage());
-			}
-			myClientAgent.addBehaviour(updateHandler);
 		} else {
 			block();
 		}
 	}
 
-	private AbstractJobUpdateHandler getUpdateHandler(final ACLMessage message, final ClientJobUpdateEnum updateEnum) {
+	@VisibleForTesting
+	protected AbstractJobUpdateHandler getUpdateHandler(final ACLMessage message, final ClientJobUpdateEnum updateEnum) {
 		return switch (message.getConversationId()) {
 			case SCHEDULED_JOB_ID,
 					PROCESSING_JOB_ID,

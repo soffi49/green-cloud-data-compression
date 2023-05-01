@@ -1,24 +1,19 @@
-package com.greencloud.application.messages.domain.factory;
+package com.greencloud.application.messages.factory;
 
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareAcceptReplyWithProtocol;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareFailureReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareInformReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareRefuseReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareReply;
-import static com.greencloud.application.messages.domain.factory.ReplyMessageFactory.prepareStringReply;
-import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareInformReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static jade.lang.acl.ACLMessage.AGREE;
-import static jade.lang.acl.ACLMessage.CFP;
 import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
+import static java.time.Instant.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-
-import java.time.Instant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,8 +39,10 @@ class ReplyMessageFactoryUnitTest {
 	@DisplayName("Test prepare reply")
 	void testPrepareReply() {
 		final int performative = REFUSE;
-		final JobInstanceIdentifier content = ImmutableJobInstanceIdentifier.of("1",
-				Instant.parse("2022-01-01T13:30:00.000Z"));
+		final JobInstanceIdentifier content = ImmutableJobInstanceIdentifier.builder()
+				.jobId("1")
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.build();
 
 		final String expectedContent = "{\"jobId\":\"1\",\"startTime\":1641043800.000000000}";
 
@@ -56,7 +53,7 @@ class ReplyMessageFactoryUnitTest {
 		assertThat(result.getContent()).isEqualTo(expectedContent);
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
 	}
 
 	@Test
@@ -72,7 +69,7 @@ class ReplyMessageFactoryUnitTest {
 		assertThat(result.getContent()).isEqualTo(content);
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
 	}
 
 	@Test
@@ -85,7 +82,7 @@ class ReplyMessageFactoryUnitTest {
 		assertThat(result.getContent()).isEqualTo("REFUSE");
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
 	}
 
 	@Test
@@ -98,7 +95,7 @@ class ReplyMessageFactoryUnitTest {
 		assertThat(result.getContent()).isEqualTo("FAILURE");
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
 	}
 
 	@Test
@@ -111,35 +108,16 @@ class ReplyMessageFactoryUnitTest {
 		assertThat(result.getContent()).isEqualTo("INFORM");
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
-	}
-
-	@Test
-	@DisplayName("Test prepare accept reply with protocol")
-	void testPrepareAcceptReplyWithProtocol() {
-		final JobInstanceIdentifier mockJobInstance = ImmutableJobInstanceIdentifier.of("1",
-				Instant.parse("2022-01-01T13:30:00.000Z"));
-		final String protocol = SERVER_JOB_CFP_PROTOCOL;
-		MOCK_REQUEST.setPerformative(CFP);
-
-		final String expectedContent =
-				"{\"jobInstanceIdentifier\":{\"jobId\":\"1\",\"startTime\":1641043800.000000000},"
-						+ "\"replyProtocol\":\"SERVER_JOB_CFP\"}";
-
-		var result = prepareAcceptReplyWithProtocol(MOCK_REQUEST, mockJobInstance, protocol);
-		final Iterable<AID> receiverIt = result::getAllReceiver;
-
-		assertThat(result.getPerformative()).isEqualTo(ACCEPT_PROPOSAL);
-		assertThat(result.getContent()).isEqualTo(expectedContent);
-		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
-		assertThat(result.getProtocol()).isEqualTo("test_protocol");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
 	}
 
 	@Test
 	@DisplayName("Test prepare failure reply message")
 	void testPrepareFailureReply() {
-		var content = ImmutableJobInstanceIdentifier.of("1", Instant.parse("2022-01-01T13:30:00.000Z"));
+		var content = ImmutableJobInstanceIdentifier.builder()
+				.jobId("1")
+				.startTime(parse("2022-01-01T13:30:00.000Z"))
+				.build();
 
 		var result = prepareFailureReply(MOCK_REQUEST, content, "TEST_PROTOCOL");
 		final Iterable<AID> receiverIt = result::getAllReceiver;
@@ -150,7 +128,7 @@ class ReplyMessageFactoryUnitTest {
 		assertThat(result.getContent()).isEqualTo(expectedContent);
 		assertThat(result.getConversationId()).isEqualTo("test_conversationId");
 		assertThat(result.getProtocol()).isEqualTo("TEST_PROTOCOL");
-		assertThat(receiverIt).allMatch(aid -> aid.equals(MOCK_SENDER));
+		assertThat(receiverIt).isNotEmpty().allMatch(aid -> aid.equals(MOCK_SENDER));
 	}
 
 	private void prepareTestRequestMessage() {

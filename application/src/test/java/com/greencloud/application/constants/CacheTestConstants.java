@@ -4,8 +4,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.greencloud.application.domain.ImmutableWeatherData;
-import com.greencloud.application.domain.WeatherData;
+import com.greencloud.application.domain.weather.ImmutableWeatherData;
+import com.greencloud.application.domain.weather.WeatherData;
 import com.greencloud.application.weather.domain.Clouds;
 import com.greencloud.application.weather.domain.Coord;
 import com.greencloud.application.weather.domain.CurrentWeather;
@@ -31,7 +31,7 @@ import com.greencloud.commons.domain.location.Location;
 public class CacheTestConstants {
 
 	// MOCK OBJECTS
-	public static final Location MOCK_LOCATION = ImmutableLocation.of(10.0, 15.0);
+	public static final Location MOCK_LOCATION = ImmutableLocation.builder().latitude(10.0).longitude(15.0).build();
 	public static final Instant MOCK_TIME = Instant.parse("2022-01-01T11:00:00.000Z");
 	public static final int MOCK_CNT = 5;
 	public static final Coord MOCK_COORD = ImmutableCoord.builder().lat(10.0).lon(40.0).build();

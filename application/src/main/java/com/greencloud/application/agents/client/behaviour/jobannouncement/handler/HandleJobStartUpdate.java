@@ -15,6 +15,7 @@ import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum;
 import com.greencloud.application.domain.job.JobStatusUpdate;
@@ -58,7 +59,8 @@ public class HandleJobStartUpdate extends AbstractJobUpdateHandler {
 		}
 	}
 
-	private void checkIfJobStartedOnTime(final Instant startTime, final Instant jobStartTime) {
+	@VisibleForTesting
+	protected void checkIfJobStartedOnTime(final Instant startTime, final Instant jobStartTime) {
 		final long timeDifference = MILLIS.between(jobStartTime, startTime);
 		if (MAX_TIME_DIFFERENCE.isValidValue(timeDifference)) {
 			logger.info(CLIENT_JOB_START_ON_TIME_LOG);

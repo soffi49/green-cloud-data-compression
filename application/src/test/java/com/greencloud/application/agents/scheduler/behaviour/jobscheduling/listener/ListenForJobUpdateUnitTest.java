@@ -1,16 +1,15 @@
 package com.greencloud.application.agents.scheduler.behaviour.jobscheduling.listener;
 
+import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.POSTPONED_JOB_ID;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates.JobSchedulingMessageTemplates.JOB_UPDATE_TEMPLATE;
 import static com.greencloud.application.mapper.JsonMapper.getMapper;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FAILED_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.FINISH_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.POSTPONED_JOB_ID;
-import static com.greencloud.application.messages.domain.constants.MessageConversationConstants.STARTED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -36,6 +35,7 @@ import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.list
 import com.greencloud.application.agents.scheduler.managment.SchedulerStateManagement;
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.application.domain.job.ImmutableJobStatusUpdate;
+import com.greencloud.application.messages.constants.MessageConversationConstants;
 import com.greencloud.commons.domain.job.ClientJob;
 
 import jade.lang.acl.ACLMessage;
@@ -60,8 +60,15 @@ class ListenForJobUpdateUnitTest {
 
 	@BeforeEach
 	void init() throws JsonProcessingException {
-		var jobInstance = ImmutableJobInstanceIdentifier.of("jobId", now());
-		var jobStatusUpdate = ImmutableJobStatusUpdate.of(jobInstance, now());
+		var jobInstance = ImmutableJobInstanceIdentifier.builder()
+				.jobInstanceId("job_instance")
+				.jobId("jobId")
+				.startTime(now())
+				.build();
+		var jobStatusUpdate = ImmutableJobStatusUpdate.builder()
+				.jobInstance(jobInstance)
+				.changeTime(now())
+				.build();
 		when(schedulerAgent.receive(JOB_UPDATE_TEMPLATE)).thenReturn(message);
 		when(message.getContent()).thenReturn(objectMapper.writeValueAsString(jobStatusUpdate));
 		when(clientJob.getJobId()).thenReturn("jobId");
@@ -116,7 +123,7 @@ class ListenForJobUpdateUnitTest {
 		verify(schedulerStateManagement).postponeJobExecution(clientJob);
 		verify(schedulerAgent).send(messageArgumentCaptor.capture());
 		var sentMessage = messageArgumentCaptor.getValue();
-		assertThat(sentMessage.getConversationId()).isEqualTo(POSTPONED_JOB_ID);
+		assertThat(sentMessage.getConversationId()).isEqualTo(MessageConversationConstants.POSTPONED_JOB_ID);
 	}
 
 	@Test
@@ -130,7 +137,7 @@ class ListenForJobUpdateUnitTest {
 		listenForJobUpdate.action();
 
 		// then
-		verify(schedulerStateManagement).handleFailedJobCleanUp(eq(clientJob), any());
+		verify(schedulerStateManagement).handleJobCleanUp(clientJob);
 		verify(schedulerAgent).send(messageArgumentCaptor.capture());
 		var sentMessage = messageArgumentCaptor.getValue();
 		assertThat(sentMessage.getConversationId()).isEqualTo(FAILED_JOB_ID);

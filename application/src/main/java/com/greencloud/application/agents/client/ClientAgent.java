@@ -88,7 +88,7 @@ public class ClientAgent extends AbstractClientAgent {
 	@Override
 	protected void runStartingBehaviours() {
 		final SequentialBehaviour startingBehaviour = new SequentialBehaviour(this);
-		startingBehaviour.addSubBehaviour(new FindSchedulerAgent());
+		startingBehaviour.addSubBehaviour(new FindSchedulerAgent(this));
 		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this));
 
 		connectToGui(this);

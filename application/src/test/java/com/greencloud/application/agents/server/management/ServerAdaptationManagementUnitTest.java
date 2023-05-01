@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,31 +27,8 @@ class ServerAdaptationManagementUnitTest {
 
 	@Mock
 	ServerAgent serverAgent;
-	@Mock
-	ServerConfigManagement configManagement;
 
 	ServerAdaptationManagement serverAdaptationManagement;
-
-	@BeforeEach
-	void init() {
-		serverAdaptationManagement = new ServerAdaptationManagement(serverAgent);
-		when(serverAgent.manageConfig()).thenReturn(configManagement);
-	}
-
-	@ParameterizedTest
-	@MethodSource("weightsMapProvider")
-	void shouldCorrectlyAdjustWeights(Map<AID, Integer> oldMap, String greenSource, Map<AID, Integer> newMap,
-			boolean expectedResult, int updatedMap) {
-		// given
-		when(configManagement.getWeightsForGreenSourcesMap()).thenReturn(oldMap);
-
-		// when
-		var result = serverAdaptationManagement.changeGreenSourceWeights(greenSource);
-
-		// then
-		assertThat(result).isEqualTo(expectedResult);
-		verify(configManagement, times(updatedMap)).setWeightsForGreenSourcesMap(newMap);
-	}
 
 	private static Stream<Arguments> weightsMapProvider() {
 		return Stream.of(
@@ -70,5 +48,26 @@ class ServerAdaptationManagementUnitTest {
 
 	private static AID aid(String greenSourceName) {
 		return new AID(greenSourceName, AID.ISGUID);
+	}
+
+	@BeforeEach
+	void init() {
+		serverAdaptationManagement = new ServerAdaptationManagement(serverAgent);
+	}
+
+	@ParameterizedTest
+	@MethodSource("weightsMapProvider")
+	void shouldCorrectlyAdjustWeights(ConcurrentMap<AID, Integer> oldMap, String greenSource,
+			ConcurrentMap<AID, Integer> newMap,
+			boolean expectedResult, int updatedMap) {
+		// given
+		when(serverAgent.getWeightsForGreenSourcesMap()).thenReturn(oldMap);
+
+		// when
+		var result = serverAdaptationManagement.changeGreenSourceWeights(greenSource);
+
+		// then
+		assertThat(result).isEqualTo(expectedResult);
+		verify(serverAgent, times(updatedMap)).setWeightsForGreenSourcesMap(newMap);
 	}
 }

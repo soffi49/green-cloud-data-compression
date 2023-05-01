@@ -3,6 +3,7 @@ package com.greencloud.application.messages.factory;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.MANUAL_JOB_FINISH_PROTOCOL;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static jade.core.AID.ISGUID;
@@ -43,7 +44,7 @@ public class JobStatusMessageFactory {
 	public static ACLMessage prepareJobAnnouncementMessage(final AID scheduler, final ClientJob job) {
 		return MessageBuilder.builder()
 				.withPerformative(INFORM)
-				.withMessageProtocol(MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL)
+				.withMessageProtocol(ANNOUNCED_JOB_PROTOCOL)
 				.withReceivers(scheduler)
 				.withObjectContent(job)
 				.build();

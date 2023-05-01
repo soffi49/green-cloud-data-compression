@@ -13,7 +13,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.database.knowledge.domain.action.AdaptationActionEnum;
-import com.greencloud.application.agents.scheduler.managment.SchedulerConfigurationManagement;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.gui.agents.SchedulerAgentNode;
 
@@ -27,7 +26,6 @@ class AbstractSchedulerAgentTest {
 		schedulerAgentNode = mock(SchedulerAgentNode.class);
 
 		doReturn(schedulerAgentNode).when(schedulerAgent).getAgentNode();
-		schedulerAgent.configManagement = new SchedulerConfigurationManagement(schedulerAgent, 1, 1, 10000, 100, 2);
 		schedulerAgent.setUpPriorityQueue();
 	}
 
@@ -37,7 +35,7 @@ class AbstractSchedulerAgentTest {
 		var adaptationAction = getAdaptationAction(AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY);
 		schedulerAgent.executeAction(adaptationAction, null);
 
-		assertThat(schedulerAgent.configManagement.getDeadlineWeightPriority()).isEqualTo(0.6666666666666666);
+		assertThat(schedulerAgent.getDeadlinePriority()).isZero();
 	}
 
 	@Test
@@ -46,7 +44,7 @@ class AbstractSchedulerAgentTest {
 		var adaptationAction = getAdaptationAction(AdaptationActionEnum.INCREASE_POWER_PRIORITY);
 		schedulerAgent.executeAction(adaptationAction, null);
 
-		assertThat(schedulerAgent.configManagement.getDeadlineWeightPriority()).isEqualTo(0.3333333333333333);
+		assertThat(schedulerAgent.getDeadlinePriority()).isZero();
 	}
 
 	@Test

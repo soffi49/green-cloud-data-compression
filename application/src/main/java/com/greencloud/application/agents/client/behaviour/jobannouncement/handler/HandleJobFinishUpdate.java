@@ -18,6 +18,7 @@ import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.domain.ClientJobExecution;
 import com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum;
@@ -80,7 +81,8 @@ public class HandleJobFinishUpdate extends AbstractJobUpdateHandler {
 		}
 	}
 
-	private void checkIfJobFinishedOnTime(final Instant endTime, final Instant jobEndTime,
+	@VisibleForTesting
+	protected void checkIfJobFinishedOnTime(final Instant endTime, final Instant jobEndTime,
 			final Instant jobDeadline) {
 		if (!jobDeadline.isBefore(endTime)) {
 			final long timeDifference = MILLIS.between(endTime, jobEndTime);

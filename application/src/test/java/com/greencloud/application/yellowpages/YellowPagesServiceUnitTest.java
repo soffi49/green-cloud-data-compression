@@ -76,7 +76,7 @@ class YellowPagesServiceUnitTest {
 				.as("Result has correct size equal to 1")
 				.hasSize(1)
 				.as("Result has correct content")
-				.allMatch(aid -> aid.getName().equals(mockAgent));
+				.allSatisfy((aid, val) -> assertThat(aid.getName()).isEqualTo(mockAgent));
 	}
 
 	@ParameterizedTest

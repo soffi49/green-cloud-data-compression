@@ -19,9 +19,12 @@ import jade.lang.acl.ACLMessage;
  */
 public abstract class AbstractJobUpdateHandler extends OneShotBehaviour {
 
-	protected final ACLMessage message;
-	protected final ClientAgent myClient;
-	protected final ClientJobUpdateEnum updateEnum;
+	protected ACLMessage message;
+	protected ClientAgent myClient;
+	protected ClientJobUpdateEnum updateEnum;
+
+	protected AbstractJobUpdateHandler() {
+	}
 
 	/**
 	 * Behaviour constructor

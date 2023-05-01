@@ -1,5 +1,6 @@
-package com.greencloud.application.messages.domain.factory;
+package com.greencloud.application.messages.factory;
 
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.doReturn;
@@ -33,7 +34,10 @@ class CallForProposalMessageFactoryUnitTest {
 
 		return Stream.of(
 				arguments(
-						ImmutableJobInstanceIdentifier.of("1", Instant.parse("2022-01-01T13:30:00.000Z")),
+						ImmutableJobInstanceIdentifier.builder()
+								.jobId("1")
+								.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
+								.build(),
 						List.of(aid1),
 						"TEST_PROTOCOL1",
 						"{\"jobId\":\"1\",\"startTime\":1641043800.000000000}"),
@@ -50,7 +54,7 @@ class CallForProposalMessageFactoryUnitTest {
 	@MethodSource("parametersMessageParams")
 	@DisplayName("Test creating call for proposal message")
 	void testCreateCallForProposal(Object content, List<AID> receivers, String protocol, String expectedContent) {
-		final ACLMessage result = CallForProposalMessageFactory.createCallForProposal(content, receivers, protocol);
+		final ACLMessage result = createCallForProposal(content, receivers, protocol);
 		final Iterable<AID> receiversIt = result::getAllReceiver;
 
 		assertThat(result.getContent()).isEqualTo(expectedContent);

@@ -1,9 +1,9 @@
 package com.greencloud.application.agents.server.behaviour.df.listener;
 
 import static com.greencloud.application.agents.server.behaviour.df.listener.templates.DFServerMessageTemplates.GREEN_SOURCE_UPDATE_TEMPLATE;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
-import static com.greencloud.application.messages.domain.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.CONNECT_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DEACTIVATE_GREEN_SOURCE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISCONNECT_GREEN_SOURCE_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static jade.lang.acl.ACLMessage.REQUEST;
@@ -19,6 +19,7 @@ import static org.mockito.quality.Strictness.LENIENT;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import com.greencloud.application.agents.server.ServerAgent;
-import com.greencloud.application.agents.server.management.ServerConfigManagement;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -40,17 +40,13 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 	@Mock
 	private ServerAgent mockServerAgent;
-	@Mock
-	private ServerConfigManagement mockConfigManagement;
 
 	private ListenForGreenSourceServiceUpdate listenForGreenSourceServiceUpdate;
 
 	@BeforeEach
 	void init() {
 		mockServerAgent = spy(ServerAgent.class);
-		mockConfigManagement = spy(new ServerConfigManagement(mockServerAgent));
 
-		doReturn(mockConfigManagement).when(mockServerAgent).manageConfig();
 		doReturn(new HashMap<>()).when(mockServerAgent).getGreenSourceForJobMap();
 		prepareOwnedGreenSources();
 
@@ -68,7 +64,6 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
-		clearInvocations(mockConfigManagement);
 		clearInvocations(mockServerAgent);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -88,7 +83,6 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
-		clearInvocations(mockConfigManagement);
 		clearInvocations(mockServerAgent);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -110,7 +104,6 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
-		clearInvocations(mockConfigManagement);
 		clearInvocations(mockServerAgent);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -130,7 +123,6 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
-		clearInvocations(mockConfigManagement);
 		clearInvocations(mockServerAgent);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -152,7 +144,6 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
-		clearInvocations(mockConfigManagement);
 		clearInvocations(mockServerAgent);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -173,7 +164,6 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
-		clearInvocations(mockConfigManagement);
 		clearInvocations(mockServerAgent);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -212,7 +202,7 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 		receivedInfo.setSender(testAID);
 
 		doReturn(new HashMap<>()).when(mockServerAgent).getOwnedGreenSources();
-		mockConfigManagement.setWeightsForGreenSourcesMap(new HashMap<>());
+		mockServerAgent.setWeightsForGreenSourcesMap(new ConcurrentHashMap<>());
 		when(mockServerAgent.receive(GREEN_SOURCE_UPDATE_TEMPLATE)).thenReturn(receivedInfo);
 
 		listenForGreenSourceServiceUpdate.action();
@@ -222,7 +212,7 @@ class ListenForGreenSourceServiceUpdateUnitTest {
 		assertThat(mockServerAgent.getOwnedGreenSources())
 				.hasSize(1)
 				.containsKey(testAID);
-		assertThat(mockConfigManagement.getWeightsForGreenSourcesMap()).containsEntry(testAID, 1);
+		assertThat(mockServerAgent.getWeightsForGreenSourcesMap()).containsEntry(testAID, 1);
 	}
 
 	void prepareOwnedGreenSources() {
