@@ -259,13 +259,15 @@ public class ServerStateManagement extends AbstractStateManagement {
 	 */
 	public void finishJobExecutionWithResult(final ClientJob jobToFinish, final boolean informCNA,
 			final JobExecutionResultEnum resultType) {
-		final JobExecutionStatusEnum jobStatus = serverAgent.getServerJobs().get(jobToFinish);
+		if(nonNull(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()))) {
+			final JobExecutionStatusEnum jobStatus = serverAgent.getServerJobs().get(jobToFinish);
 
-		sendFinishInformation(jobToFinish, informCNA);
-		updateStateAfterJobIsDone(jobToFinish, resultType);
+			sendFinishInformation(jobToFinish, informCNA);
+			updateStateAfterJobIsDone(jobToFinish, resultType);
 
-		if (EXECUTING_ON_BACK_UP.getStatuses().contains(jobStatus)) {
-			supplyJobsWithBackupPower();
+			if (EXECUTING_ON_BACK_UP.getStatuses().contains(jobStatus)) {
+				supplyJobsWithBackupPower();
+			}
 		}
 	}
 
