@@ -18,7 +18,7 @@ import runner.service.AbstractScenarioService;
 public final class EngineConfiguration {
 
 	private static final String PROPERTIES_DIR = "properties";
-	private static String SYSTEM_PROPERTIES_FILE = "system2.properties";
+	private static String SYSTEM_PROPERTIES_FILE = "system.properties";
 
 	/**
 	 * Port used for the intra-platform (i.e. inside the platform) agent communication
