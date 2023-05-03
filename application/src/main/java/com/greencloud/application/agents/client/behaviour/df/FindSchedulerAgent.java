@@ -40,7 +40,8 @@ public class FindSchedulerAgent extends OneShotBehaviour {
 	 */
 	@Override
 	public void action() {
-		final List<AID> schedulerAgents = new ArrayList<>(search(myClientAgent, SCHEDULER_SERVICE_TYPE));
+		final List<AID> schedulerAgents = new ArrayList<>(search(myClientAgent, myClientAgent.getParentDFAddress(),
+				SCHEDULER_SERVICE_TYPE));
 
 		if (schedulerAgents.isEmpty()) {
 			logger.info(NO_SCHEDULER_FOUND_LOG);

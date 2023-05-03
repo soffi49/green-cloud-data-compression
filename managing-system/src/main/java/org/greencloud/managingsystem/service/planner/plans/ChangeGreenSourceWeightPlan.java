@@ -2,14 +2,13 @@ package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
 import static com.database.knowledge.domain.agent.DataType.SHORTAGES;
-import static com.greencloud.application.yellowpages.YellowPagesService.search;
-import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
 import static java.util.Collections.min;
 import static java.util.Comparator.comparingInt;
 import static java.util.List.of;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -20,6 +19,8 @@ import com.database.knowledge.domain.agent.greensource.Shortages;
 import com.google.common.collect.Maps;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
+
+import jade.core.AID;
 
 /**
  * Class containing adaptation plan which realizes the action of changing weight of selection of new green source
@@ -100,15 +101,17 @@ public class ChangeGreenSourceWeightPlan extends AbstractPlan {
 			return null;
 		}
 
-		targetAgent = search(managingAgent, SA_SERVICE_TYPE).stream()
-				.filter(aid -> aid.toString().contains(targetServer))
+		final List<String> aliveServers = managingAgent.monitor().getActiveServers();
+		final String targetServerAID = aliveServers.stream()
+				.filter(aid -> aid.split("@")[0].equals(targetServer))
 				.findFirst()
 				.orElse(null);
 
-		if (targetAgent == null) {
+		if (targetServerAID == null) {
 			return null;
 		}
 
+		targetAgent = new AID(targetServerAID, AID.ISGUID);
 		return this;
 	}
 

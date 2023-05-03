@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.greencloud.commons.args.agent.AgentArgs;
 
+import jade.core.AID;
 import jade.core.Location;
 
 public interface SystemAdaptationActionParameters extends AdaptationActionParameters {
@@ -11,4 +12,6 @@ public interface SystemAdaptationActionParameters extends AdaptationActionParame
 	List<AgentArgs> getAgentsArguments();
 
 	Location getAgentsTargetLocation();
+
+	AID getAgentsTargetAMS();
 }

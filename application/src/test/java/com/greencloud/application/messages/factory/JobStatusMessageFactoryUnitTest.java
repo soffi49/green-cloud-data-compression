@@ -153,7 +153,7 @@ class JobStatusMessageFactoryUnitTest {
 		var expectedResult = buildJobStatusUpdateContent();
 
 		// when
-		var result = prepareJobStatusMessageForClient("test_client", jobUpdate, conversationId);
+		var result = prepareJobStatusMessageForClient(buildClientJob(), jobUpdate, conversationId);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		// then
@@ -172,7 +172,7 @@ class JobStatusMessageFactoryUnitTest {
 		var expectedResult = buildJobPartsContent();
 
 		// when
-		var result = prepareSplitJobMessageForClient("test_client", jobParts);
+		var result = prepareSplitJobMessageForClient(buildClientJob(), jobParts);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		// then
@@ -210,7 +210,7 @@ class JobStatusMessageFactoryUnitTest {
 		var expectedResult = buildAdjustedJobContent();
 
 		// when
-		final ACLMessage result = prepareJobAdjustmentMessage("test_client", adjustedJob);
+		final ACLMessage result = prepareJobAdjustmentMessage(adjustedJob);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		// then

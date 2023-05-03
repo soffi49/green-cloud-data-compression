@@ -25,6 +25,7 @@ import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
 import com.greencloud.commons.managingsystem.planner.AddServerActionParameters;
 
+import jade.core.AID;
 import jade.core.Location;
 
 /**
@@ -85,14 +86,14 @@ public class AddServerPlan extends SystemPlan {
 		final MonitoringAgentArgs extraMonitoringAgentArguments = agentFactory.createMonitoringAgent();
 		final GreenEnergyAgentArgs extraGreenEnergyArguments = agentFactory.createDefaultGreenEnergyAgent(
 				extraMonitoringAgentArguments.getName(), extraServerArguments.getName());
-		final Location targetLocation = managingAgent.move().findTargetLocation(targetCloudNetworkAgent);
+		final Map.Entry<Location, AID> targetLocation = managingAgent.move().findTargetLocation(targetCloudNetworkAgent);
 
 		if (isNull(targetLocation)) {
 			return null;
 		}
 
 		actionParameters = new AddServerActionParameters(extraServerArguments, extraGreenEnergyArguments,
-				extraMonitoringAgentArguments, targetLocation);
+				extraMonitoringAgentArguments, targetLocation.getKey(), targetLocation.getValue());
 
 		return this;
 	}

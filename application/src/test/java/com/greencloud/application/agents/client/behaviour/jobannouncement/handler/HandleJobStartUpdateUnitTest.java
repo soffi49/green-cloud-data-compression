@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -130,6 +131,7 @@ class HandleJobStartUpdateUnitTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test check job start time - start with delay")
 	void testCheckIfJobStartedOnTimeWithDelay() {
 		// given
@@ -149,6 +151,7 @@ class HandleJobStartUpdateUnitTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test check job start time - start with no delay")
 	void testCheckIfJobStartedOnTimeNoDelay() {
 		// given

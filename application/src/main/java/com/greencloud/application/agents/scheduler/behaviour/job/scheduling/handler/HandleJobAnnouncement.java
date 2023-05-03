@@ -7,7 +7,6 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.scheduli
 import static com.greencloud.application.agents.scheduler.constants.SchedulerAgentConstants.JOB_PROCESSING_DEADLINE_ADJUSTMENT;
 import static com.greencloud.application.agents.scheduler.constants.SchedulerAgentConstants.JOB_PROCESSING_TIME_ADJUSTMENT;
 import static com.greencloud.application.agents.scheduler.constants.SchedulerAgentConstants.SEND_NEXT_JOB_TIMEOUT;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.mapper.JobMapper.mapToJobWithNewTime;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
@@ -16,6 +15,7 @@ import static com.greencloud.application.messages.factory.JobStatusMessageFactor
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.utils.JobUtils.getJobName;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStateEnum.replaceStatusToActive;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
 import static java.time.temporal.ChronoUnit.MILLIS;
@@ -109,7 +109,7 @@ public class HandleJobAnnouncement extends TickerBehaviour {
 		logger.info(JOB_ADJUST_TIME_LOG, job.getJobId());
 		final ClientJob adjustedJob = mapToJobWithNewTime(job, newAdjustedStart, newAdjustedEnd);
 		myScheduler.manage().swapJobInstances(adjustedJob, job);
-		myScheduler.send(prepareJobAdjustmentMessage(job.getClientIdentifier(), adjustedJob));
+		myScheduler.send(prepareJobAdjustmentMessage(adjustedJob));
 		return adjustedJob;
 	}
 }

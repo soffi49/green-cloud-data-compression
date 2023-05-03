@@ -41,6 +41,7 @@ public class Fixtures {
 	public static ClientJob buildClientJob() {
 		return ImmutableClientJob.builder()
 				.clientIdentifier("test_client")
+				.clientAddress("client_address")
 				.jobId("1")
 				.jobInstanceId("jobInstance1")
 				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
@@ -57,12 +58,14 @@ public class Fixtures {
 				+ "\"endTime\":1641047400.000000000,"
 				+ "\"deadline\":1641051000.000000000,"
 				+ "\"power\":10,"
-				+ "\"clientIdentifier\":\"test_client\"}";
+				+ "\"clientIdentifier\":\"test_client\","
+				+ "\"clientAddress\":\"client_address\"}";
 	}
 
 	public static ClientJob buildClientJobPart() {
 		return ImmutableClientJob.builder()
 				.clientIdentifier("test_client")
+				.clientAddress("client_address")
 				.jobId("1#part1")
 				.jobInstanceId("jobInstance1")
 				.startTime(Instant.parse("2022-01-01T13:30:00.000Z"))
@@ -110,6 +113,7 @@ public class Fixtures {
 				.deadline(parse("2022-01-01T15:30:00.000Z"))
 				.power(10)
 				.clientIdentifier("test_client")
+				.clientAddress("client_address")
 				.build();
 		var jobPart2 = ImmutableClientJob.builder()
 				.jobId("1#part2")
@@ -119,6 +123,7 @@ public class Fixtures {
 				.deadline(parse("2022-01-01T15:30:00.000Z"))
 				.power(10)
 				.clientIdentifier("test_client")
+				.clientAddress("client_address")
 				.build();
 
 		return ImmutableJobParts.builder().jobParts(List.of(jobPart1, jobPart2)).build();
@@ -127,10 +132,10 @@ public class Fixtures {
 	public static String buildJobPartsContent() {
 		return "{\"jobParts\":["
 				+ "{\"jobId\":\"1#part1\",\"jobInstanceId\":\"jobInstance1\",\"startTime\":1641043800.000000000,\"endTime\":1641047400.000000000,"
-				+ "\"deadline\":1641051000.000000000,\"power\":10,\"clientIdentifier\":\"test_client\"}"
+				+ "\"deadline\":1641051000.000000000,\"power\":10,\"clientIdentifier\":\"test_client\",\"clientAddress\":\"client_address\"}"
 				+ ","
 				+ "{\"jobId\":\"1#part2\",\"jobInstanceId\":\"jobInstance1\",\"startTime\":1641043800.000000000,\"endTime\":1641047400.000000000,"
-				+ "\"deadline\":1641051000.000000000,\"power\":10,\"clientIdentifier\":\"test_client\"}"
+				+ "\"deadline\":1641051000.000000000,\"power\":10,\"clientIdentifier\":\"test_client\",\"clientAddress\":\"client_address\"}"
 				+ "]}";
 	}
 

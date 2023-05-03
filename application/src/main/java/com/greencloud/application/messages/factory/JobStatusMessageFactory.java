@@ -3,6 +3,9 @@ package com.greencloud.application.messages.factory;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.POSTPONED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.RE_SCHEDULED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.SPLIT_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.ANNOUNCED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CANCEL_JOB_PROTOCOL;
@@ -25,8 +28,6 @@ import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobParts;
 import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.application.domain.job.JobTimeFrames;
-import com.greencloud.application.messages.constants.MessageConversationConstants;
-import com.greencloud.application.messages.constants.MessageProtocolConstants;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.message.MessageBuilder;
 
@@ -93,32 +94,38 @@ public class JobStatusMessageFactory {
 	 */
 	public static ACLMessage prepareJobStatusMessageForClient(final ClientJob job, final String conversationId) {
 		final JobStatusUpdate jobStatusUpdate = new ImmutableJobStatusUpdate(mapToJobInstanceId(job), getCurrentTime());
-		return prepareJobStatusMessage(jobStatusUpdate, conversationId, new AID(job.getClientIdentifier(), ISGUID));
+		final AID clientAID = new AID(job.getClientIdentifier(), ISGUID);
+		clientAID.addAddresses(job.getClientAddress());
+		return prepareJobStatusMessage(jobStatusUpdate, conversationId, clientAID);
 	}
 
 	/**
 	 * Method prepares the information message about the job execution status sent to client with job id as message
 	 * content
 	 *
-	 * @param client          client to which the message is sent
+	 * @param job             client's job
 	 * @param jobStatusUpdate job update information
 	 * @param conversationId  type of the message passed for the client
 	 * @return INFORM ACLMessage
 	 */
-	public static ACLMessage prepareJobStatusMessageForClient(final String client,
+	public static ACLMessage prepareJobStatusMessageForClient(final ClientJob job,
 			final JobStatusUpdate jobStatusUpdate, final String conversationId) {
-		return prepareJobStatusMessage(jobStatusUpdate, conversationId, new AID(client, ISGUID));
+		final AID clientAID = new AID(job.getClientIdentifier(), ISGUID);
+		clientAID.addAddresses(job.getClientAddress());
+		return prepareJobStatusMessage(jobStatusUpdate, conversationId, clientAID);
 	}
 
 	/**
 	 * Method prepares the information message about the job split sent to client with split jobs as message content
 	 *
-	 * @param client   client to which the message is sent
+	 * @param job      client's job
 	 * @param splitJob jobs created after split
 	 * @return INFORM ACLMessage
 	 */
-	public static ACLMessage prepareSplitJobMessageForClient(final String client, final JobParts splitJob) {
-		return prepareJobStatusMessage(splitJob, MessageConversationConstants.SPLIT_JOB_ID, new AID(client, ISGUID));
+	public static ACLMessage prepareSplitJobMessageForClient(final ClientJob job, final JobParts splitJob) {
+		final AID clientAID = new AID(job.getClientIdentifier(), ISGUID);
+		clientAID.addAddresses(job.getClientAddress());
+		return prepareJobStatusMessage(splitJob, SPLIT_JOB_ID, clientAID);
 	}
 
 	/**
@@ -128,22 +135,23 @@ public class JobStatusMessageFactory {
 	 * @return INFORM ACLMessage
 	 */
 	public static ACLMessage preparePostponeJobMessageForClient(final ClientJob job) {
-		return prepareJobStatusMessage(job.getJobId(), MessageConversationConstants.POSTPONED_JOB_ID,
-				new AID(job.getClientIdentifier(), ISGUID));
+		final AID clientAID = new AID(job.getClientIdentifier(), ISGUID);
+		clientAID.addAddresses(job.getClientAddress());
+		return prepareJobStatusMessage(job.getJobId(), POSTPONED_JOB_ID, clientAID);
 	}
 
 	/**
 	 * Method prepares the information message sent to client containing adjusted job time frames
 	 *
-	 * @param client      client to which the message is sent
 	 * @param adjustedJob job with adjusted time frames
 	 * @return INFORM ACLMessage
 	 */
-	public static ACLMessage prepareJobAdjustmentMessage(final String client, final ClientJob adjustedJob) {
+	public static ACLMessage prepareJobAdjustmentMessage(final ClientJob adjustedJob) {
 		final JobTimeFrames jobTimeFrames = new ImmutableJobTimeFrames(adjustedJob.getStartTime(),
 				adjustedJob.getEndTime(), adjustedJob.getJobId());
-		return prepareJobStatusMessage(jobTimeFrames, MessageConversationConstants.RE_SCHEDULED_JOB_ID,
-				new AID(client, ISGUID));
+		final AID clientAID = new AID(adjustedJob.getClientIdentifier(), ISGUID);
+		clientAID.addAddresses(adjustedJob.getClientAddress());
+		return prepareJobStatusMessage(jobTimeFrames, RE_SCHEDULED_JOB_ID, clientAID);
 	}
 
 	/**

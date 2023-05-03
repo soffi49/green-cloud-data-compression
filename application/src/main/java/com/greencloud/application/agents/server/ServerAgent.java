@@ -67,7 +67,8 @@ public class ServerAgent extends AbstractServerAgent {
 				doDelete();
 			}
 
-			register(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
+			register(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME,
+					this.getOwnerCloudNetworkAgent().getName());
 		} else {
 			logger.info("Incorrect arguments: some parameters for server agent are missing");
 			doDelete();
@@ -121,7 +122,7 @@ public class ServerAgent extends AbstractServerAgent {
 
 	@Override
 	protected void takeDown() {
-		deregister(this, SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
+		deregister(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
 		super.takeDown();
 	}
 

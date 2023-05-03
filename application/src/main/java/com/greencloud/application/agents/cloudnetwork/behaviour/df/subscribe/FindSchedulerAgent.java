@@ -37,7 +37,8 @@ public class FindSchedulerAgent extends OneShotBehaviour {
 	 */
 	@Override
 	public void action() {
-		final Set<AID> schedulerAgents = search(myAgent, SCHEDULER_SERVICE_TYPE);
+		final Set<AID> schedulerAgents = search(myAgent, myCloudNetworkAgent.getParentDFAddress(),
+				SCHEDULER_SERVICE_TYPE);
 
 		if (schedulerAgents.isEmpty()) {
 			logger.info(NO_SCHEDULER_FOUND_LOG);

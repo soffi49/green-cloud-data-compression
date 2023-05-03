@@ -31,6 +31,17 @@ public final class DdlCommands {
 			"CREATE INDEX monitoring_data_aid ON monitoring_data (aid, data_type, time DESC)";
 
 	/**
+	 * System AMS agents table
+	 */
+
+	static final String DROP_AMS_AGENTS = "DROP TABLE IF EXISTS ams_agents";
+	static final String CREATE_AMS_AGENTS = """
+			CREATE TABLE ams_agents (
+			name VARCHAR(50) NOT NULL,
+			address VARCHAR(50) NOT NULL)
+			""";
+
+	/**
 	 * Adaptation goals table
 	 */
 	static final String DROP_ADAPTATION_GOALS = "DROP TABLE IF EXISTS adaptation_goals";

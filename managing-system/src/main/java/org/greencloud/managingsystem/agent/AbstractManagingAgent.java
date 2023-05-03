@@ -3,6 +3,7 @@ package org.greencloud.managingsystem.agent;
 import static com.greencloud.commons.agent.AgentType.MANAGING;
 
 import java.util.List;
+import java.util.Map;
 
 import org.greencloud.managingsystem.service.analyzer.AnalyzerService;
 import org.greencloud.managingsystem.service.executor.ExecutorService;
@@ -14,6 +15,7 @@ import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
 
+import jade.core.AID;
 import jade.core.Location;
 import jade.wrapper.ContainerController;
 
@@ -24,7 +26,7 @@ public abstract class AbstractManagingAgent extends AbstractAgent {
 
 	protected ScenarioStructureArgs greenCloudStructure;
 	protected ContainerController greenCloudController;
-	protected List<Location> containersLocations;
+	protected Map<Location, AID> containersLocations;
 
 	protected List<AdaptationGoal> adaptationGoalList;
 	protected double systemQualityThreshold;
@@ -86,11 +88,11 @@ public abstract class AbstractManagingAgent extends AbstractAgent {
 	/**
 	 * @return locations of all agent containers present in the system
 	 */
-	public List<Location> getContainersLocations() {
+	public Map<Location, AID> getContainersLocations() {
 		return containersLocations;
 	}
 
-	public void setContainersLocations(List<Location> containersLocations) {
+	public void setContainersLocations(Map<Location, AID> containersLocations) {
 		this.containersLocations = containersLocations;
 	}
 }

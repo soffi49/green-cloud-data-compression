@@ -90,8 +90,8 @@ class YellowPagesServiceUnitTest {
 		doReturn(mockDF).when(mockAgent).getDefaultDF();
 
 		var result = Objects.nonNull(ownership) ?
-				prepareSubscription(mockAgent, "test_service_type", "test_server") :
-				prepareSubscription(mockAgent, "test_service_type");
+				prepareSubscription(mockAgent, mockDF, "test_service_type", "test_server") :
+				prepareSubscription(mockAgent, mockDF, "test_service_type");
 
 		assertThat(result)
 				.as("Message contains correct fields")

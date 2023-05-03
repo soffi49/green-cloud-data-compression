@@ -3,14 +3,14 @@ package com.greencloud.application.agents.scheduler.behaviour.job.scheduling.lis
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.JOB_FAILED_RETRY_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.JOB_UPDATE_RECEIVED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates.JobSchedulingMessageTemplates.JOB_UPDATE_TEMPLATE;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
 import static com.greencloud.application.utils.JobUtils.getJobById;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.util.Objects.nonNull;
@@ -73,8 +73,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 				case FAILED_JOB_ID -> handleJobFailure(jobStatusUpdate, job);
 			}
 			if (!type.equals(FAILED_JOB_ID)) {
-				mySchedulerAgent.send(
-						prepareJobStatusMessageForClient(job.getClientIdentifier(), jobStatusUpdate, type));
+				mySchedulerAgent.send(prepareJobStatusMessageForClient(job, jobStatusUpdate, type));
 			}
 		}
 	}
@@ -85,8 +84,7 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 			mySchedulerAgent.send(preparePostponeJobMessageForClient(job));
 		} else {
 			mySchedulerAgent.manage().jobFailureCleanUp(job);
-			mySchedulerAgent.send(prepareJobStatusMessageForClient(job.getClientIdentifier(), jobStatusUpdate,
-					FAILED_JOB_ID));
+			mySchedulerAgent.send(prepareJobStatusMessageForClient(job, jobStatusUpdate, FAILED_JOB_ID));
 		}
 	}
 }

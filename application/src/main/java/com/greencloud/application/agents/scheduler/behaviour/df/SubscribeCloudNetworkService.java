@@ -39,7 +39,8 @@ public class SubscribeCloudNetworkService extends AbstractSubscriptionInitiator 
 	 */
 	public static SubscribeCloudNetworkService create(final SchedulerAgent agent) {
 		logger.info(SUBSCRIBE_CNA_SERVICE_LOG);
-		return new SubscribeCloudNetworkService(agent, prepareSubscription(agent, CNA_SERVICE_TYPE));
+		return new SubscribeCloudNetworkService(agent,
+				prepareSubscription(agent, agent.getDefaultDF(), CNA_SERVICE_TYPE));
 	}
 
 	@Override

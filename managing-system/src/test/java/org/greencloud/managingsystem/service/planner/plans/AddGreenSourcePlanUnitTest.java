@@ -2,6 +2,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.google.common.collect.ImmutableList.of;
+import static jade.core.AID.ISGUID;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
@@ -35,6 +37,7 @@ import com.greencloud.commons.managingsystem.planner.AddGreenSourceActionParamet
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
 import com.gui.agents.ManagingAgentNode;
 
+import jade.core.AID;
 import jade.core.Location;
 
 @ExtendWith(MockitoExtension.class)
@@ -103,6 +106,8 @@ class AddGreenSourcePlanUnitTest {
 	@Test
 	void shouldConstructPlan() {
 		// given
+		final AID testAID = new AID("test", ISGUID);
+		testAID.addAddresses("test_address");
 		var backUpPowerValue = 30;
 		serverName = "Server2";
 		when(managingAgent.getGreenCloudStructure()).thenReturn(greenCloudStructure);
@@ -110,7 +115,8 @@ class AddGreenSourcePlanUnitTest {
 				.thenReturn(generateTestDataForTrafficValue(backUpPowerValue, backUpPowerValue + 20));
 
 		doReturn(null).when(mobilityService).getContainerLocations("CNA1");
-		doReturn(mock(Location.class)).when(mobilityService).getContainerLocations("Main-Container");
+		doReturn(new AbstractMap.SimpleImmutableEntry<>(mock(Location.class), testAID)).when(mobilityService)
+				.getContainerLocations("Main-Container");
 
 		addGreenSourcePlan.isPlanExecutable();
 

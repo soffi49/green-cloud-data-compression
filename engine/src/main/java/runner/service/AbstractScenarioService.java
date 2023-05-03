@@ -3,29 +3,43 @@ package runner.service;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.commons.args.agent.client.ClientTimeType.REAL_TIME;
 import static jade.core.Runtime.instance;
+import static jade.wrapper.AgentController.ASYNC;
 import static java.lang.String.format;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static runner.domain.EngineConstants.databaseHostIp;
-import static runner.domain.EngineConstants.hostId;
-import static runner.domain.EngineConstants.localHostIp;
-import static runner.domain.EngineConstants.mainHost;
-import static runner.domain.EngineConstants.newPlatform;
-import static runner.domain.EngineConstants.websocketHostIp;
-import static runner.service.domain.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
-import static runner.service.domain.ScenarioConstants.DEADLINE_MAX;
-import static runner.service.domain.ScenarioConstants.END_TIME_MAX;
-import static runner.service.domain.ScenarioConstants.MAX_JOB_POWER;
-import static runner.service.domain.ScenarioConstants.MIN_JOB_POWER;
-import static runner.service.domain.ScenarioConstants.RESOURCE_SCENARIO_PATH;
-import static runner.service.domain.ScenarioConstants.START_TIME_MAX;
-import static runner.service.domain.ScenarioConstants.START_TIME_MIN;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
+import static runner.constants.EngineConstants.CONTAINER_NAME_PREFIX;
+import static runner.constants.EngineConstants.GRAPH_INITIALIZATION_DELAY;
+import static runner.constants.EngineConstants.RUN_AGENT_DELAY;
+import static runner.constants.EngineConstants.RUN_CLIENT_AGENT_DELAY;
+import static runner.domain.EngineConfiguration.databaseHostIp;
+import static runner.domain.EngineConfiguration.hostId;
+import static runner.domain.EngineConfiguration.jadeInterPort;
+import static runner.domain.EngineConfiguration.jadeIntraPort;
+import static runner.domain.EngineConfiguration.localHostIp;
+import static runner.domain.EngineConfiguration.newPlatform;
+import static runner.domain.EngineConfiguration.runJadeGUI;
+import static runner.domain.EngineConfiguration.useXMPP;
+import static runner.domain.EngineConfiguration.websocketHostIp;
+import static runner.domain.EngineConfiguration.xmppPassword;
+import static runner.domain.EngineConfiguration.xmppServer;
+import static runner.domain.EngineConfiguration.xmppUser;
+import static runner.domain.ScenarioConfiguration.clientNumber;
+import static runner.domain.ScenarioConfiguration.eventFilePath;
+import static runner.domain.ScenarioConfiguration.maxDeadline;
+import static runner.domain.ScenarioConfiguration.maxEndTime;
+import static runner.domain.ScenarioConfiguration.maxJobPower;
+import static runner.domain.ScenarioConfiguration.maxStartTime;
+import static runner.domain.ScenarioConfiguration.minJobPower;
+import static runner.domain.ScenarioConfiguration.minStartTime;
+import static runner.domain.ScenarioConfiguration.scenarioFilePath;
+import static runner.domain.enums.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,7 +47,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +57,7 @@ import com.greencloud.commons.args.agent.client.ClientAgentArgs;
 import com.greencloud.commons.args.agent.client.ImmutableClientAgentArgs;
 import com.greencloud.commons.scenario.ScenarioEventsArgs;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
+import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
 import com.gui.controller.GuiControllerImpl;
 
@@ -53,10 +67,10 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
+import runner.exception.InvalidScenarioException;
+import runner.exception.JadeContainerException;
+import runner.exception.JadeControllerException;
 import runner.factory.AgentControllerFactory;
-import runner.service.domain.exception.InvalidScenarioException;
-import runner.service.domain.exception.JadeContainerException;
-import runner.service.domain.exception.JadeControllerException;
 
 /**
  * Abstract class serving as common base to Single and Multi Scenario Services.
@@ -65,40 +79,30 @@ import runner.service.domain.exception.JadeControllerException;
  */
 public abstract class AbstractScenarioService {
 
-	private static final Logger logger = LoggerFactory.getLogger(AbstractScenarioService.class);
-
-	private static final String CONTAINER_NAME_PREFIX = "CNA";
-	private static final Long GRAPH_INITIALIZATION_PAUSE = 7L;
-	private static final Integer RUN_CLIENT_AGENT_PAUSE = 300;
-	protected static final Integer RUN_AGENT_PAUSE = 100;
-
 	protected static final XmlMapper xmlMapper = new XmlMapper();
 	protected static final ExecutorService executorService = Executors.newCachedThreadPool();
-	protected final ScenarioEventService eventService;
+	private static final Logger logger = LoggerFactory.getLogger(AbstractScenarioService.class);
 
+	protected final ScenarioEventService eventService;
 	protected final GuiController guiController;
-	protected final String scenarioStructureFileName;
-	protected final String scenarioEventsFileName;
+	protected final TimescaleDatabase timescaleDatabase;
 	protected final Runtime jadeRuntime;
+
 	protected final ContainerController mainContainer;
 	protected final ContainerController agentContainer;
-	protected final TimescaleDatabase timescaleDatabase;
 
 	protected ScenarioStructureArgs scenario;
 
 	/**
 	 * Constructor called by {@link MultiContainerScenarioService} and {@link SingleContainerScenarioService}
-	 * Launches gui and the main controller. In case of MultiContainer case runs environment only for the main host.
-	 *
-	 * @param scenarioStructureFileName name of the XML scenario document containing network structure
-	 * @param scenarioEventsFileName    (optional) name of the XML scenario document containing list of events triggered during scenario execution
+	 * Launches gui and the main controller.
+	 * In case of MultiContainer case runs environment only for the main host.
 	 */
-	protected AbstractScenarioService(String scenarioStructureFileName, Optional<String> scenarioEventsFileName)
+	protected AbstractScenarioService()
 			throws ExecutionException, InterruptedException, StaleProxyException {
 		this.guiController = new GuiControllerImpl(format("ws://%s:8080/", websocketHostIp));
 		this.eventService = new ScenarioEventService(this);
-		this.scenarioStructureFileName = scenarioStructureFileName;
-		this.scenarioEventsFileName = scenarioEventsFileName.orElse(null);
+
 		this.jadeRuntime = instance();
 		this.timescaleDatabase = new TimescaleDatabase(databaseHostIp);
 
@@ -106,87 +110,87 @@ public abstract class AbstractScenarioService {
 		executorService.execute(guiController);
 		mainContainer = runMainController();
 		agentContainer = null;
-		runJadeGui();
+
+		if (runJadeGUI) {
+			runJadeGui();
+		}
 	}
 
 	/**
 	 * Runs remote AgentContainer with GUI.
 	 *
-	 * @param scenarioStructureFileName name of the XML scenario document
-	 * @param hostId                    number of the host id
-	 * @param mainHostIp                IP address of the main host
+	 * @param hostId     number of the host id
+	 * @param mainHostIp IP address of the main host
 	 */
-	protected AbstractScenarioService(String scenarioStructureFileName, Integer hostId, String mainHostIp,
-			Optional<String> scenarioEventsFileName) throws ExecutionException, InterruptedException {
+	protected AbstractScenarioService(final Integer hostId, final String mainHostIp)
+			throws ExecutionException, InterruptedException, StaleProxyException {
 		this.guiController = new GuiControllerImpl(format("ws://%s:8080/", websocketHostIp));
 		this.eventService = new ScenarioEventService(this);
-		this.scenarioStructureFileName = scenarioStructureFileName;
-		this.scenarioEventsFileName = scenarioEventsFileName.orElse(null);
+
 		this.jadeRuntime = instance();
 		this.timescaleDatabase = new TimescaleDatabase(databaseHostIp);
 
-		if (mainHost) {
-			timescaleDatabase.initDatabase();
-		}
 		executorService.execute(guiController);
-
 		mainContainer = newPlatform ? runMainController() : null;
 		agentContainer = runAgentsContainer(CONTAINER_NAME_PREFIX + hostId.toString(), mainHostIp);
+
+		if (newPlatform && runJadeGUI) {
+			runJadeGui();
+		}
 	}
 
-	protected File readFile(final String fileName) {
-		try (InputStream inputStream = getClass().getClassLoader()
-				.getResourceAsStream(RESOURCE_SCENARIO_PATH + fileName + ".xml")) {
-			File scenarioTempFile = File.createTempFile("test", ".txt");
-			FileUtils.copyInputStreamToFile(inputStream, scenarioTempFile);
+	protected File readFile(final String filePath) {
+		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+			final File scenarioTempFile = File.createTempFile("test", ".txt");
+			copyInputStreamToFile(inputStream, scenarioTempFile);
 			return scenarioTempFile;
 		} catch (IOException | NullPointerException e) {
 			throw new InvalidScenarioException("Invalid scenario file name.", e);
 		}
 	}
 
-	protected ScenarioStructureArgs parseScenarioStructure(File scenarioStructureFile) {
+	protected ScenarioStructureArgs parseScenarioStructure(final File scenarioStructureFile) {
 		try {
 			return xmlMapper.readValue(scenarioStructureFile, ScenarioStructureArgs.class);
 		} catch (IOException e) {
-			throw new InvalidScenarioException(format("Failed to parse scenario structure file \"%s\".xml.",
-					scenarioStructureFileName), e);
+			throw new InvalidScenarioException(
+					format("Failed to parse scenario structure file \"%s\"", scenarioFilePath), e);
 		}
 	}
 
-	protected ScenarioEventsArgs parseScenarioEvents(File scenarioEventsFile) {
+	protected ScenarioEventsArgs parseScenarioEvents(final File scenarioEventsFile) {
 		try {
 			return xmlMapper.readValue(scenarioEventsFile, ScenarioEventsArgs.class);
 		} catch (IOException e) {
-			throw new InvalidScenarioException(format("Failed to parse scenario events file \"%s\".xml.",
-					scenarioEventsFileName), e);
+			throw new InvalidScenarioException(format("Failed to parse scenario events file \"%s\"", eventFilePath), e);
 		}
 	}
 
-	protected AgentController runAgentController(AgentArgs args, ScenarioStructureArgs scenario,
-			AgentControllerFactory factory) {
-		final AgentController agentController;
+	protected AgentController runAgentController(final AgentArgs args, final ScenarioStructureArgs scenario,
+			final AgentControllerFactory factory) {
 		try {
-			agentController = factory.createAgentController(args, scenario);
-			var agentNode = factory.createAgentNode(args, scenario);
+			final AgentController agentController = factory.createAgentController(args, scenario);
+			final AbstractAgentNode agentNode = factory.createAgentNode(args, scenario);
 			agentNode.setDatabaseClient(timescaleDatabase);
 			guiController.addAgentNodeToGraph(agentNode);
-			agentController.putO2AObject(guiController, AgentController.ASYNC);
-			agentController.putO2AObject(agentNode, AgentController.ASYNC);
+			agentController.putO2AObject(guiController, ASYNC);
+			agentController.putO2AObject(agentNode, ASYNC);
+
 			logger.info("Created {} agent.", args.getName());
+			return agentController;
 		} catch (StaleProxyException e) {
 			throw new JadeControllerException("Failed to run agent controller", e);
 		}
-		return agentController;
 	}
 
-	protected void runClientAgents(long agentsNumber, AgentControllerFactory factory) {
-		var random = ThreadLocalRandom.current();
-		LongStream.rangeClosed(1, agentsNumber).forEach(idx -> {
-			final int randomPower = random.nextInt(MIN_JOB_POWER, MAX_JOB_POWER);
-			final int randomStart = random.nextInt(START_TIME_MIN, START_TIME_MAX);
-			final int randomEnd = random.nextInt(randomStart + 2, END_TIME_MAX);
-			final int randomDeadline = randomEnd + 3 + random.nextInt(DEADLINE_MAX);
+	protected void runClientAgents(final AgentControllerFactory factory) {
+		final ThreadLocalRandom random = ThreadLocalRandom.current();
+		LongStream.rangeClosed(1, clientNumber).forEach(idx -> {
+			final int randomPower = random.nextInt(minJobPower, maxJobPower);
+			final int randomStart = random.nextInt(minStartTime, maxStartTime);
+			final int randomEnd = random.nextInt(randomStart + 2, maxEndTime);
+			final int randomDeadline = randomEnd + 3 + random.nextInt(maxDeadline);
+
 			final ClientAgentArgs clientAgentArgs = ImmutableClientAgentArgs.builder()
 					.name(format("Client%d", idx))
 					.jobId(String.valueOf(idx))
@@ -196,19 +200,20 @@ public abstract class AbstractScenarioService {
 					.deadline(String.valueOf(randomDeadline))
 					.timeType(REAL_TIME)
 					.build();
+
 			final AgentController agentController = runAgentController(clientAgentArgs, null, factory);
-			runAgent(agentController, RUN_CLIENT_AGENT_PAUSE);
+			runAgent(agentController, RUN_CLIENT_AGENT_DELAY);
 		});
 	}
 
-	protected void runAgents(List<AgentController> controllers) {
-		var scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-		scheduledExecutor.schedule(() -> controllers.forEach(controller -> runAgent(controller, RUN_AGENT_PAUSE)),
-				GRAPH_INITIALIZATION_PAUSE, SECONDS);
+	protected void runAgents(final List<AgentController> controllers) {
+		var scheduledExecutor = newSingleThreadScheduledExecutor();
+		scheduledExecutor.schedule(() -> controllers.forEach(controller -> runAgent(controller, RUN_AGENT_DELAY)),
+				GRAPH_INITIALIZATION_DELAY, SECONDS);
 		shutdownAndAwaitTermination(scheduledExecutor);
 	}
 
-	protected void runAgent(AgentController controller, long pause) {
+	protected void runAgent(final AgentController controller, long pause) {
 		try {
 			controller.start();
 			controller.activate();
@@ -232,16 +237,30 @@ public abstract class AbstractScenarioService {
 	}
 
 	private ContainerController runMainController() throws ExecutionException, InterruptedException {
-		final String platformId = mainHost ? "MainPlatform" : format("Platform%d", hostId);
+		final String platformId = !newPlatform ? "MainPlatform" : format("Platform%d", hostId);
+		final String containerName = !newPlatform ? "Main-Container" : format("Platform%d-Main-Container", hostId);
+
 		final Profile profile = new ProfileImpl();
-		profile.setParameter(Profile.CONTAINER_NAME, "Main-Container");
+		profile.setParameter(Profile.CONTAINER_NAME, containerName);
 		profile.setParameter(Profile.MAIN_HOST, localHostIp);
-		profile.setParameter(Profile.MAIN_PORT, "1099");
+		profile.setParameter(Profile.MAIN_PORT, jadeIntraPort);
 		profile.setParameter(Profile.PLATFORM_ID, platformId);
+		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
 
 		if (localHostIp != null) {
+			final String platformAddress = format("http://%s:%s/acc", localHostIp, jadeInterPort);
+
 			profile.setParameter(Profile.EXPORT_HOST, localHostIp);
-			profile.setParameter(Profile.MTPS, format("jade.mtp.http.MessageTransportProtocol(http://%s:7778/acc)", localHostIp));
+			if (useXMPP) {
+				profile.setParameter(Profile.MTPS, "jade.mtp.xmpp.MessageTransportProtocol");
+				profile.setParameter("jade_mtp_xmpp_server", xmppServer);
+				profile.setParameter("jade_mtp_xmpp_username", xmppUser);
+				profile.setParameter("jade_mtp_xmpp_password", xmppPassword);
+			} else {
+				profile.setParameter(Profile.MTPS,
+						format("jade.mtp.http.MessageTransportProtocol(%s)", platformAddress));
+			}
+			timescaleDatabase.writeAMSData("ams@" + platformId, platformAddress);
 		}
 		return executorService.submit(() -> jadeRuntime.createMainContainer(profile)).get();
 	}
@@ -250,7 +269,9 @@ public abstract class AbstractScenarioService {
 		var profile = new ProfileImpl();
 		profile.setParameter(Profile.CONTAINER_NAME, containerName);
 		profile.setParameter(Profile.MAIN_HOST, host);
-		profile.setParameter(Profile.MAIN_PORT, "6996");
+		profile.setParameter(Profile.MAIN_PORT, jadeIntraPort);
+		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
+
 		if (localHostIp != null) {
 			profile.setParameter(Profile.EXPORT_HOST, localHostIp);
 		}
@@ -273,9 +294,6 @@ public abstract class AbstractScenarioService {
 
 	private void runJadeGui() throws StaleProxyException {
 		final AgentController rma = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", new Object[0]);
-		final AgentController sniffer = mainContainer.createNewAgent("sniffeur", "jade.tools.sniffer.Sniffer",
-				new Object[0]);
 		rma.start();
-		sniffer.start();
 	}
 }

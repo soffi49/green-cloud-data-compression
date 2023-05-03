@@ -5,5 +5,6 @@ package org.greencloud.managingsystem.service.mobility.logs;
  */
 public class ManagingAgentMobilityLog {
 	public static final String FOUND_CONTAINERS_LOG = "Found {} containers: {}.";
+	public static final String MOVE_CONTAINER_LOG = "Moving {} agent controller to container {}";
 	public static final String NO_LOCATION_LOG = "Couldn't find target container for a new server!";
 }

@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 
 import com.greencloud.application.domain.job.ImmutableJobInstanceIdentifier;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
-import com.greencloud.application.domain.job.JobPowerShortageTransfer;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.greencloud.commons.domain.job.ImmutablePowerJob;
@@ -42,6 +41,7 @@ class JobMapperUnitTest {
 
 	private static final ClientJob MOCK_CLIENT_JOB = ImmutableClientJob.builder()
 			.clientIdentifier("test_client")
+			.clientAddress("test_address")
 			.jobId("1")
 			.startTime(parse("2022-01-01T09:00:00.000Z"))
 			.endTime(parse("2022-01-01T10:00:00.000Z"))

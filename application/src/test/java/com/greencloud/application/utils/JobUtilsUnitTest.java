@@ -3,6 +3,7 @@ package com.greencloud.application.utils;
 import static com.greencloud.application.utils.JobUtils.getTimetableOfJobs;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.application.utils.TimeUtils.useMockTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
@@ -88,6 +89,7 @@ class JobUtilsUnitTest {
 		final ClientJob mockJob1 = ImmutableClientJob.builder()
 				.jobId("1")
 				.clientIdentifier("Client1")
+				.clientAddress("client_address")
 				.startTime(parse("2022-01-01T08:00:00.000Z"))
 				.endTime(parse("2022-01-01T10:00:00.000Z"))
 				.deadline(parse("2022-01-01T20:00:00.000Z"))
@@ -240,7 +242,7 @@ class JobUtilsUnitTest {
 				.deadline(parse("2022-01-01T20:00:00.000Z"))
 				.build();
 
-		setSystemStartTime(now());
+		setSystemStartTime(getCurrentTime());
 		final List<Instant> result = getTimetableOfJobs(mockCandidatePowerJob, setUpMockJobsForTimeTables());
 
 		assertThat(result).hasSize(8)
@@ -266,7 +268,7 @@ class JobUtilsUnitTest {
 		final Map<ServerJob, JobExecutionStatusEnum> testJobs = setUpMockJobsForTimeTables();
 		testJobs.put(jobProcessing, JobExecutionStatusEnum.PROCESSING);
 
-		setSystemStartTime(now());
+		setSystemStartTime(getCurrentTime());
 		final List<Instant> result = getTimetableOfJobs(mockCandidatePowerJob, testJobs);
 
 		assertThat(result).hasSize(8)

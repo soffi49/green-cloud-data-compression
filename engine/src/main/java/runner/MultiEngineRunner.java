@@ -1,18 +1,16 @@
 package runner;
 
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.Integer.parseInt;
-import static runner.domain.EngineConstants.databaseHostIp;
-import static runner.domain.EngineConstants.hostId;
-import static runner.domain.EngineConstants.localHostIp;
-import static runner.domain.EngineConstants.mainHost;
-import static runner.domain.EngineConstants.mainHostIp;
-import static runner.domain.EngineConstants.websocketHostIp;
+import static runner.constants.EngineConstants.GUI_SETUP_MILLISECONDS_DELAY;
+import static runner.domain.EngineConfiguration.hostId;
+import static runner.domain.EngineConfiguration.localHostIp;
+import static runner.domain.EngineConfiguration.mainHost;
+import static runner.domain.EngineConfiguration.mainHostIp;
+import static runner.domain.EngineConfiguration.readSystemProperties;
+import static runner.domain.ScenarioConfiguration.readScenarioProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -24,35 +22,28 @@ import runner.service.MultiContainerScenarioService;
 /**
  * Main method which runs the engine on a multiple hosts and the given scenario
  */
-public class MultiEngineRunner extends AbstractEngineRunner {
+public class MultiEngineRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(MultiEngineRunner.class);
 
 	public static void main(String[] args) throws InterruptedException {
 		logger.info("Passed arguments: {}", Arrays.stream(args).toList());
-
-		if (args.length != 0) {
-			String[] multiHostArguments = args[0].split("_");
-			parseMultiHostArgs(multiHostArguments);
-		}
-
-		parseArguments(args, 1);
 		retrieveLocalHostIp();
-		runScenario(MultiEngineRunner::runMultiContainerService);
+		readSystemProperties();
+		readScenarioProperties();
+
+		// wait for GUI to set up
+		Thread.sleep(GUI_SETUP_MILLISECONDS_DELAY);
+		runMultiContainerService();
 	}
 
-	public static void runMultiContainerService(String scenarioStructure, Optional<String> scenarioEvents) {
-		MultiContainerScenarioService scenarioService;
-
+	public static void runMultiContainerService() {
 		try {
-			if (mainHost) {
-				scenarioService = new MultiContainerScenarioService(scenarioStructure);
-				scenarioService.run();
-			} else {
-				scenarioService = new MultiContainerScenarioService(scenarioStructure, scenarioEvents, hostId,
-						mainHostIp);
-				scenarioService.run();
-			}
+			final MultiContainerScenarioService scenarioService = mainHost
+					? new MultiContainerScenarioService()
+					: new MultiContainerScenarioService(hostId, mainHostIp);
+			scenarioService.run();
+
 		} catch (StaleProxyException | ExecutionException | InterruptedException exception) {
 			Thread.currentThread().interrupt();
 			logger.error("Failed to run scenario due to exception {}", exception.getMessage());
@@ -64,25 +55,6 @@ public class MultiEngineRunner extends AbstractEngineRunner {
 			localHostIp = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 			logger.warn("Couldn't retrieve localhostIp");
-		}
-	}
-
-	private static void parseMultiHostArgs(String[] multiHostArgs) {
-		if (multiHostArgs.length != 6) {
-			throw new IllegalStateException("Can't run multi container Green Cloud without required arguments");
-		}
-
-		for (String arg : multiHostArgs) {
-			String[] argKeyValue = arg.split("=");
-			switch (argKeyValue[0]) {
-				case "mainHost" -> mainHost = parseBoolean(argKeyValue[1]);
-				case "hostId" -> hostId = parseInt(argKeyValue[1]);
-				case "localHostIp" -> localHostIp = argKeyValue[1];
-				case "mainHostIp" -> mainHostIp = argKeyValue[1];
-				case "databaseIp" -> databaseHostIp = argKeyValue[1];
-				case "websocketIp" -> websocketHostIp = argKeyValue[1];
-				default -> throw new IllegalStateException("Provided unsupported parameter key!");
-			}
 		}
 	}
 }

@@ -46,7 +46,7 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 				this.splittingFactor = parseInt(args[4].toString());
 
 				this.setUpPriorityQueue();
-				register(this, SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);
+				register(this, getDefaultDF(), SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);
 
 			} catch (final NumberFormatException e) {
 				logger.info("Weight arguments must be double values!");
@@ -69,7 +69,7 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 
 	@Override
 	protected void takeDown() {
-		deregister(this, SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);
+		deregister(this, getDefaultDF(), SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);
 		super.takeDown();
 	}
 

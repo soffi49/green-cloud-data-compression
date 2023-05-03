@@ -25,14 +25,16 @@ import jade.core.AID;
  */
 public class Fixtures {
 
+	public final static AID TEST_CLIENT = new AID("test_client", AID.ISGUID);
+
 	public static ClientJobExecution buildJobExecutionInstance(final String jobId) {
-		var clientId = "client1";
 		var power = 20;
 		var jobStart = parse("2022-01-01T11:30:00.000Z");
 		var jobEnd = parse("2022-01-01T12:30:00.000Z");
 		var jobDeadline = parse("2022-01-01T13:30:00.000Z");
+		TEST_CLIENT.addAddresses("test_address");
 
-		return new ClientJobExecution(clientId, jobStart, jobEnd, jobDeadline, power, jobId);
+		return new ClientJobExecution(TEST_CLIENT, jobStart, jobEnd, jobDeadline, power, jobId);
 	}
 
 	public static JobStatusUpdate buildJobStatusUpdate(final String jobId) {
@@ -61,6 +63,7 @@ public class Fixtures {
 								.jobId("1#part1")
 								.jobInstanceId("jobInstance1")
 								.clientIdentifier("client1")
+								.clientAddress("client_address")
 								.startTime(parse("2022-01-01T11:30:00.000Z"))
 								.endTime(parse("2022-01-01T12:30:00.000Z"))
 								.deadline(parse("2022-01-01T13:30:00.000Z"))
@@ -70,6 +73,7 @@ public class Fixtures {
 								.jobId("1#part2")
 								.jobInstanceId("jobInstance1")
 								.clientIdentifier("client1")
+								.clientAddress("client_address")
 								.startTime(parse("2022-01-01T11:30:00.000Z"))
 								.endTime(parse("2022-01-01T12:30:00.000Z"))
 								.deadline(parse("2022-01-01T13:30:00.000Z"))

@@ -1,9 +1,10 @@
 package com.greencloud.application.agents.monitoring.domain;
 
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
+
 import com.greencloud.application.domain.weather.ImmutableMonitoringData;
 import com.greencloud.application.domain.weather.ImmutableWeatherData;
 import com.greencloud.application.domain.weather.MonitoringData;
-import com.greencloud.application.utils.TimeUtils;
 
 /**
  * Class stores all predefined constants for Monitoring Agent
@@ -25,7 +26,7 @@ public class MonitoringAgentConstants {
 							.cloudCover(25.0)
 							.temperature(25.0)
 							.windSpeed(10.0)
-							.time(TimeUtils.getCurrentTime())
+							.time(getCurrentTime())
 							.build())
 					.build();
 	public static final MonitoringData BAD_STUB_DATA =
@@ -34,7 +35,7 @@ public class MonitoringAgentConstants {
 							.cloudCover(0.0)
 							.temperature(0.0)
 							.windSpeed(0.0)
-							.time(TimeUtils.getCurrentTime())
+							.time(getCurrentTime())
 							.build())
 					.build();
 	public static final int MAX_NUMBER_OF_WEATHER_REQUESTS = 100;

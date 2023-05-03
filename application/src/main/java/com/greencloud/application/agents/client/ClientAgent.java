@@ -6,6 +6,7 @@ import static com.greencloud.application.utils.TimeUtils.convertToInstantTime;
 import static com.greencloud.application.utils.TimeUtils.convertToSimulationTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTimeMinusError;
+import static com.greencloud.application.yellowpages.YellowPagesService.prepareDF;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static java.lang.Integer.parseInt;
 import static java.time.temporal.ChronoUnit.MILLIS;
@@ -58,13 +59,15 @@ public class ClientAgent extends AbstractClientAgent {
 
 	@Override
 	public void initializeAgent(final Object[] arguments) {
-		if (nonNull(arguments) && arguments.length == 5) {
+		if (nonNull(arguments) && arguments.length == 7) {
 			try {
-				final Instant startTime = convertToInstantTime(arguments[0].toString());
-				final Instant endTime = convertToInstantTime(arguments[1].toString());
-				final Instant deadline = convertToInstantTime(arguments[2].toString());
-				final int power = parseInt(arguments[3].toString());
-				final String jobId = arguments[4].toString();
+				parentDFAddress = prepareDF(arguments[0].toString(), arguments[1].toString());
+
+				final Instant startTime = convertToInstantTime(arguments[2].toString());
+				final Instant endTime = convertToInstantTime(arguments[3].toString());
+				final Instant deadline = convertToInstantTime(arguments[4].toString());
+				final int power = parseInt(arguments[5].toString());
+				final String jobId = arguments[6].toString();
 				initializeJob(startTime, endTime, deadline, power, jobId);
 
 			} catch (IncorrectTaskDateException e) {
@@ -118,7 +121,7 @@ public class ClientAgent extends AbstractClientAgent {
 		final long expectedJobDeadline = convertToSimulationTime(SECONDS.between(currentTime, deadline));
 
 		jobExecution = new ClientJobExecution(
-				getAID().getName(),
+				getAID(),
 				currentTime.plus(expectedJobStart, MILLIS),
 				currentTime.plus(expectedJobEnd, MILLIS),
 				currentTime.plus(expectedJobDeadline, MILLIS),

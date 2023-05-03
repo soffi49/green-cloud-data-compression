@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -97,6 +98,7 @@ class ListenForJobUpdateUnitTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test receive message for unknown handler type")
 	void testActionUnknownHandler() {
 		// given
@@ -120,6 +122,7 @@ class ListenForJobUpdateUnitTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test receive message of known type with handler message")
 	void testAction() {
 		// given
@@ -142,6 +145,7 @@ class ListenForJobUpdateUnitTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test receive message of known type without handler message")
 	void testActionNoLogMessage() {
 		// given

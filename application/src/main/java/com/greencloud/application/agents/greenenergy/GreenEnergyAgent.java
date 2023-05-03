@@ -19,9 +19,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 import com.database.knowledge.domain.action.AdaptationAction;
-import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForGreenEnergyJobCancellation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerReSupplyRequest;
+import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForGreenEnergyJobCancellation;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyRequest;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForPowerSupplyStatus;
 import com.greencloud.application.agents.greenenergy.behaviour.sensor.SenseGreenSourceEvent;
@@ -55,7 +55,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 			this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
 			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
 
-			register(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
+			register(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
 			try {
 				final double latitude = parseDouble(args[4].toString());
 				final double longitude = parseDouble(args[5].toString());
@@ -128,7 +128,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	@Override
 	protected void takeDown() {
-		deregister(this, GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
+		deregister(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
 		super.takeDown();
 	}
 

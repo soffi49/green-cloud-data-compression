@@ -119,7 +119,9 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient }: Prop
          ) : (
             <>
                <div style={clientStatistics}>
-                  <DetailsField {...{ label: 'Client job parts', valueObject: getModalButton }} />
+                  <DetailsField
+                     {...{ label: 'Client job parts', valueObject: selectedClient?.isSplit && getModalButton }}
+                  />
                   {generateClientInfo()}
                </div>
                {getSplitJobModal()}

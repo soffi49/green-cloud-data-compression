@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
@@ -34,6 +35,7 @@ import com.greencloud.commons.managingsystem.planner.AddServerActionParameters;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
 import com.gui.agents.ManagingAgentNode;
 
+import jade.core.AID;
 import jade.core.Location;
 
 @ExtendWith(MockitoExtension.class)
@@ -91,9 +93,11 @@ class AddServerPlanUnitTest {
 	void shouldConstructPlan() {
 		// given
 		var trafficValue = 0.9;
+		var aid = new AID("test", AID.ISGUID);
 		when(managingAgent.getGreenCloudStructure()).thenReturn(greenCloudStructure);
 		when(mobilityService.getContainerLocations("CNA1")).thenReturn(null);
-		when(mobilityService.getContainerLocations("Main-Container")).thenReturn(mock(Location.class));
+		when(mobilityService.getContainerLocations("Main-Container")).thenReturn(
+				new AbstractMap.SimpleEntry<>(mock(Location.class), aid));
 		when(timescaleDatabase.readLastMonitoringDataForDataTypes(of(SERVER_MONITORING),
 				MONITOR_SYSTEM_DATA_TIME_PERIOD))
 				.thenReturn(generateTestDataForTrafficValue(trafficValue));

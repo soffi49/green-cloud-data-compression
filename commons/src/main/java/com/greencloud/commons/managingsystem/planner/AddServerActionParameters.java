@@ -7,6 +7,7 @@ import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
 
+import jade.core.AID;
 import jade.core.Location;
 
 public class AddServerActionParameters implements SystemAdaptationActionParameters {
@@ -27,13 +28,18 @@ public class AddServerActionParameters implements SystemAdaptationActionParamete
 	 * In case of multi container scenario location to which the newly created agents should be moved.
 	 */
 	private final Location agentsTargetLocation;
+	/**
+	 * In case of multi-platform scenario location to which the newly created agents should be moved.
+	 */
+	private final AID agentsTargetAMS;
 
 	public AddServerActionParameters(ServerAgentArgs serverAgentArgs, GreenEnergyAgentArgs greenEnergyAgentArgs,
-			MonitoringAgentArgs monitoringAgentArgs, Location agentsTargetLocation) {
+			MonitoringAgentArgs monitoringAgentArgs, Location agentsTargetLocation, AID agentsTargetAMS) {
 		this.serverAgentArgs = serverAgentArgs;
 		this.greenEnergyAgentArgs = greenEnergyAgentArgs;
 		this.monitoringAgentArgs = monitoringAgentArgs;
 		this.agentsTargetLocation = agentsTargetLocation;
+		this.agentsTargetAMS = agentsTargetAMS;
 	}
 
 	@Override
@@ -41,7 +47,13 @@ public class AddServerActionParameters implements SystemAdaptationActionParamete
 		return List.of(monitoringAgentArgs, greenEnergyAgentArgs, serverAgentArgs);
 	}
 
+	@Override
 	public Location getAgentsTargetLocation() {
 		return agentsTargetLocation;
+	}
+
+	@Override
+	public AID getAgentsTargetAMS() {
+		return agentsTargetAMS;
 	}
 }

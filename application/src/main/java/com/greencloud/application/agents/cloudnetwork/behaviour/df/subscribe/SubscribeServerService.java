@@ -43,7 +43,8 @@ public class SubscribeServerService extends AbstractSubscriptionInitiator {
 	 */
 	public static SubscribeServerService create(final CloudNetworkAgent agent) {
 		logger.info(SUBSCRIBE_SERVER_SERVICE_LOG);
-		return new SubscribeServerService(agent, prepareSubscription(agent, SA_SERVICE_TYPE, agent.getName()));
+		return new SubscribeServerService(agent, prepareSubscription(agent, agent.getDefaultDF(),
+				SA_SERVICE_TYPE, agent.getName()));
 	}
 
 	@Override

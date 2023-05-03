@@ -1,4 +1,4 @@
-package runner.service.domain.exception;
+package runner.exception;
 
 public class InvalidScenarioException extends RuntimeException {
 

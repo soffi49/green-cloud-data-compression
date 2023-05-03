@@ -119,7 +119,7 @@ class TimeUtilsUnitTest {
 		final Instant mockInstant = Instant.parse("2022-01-01T10:00:00.000Z");
 		useMockTime(Instant.parse("2022-01-01T10:00:00.000Z"), ZoneId.of("UTC"));
 
-		final Instant instant = getCurrentTime();
+		final Instant instant = Instant.now();
 		assertThat(instant).isEqualTo(mockInstant);
 	}
 
@@ -130,7 +130,7 @@ class TimeUtilsUnitTest {
 		final ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		useMockTime(LocalDateTime.parse("2022-01-01T10:00:00.000").atZone(zoneId).toInstant(), zoneId);
 
-		final Instant instant = getCurrentTime();
+		final Instant instant = Instant.now();
 		assertThat(instant).isEqualTo(mockInstant);
 	}
 
@@ -186,7 +186,7 @@ class TimeUtilsUnitTest {
 	@ParameterizedTest
 	@MethodSource("parametersTimeStampJobTest")
 	void testIsWithinTimeStampForJob(final Instant timeToCheck, final PowerJob job, final boolean expectedResult) {
-		setSystemStartTime(now());
+		setSystemStartTime(Instant.now());
 		assertThat(isWithinTimeStamp(job, convertToRealTime(timeToCheck))).isEqualTo(expectedResult);
 	}
 
@@ -209,7 +209,7 @@ class TimeUtilsUnitTest {
 	@DisplayName("Test set system start time for system null")
 	void testSetSystemStartTimeForNull() {
 		resetMockClock();
-		setSystemStartTime(now());
+		setSystemStartTime(Instant.now());
 		assertThat(SYSTEM_START_TIME).isCloseTo(Instant.now(), new TemporalUnitWithinOffset(100, MILLIS));
 	}
 

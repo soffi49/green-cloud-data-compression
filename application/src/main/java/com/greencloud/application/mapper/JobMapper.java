@@ -66,6 +66,7 @@ public class JobMapper {
 	public static ClientJob mapToClientJobRealTime(final ClientJob job) {
 		return ImmutableClientJob.builder()
 				.clientIdentifier(job.getClientIdentifier())
+				.clientAddress(job.getClientAddress())
 				.jobId(job.getJobId())
 				.jobInstanceId(job.getJobInstanceId())
 				.power(job.getPower())
@@ -83,6 +84,7 @@ public class JobMapper {
 	public static ClientJob mapToJobNewStartTime(final ClientJob job, final Instant startTime) {
 		return ImmutableClientJob.builder()
 				.clientIdentifier(job.getClientIdentifier())
+				.clientAddress(job.getClientAddress())
 				.jobId(job.getJobId())
 				.jobInstanceId(job.getJobInstanceId())
 				.power(job.getPower())
@@ -103,6 +105,7 @@ public class JobMapper {
 		return job instanceof ClientJob clientJob ?
 				(T) ImmutableClientJob.builder()
 						.clientIdentifier(clientJob.getClientIdentifier())
+						.clientAddress(clientJob.getClientAddress())
 						.jobId(clientJob.getJobId())
 						.jobInstanceId(jobInstance.getJobInstanceId())
 						.power(clientJob.getPower())
@@ -133,6 +136,7 @@ public class JobMapper {
 		return job instanceof ClientJob clientJob ?
 				(T) ImmutableClientJob.builder()
 						.clientIdentifier(clientJob.getClientIdentifier())
+						.clientAddress(clientJob.getClientAddress())
 						.jobId(clientJob.getJobId())
 						.jobInstanceId(jobInstanceId)
 						.power(clientJob.getPower())
@@ -161,6 +165,7 @@ public class JobMapper {
 		return job instanceof ClientJob clientJob ?
 				(T) ImmutableClientJob.builder()
 						.clientIdentifier(clientJob.getClientIdentifier())
+						.clientAddress(clientJob.getClientAddress())
 						.jobId(clientJob.getJobId())
 						.power(clientJob.getPower())
 						.startTime(startTime)
@@ -187,6 +192,7 @@ public class JobMapper {
 		return job instanceof ClientJob clientJob ?
 				(T) ImmutableClientJob.builder()
 						.clientIdentifier(clientJob.getClientIdentifier())
+						.clientAddress(clientJob.getClientAddress())
 						.jobId(clientJob.getJobId())
 						.power(clientJob.getPower())
 						.startTime(clientJob.getStartTime())
@@ -214,6 +220,7 @@ public class JobMapper {
 				.jobId(job.getJobId())
 				.jobInstanceId(job.getJobInstanceId())
 				.clientIdentifier(job.getClientIdentifier())
+				.clientAddress(job.getClientAddress())
 				.power(job.getPower())
 				.startTime(startTime)
 				.endTime(endTime)

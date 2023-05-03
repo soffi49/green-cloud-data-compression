@@ -3,11 +3,14 @@ package org.greencloud.managingsystem.service.planner.plans;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
 import static com.database.knowledge.domain.agent.DataType.SHORTAGES;
 import static com.google.common.collect.ImmutableList.of;
+import static com.greencloud.application.yellowpages.YellowPagesService.search;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
+import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +55,8 @@ class ChangeGreenSourceWeightPlanUnitTest {
 	private ManagingAgentNode managingAgentNode;
 	@Mock
 	private TimescaleDatabase timescaleDatabase;
+	@Mock
+	private MonitoringService mockMonitoring;
 	private MockedStatic<YellowPagesService> yellowPagesService;
 
 	private ChangeGreenSourceWeightPlan changeGreenSourceWeightPlan;
@@ -60,7 +66,7 @@ class ChangeGreenSourceWeightPlanUnitTest {
 	@BeforeEach
 	void init() {
 		yellowPagesService = mockStatic(YellowPagesService.class);
-		yellowPagesService.when(() -> YellowPagesService.search(managingAgent, SA_SERVICE_TYPE))
+		yellowPagesService.when(() -> search(eq(managingAgent), any(), eq(SA_SERVICE_TYPE)))
 				.thenReturn(Set.of(new AID("Server1", AID.ISGUID)));
 		changeGreenSourceWeightPlan = new ChangeGreenSourceWeightPlan(managingAgent);
 		GreenEnergyAgentArgs greenEnergyAgentArgs1 = ImmutableGreenEnergyAgentArgs.builder()
@@ -85,6 +91,9 @@ class ChangeGreenSourceWeightPlanUnitTest {
 		when(managingAgent.getAgentNode()).thenReturn(managingAgentNode);
 		when(managingAgentNode.getDatabaseClient()).thenReturn(timescaleDatabase);
 		when(managingAgent.getGreenCloudStructure()).thenReturn(greenCloudStructure);
+		when(managingAgent.monitor()).thenReturn(mockMonitoring);
+
+		when(mockMonitoring.getActiveServers()).thenReturn(List.of("Server1"));
 	}
 
 	@AfterEach
@@ -159,7 +168,7 @@ class ChangeGreenSourceWeightPlanUnitTest {
 
 		// then
 		assertThat(isPlanExecutable).isTrue();
-		assertThat(result.getTargetAgent()).isEqualTo("Server1");
+		assertThat(result.getTargetAgent().getName()).isEqualTo("Server1");
 		assertThat(result.adaptationActionEnum).isEqualTo(CHANGE_GREEN_SOURCE_WEIGHT);
 		assertThat(result.getActionParameters()).isInstanceOf(ChangeGreenSourceWeights.class);
 		var params = (ChangeGreenSourceWeights) result.getActionParameters();

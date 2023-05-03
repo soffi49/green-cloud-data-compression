@@ -2,11 +2,16 @@ package com.greencloud.application.agents.cloudnetwork;
 
 import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.STATE_MANAGEMENT;
 import static com.greencloud.application.yellowpages.YellowPagesService.deregister;
+import static com.greencloud.application.yellowpages.YellowPagesService.prepareDF;
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
+import static java.util.Objects.nonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.List;
+
+import org.slf4j.Logger;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.ListenForServerDisabling;
@@ -26,10 +31,19 @@ import jade.core.behaviours.SequentialBehaviour;
  */
 public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
+	private static final Logger logger = getLogger(CloudNetworkAgent.class);
+
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		register(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
-		this.maximumCapacity = new AtomicDouble(0.0);
+		if (nonNull(args) && args.length == 2) {
+			parentDFAddress = prepareDF(args[0].toString(), args[1].toString());
+			register(this, parentDFAddress, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
+
+			this.maximumCapacity = new AtomicDouble(0.0);
+		} else {
+			logger.error("Incorrect arguments: some parameters for CNA are missing");
+			doDelete();
+		}
 	}
 
 	@Override
@@ -39,7 +53,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected void takeDown() {
-		deregister(this, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
+		deregister(this, parentDFAddress, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
 		super.takeDown();
 	}
 

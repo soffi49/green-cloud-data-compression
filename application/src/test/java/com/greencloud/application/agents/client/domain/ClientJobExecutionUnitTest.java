@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.client.domain;
 
+import static com.greencloud.application.agents.client.fixtures.Fixtures.TEST_CLIENT;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
 import static java.time.Instant.parse;
@@ -31,6 +32,7 @@ class ClientJobExecutionUnitTest {
 		var clientJob = ImmutableClientJob.builder()
 				.jobId("1")
 				.clientIdentifier("client1")
+				.clientAddress("client_address")
 				.jobInstanceId("jobInstance1")
 				.deadline(parse("2022-01-01T13:30:00.000Z"))
 				.endTime(parse("2022-01-01T12:30:00.000Z"))
@@ -60,21 +62,20 @@ class ClientJobExecutionUnitTest {
 	void testClientJobExecutionConstructorJob() {
 		// given
 		var jobId = "1";
-		var clientId = "client1";
 		var power = 20;
 		var jobStart = parse("2022-01-01T11:30:00.000Z");
 		var jobEnd = parse("2022-01-01T12:30:00.000Z");
 		var jobDeadline = parse("2022-01-01T13:30:00.000Z");
 
 		// when
-		var result = new ClientJobExecution(clientId, jobStart, jobEnd, jobDeadline, power, jobId);
+		var result = new ClientJobExecution(TEST_CLIENT, jobStart, jobEnd, jobDeadline, power, jobId);
 
 		// then
 		assertThat(result.getJobStatus()).isEqualTo(CREATED);
 		assertThat(result.getJob()).matches(clientJob ->
 				nonNull(clientJob.getJobInstanceId()) &&
 						clientJob.getJobId().equals(jobId) &&
-						clientJob.getClientIdentifier().equals(clientId) &&
+						clientJob.getClientIdentifier().equals(TEST_CLIENT.getName()) &&
 						clientJob.getStartTime().equals(jobStart) &&
 						clientJob.getEndTime().equals(jobEnd) &&
 						clientJob.getDeadline().equals(jobDeadline) &&
@@ -95,13 +96,12 @@ class ClientJobExecutionUnitTest {
 		var end = parse("2022-01-01T11:31:00.000Z");
 
 		var jobId = "1";
-		var clientId = "client1";
 		var power = 20;
 		var jobStart = parse("2022-01-01T11:30:00.000Z");
 		var jobEnd = parse("2022-01-01T12:30:00.000Z");
 		var jobDeadline = parse("2022-01-01T13:30:00.000Z");
 
-		mockClientJobExecution = new ClientJobExecution(clientId, jobStart, jobEnd, jobDeadline, power, jobId);
+		mockClientJobExecution = new ClientJobExecution(TEST_CLIENT, jobStart, jobEnd, jobDeadline, power, jobId);
 		mockClientJobExecution.getTimer().startTimeMeasure(start);
 
 		// when

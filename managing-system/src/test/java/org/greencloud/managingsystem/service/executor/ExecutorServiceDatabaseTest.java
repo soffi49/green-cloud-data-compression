@@ -5,6 +5,7 @@ import static com.database.knowledge.domain.agent.DataType.CLIENT_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.CLOUD_NETWORK_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
+import static com.greencloud.application.yellowpages.YellowPagesService.search;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
@@ -12,10 +13,10 @@ import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BAC
 import static jade.core.AID.ISGUID;
 import static java.util.Collections.emptyList;
 import static org.greencloud.managingsystem.service.common.TestAdaptationPlanFactory.getTestAdaptationPlan;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,10 +126,14 @@ class ExecutorServiceDatabaseTest {
 	@Test
 	void shouldCorrectlyExecuteSystemAdaptationPlan() {
 		// given
+		final AID testAID = new AID("test@address", ISGUID);
+		testAID.addAddresses("test_address");
 		initializeData();
-		when(mobilityService.getContainerLocations("CNA1")).thenReturn(location);
+		when(mobilityService.getContainerLocations("CNA1")).thenReturn(
+				new AbstractMap.SimpleEntry<>(location, testAID));
 		when(location.getName()).thenReturn("Main-Container");
-		yellowPagesService.when(() -> YellowPagesService.search(any(), eq(CNA_SERVICE_TYPE)))
+		doNothing().when(mobilityService).moveContainers(any(), any());
+		yellowPagesService.when(() -> search(any(), any(), eq(CNA_SERVICE_TYPE)))
 				.thenReturn(Set.of(new AID("CNA1", true)));
 		adaptationPlan = new AddServerPlan(managingAgent);
 		adaptationPlan.isPlanExecutable();

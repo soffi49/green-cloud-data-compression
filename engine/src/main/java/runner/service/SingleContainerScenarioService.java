@@ -1,12 +1,12 @@
 package runner.service;
 
-import static runner.service.domain.ScenarioConstants.CLIENT_NUMBER;
+import static runner.domain.ScenarioConfiguration.eventFilePath;
+import static runner.domain.ScenarioConfiguration.scenarioFilePath;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import com.greencloud.commons.args.agent.AgentArgs;
@@ -27,19 +27,16 @@ public class SingleContainerScenarioService extends AbstractScenarioService impl
 
 	/**
 	 * Runs single scenario service with a single controller on a single physical host.
-	 *
-	 * @param scenarioStructureFileName name of the XML scenario document containing network structure
-	 * @param scenarioEventsFileName    (optional) name of the XML scenario document containing list of events triggered during scenario execution
 	 */
-	public SingleContainerScenarioService(String scenarioStructureFileName, Optional<String> scenarioEventsFileName)
+	public SingleContainerScenarioService()
 			throws StaleProxyException, ExecutionException, InterruptedException {
-		super(scenarioStructureFileName, scenarioEventsFileName);
+		super();
 		this.factory = new AgentControllerFactoryImpl(mainContainer);
 	}
 
 	@Override
 	public void run() {
-		final File scenarioStructureFile = readFile(scenarioStructureFileName);
+		final File scenarioStructureFile = readFile(scenarioFilePath);
 		scenario = parseScenarioStructure(scenarioStructureFile);
 		if (Objects.nonNull(scenario.getAgentsArgs())) {
 			createAgents(List.of(scenario.getManagingAgentArgs()), scenario);
@@ -52,8 +49,8 @@ public class SingleContainerScenarioService extends AbstractScenarioService impl
 		updateSystemStartTime();
 		runAgents(AGENTS_TO_RUN);
 
-		if (Objects.isNull(scenarioEventsFileName)) {
-			runClientAgents(CLIENT_NUMBER, factory);
+		if (eventFilePath.isEmpty()) {
+			runClientAgents(factory);
 		} else {
 			eventService.runScenarioEvents(factory);
 		}

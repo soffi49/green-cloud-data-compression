@@ -1,7 +1,10 @@
 package runner.service;
 
 import static com.greencloud.commons.args.agent.client.ClientTimeType.SIMULATION;
+import static com.greencloud.commons.args.event.EventTypeEnum.NEW_CLIENT_EVENT;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static runner.constants.EngineConstants.POWER_SHORTAGE_EVENT_DELAY;
+import static runner.domain.ScenarioConfiguration.eventFilePath;
 
 import java.io.File;
 import java.time.Instant;
@@ -17,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import com.greencloud.commons.args.agent.client.ClientAgentArgs;
 import com.greencloud.commons.args.agent.client.ImmutableClientAgentArgs;
 import com.greencloud.commons.args.event.EventArgs;
-import com.greencloud.commons.args.event.EventTypeEnum;
 import com.greencloud.commons.args.event.newclient.NewClientEventArgs;
 import com.greencloud.commons.args.event.powershortage.PowerShortageEventArgs;
 import com.greencloud.commons.exception.InvalidScenarioEventStructure;
@@ -33,7 +35,7 @@ import runner.factory.AgentControllerFactory;
 public class ScenarioEventService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScenarioEventService.class);
-	private static final int POWER_SHORTAGE_START_DELAY = 1;
+
 	private final AbstractScenarioService scenarioService;
 
 	/**
@@ -51,16 +53,17 @@ public class ScenarioEventService {
 	 * @param factory agent controller specified for events that require agents creation
 	 */
 	public void runScenarioEvents(final AgentControllerFactory factory) {
-		final File scenarioEventsFile = scenarioService.readFile(scenarioService.scenarioEventsFileName);
-		final ScenarioEventsArgs scenarioEvents = scenarioService.parseScenarioEvents(scenarioEventsFile);
-		validateScenarioStructure(scenarioEvents);
-		scheduleScenarioEvents(scenarioEvents.getEventArgs(), factory);
+		if (eventFilePath.isPresent()) {
+			final File scenarioEventsFile = scenarioService.readFile(eventFilePath.get());
+			final ScenarioEventsArgs scenarioEvents = scenarioService.parseScenarioEvents(scenarioEventsFile);
+			validateScenarioStructure(scenarioEvents);
+			scheduleScenarioEvents(scenarioEvents.getEventArgs(), factory);
+		}
 	}
 
 	private void validateScenarioStructure(final ScenarioEventsArgs scenarioEvents) {
 		final List<NewClientEventArgs> newClientEvents = scenarioEvents.getEventArgs().stream()
-				.filter(eventArgs -> eventArgs.getType().equals(
-						EventTypeEnum.NEW_CLIENT_EVENT))
+				.filter(eventArgs -> eventArgs.getType().equals(NEW_CLIENT_EVENT))
 				.map(NewClientEventArgs.class::cast)
 				.toList();
 		validateClientDuplicates(newClientEvents);
@@ -114,7 +117,7 @@ public class ScenarioEventService {
 
 	private void triggerPowerShortage(final EventArgs event) {
 		final PowerShortageEventArgs powerShortageArgs = (PowerShortageEventArgs) event;
-		final Instant eventOccurrence = Instant.now().plusSeconds(POWER_SHORTAGE_START_DELAY);
+		final Instant eventOccurrence = Instant.now().plusSeconds(POWER_SHORTAGE_EVENT_DELAY);
 		final PowerShortageEvent eventData = new PowerShortageEvent(eventOccurrence,
 				powerShortageArgs.getNewMaximumCapacity(), powerShortageArgs.isFinished(),
 				powerShortageArgs.getCause());

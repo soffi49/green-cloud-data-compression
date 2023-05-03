@@ -33,16 +33,31 @@ public class YellowPagesService {
 	}
 
 	/**
+	 * Method prepares AID of DF of given platform
+	 *
+	 * @param address    address of the platform host
+	 * @param platformId platform identifier
+	 * @return AID of DF agent
+	 */
+	public static AID prepareDF(final String address, final String platformId) {
+		final AID df = new AID("df@" + platformId, AID.ISGUID);
+		df.addAddresses(address);
+		return df;
+	}
+
+	/**
 	 * Method registers the given agent in the DF
 	 *
 	 * @param agent       agent that is to be registered
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be registered
 	 * @param serviceName name of the service to be registered
 	 * @param ownership   name of the owner to be registered
 	 */
-	public static void register(Agent agent, String serviceType, String serviceName, String ownership) {
+	public static void register(Agent agent, AID dfAID, String serviceType, String serviceName, String ownership) {
 		try {
-			DFService.register(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
+			DFService.register(agent, dfAID,
+					prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
 			keepRegistered(agent, agent.getDefaultDF(),
 					prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership), null);
 		} catch (FIPAException e) {
@@ -54,12 +69,13 @@ public class YellowPagesService {
 	 * Method registers the given agent in the DF
 	 *
 	 * @param agent       agent that is to be registered
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be registered
 	 * @param serviceName name of the service to be registered
 	 */
-	public static void register(Agent agent, String serviceType, String serviceName) {
+	public static void register(Agent agent, AID dfAID, String serviceType, String serviceName) {
 		try {
-			DFService.register(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName));
+			DFService.register(agent, dfAID, prepareAgentDescription(agent.getAID(), serviceType, serviceName));
 		} catch (FIPAException e) {
 			logger.info("Couldn't register {} in the directory facilitator", agent);
 		}
@@ -69,10 +85,11 @@ public class YellowPagesService {
 	 * Method deregisters the given agent in the DF
 	 *
 	 * @param agent agent that is to be deregistered
+	 * @param dfAID identifier od the DF
 	 */
-	public static void deregister(Agent agent) {
+	public static void deregister(Agent agent, AID dfAID) {
 		try {
-			DFService.deregister(agent);
+			DFService.deregister(agent, dfAID);
 		} catch (FIPAException e) {
 			logger.info("Couldn't deregister {} from the directory facilitator", agent);
 		}
@@ -82,12 +99,13 @@ public class YellowPagesService {
 	 * Method deregisters the given agent in the DF
 	 *
 	 * @param agent       agent that is to be deregistered
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be deregistered
 	 * @param serviceName name of the service to be deregistered
 	 */
-	public static void deregister(Agent agent, String serviceType, String serviceName) {
+	public static void deregister(Agent agent, AID dfAID, String serviceType, String serviceName) {
 		try {
-			DFService.deregister(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName));
+			DFService.deregister(agent, dfAID, prepareAgentDescription(agent.getAID(), serviceType, serviceName));
 		} catch (FIPAException e) {
 			logger.info("Couldn't deregister {} from the directory facilitator", agent);
 		}
@@ -97,47 +115,31 @@ public class YellowPagesService {
 	 * Method deregisters the given agent in the DF
 	 *
 	 * @param agent       agent that is to be deregistered
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be deregistered
 	 * @param serviceName name of the service to be deregistered
 	 * @param ownership   name of the owner to be deregistered
 	 */
-	public static void deregister(Agent agent, String serviceType, String serviceName, String ownership) {
+	public static void deregister(Agent agent, AID dfAID, String serviceType, String serviceName, String ownership) {
 		try {
-			DFService.deregister(agent, prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
+			DFService.deregister(agent, dfAID,
+					prepareAgentDescription(agent.getAID(), serviceType, serviceName, ownership));
 		} catch (FIPAException e) {
 			logger.info("Couldn't deregister {} in the directory facilitator", agent);
 		}
 	}
 
 	/**
-	 * Method searches the DF for the agents with given service type and ownership
-	 *
-	 * @param agent       agent which is searching through the DF
-	 * @param serviceType type of the service to be searched
-	 * @param ownership   name of the owner to be searched
-	 * @return list of agent addresses found in DF or empty list if no agents found
-	 */
-	public static Set<AID> search(Agent agent, String serviceType, String ownership) {
-		try {
-			return Arrays.stream(DFService.search(agent, prepareAgentDescriptionTemplate(serviceType, ownership)))
-					.map(DFAgentDescription::getName).collect(Collectors.toSet());
-		} catch (FIPAException e) {
-			e.printStackTrace();
-		}
-
-		return emptySet();
-	}
-
-	/**
 	 * Method searches the DF for the agents with given service type
 	 *
 	 * @param agent       agent which is searching through the DF
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be searched
 	 * @return list of agent addresses found in DF
 	 */
-	public static Set<AID> search(Agent agent, String serviceType) {
+	public static Set<AID> search(Agent agent, AID dfAID, String serviceType) {
 		try {
-			return Arrays.stream(DFService.search(agent, prepareAgentDescriptionTemplate(serviceType)))
+			return Arrays.stream(DFService.search(agent, dfAID, prepareAgentDescriptionTemplate(serviceType)))
 					.map(DFAgentDescription::getName).collect(Collectors.toSet());
 		} catch (FIPAException e) {
 			logger.info("Haven't found any agents because {}", e.getMessage());
@@ -150,11 +152,12 @@ public class YellowPagesService {
 	 * Method subscribes a given agent service for the subscriber agent.
 	 *
 	 * @param subscriber  agent subscribing given service
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be subscribed
 	 * @return subscription ACLMessage
 	 */
-	public static ACLMessage prepareSubscription(final Agent subscriber, final String serviceType) {
-		return createSubscriptionMessage(subscriber, subscriber.getDefaultDF(),
+	public static ACLMessage prepareSubscription(final Agent subscriber, final AID dfAID, final String serviceType) {
+		return createSubscriptionMessage(subscriber, dfAID,
 				prepareAgentDescriptionTemplate(serviceType), null);
 	}
 
@@ -162,13 +165,14 @@ public class YellowPagesService {
 	 * Method subscribes a given agent service for the subscriber agent.
 	 *
 	 * @param subscriber  agent subscribing given service
+	 * @param dfAID       identifier od the DF
 	 * @param serviceType type of the service to be subscribed
 	 * @param ownership   name of the owner to be searched
 	 * @return subscription ACLMessage
 	 */
-	public static ACLMessage prepareSubscription(final Agent subscriber, final String serviceType,
+	public static ACLMessage prepareSubscription(final Agent subscriber, final AID dfAID, final String serviceType,
 			final String ownership) {
-		return createSubscriptionMessage(subscriber, subscriber.getDefaultDF(),
+		return createSubscriptionMessage(subscriber, dfAID,
 				prepareAgentDescriptionTemplate(serviceType, ownership), null);
 	}
 

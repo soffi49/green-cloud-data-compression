@@ -13,6 +13,8 @@ import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 
+import jade.core.AID;
+
 /**
  * Class containing data and method associated with state of the execution of the client's job
  */
@@ -61,7 +63,7 @@ public class ClientJobExecution {
 	 * @param power     power needed for job execution
 	 * @param jobId     job identifier
 	 */
-	public ClientJobExecution(final String clientAID, final Instant start, final Instant end,
+	public ClientJobExecution(final AID clientAID, final Instant start, final Instant end,
 			final Instant deadline, final int power, final String jobId) {
 		this(ImmutableClientJob.builder()
 						.jobId(jobId)
@@ -69,7 +71,8 @@ public class ClientJobExecution {
 						.endTime(end)
 						.deadline(deadline)
 						.power(power)
-						.clientIdentifier(clientAID)
+						.clientIdentifier(clientAID.getName())
+						.clientAddress(clientAID.getAddressesArray()[0])
 						.build(),
 				start, end, deadline, CREATED);
 	}

@@ -39,7 +39,8 @@ public class SubscribeGreenSourceService extends AbstractSubscriptionInitiator {
 	 */
 	public static SubscribeGreenSourceService create(final ServerAgent agent) {
 		logger.info(SUBSCRIBE_GS_SERVICE_LOG);
-		return new SubscribeGreenSourceService(agent, prepareSubscription(agent, GS_SERVICE_TYPE, agent.getName()));
+		return new SubscribeGreenSourceService(agent,
+				prepareSubscription(agent, agent.getDefaultDF(), GS_SERVICE_TYPE, agent.getName()));
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
@@ -38,6 +39,7 @@ public abstract class AbstractAgent extends Agent {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractAgent.class);
 
 	protected AgentType agentType;
+	protected AID parentDFAddress;
 	protected GuiController guiController;
 	protected AbstractAgentNode agentNode;
 	protected Map<AgentManagementEnum, AbstractAgentManagement> agentManagementServices;
@@ -144,6 +146,7 @@ public abstract class AbstractAgent extends Agent {
 		super.afterMove();
 		guiController.addAgentNodeToGraph(agentNode);
 		agentNode.setDatabaseClient(new TimescaleDatabase());
+		this.initializeAgentManagements();
 	}
 
 	@Override
@@ -157,6 +160,9 @@ public abstract class AbstractAgent extends Agent {
 
 	public AgentType getAgentType() {
 		return agentType;
+	}
+	public AID getParentDFAddress() {
+		return parentDFAddress;
 	}
 
 	public AbstractAgentNode getAgentNode() {

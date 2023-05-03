@@ -31,6 +31,14 @@ public final class DmlQueries {
 					+ "WHERE rows.row <= ? ORDER BY rows.aid";
 
 	/**
+	 * AMS agents table queries
+	 */
+
+	static final String INSERT_AMS_DATA = "INSERT INTO ams_agents (name, address) VALUES (?, ?)";
+
+	static final String GET_AMS_DATA = "SELECT * FROM ams_agents";
+
+	/**
 	 * System quality table queries
 	 */
 	static final String INSERT_SYSTEM_QUALITY_DATA =

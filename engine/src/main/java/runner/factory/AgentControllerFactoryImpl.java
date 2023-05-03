@@ -1,5 +1,10 @@
 package runner.factory;
 
+import static java.lang.String.format;
+import static runner.domain.EngineConfiguration.jadeInterParentPort;
+import static runner.domain.EngineConfiguration.mainHostIp;
+import static runner.domain.EngineConfiguration.mainHostPlatformId;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +42,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 	@Override
 	public AgentController createAgentController(AgentArgs agentArgs, ScenarioStructureArgs scenario)
 			throws StaleProxyException {
+		final String parentDFAddress = format("http://%s:%s/acc", mainHostIp, jadeInterParentPort);
 
 		if (agentArgs instanceof ClientAgentArgs clientAgent) {
 			final String startDate = clientAgent.formatClientTime(clientAgent.getStart());
@@ -45,19 +51,25 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
 			return containerController.createNewAgent(clientAgent.getName(),
 					"com.greencloud.application.agents.client.ClientAgent",
-					new Object[] { startDate, endDate, deadline, clientAgent.getPower(), clientAgent.getJobId() });
+					new Object[] {
+							parentDFAddress,
+							mainHostPlatformId,
+							startDate,
+							endDate,
+							deadline,
+							clientAgent.getPower(),
+							clientAgent.getJobId() });
 		} else if (agentArgs instanceof ServerAgentArgs serverAgent) {
 			return containerController.createNewAgent(serverAgent.getName(),
 					"com.greencloud.application.agents.server.ServerAgent",
-					new Object[] {
-							serverAgent.getOwnerCloudNetwork(),
+					new Object[] { serverAgent.getOwnerCloudNetwork(),
 							serverAgent.getPrice(),
 							serverAgent.getMaximumCapacity(),
 							serverAgent.getJobProcessingLimit() });
 		} else if (agentArgs instanceof CloudNetworkArgs cloudNetworkAgent) {
 			return containerController.createNewAgent(cloudNetworkAgent.getName(),
 					"com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent",
-					null);
+					new Object[] { parentDFAddress, mainHostPlatformId });
 		} else if (agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent) {
 			return containerController.createNewAgent(greenEnergyAgent.getName(),
 					"com.greencloud.application.agents.greenenergy.GreenEnergyAgent",

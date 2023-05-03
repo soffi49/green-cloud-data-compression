@@ -6,6 +6,7 @@ import static com.greencloud.application.mapper.JsonMapper.getMapper;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.time.Instant.now;
@@ -64,11 +65,11 @@ class ListenForJobUpdateUnitTest {
 		var jobInstance = ImmutableJobInstanceIdentifier.builder()
 				.jobInstanceId("job_instance")
 				.jobId("jobId")
-				.startTime(now())
+				.startTime(getCurrentTime())
 				.build();
 		var jobStatusUpdate = ImmutableJobStatusUpdate.builder()
 				.jobInstance(jobInstance)
-				.changeTime(now())
+				.changeTime(getCurrentTime())
 				.build();
 		when(schedulerAgent.receive(JOB_UPDATE_TEMPLATE)).thenReturn(message);
 		when(message.getContent()).thenReturn(objectMapper.writeValueAsString(jobStatusUpdate));

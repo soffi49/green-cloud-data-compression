@@ -20,4 +20,9 @@ public interface ClientJob extends PowerJob {
 	 */
 	String getClientIdentifier();
 
+	/**
+	 * @return unique client identifier (client global name)
+	 */
+	String getClientAddress();
+
 }

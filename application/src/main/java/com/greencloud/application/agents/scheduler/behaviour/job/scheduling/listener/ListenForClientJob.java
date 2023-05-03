@@ -5,12 +5,12 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.scheduli
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.JOB_RECEIVED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.QUEUE_THRESHOLD_EXCEEDED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates.JobSchedulingMessageTemplates.NEW_JOB_ANNOUNCEMENT_TEMPLATE;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapToJobPart;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.SCHEDULED_JOB_ID;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareSplitJobMessageForClient;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.CREATED;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -72,8 +72,7 @@ public class ListenForClientJob extends CyclicBehaviour {
 					myScheduler.getJobParts().put(job.getJobId(), jobPart);
 					putJobToQueue(jobPart);
 				});
-				myScheduler.send(prepareSplitJobMessageForClient(job.getClientIdentifier(),
-						new ImmutableJobParts(jobParts)));
+				myScheduler.send(prepareSplitJobMessageForClient(job, new ImmutableJobParts(jobParts)));
 			} else {
 				putJobToQueue(job);
 			}

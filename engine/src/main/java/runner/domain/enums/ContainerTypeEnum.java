@@ -1,4 +1,4 @@
-package runner.service.domain;
+package runner.domain.enums;
 
 /**
  * Enumerable describing available container types

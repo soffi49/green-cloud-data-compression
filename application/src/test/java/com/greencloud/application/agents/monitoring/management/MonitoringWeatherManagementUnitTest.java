@@ -93,7 +93,7 @@ class MonitoringWeatherManagementUnitTest {
 	@DisplayName("Test getting current weather for api call")
 	void testGetWeatherApiCall() {
 		useMockTime(Instant.parse("2022-01-01T10:00:00.000Z"), ZoneId.of("UTC"));
-		setSystemStartTime(now());
+		setSystemStartTime(getCurrentTime());
 		resetMockClock();
 
 		final Clouds newClouds = ImmutableClouds.builder().all(200.0).build();
@@ -103,7 +103,7 @@ class MonitoringWeatherManagementUnitTest {
 		doReturn(currentWeather).when(mockAPI).getWeather(MOCK_LOCATION);
 		assertThat(mockCache.getForecast(MOCK_LOCATION, getCurrentTime())).isEmpty();
 
-		setSystemStartTime(now());
+		setSystemStartTime(getCurrentTime());
 		final MonitoringData result = monitoringWeatherManagement.getWeather(MOCK_GS_WEATHER);
 
 		// Validate return
@@ -122,7 +122,7 @@ class MonitoringWeatherManagementUnitTest {
 	@DisplayName("Test getting current com.greencloud.application.weather for api call not present")
 	void testGetWeatherApiCallNotPresent() {
 		useMockTime(Instant.parse("2022-01-01T10:00:00.000Z"), ZoneId.of("UTC"));
-		setSystemStartTime(now());
+		setSystemStartTime(getCurrentTime());
 		resetMockClock();
 
 		doReturn(null).when(mockAPI).getWeather(MOCK_LOCATION);

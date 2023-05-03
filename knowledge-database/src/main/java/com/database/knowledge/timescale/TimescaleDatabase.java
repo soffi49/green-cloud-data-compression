@@ -3,6 +3,7 @@ package com.database.knowledge.timescale;
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationActions;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_ADAPTATION_ACTIONS;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_ADAPTATION_GOALS;
+import static com.database.knowledge.timescale.DdlCommands.CREATE_AMS_AGENTS;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_HYPERTABLE;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_MONITORING_DATA;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_MONITORING_INDEX;
@@ -11,6 +12,7 @@ import static com.database.knowledge.timescale.DdlCommands.CREATE_SYSTEM_QUALITY
 import static com.database.knowledge.timescale.DdlCommands.CREATE_SYSTEM_QUALITY_HYPERTABLE;
 import static com.database.knowledge.timescale.DdlCommands.DROP_ADAPTATION_ACTIONS;
 import static com.database.knowledge.timescale.DdlCommands.DROP_ADAPTATION_GOALS;
+import static com.database.knowledge.timescale.DdlCommands.DROP_AMS_AGENTS;
 import static com.database.knowledge.timescale.DdlCommands.DROP_MONITORING_DATA;
 import static com.database.knowledge.timescale.DdlCommands.DROP_SYSTEM_CONSTANTS;
 import static com.database.knowledge.timescale.DdlCommands.DROP_SYSTEM_QUALITY;
@@ -30,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.database.knowledge.domain.action.AdaptationAction;
+import com.database.knowledge.domain.agent.AMSData;
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
@@ -120,6 +123,20 @@ public class TimescaleDatabase implements Closeable {
 	public void writeSystemQualityData(Integer goalId, Double goalQuality) {
 		try {
 			statementsExecutor.executeWriteStatement(goalId, goalQuality);
+		} catch (SQLException exception) {
+			throw new WriteDataException(exception);
+		}
+	}
+
+	/**
+	 * Provides writing capability to the TimeScaleDB to insert information about newly created agent platform
+	 *
+	 * @param amsName    identifier of ams agent related with given platform
+	 * @param amsAddress address of the host of given platform
+	 */
+	public void writeAMSData(String amsName, String amsAddress) {
+		try {
+			statementsExecutor.executeWriteStatement(amsName, amsAddress);
 		} catch (SQLException exception) {
 			throw new WriteDataException(exception);
 		}
@@ -320,6 +337,19 @@ public class TimescaleDatabase implements Closeable {
 		}
 	}
 
+	/**
+	 * Provides reading capability of ams data
+	 *
+	 * @return List of {@link SystemQuality}
+	 */
+	public List<AMSData> readAMSData() {
+		try {
+			return statementsExecutor.executeReadAMSDataStatement();
+		} catch (SQLException exception) {
+			throw new ReadDataException(exception);
+		}
+	}
+
 	private Connection connect(String hostName) throws SQLException {
 		String url = format("jdbc:postgresql://%s:5432/%s?user=%s&password=%s", hostName, DATABASE_NAME, USER,
 				PASSWORD);
@@ -335,6 +365,7 @@ public class TimescaleDatabase implements Closeable {
 			statement.execute(DROP_ADAPTATION_GOALS);
 			statement.execute(DROP_SYSTEM_QUALITY);
 			statement.execute(DROP_SYSTEM_CONSTANTS);
+			statement.execute(DROP_AMS_AGENTS);
 		}
 	}
 
@@ -345,6 +376,7 @@ public class TimescaleDatabase implements Closeable {
 			statement.execute(CREATE_ADAPTATION_ACTIONS);
 			statement.execute(CREATE_SYSTEM_QUALITY);
 			statement.execute(CREATE_SYSTEM_CONSTANTS);
+			statement.execute(CREATE_AMS_AGENTS);
 			statement.execute(CREATE_HYPERTABLE);
 			statement.execute(SET_HYPERTABLE_CHUNK_TO_5_SEC);
 			statement.execute(CREATE_MONITORING_INDEX);

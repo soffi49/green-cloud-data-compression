@@ -6,6 +6,7 @@ import static com.database.knowledge.timescale.DmlQueries.GET_ADAPTATION_ACTION;
 import static com.database.knowledge.timescale.DmlQueries.GET_ADAPTATION_ACTIONS;
 import static com.database.knowledge.timescale.DmlQueries.GET_ADAPTATION_GOALS;
 import static com.database.knowledge.timescale.DmlQueries.GET_ALL_RECORDS_DATA_FOR_DATA_TYPES_AND_TIME;
+import static com.database.knowledge.timescale.DmlQueries.GET_AMS_DATA;
 import static com.database.knowledge.timescale.DmlQueries.GET_DATA_FOR_DATA_TYPE_AND_AIDS_AND_TIME;
 import static com.database.knowledge.timescale.DmlQueries.GET_LAST_1_SEC_DATA;
 import static com.database.knowledge.timescale.DmlQueries.GET_LAST_N_QUALITY_DATA_RECORDS_FOR_GOAL;
@@ -13,6 +14,7 @@ import static com.database.knowledge.timescale.DmlQueries.GET_LATEST_N_ROWS_FOR_
 import static com.database.knowledge.timescale.DmlQueries.GET_UNIQUE_LAST_RECORDS_DATA_FOR_DATA_TYPES;
 import static com.database.knowledge.timescale.DmlQueries.GET_UNIQUE_LAST_RECORDS_DATA_FOR_DATA_TYPES_AND_TIME;
 import static com.database.knowledge.timescale.DmlQueries.INSERT_ADAPTATION_ACTION;
+import static com.database.knowledge.timescale.DmlQueries.INSERT_AMS_DATA;
 import static com.database.knowledge.timescale.DmlQueries.INSERT_MONITORING_DATA;
 import static com.database.knowledge.timescale.DmlQueries.INSERT_SYSTEM_QUALITY_DATA;
 import static com.database.knowledge.timescale.DmlQueries.READ_SYSTEM_START_TIME;
@@ -31,6 +33,7 @@ import org.postgresql.util.PGobject;
 
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.action.AdaptationActionTypeEnum;
+import com.database.knowledge.domain.agent.AMSData;
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
@@ -91,6 +94,14 @@ public class JdbcStatementsExecutor {
 		try (var statement = sqlConnection.prepareStatement(INSERT_SYSTEM_QUALITY_DATA)) {
 			statement.setInt(1, adaptationGoalId);
 			statement.setDouble(2, quality);
+			statement.executeUpdate();
+		}
+	}
+
+	void executeWriteStatement(String amsName, String amsAddress) throws SQLException {
+		try (var statement = sqlConnection.prepareStatement(INSERT_AMS_DATA)) {
+			statement.setString(1, amsName);
+			statement.setString(2, amsAddress);
 			statement.executeUpdate();
 		}
 	}
@@ -222,6 +233,13 @@ public class JdbcStatementsExecutor {
 		}
 	}
 
+	List<AMSData> executeReadAMSDataStatement() throws SQLException {
+		try (var statement = sqlConnection.prepareStatement(GET_AMS_DATA)) {
+			var resultSet = statement.executeQuery();
+			return readAMSDataFromResultSet(resultSet);
+		}
+	}
+
 	AdaptationAction executeReadAdaptationActionStatement(Integer actionId)
 			throws SQLException, JsonProcessingException {
 		try (var statement = sqlConnection.prepareStatement(GET_ADAPTATION_ACTION)) {
@@ -284,6 +302,15 @@ public class JdbcStatementsExecutor {
 					resultSet.getDouble(3) // quality
 			);
 			result.add(agentData);
+		}
+		return result;
+	}
+
+	private List<AMSData> readAMSDataFromResultSet(ResultSet resultSet) throws SQLException {
+		var result = new ArrayList<AMSData>();
+		while (resultSet.next()) {
+			var amsData = new AMSData(resultSet.getString("name"), resultSet.getString("address"));
+			result.add(amsData);
 		}
 		return result;
 	}

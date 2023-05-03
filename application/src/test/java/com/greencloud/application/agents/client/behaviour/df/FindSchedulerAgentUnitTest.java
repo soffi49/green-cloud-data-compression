@@ -5,6 +5,8 @@ import static com.greencloud.application.yellowpages.YellowPagesService.search;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SCHEDULER_SERVICE_TYPE;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -64,7 +66,8 @@ class FindSchedulerAgentUnitTest {
 	void testFindSchedulerWhenSchedulerIsPresent() {
 		// given
 		var scheduler = new AID("test", true);
-		mockYellowPagesService.when(() -> search(mockClientAgent, SCHEDULER_SERVICE_TYPE)).thenReturn(Set.of(scheduler));
+		mockYellowPagesService.when(() -> search(eq(mockClientAgent), any(), eq(SCHEDULER_SERVICE_TYPE)))
+				.thenReturn(Set.of(scheduler));
 
 		// when
 		testedBehaviour.action();
@@ -78,7 +81,8 @@ class FindSchedulerAgentUnitTest {
 	@DisplayName("Test find scheduler when scheduler not found")
 	void testFindSchedulerWhenSchedulerNotFound() {
 		// given
-		mockYellowPagesService.when(() -> search(mockClientAgent, SCHEDULER_SERVICE_TYPE)).thenReturn(emptySet());
+		mockYellowPagesService.when(() -> search(eq(mockClientAgent), any(), eq(SCHEDULER_SERVICE_TYPE)))
+				.thenReturn(emptySet());
 
 		// when
 		testedBehaviour.action();
