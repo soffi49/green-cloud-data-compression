@@ -119,7 +119,7 @@ class TimeUtilsUnitTest {
 		final Instant mockInstant = Instant.parse("2022-01-01T10:00:00.000Z");
 		useMockTime(Instant.parse("2022-01-01T10:00:00.000Z"), ZoneId.of("UTC"));
 
-		final Instant instant = Instant.now();
+		final Instant instant = getCurrentTime();
 		assertThat(instant).isEqualTo(mockInstant);
 	}
 
@@ -130,7 +130,7 @@ class TimeUtilsUnitTest {
 		final ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		useMockTime(LocalDateTime.parse("2022-01-01T10:00:00.000").atZone(zoneId).toInstant(), zoneId);
 
-		final Instant instant = Instant.now();
+		final Instant instant = getCurrentTime();
 		assertThat(instant).isEqualTo(mockInstant);
 	}
 
