@@ -76,6 +76,12 @@ public final class DmlQueries {
 	static final String READ_SYSTEM_START_TIME =
 			"SELECT start_time FROM system_constants LIMIT 1 ";
 
+	/**
+	 * Client sequence queries
+	 */
+
+	static final String GET_NEXT_CLIENT_ID = "SELECT nextval('clients_generator')";
+
 	private DmlQueries() {
 	}
 }

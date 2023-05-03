@@ -11,6 +11,7 @@ import static com.database.knowledge.timescale.DmlQueries.GET_DATA_FOR_DATA_TYPE
 import static com.database.knowledge.timescale.DmlQueries.GET_LAST_1_SEC_DATA;
 import static com.database.knowledge.timescale.DmlQueries.GET_LAST_N_QUALITY_DATA_RECORDS_FOR_GOAL;
 import static com.database.knowledge.timescale.DmlQueries.GET_LATEST_N_ROWS_FOR_DATA_TYPE_AND_AIDS;
+import static com.database.knowledge.timescale.DmlQueries.GET_NEXT_CLIENT_ID;
 import static com.database.knowledge.timescale.DmlQueries.GET_UNIQUE_LAST_RECORDS_DATA_FOR_DATA_TYPES;
 import static com.database.knowledge.timescale.DmlQueries.GET_UNIQUE_LAST_RECORDS_DATA_FOR_DATA_TYPES_AND_TIME;
 import static com.database.knowledge.timescale.DmlQueries.INSERT_ADAPTATION_ACTION;
@@ -59,6 +60,14 @@ public class JdbcStatementsExecutor {
 
 	public JdbcStatementsExecutor(Connection sqlConnection) {
 		this.sqlConnection = sqlConnection;
+	}
+
+	int executeSequenceStatement() throws SQLException {
+		try (var statement = sqlConnection.prepareStatement(GET_NEXT_CLIENT_ID)) {
+			var result = statement.executeQuery();
+			result.next();
+			return result.getInt(1);
+		}
 	}
 
 	void executeWriteStatement(String aid, DataType dataType, MonitoringData data) throws SQLException,

@@ -190,9 +190,10 @@ public abstract class AbstractScenarioService {
 			final int randomStart = random.nextInt(minStartTime, maxStartTime);
 			final int randomEnd = random.nextInt(randomStart + 2, maxEndTime);
 			final int randomDeadline = randomEnd + 3 + random.nextInt(maxDeadline);
+			final int clientId = timescaleDatabase.getNextClientId();
 
 			final ClientAgentArgs clientAgentArgs = ImmutableClientAgentArgs.builder()
-					.name(format("Client%d", idx))
+					.name(format("Client%d", clientId))
 					.jobId(String.valueOf(idx))
 					.power(String.valueOf(randomPower))
 					.start(String.valueOf(randomStart))

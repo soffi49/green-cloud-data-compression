@@ -4,6 +4,7 @@ import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.
 import static com.database.knowledge.timescale.DdlCommands.CREATE_ADAPTATION_ACTIONS;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_ADAPTATION_GOALS;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_AMS_AGENTS;
+import static com.database.knowledge.timescale.DdlCommands.CREATE_CLIENT_SEQUENCE;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_HYPERTABLE;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_MONITORING_DATA;
 import static com.database.knowledge.timescale.DdlCommands.CREATE_MONITORING_INDEX;
@@ -13,6 +14,7 @@ import static com.database.knowledge.timescale.DdlCommands.CREATE_SYSTEM_QUALITY
 import static com.database.knowledge.timescale.DdlCommands.DROP_ADAPTATION_ACTIONS;
 import static com.database.knowledge.timescale.DdlCommands.DROP_ADAPTATION_GOALS;
 import static com.database.knowledge.timescale.DdlCommands.DROP_AMS_AGENTS;
+import static com.database.knowledge.timescale.DdlCommands.DROP_CLIENT_SEQUENCE;
 import static com.database.knowledge.timescale.DdlCommands.DROP_MONITORING_DATA;
 import static com.database.knowledge.timescale.DdlCommands.DROP_SYSTEM_CONSTANTS;
 import static com.database.knowledge.timescale.DdlCommands.DROP_SYSTEM_QUALITY;
@@ -167,6 +169,17 @@ public class TimescaleDatabase implements Closeable {
 	public Instant readSystemStartTime() {
 		try {
 			return statementsExecutor.executeReadSystemStartStatement();
+		} catch (SQLException exception) {
+			throw new WriteDataException(exception);
+		}
+	}
+
+	/**
+	 * Method reads the next client identifier
+	 */
+	public int getNextClientId() {
+		try {
+			return statementsExecutor.executeSequenceStatement();
 		} catch (SQLException exception) {
 			throw new WriteDataException(exception);
 		}
@@ -366,6 +379,7 @@ public class TimescaleDatabase implements Closeable {
 			statement.execute(DROP_SYSTEM_QUALITY);
 			statement.execute(DROP_SYSTEM_CONSTANTS);
 			statement.execute(DROP_AMS_AGENTS);
+			statement.execute(DROP_CLIENT_SEQUENCE);
 		}
 	}
 
@@ -377,6 +391,7 @@ public class TimescaleDatabase implements Closeable {
 			statement.execute(CREATE_SYSTEM_QUALITY);
 			statement.execute(CREATE_SYSTEM_CONSTANTS);
 			statement.execute(CREATE_AMS_AGENTS);
+			statement.execute(CREATE_CLIENT_SEQUENCE);
 			statement.execute(CREATE_HYPERTABLE);
 			statement.execute(SET_HYPERTABLE_CHUNK_TO_5_SEC);
 			statement.execute(CREATE_MONITORING_INDEX);

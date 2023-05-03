@@ -15,6 +15,14 @@ public final class DdlCommands {
 			""";
 
 	/**
+	 * Client generation sequence
+	 */
+	static final String DROP_CLIENT_SEQUENCE = "DROP SEQUENCE IF EXISTS clients_generator";
+	static final String CREATE_CLIENT_SEQUENCE = """
+			CREATE SEQUENCE clients_generator START 1
+			""";
+
+	/**
 	 * Monitoring data table commands
 	 */
 	static final String DROP_MONITORING_DATA = "DROP TABLE IF EXISTS monitoring_data";
