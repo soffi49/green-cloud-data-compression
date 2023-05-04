@@ -5,22 +5,26 @@ import static com.greencloud.commons.args.agent.client.ClientTimeType.REAL_TIME;
 import static jade.core.Runtime.instance;
 import static jade.wrapper.AgentController.ASYNC;
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
-import static runner.constants.EngineConstants.CONTAINER_NAME_PREFIX;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static runner.constants.EngineConstants.GRAPH_INITIALIZATION_DELAY;
 import static runner.constants.EngineConstants.RUN_AGENT_DELAY;
 import static runner.constants.EngineConstants.RUN_CLIENT_AGENT_DELAY;
+import static runner.domain.EngineConfiguration.containerId;
 import static runner.domain.EngineConfiguration.databaseHostIp;
-import static runner.domain.EngineConfiguration.hostId;
 import static runner.domain.EngineConfiguration.jadeInterPort;
 import static runner.domain.EngineConfiguration.jadeIntraPort;
 import static runner.domain.EngineConfiguration.localHostIp;
+import static runner.domain.EngineConfiguration.locationId;
 import static runner.domain.EngineConfiguration.mainHost;
 import static runner.domain.EngineConfiguration.mainHostIp;
 import static runner.domain.EngineConfiguration.newPlatform;
+import static runner.domain.EngineConfiguration.platformId;
 import static runner.domain.EngineConfiguration.runJadeGUI;
+import static runner.domain.EngineConfiguration.runJadeSniffer;
 import static runner.domain.EngineConfiguration.websocketHostIp;
 import static runner.domain.ScenarioConfiguration.clientNumber;
 import static runner.domain.ScenarioConfiguration.eventFilePath;
@@ -108,10 +112,9 @@ public abstract class AbstractScenarioService {
 			timescaleDatabase.initDatabase();
 		}
 
-		final String platformId = !newPlatform ? "MainPlatform" : format("Platform%d", hostId);
 		executorService.execute(guiController);
-		mainContainer = (newPlatform || mainHost) ? runMainController(platformId) : null;
-		agentContainer = mainHost ? null : runAgentsContainer(CONTAINER_NAME_PREFIX + hostId, platformId);
+		mainContainer = (newPlatform || mainHost) ? runMainController() : null;
+		agentContainer = mainHost ? null : runAgentsContainer();
 
 		if (runJadeGUI && (mainHost || newPlatform)) {
 			runJadeGui();
@@ -216,24 +219,30 @@ public abstract class AbstractScenarioService {
 		}
 	}
 
-	private ContainerController runMainController(String platformId) throws ExecutionException, InterruptedException {
+	private ContainerController runMainController() throws ExecutionException, InterruptedException {
 		final Profile profile = new ProfileImpl(localHostIp, Integer.parseInt(jadeIntraPort), platformId, true);
 		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
 		profile.setParameter("jade_core_messaging_MessageManager_enablemultipledelivery", "false");
 
 		if (localHostIp != null) {
 			final String platformAddress = format("http://%s:%s/acc", localHostIp, jadeInterPort);
+			profile.setParameter(Profile.MTPS, format("jade.mtp.http.MessageTransportProtocol(%s)", platformAddress));
 			timescaleDatabase.writeAMSData("ams@" + platformId, platformAddress);
+
 		}
 		return executorService.submit(() -> jadeRuntime.createMainContainer(profile)).get();
 	}
 
-	protected ContainerController runAgentsContainer(String containerName, String platformId) {
-		final String mainHost = newPlatform ? localHostIp : mainHostIp;
-		var profile = new ProfileImpl(mainHost, Integer.parseInt(jadeIntraPort), platformId, false);
+	protected ContainerController runAgentsContainer() {
+		final String platformHost = newPlatform && isNull(containerId) ? localHostIp : mainHostIp;
+		final String containerName =
+				newPlatform || isNull(containerId) ? defaultIfNull(locationId, "CNA") : containerId;
+
+		var profile = new ProfileImpl(platformHost, Integer.parseInt(jadeIntraPort), platformId, false);
 		profile.setParameter(Profile.CONTAINER_NAME, containerName);
 		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
 		profile.setParameter("jade_core_messaging_MessageManager_enablemultipledelivery", "false");
+
 
 		try {
 			return executorService.submit(() -> jadeRuntime.createAgentContainer(profile)).get();
@@ -255,5 +264,11 @@ public abstract class AbstractScenarioService {
 	private void runJadeGui() throws StaleProxyException {
 		final AgentController rma = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", new Object[0]);
 		rma.start();
+
+		if (runJadeSniffer) {
+			final AgentController sniffer = mainContainer.createNewAgent("sniffeur", "jade.tools.sniffer.Sniffer",
+					new Object[0]);
+			sniffer.start();
+		}
 	}
 }

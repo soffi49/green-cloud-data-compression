@@ -1,7 +1,7 @@
 package runner.factory;
 
 import static java.lang.String.format;
-import static runner.domain.EngineConfiguration.jadeInterParentPort;
+import static runner.domain.EngineConfiguration.mainHostInterPort;
 import static runner.domain.EngineConfiguration.mainHostIp;
 import static runner.domain.EngineConfiguration.mainHostPlatformId;
 
@@ -42,7 +42,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 	@Override
 	public AgentController createAgentController(AgentArgs agentArgs, ScenarioStructureArgs scenario)
 			throws StaleProxyException {
-		final String parentDFAddress = format("http://%s:%s/acc", mainHostIp, jadeInterParentPort);
+		final String mainDFAddress = format("http://%s:%s/acc", mainHostIp, mainHostInterPort);
 
 		if (agentArgs instanceof ClientAgentArgs clientAgent) {
 			final String startDate = clientAgent.formatClientTime(clientAgent.getStart());
@@ -52,7 +52,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 			return containerController.createNewAgent(clientAgent.getName(),
 					"com.greencloud.application.agents.client.ClientAgent",
 					new Object[] {
-							parentDFAddress,
+							mainDFAddress,
 							mainHostPlatformId,
 							startDate,
 							endDate,
@@ -69,7 +69,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 		} else if (agentArgs instanceof CloudNetworkArgs cloudNetworkAgent) {
 			return containerController.createNewAgent(cloudNetworkAgent.getName(),
 					"com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent",
-					new Object[] { parentDFAddress, mainHostPlatformId });
+					new Object[] { mainDFAddress, mainHostPlatformId });
 		} else if (agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent) {
 			return containerController.createNewAgent(greenEnergyAgent.getName(),
 					"com.greencloud.application.agents.greenenergy.GreenEnergyAgent",

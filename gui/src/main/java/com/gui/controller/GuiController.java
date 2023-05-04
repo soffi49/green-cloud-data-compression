@@ -51,12 +51,6 @@ public interface GuiController extends Runnable, Serializable {
 	 */
 	void updateFinishedJobsCountByValue(final int value);
 
-	/**
-	 * Method updates the all jobs number by given value
-	 *
-	 * @param value value to be added to the all jobs number
-	 */
-	void updateAllJobsCountByValue(final int value);
 
 	/**
 	 * Method triggers the power shortage event in the Cloud Network for specified agent

@@ -26,4 +26,7 @@ public interface CloudNetworkArgs extends AgentArgs {
 	 */
 	@Nullable
 	String getLongitude();
+
+	@Nullable
+	String getLocationId();
 }

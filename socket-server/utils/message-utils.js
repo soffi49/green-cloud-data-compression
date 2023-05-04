@@ -11,11 +11,13 @@ const handleIncrementFailedJobs = (state, msg) => {
     state.network.failedJobsNo += msg.data
 }
 
-const handleUpdateCurrentPlannedJobs = (state, msg) => {
-    state.network.currPlannedJobsNo += msg.data
+const handleUpdateCurrentPlannedJobs = (state) => {
+    state.network.currPlannedJobsNo = state.agents.agents
+        .filter(agent => agent.type === AGENT_TYPES.SERVER)
+        .reduce((sum, agent) => sum += agent.totalNumberOfClients, 0)
 }
 
-const handleUpdateCurrentClients = (state) => 
+const handleUpdateCurrentClients = (state) =>
     state.network.currClientsNo = state.agents.clients.filter(client => client.status !== JOB_STATUSES.FAILED && client.status !== JOB_STATUSES.FINISHED).length
 
 const handleUpdateCurrentActiveJobs = (state) => {
@@ -154,6 +156,7 @@ const handleSetClientNumber = (state, msg) => {
 
     if (agent) {
         agent.totalNumberOfClients = clientNumber
+        handleUpdateCurrentPlannedJobs(state)
     }
 }
 
@@ -365,7 +368,6 @@ module.exports = {
         INCREMENT_FAILED_JOBS: handleIncrementFailedJobs,
         INCREMENT_WEAK_ADAPTATIONS: handleIncrementWeakAdaptations,
         INCREMENT_STRONG_ADAPTATIONS: handleIncrementStrongAdaptations,
-        UPDATE_CURRENT_PLANNED_JOBS: handleUpdateCurrentPlannedJobs,
         UPDATE_JOB_QUEUE: handleUpdateJobQueue,
         UPDATE_SERVER_CONNECTION: handleUpdateServerConnection,
         UPDATE_INDICATORS: handleUpdateIndicators,

@@ -66,15 +66,6 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void updateAllJobsCountByValue(final int value) {
-		logger.info("Updating number of all jobs by {}", value);
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
-				.data(value)
-				.type("UPDATE_CURRENT_PLANNED_JOBS")
-				.build());
-	}
-
-	@Override
 	public void updateFailedJobsCountByValue(final int value) {
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)

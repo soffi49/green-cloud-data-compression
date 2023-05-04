@@ -5,7 +5,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.slf4j.Logger;
 
 import com.greencloud.application.agents.AbstractAgent;
-import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
 
@@ -42,23 +41,5 @@ public class GUIUtils {
 		if (objectCounter == 1) {
 			logger.info("[{}] Agent connected with the controller", abstractAgent.getName());
 		}
-	}
-
-	/**
-	 * Method updates the GUI to indicate that the job execution has finished
-	 *
-	 * @param agent agent updating the GUI
-	 */
-	public static void announceFinishedJob(final CloudNetworkAgent agent) {
-		agent.getGuiController().updateAllJobsCountByValue(-1);
-	}
-
-	/**
-	 * Method updates the GUI to indicate that a new job is planned to be executed
-	 *
-	 * @param agent agent updating the GUI
-	 */
-	public static void announceBookedJob(final AbstractAgent agent) {
-		agent.getGuiController().updateAllJobsCountByValue(1);
 	}
 }

@@ -47,4 +47,7 @@ public interface ServerAgentArgs extends AgentArgs {
 	@Nullable
 	String getLongitude();
 
+	@Nullable
+	String getContainerId();
+
 }

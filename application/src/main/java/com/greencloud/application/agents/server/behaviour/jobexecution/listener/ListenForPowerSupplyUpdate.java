@@ -16,7 +16,6 @@ import static com.greencloud.application.messages.constants.MessageProtocolConst
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.factory.PowerShortageMessageFactory.prepareJobTransferUpdateMessageForCNA;
-import static com.greencloud.application.utils.GUIUtils.announceBookedJob;
 import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
 import static com.greencloud.application.utils.JobUtils.isJobUnique;
 import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
@@ -120,7 +119,6 @@ public class ListenForPowerSupplyUpdate extends CyclicBehaviour {
 
 	private void handleNewJobConfirmation(final JobInstanceIdentifier jobInstance, final ClientJob job) {
 		logger.info(SUPPLY_CONFIRMATION_JOB_ANNOUNCEMENT_LOG, jobInstance.getJobId());
-		announceBookedJob(myServerAgent);
 		myServerAgent.message().informCNAAboutStatusChange(jobInstance, CONFIRMED_JOB_ID);
 		myAgent.addBehaviour(HandleJobStart.createFor(myServerAgent, job, true, true));
 	}

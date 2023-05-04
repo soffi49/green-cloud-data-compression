@@ -24,6 +24,9 @@
 		<monitoringAgent>
 			<name>Weather4</name>
 		</monitoringAgent>
+		<monitoringAgent>
+			<name>Weather5</name>
+		</monitoringAgent>
 	</monitoringAgentsArgs>
 	<greenEnergyAgentsArgs>
 		<greenenergyAgent>
@@ -70,6 +73,17 @@
 			<energyType>WIND</energyType>
 			<weatherPredictionError>0.02</weatherPredictionError>
 		</greenenergyAgent>
+		<greenenergyAgent>
+			<name>Wind5</name>
+			<monitoringAgent>Weather5</monitoringAgent>
+			<ownerSever>Server4</ownerSever>
+			<latitude>10.0</latitude>
+			<longitude>88.1</longitude>
+			<pricePerPowerUnit>10</pricePerPowerUnit>
+			<maximumCapacity>300</maximumCapacity>
+			<energyType>WIND</energyType>
+			<weatherPredictionError>0.02</weatherPredictionError>
+		</greenenergyAgent>
 	</greenEnergyAgentsArgs>
 	<serverAgentsArgs>
 		<serverAgentsArgs>
@@ -78,6 +92,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>10.5</price>
+			<containerId>Servers1</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server2</name>
@@ -85,6 +100,15 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>15.5</price>
+			<containerId>Servers1</containerId>
+		</serverAgentsArgs>
+		<serverAgentsArgs>
+			<name>Server4</name>
+			<ownerCloudNetwork>CNA1</ownerCloudNetwork>
+			<maximumCapacity>300</maximumCapacity>
+			<jobProcessingLimit>20</jobProcessingLimit>
+			<price>10.5</price>
+			<containerId>Servers2</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server3</name>
@@ -92,14 +116,17 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>30.5</price>
+			<containerId>Servers3</containerId>
 		</serverAgentsArgs>
 	</serverAgentsArgs>
 	<cloudNetworkAgentsArgs>
 		<cloudNetworkAgent>
 			<name>CNA1</name>
+			<locationId>CNA1</locationId>
 		</cloudNetworkAgent>
 		<cloudNetworkAgent>
 			<name>CNA2</name>
+			<locationId>CNA2</locationId>
 		</cloudNetworkAgent>
 	</cloudNetworkAgentsArgs>
 </ScenarioStructureArgs>
