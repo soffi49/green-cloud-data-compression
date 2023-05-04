@@ -27,11 +27,7 @@
 		<dependency>
 			<groupId>com.tilab.jade</groupId>
 			<artifactId>jade</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.jade.xmpp</groupId>
-			<artifactId>jade-xmpp</artifactId>
-			<version>1.0</version>
+			<version>4.6</version>
 		</dependency>
 		<dependency>
 			<groupId>jivesoftware</groupId>

@@ -1,9 +1,9 @@
 package com.greencloud.application.behaviours.initiator;
 
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.MessagingUtils.isMessageContentValid;
 import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
-import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
 import static java.util.Objects.isNull;
 

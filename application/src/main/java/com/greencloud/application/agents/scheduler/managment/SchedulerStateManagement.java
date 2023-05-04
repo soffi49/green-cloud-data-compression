@@ -30,6 +30,7 @@ import org.slf4j.MDC;
 import com.greencloud.application.agents.AbstractStateManagement;
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.agents.scheduler.behaviour.job.cancellation.InitiateJobCancellation;
+import com.greencloud.application.behaviours.listener.ListenForAMSError;
 import com.greencloud.application.domain.job.JobWithPrice;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
@@ -64,6 +65,16 @@ public class SchedulerStateManagement extends AbstractStateManagement {
 		final double timeToDeadline = between(clientJob.getEndTime(), clientJob.getDeadline()).toMillis();
 		return getDeadlinePercentage() * timeToDeadline + getPowerPercentage() * clientJob.getPower();
 	}
+
+	/**
+	 * Method sends the message and handles the communication with client
+	 * @param message message that is to be sent
+	 */
+	public void sendStatusMessageToClient(final ACLMessage message, final String jobId) {
+		schedulerAgent.send(message);
+		schedulerAgent.addBehaviour(ListenForAMSError.create(schedulerAgent, message, jobId));
+	}
+
 
 	/**
 	 * Method postpones the job execution by substituting the previous instance with the one

@@ -1,10 +1,7 @@
 package runner;
 
 import static runner.constants.EngineConstants.GUI_SETUP_MILLISECONDS_DELAY;
-import static runner.domain.EngineConfiguration.hostId;
 import static runner.domain.EngineConfiguration.localHostIp;
-import static runner.domain.EngineConfiguration.mainHost;
-import static runner.domain.EngineConfiguration.mainHostIp;
 import static runner.domain.EngineConfiguration.readSystemProperties;
 import static runner.domain.ScenarioConfiguration.readScenarioProperties;
 
@@ -39,9 +36,7 @@ public class MultiEngineRunner {
 
 	public static void runMultiContainerService() {
 		try {
-			final MultiContainerScenarioService scenarioService = mainHost
-					? new MultiContainerScenarioService()
-					: new MultiContainerScenarioService(hostId, mainHostIp);
+			final MultiContainerScenarioService scenarioService = new MultiContainerScenarioService();
 			scenarioService.run();
 
 		} catch (StaleProxyException | ExecutionException | InterruptedException exception) {

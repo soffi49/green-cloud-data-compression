@@ -17,13 +17,11 @@ import static runner.domain.EngineConfiguration.hostId;
 import static runner.domain.EngineConfiguration.jadeInterPort;
 import static runner.domain.EngineConfiguration.jadeIntraPort;
 import static runner.domain.EngineConfiguration.localHostIp;
+import static runner.domain.EngineConfiguration.mainHost;
+import static runner.domain.EngineConfiguration.mainHostIp;
 import static runner.domain.EngineConfiguration.newPlatform;
 import static runner.domain.EngineConfiguration.runJadeGUI;
-import static runner.domain.EngineConfiguration.useXMPP;
 import static runner.domain.EngineConfiguration.websocketHostIp;
-import static runner.domain.EngineConfiguration.xmppPassword;
-import static runner.domain.EngineConfiguration.xmppServer;
-import static runner.domain.EngineConfiguration.xmppUser;
 import static runner.domain.ScenarioConfiguration.clientNumber;
 import static runner.domain.ScenarioConfiguration.eventFilePath;
 import static runner.domain.ScenarioConfiguration.maxDeadline;
@@ -106,35 +104,16 @@ public abstract class AbstractScenarioService {
 		this.jadeRuntime = instance();
 		this.timescaleDatabase = new TimescaleDatabase(databaseHostIp);
 
-		timescaleDatabase.initDatabase();
-		executorService.execute(guiController);
-		mainContainer = runMainController();
-		agentContainer = null;
-
-		if (runJadeGUI) {
-			runJadeGui();
+		if (mainHost) {
+			timescaleDatabase.initDatabase();
 		}
-	}
 
-	/**
-	 * Runs remote AgentContainer with GUI.
-	 *
-	 * @param hostId     number of the host id
-	 * @param mainHostIp IP address of the main host
-	 */
-	protected AbstractScenarioService(final Integer hostId, final String mainHostIp)
-			throws ExecutionException, InterruptedException, StaleProxyException {
-		this.guiController = new GuiControllerImpl(format("ws://%s:8080/", websocketHostIp));
-		this.eventService = new ScenarioEventService(this);
-
-		this.jadeRuntime = instance();
-		this.timescaleDatabase = new TimescaleDatabase(databaseHostIp);
-
+		final String platformId = !newPlatform ? "MainPlatform" : format("Platform%d", hostId);
 		executorService.execute(guiController);
-		mainContainer = newPlatform ? runMainController() : null;
-		agentContainer = runAgentsContainer(CONTAINER_NAME_PREFIX + hostId.toString(), mainHostIp);
+		mainContainer = (newPlatform || mainHost) ? runMainController(platformId) : null;
+		agentContainer = mainHost ? null : runAgentsContainer(CONTAINER_NAME_PREFIX + hostId, platformId);
 
-		if (newPlatform && runJadeGUI) {
+		if (runJadeGUI && (mainHost || newPlatform)) {
 			runJadeGui();
 		}
 	}
@@ -237,45 +216,25 @@ public abstract class AbstractScenarioService {
 		}
 	}
 
-	private ContainerController runMainController() throws ExecutionException, InterruptedException {
-		final String platformId = !newPlatform ? "MainPlatform" : format("Platform%d", hostId);
-		final String containerName = !newPlatform ? "Main-Container" : format("Platform%d-Main-Container", hostId);
-
-		final Profile profile = new ProfileImpl();
-		profile.setParameter(Profile.CONTAINER_NAME, containerName);
-		profile.setParameter(Profile.MAIN_HOST, localHostIp);
-		profile.setParameter(Profile.MAIN_PORT, jadeIntraPort);
-		profile.setParameter(Profile.PLATFORM_ID, platformId);
+	private ContainerController runMainController(String platformId) throws ExecutionException, InterruptedException {
+		final Profile profile = new ProfileImpl(localHostIp, Integer.parseInt(jadeIntraPort), platformId, true);
 		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
+		profile.setParameter("jade_core_messaging_MessageManager_enablemultipledelivery", "false");
 
 		if (localHostIp != null) {
 			final String platformAddress = format("http://%s:%s/acc", localHostIp, jadeInterPort);
-
-			profile.setParameter(Profile.EXPORT_HOST, localHostIp);
-			if (useXMPP) {
-				profile.setParameter(Profile.MTPS, "jade.mtp.xmpp.MessageTransportProtocol");
-				profile.setParameter("jade_mtp_xmpp_server", xmppServer);
-				profile.setParameter("jade_mtp_xmpp_username", xmppUser);
-				profile.setParameter("jade_mtp_xmpp_password", xmppPassword);
-			} else {
-				profile.setParameter(Profile.MTPS,
-						format("jade.mtp.http.MessageTransportProtocol(%s)", platformAddress));
-			}
 			timescaleDatabase.writeAMSData("ams@" + platformId, platformAddress);
 		}
 		return executorService.submit(() -> jadeRuntime.createMainContainer(profile)).get();
 	}
 
-	protected ContainerController runAgentsContainer(String containerName, String host) {
-		var profile = new ProfileImpl();
+	protected ContainerController runAgentsContainer(String containerName, String platformId) {
+		final String mainHost = newPlatform ? localHostIp : mainHostIp;
+		var profile = new ProfileImpl(mainHost, Integer.parseInt(jadeIntraPort), platformId, false);
 		profile.setParameter(Profile.CONTAINER_NAME, containerName);
-		profile.setParameter(Profile.MAIN_HOST, host);
-		profile.setParameter(Profile.MAIN_PORT, jadeIntraPort);
 		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
+		profile.setParameter("jade_core_messaging_MessageManager_enablemultipledelivery", "false");
 
-		if (localHostIp != null) {
-			profile.setParameter(Profile.EXPORT_HOST, localHostIp);
-		}
 		try {
 			return executorService.submit(() -> jadeRuntime.createAgentContainer(profile)).get();
 		} catch (InterruptedException | ExecutionException e) {

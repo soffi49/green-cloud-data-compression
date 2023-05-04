@@ -228,6 +228,7 @@ public class JobStatusMessageFactory {
 				.withPerformative(INFORM)
 				.withMessageProtocol(CHANGE_JOB_STATUS_PROTOCOL)
 				.withConversationId(conversationId)
+				.withGeneratedReplyWith()
 				.withReceivers(receivers);
 
 		if (content instanceof String stringContent) {

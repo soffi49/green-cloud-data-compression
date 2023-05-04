@@ -62,6 +62,7 @@ public class ListenForClientJob extends CyclicBehaviour {
 			logger.info(JOB_RECEIVED_LOG, jobId);
 
 			if (myScheduler.getClientJobs().containsKey(job)) {
+				MDC.put(MDC_JOB_ID, jobId);
 				logger.info(JOB_ALREADY_EXISTING_LOG, job.getJobId(), myScheduler.getClientJobs().get(job));
 				return;
 			}
@@ -72,7 +73,8 @@ public class ListenForClientJob extends CyclicBehaviour {
 					myScheduler.getJobParts().put(job.getJobId(), jobPart);
 					putJobToQueue(jobPart);
 				});
-				myScheduler.send(prepareSplitJobMessageForClient(job, new ImmutableJobParts(jobParts)));
+				myScheduler.manage().sendStatusMessageToClient(
+						prepareSplitJobMessageForClient(job, new ImmutableJobParts(jobParts)), job.getJobId());
 			} else {
 				putJobToQueue(job);
 			}
@@ -85,9 +87,11 @@ public class ListenForClientJob extends CyclicBehaviour {
 	private void putJobToQueue(final ClientJob job) {
 		myScheduler.getClientJobs().put(job, CREATED);
 		if (myScheduler.getJobsToBeExecuted().offer(job)) {
+			MDC.put(MDC_JOB_ID, job.getJobId());
 			logger.info(JOB_ENQUEUED_SUCCESSFULLY_LOG, job.getJobId());
 			myScheduler.manage().updateJobQueueGUI();
-			myScheduler.send(prepareJobStatusMessageForClient(job, SCHEDULED_JOB_ID));
+			myScheduler.manage()
+					.sendStatusMessageToClient(prepareJobStatusMessageForClient(job, SCHEDULED_JOB_ID), job.getJobId());
 		} else {
 			logger.info(QUEUE_THRESHOLD_EXCEEDED_LOG);
 		}

@@ -11,12 +11,14 @@ import static com.greencloud.application.messages.factory.CallForProposalMessage
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static jade.lang.acl.ACLMessage.ACCEPT_PROPOSAL;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import com.greencloud.application.agents.scheduler.SchedulerAgent;
 import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
@@ -60,6 +62,7 @@ public class InitiateCNALookup extends AbstractCFPInitiator<JobWithPrice> {
 	 */
 	@Override
 	protected void handleNoResponses() {
+		MDC.put(MDC_JOB_ID, job.getJobId());
 		logger.info(NO_CLOUD_RESPONSES_LOG);
 		handleFailure();
 	}
@@ -77,6 +80,7 @@ public class InitiateCNALookup extends AbstractCFPInitiator<JobWithPrice> {
 	 */
 	@Override
 	protected void handleSelectedOffer(final JobWithPrice chosenOfferData) {
+		MDC.put(MDC_JOB_ID, job.getJobId());
 		logger.info(SEND_ACCEPT_TO_CLOUD_LOG, bestProposal.getSender().getName());
 
 		myScheduler.getClientJobs().replace(job, PROCESSING, ACCEPTED);
@@ -85,13 +89,15 @@ public class InitiateCNALookup extends AbstractCFPInitiator<JobWithPrice> {
 	}
 
 	private void handleFailure() {
+		MDC.put(MDC_JOB_ID, job.getJobId());
 		if (myScheduler.manage().postponeJobExecution(job)) {
 			logger.info(NO_CLOUD_AVAILABLE_RETRY_LOG);
-			myScheduler.send(preparePostponeJobMessageForClient(job));
+			myScheduler.manage().sendStatusMessageToClient(preparePostponeJobMessageForClient(job), job.getJobId());
 		} else {
 			logger.info(NO_CLOUD_AVAILABLE_NO_RETRY_LOG);
 			myScheduler.manage().jobFailureCleanUp(job);
-			myScheduler.send(prepareJobStatusMessageForClient(job, FAILED_JOB_ID));
+			myScheduler.manage()
+					.sendStatusMessageToClient(prepareJobStatusMessageForClient(job, FAILED_JOB_ID), job.getJobId());
 		}
 	}
 }

@@ -17,7 +17,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import com.greencloud.application.agents.AbstractAgent;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
+import com.greencloud.application.behaviours.listener.ListenForAMSError;
 import com.greencloud.application.domain.agent.ServerData;
 import com.greencloud.application.domain.job.ImmutableJobWithPrice;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
@@ -55,7 +57,7 @@ public class InitiateNewJobOffer extends ProposeInitiator {
 	 * @param schedulerMessage CFP received from scheduler
 	 * @return InitiateMakingNewJobOffer
 	 */
-	public static InitiateNewJobOffer create(final Agent agent, final double availablePower,
+	public static InitiateNewJobOffer create(final AbstractAgent agent, final double availablePower,
 			final ServerData serverOffer, final ACLMessage serverMessage, final ACLMessage schedulerMessage) {
 		final JobWithPrice pricedJob =
 				new ImmutableJobWithPrice(serverOffer.getJobId(), serverOffer.getServicePrice(), availablePower);
@@ -64,7 +66,7 @@ public class InitiateNewJobOffer extends ProposeInitiator {
 				.withObjectContent(pricedJob)
 				.withPerformative(PROPOSE)
 				.build();
-
+		agent.addBehaviour(ListenForAMSError.create(agent, proposal, pricedJob.getJobId()));
 		return new InitiateNewJobOffer(agent, proposal, serverMessage);
 	}
 

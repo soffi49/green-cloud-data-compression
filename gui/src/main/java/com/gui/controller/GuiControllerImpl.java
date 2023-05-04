@@ -6,6 +6,9 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableRemoveAgentMessage;
@@ -15,6 +18,8 @@ import com.gui.websocket.GuiWebSocketClient;
 import com.gui.websocket.GuiWebSocketListener;
 
 public class GuiControllerImpl implements GuiController {
+
+	private static final Logger logger = LoggerFactory.getLogger(GuiControllerImpl.class);
 
 	private static GuiWebSocketClient webSocketClient;
 	private static GuiWebSocketListener webSocketListener;
@@ -70,6 +75,7 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void updateActiveJobsCountByValue(final int value) {
+		logger.info("Updating number of active jobs by {}", value);
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_ACTIVE_JOBS")
@@ -78,6 +84,7 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void updateAllJobsCountByValue(final int value) {
+		logger.info("Updating number of all jobs by {}", value);
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_PLANNED_JOBS")

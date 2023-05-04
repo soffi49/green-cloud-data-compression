@@ -1,6 +1,8 @@
 package runner.service;
 
 import static runner.constants.EngineConstants.RUN_AGENT_DELAY;
+import static runner.domain.EngineConfiguration.hostId;
+import static runner.domain.EngineConfiguration.mainHost;
 import static runner.domain.ScenarioConfiguration.eventFilePath;
 import static runner.domain.ScenarioConfiguration.scenarioFilePath;
 import static runner.domain.enums.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
@@ -27,9 +29,6 @@ import runner.factory.AgentControllerFactoryImpl;
  */
 public class MultiContainerScenarioService extends AbstractScenarioService implements Runnable {
 
-	private boolean mainHost = true;
-	private int hostId;
-
 	/**
 	 * Service's constructor for the main host. Main host is responsible for running Main-Container
 	 * which contains within itself Jade's RMA, SNIFFER, DFService.
@@ -39,20 +38,6 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 		super();
 	}
 
-	/**
-	 * Service's constructor for the remote host. Creates an AgentContainer which contains
-	 * all agents underlying to the CloudNetworkAgent corresponding to
-	 * the given host id.
-	 *
-	 * @param hostId     number of the host id
-	 * @param mainHostIp IP address of the main host
-	 */
-	public MultiContainerScenarioService(Integer hostId, String mainHostIp)
-			throws ExecutionException, InterruptedException, StaleProxyException {
-		super(hostId, mainHostIp);
-		this.mainHost = false;
-		this.hostId = hostId;
-	}
 
 	/**
 	 * Runs AgentContainer. For example host with id = 1 would run all agents for first CNA declared

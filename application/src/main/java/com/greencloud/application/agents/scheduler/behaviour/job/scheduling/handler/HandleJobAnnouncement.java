@@ -63,6 +63,7 @@ public class HandleJobAnnouncement extends TickerBehaviour {
 
 		if (!myScheduler.getJobsToBeExecuted().isEmpty()) {
 			final ClientJob jobToExecute = myScheduler.getJobsToBeExecuted().poll();
+			myScheduler.manage().updateJobQueueGUI();
 			if (canJobBeAnnounced().test(jobToExecute)) {
 				announceJobToCloudNetworkAgents(requireNonNull(jobToExecute));
 			}
@@ -85,7 +86,6 @@ public class HandleJobAnnouncement extends TickerBehaviour {
 			final ACLMessage clientMessage = prepareJobStatusMessageForClient(adjustedJob, PROCESSING_JOB_ID);
 
 			replaceStatusToActive(myScheduler.getClientJobs(), adjustedJob);
-			myScheduler.manage().updateJobQueueGUI();
 			myScheduler.send(clientMessage);
 			myScheduler.addBehaviour(InitiateCNALookup.create(myScheduler, adjustedJob));
 		}
@@ -102,14 +102,16 @@ public class HandleJobAnnouncement extends TickerBehaviour {
 		if (newAdjustedEnd.isAfter(job.getDeadline().minusMillis(JOB_PROCESSING_DEADLINE_ADJUSTMENT))) {
 			logger.info(JOB_EXECUTION_AFTER_DEADLINE_LOG, job.getJobId());
 			myScheduler.getClientJobs().remove(job);
-			myScheduler.send(prepareJobStatusMessageForClient(job, FAILED_JOB_ID));
+			myScheduler.manage()
+					.sendStatusMessageToClient(prepareJobStatusMessageForClient(job, FAILED_JOB_ID), job.getJobId());
 			return null;
 		}
 
 		logger.info(JOB_ADJUST_TIME_LOG, job.getJobId());
 		final ClientJob adjustedJob = mapToJobWithNewTime(job, newAdjustedStart, newAdjustedEnd);
 		myScheduler.manage().swapJobInstances(adjustedJob, job);
-		myScheduler.send(prepareJobAdjustmentMessage(adjustedJob));
+		myScheduler.manage()
+				.sendStatusMessageToClient(prepareJobAdjustmentMessage(adjustedJob), adjustedJob.getJobId());
 		return adjustedJob;
 	}
 }

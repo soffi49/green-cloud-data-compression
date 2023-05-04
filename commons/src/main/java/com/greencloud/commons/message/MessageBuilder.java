@@ -2,6 +2,7 @@ package com.greencloud.commons.message;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,6 +36,12 @@ public class MessageBuilder {
 
 	public MessageBuilder withConversationId(final String conversationId) {
 		this.aclMessage.setConversationId(conversationId);
+		return this;
+	}
+
+	public MessageBuilder withGeneratedReplyWith() {
+		final String replyWith = UUID.randomUUID().toString();
+		this.aclMessage.setReplyWith(replyWith);
 		return this;
 	}
 

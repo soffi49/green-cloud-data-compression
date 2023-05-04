@@ -7,10 +7,10 @@ import static com.greencloud.application.agents.monitoring.domain.MonitoringAgen
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.OFFLINE_MODE;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.STUB_DATA;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.WEATHER_REQUESTS_IN_BATCH;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
-import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
 import static com.greencloud.application.messages.factory.PowerCheckMessageFactory.prepareWeatherDataResponse;
+import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
 import static java.lang.Math.max;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;

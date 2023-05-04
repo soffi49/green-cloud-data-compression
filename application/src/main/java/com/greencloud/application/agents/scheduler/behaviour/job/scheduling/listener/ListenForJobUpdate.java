@@ -73,7 +73,9 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 				case FAILED_JOB_ID -> handleJobFailure(jobStatusUpdate, job);
 			}
 			if (!type.equals(FAILED_JOB_ID)) {
-				mySchedulerAgent.send(prepareJobStatusMessageForClient(job, jobStatusUpdate, type));
+				mySchedulerAgent.manage()
+						.sendStatusMessageToClient(prepareJobStatusMessageForClient(job, jobStatusUpdate, type),
+								job.getJobId());
 			}
 		}
 	}
@@ -81,10 +83,12 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	private void handleJobFailure(final JobStatusUpdate jobStatusUpdate, final ClientJob job) {
 		if (mySchedulerAgent.manage().postponeJobExecution(job)) {
 			logger.info(JOB_FAILED_RETRY_LOG, job.getJobId());
-			mySchedulerAgent.send(preparePostponeJobMessageForClient(job));
+			mySchedulerAgent.manage()
+					.sendStatusMessageToClient(preparePostponeJobMessageForClient(job), job.getJobId());
 		} else {
 			mySchedulerAgent.manage().jobFailureCleanUp(job);
-			mySchedulerAgent.send(prepareJobStatusMessageForClient(job, jobStatusUpdate, FAILED_JOB_ID));
+			mySchedulerAgent.manage().sendStatusMessageToClient(prepareJobStatusMessageForClient(job, jobStatusUpdate,
+					FAILED_JOB_ID), job.getJobId());
 		}
 	}
 }
