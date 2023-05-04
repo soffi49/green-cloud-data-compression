@@ -11,16 +11,22 @@ const handleIncrementFailedJobs = (state, msg) => {
     state.network.failedJobsNo += msg.data
 }
 
-const handleUpdateCurrentClients = (state, msg) => {
-    state.network.currClientsNo += msg.data
-}
-
 const handleUpdateCurrentPlannedJobs = (state, msg) => {
     state.network.currPlannedJobsNo += msg.data
 }
 
-const handleUpdateCurrentActiveJobs = (state, msg) => {
-    state.network.currActiveJobsNo += msg.data
+const handleUpdateCurrentClients = (state) => 
+    state.network.currClientsNo = state.agents.clients.filter(client => client.status !== JOB_STATUSES.FAILED && client.status !== JOB_STATUSES.FINISHED).length
+
+const handleUpdateCurrentActiveJobs = (state) => {
+    const activeStatuses = [JOB_STATUSES.IN_PROGRESS, JOB_STATUSES.ON_BACK_UP, JOB_STATUSES.ON_HOLD, JOB_STATUSES.DELAYED]
+    const jobsNoSplit = state.agents.clients
+        .filter(client => client.isSplit === true)
+        .map(client => client.splitJobs.filter(job => activeStatuses.includes(job.status)).length)
+        .reduce((sum, val) => sum += val, 0)
+    const wholeJobsNo = state.agents.clients.filter(client => client.isSplit === false && activeStatuses.includes(client.status)).length
+
+    state.network.currActiveJobsNo = (jobsNoSplit + wholeJobsNo)
 }
 
 const handleSetMaximumCapacity = (state, msg, reportsState) => {
@@ -31,7 +37,7 @@ const handleSetMaximumCapacity = (state, msg, reportsState) => {
     if (agent) {
         if (agent.type === AGENT_TYPES.CLOUD_NETWORK) {
             agent.maximumCapacity = maximumCapacity
-            getNewCloudNetworkTraffic(agent, powerInUse, state)    
+            getNewCloudNetworkTraffic(agent, powerInUse, state)
         } else {
             agent.currentMaximumCapacity = maximumCapacity
             agent.traffic = getNewTraffic(maximumCapacity, powerInUse)
@@ -183,6 +189,9 @@ const handleSetClientJobStatus = (state, msg) => {
             agent.status = jobStatus
         }
     }
+
+    handleUpdateCurrentActiveJobs(state)
+    handleUpdateCurrentClients(state)
 }
 
 const handleSetClientJobTimeFrame = (state, msg) => {
@@ -228,9 +237,10 @@ const handleRegisterAgent = (state, msg, reportsState) => {
         const newAgent = registerAgent(registerData, agentType, state, reportsState)
 
         if (newAgent) {
-            if (agentType === AGENT_TYPES.CLIENT)
+            if (agentType === AGENT_TYPES.CLIENT) {
                 state.agents.clients.push(newAgent)
-            else {
+                handleUpdateCurrentClients(state)
+            } else {
                 state.agents.agents.push(newAgent)
                 state.graph.nodes.push(createNodeForAgent(newAgent))
             }
@@ -346,8 +356,8 @@ const handleUpdateGreenEnergy = (state, msg) => {
     }
 }
 
-const handleServerDisabling = (state, msg, reportsState) => 
-    changeCloudNetworkCapacityEvent(state, reportsState, msg.cna, msg.server, msg.capacity,false)
+const handleServerDisabling = (state, msg, reportsState) =>
+    changeCloudNetworkCapacityEvent(state, reportsState, msg.cna, msg.server, msg.capacity, false)
 
 module.exports = {
     MESSAGE_HANDLERS: {
@@ -355,9 +365,7 @@ module.exports = {
         INCREMENT_FAILED_JOBS: handleIncrementFailedJobs,
         INCREMENT_WEAK_ADAPTATIONS: handleIncrementWeakAdaptations,
         INCREMENT_STRONG_ADAPTATIONS: handleIncrementStrongAdaptations,
-        UPDATE_CURRENT_CLIENTS: handleUpdateCurrentClients,
         UPDATE_CURRENT_PLANNED_JOBS: handleUpdateCurrentPlannedJobs,
-        UPDATE_CURRENT_ACTIVE_JOBS: handleUpdateCurrentActiveJobs,
         UPDATE_JOB_QUEUE: handleUpdateJobQueue,
         UPDATE_SERVER_CONNECTION: handleUpdateServerConnection,
         UPDATE_INDICATORS: handleUpdateIndicators,
@@ -382,6 +390,6 @@ module.exports = {
         REGISTER_MANAGING: handleRegisterManaging,
         ADD_ADAPTATION_LOG: handleAddAdaptationLog,
         REPORT_SYSTEM_START_TIME: handleSystemTimeMesaage,
-        DISABLE_SERVER: handleServerDisabling
+        DISABLE_SERVER: handleServerDisabling,
     }
 }

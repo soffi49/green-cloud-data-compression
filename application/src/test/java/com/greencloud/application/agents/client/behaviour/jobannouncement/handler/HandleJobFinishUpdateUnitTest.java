@@ -1,13 +1,13 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
-import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobStatusUpdate;
-import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
-import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClientMultipleJobParts;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_BEFORE_DEADLINE_DELAY_LOG;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_BEFORE_DEADLINE_LOG;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_LOG;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_ON_TIME_LOG;
 import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.FINISH_JOB_ID;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobStatusUpdate;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
+import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClientMultipleJobParts;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -90,7 +90,6 @@ class HandleJobFinishUpdateUnitTest {
 		// then
 		verify(testBehaviour).updateInformationOfJobStatusUpdate(JOB_STATUS);
 		verify(mockClientNode).updateJobStatus(FINISHED);
-		verify(mockGuiController).updateClientsCountByValue(-1);
 		verify(mockGuiController).updateFinishedJobsCountByValue(1);
 		verify(mockClientManagement).writeClientData(true);
 		verify(mockClientAgent).doDelete();
@@ -112,7 +111,6 @@ class HandleJobFinishUpdateUnitTest {
 		// then
 		verify(testBehaviour).updateInformationOfJobPartStatusUpdate(JOB_STATUS);
 		verify(mockClientNode).updateJobStatus(FINISHED);
-		verify(mockGuiController).updateClientsCountByValue(-1);
 		verify(mockGuiController).updateFinishedJobsCountByValue(1);
 		verify(mockClientManagement).writeClientData(false);
 		verify(mockClientManagement).writeClientData(true);

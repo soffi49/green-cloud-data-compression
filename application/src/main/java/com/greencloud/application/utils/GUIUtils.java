@@ -50,7 +50,6 @@ public class GUIUtils {
 	 * @param agent agent updating the GUI
 	 */
 	public static void announceFinishedJob(final CloudNetworkAgent agent) {
-		agent.getGuiController().updateActiveJobsCountByValue(-1);
 		agent.getGuiController().updateAllJobsCountByValue(-1);
 	}
 
@@ -61,14 +60,5 @@ public class GUIUtils {
 	 */
 	public static void announceBookedJob(final AbstractAgent agent) {
 		agent.getGuiController().updateAllJobsCountByValue(1);
-	}
-
-	/**
-	 * Method updates the GUI to indicate that new client is using Cloud Network
-	 *
-	 * @param agent agent updating the GUI
-	 */
-	public static void announceNewClient(final AbstractAgent agent) {
-		agent.getGuiController().updateClientsCountByValue(1);
 	}
 }

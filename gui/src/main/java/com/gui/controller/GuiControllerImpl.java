@@ -66,23 +66,6 @@ public class GuiControllerImpl implements GuiController {
 	}
 
 	@Override
-	public void updateClientsCountByValue(final int value) {
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
-				.data(value)
-				.type("UPDATE_CURRENT_CLIENTS")
-				.build());
-	}
-
-	@Override
-	public void updateActiveJobsCountByValue(final int value) {
-		logger.info("Updating number of active jobs by {}", value);
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
-				.data(value)
-				.type("UPDATE_CURRENT_ACTIVE_JOBS")
-				.build());
-	}
-
-	@Override
 	public void updateAllJobsCountByValue(final int value) {
 		logger.info("Updating number of all jobs by {}", value);
 		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()

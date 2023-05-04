@@ -38,20 +38,6 @@ public interface GuiController extends Runnable, Serializable {
 	void removeAgentNodeFromGraph(final AbstractAgentNode agentNode);
 
 	/**
-	 * Method updates the clients number by given value
-	 *
-	 * @param value value to be added to the clients number
-	 */
-	void updateClientsCountByValue(final int value);
-
-	/**
-	 * Method updates the active jobs number by given value
-	 *
-	 * @param value value to be added to the active jobs number
-	 */
-	void updateActiveJobsCountByValue(final int value);
-
-	/**
 	 * Method updates the failed jobs number by given value
 	 *
 	 * @param value value to be added to the failed jobs number

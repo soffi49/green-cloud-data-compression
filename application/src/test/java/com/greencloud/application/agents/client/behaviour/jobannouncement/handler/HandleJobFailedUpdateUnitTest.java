@@ -1,8 +1,8 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
+import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.FAILED_JOB_ID;
 import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobStatusUpdate;
 import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
-import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.FAILED_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FAILED;
 import static jade.lang.acl.ACLMessage.INFORM;
@@ -81,7 +81,6 @@ class HandleJobFailedUpdateUnitTest {
 
 		// then
 		verify(mockClientNode).updateJobStatus(FAILED);
-		verify(mockGuiController).updateClientsCountByValue(-1);
 		verify(mockGuiController).updateFailedJobsCountByValue(1);
 		verify(mockClientManagement).writeClientData(true);
 		verify(mockClientAgent).doDelete();

@@ -42,7 +42,6 @@ public class HandleJobFinishUpdate extends AbstractJobUpdateHandler {
 	private static void shutdownAfterFinishedJob(final ClientAgent client, final String logMessage) {
 		MDC.put(MDC_JOB_ID, client.getJobExecution().getJob().getJobId());
 		logger.info(logMessage);
-		client.getGuiController().updateClientsCountByValue(-1);
 		client.getGuiController().updateFinishedJobsCountByValue(1);
 		client.manage().writeClientData(true);
 		client.doDelete();

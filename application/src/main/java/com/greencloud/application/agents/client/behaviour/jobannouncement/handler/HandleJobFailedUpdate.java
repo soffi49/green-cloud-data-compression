@@ -43,7 +43,6 @@ public class HandleJobFailedUpdate extends AbstractJobUpdateHandler {
 
 		((ClientAgentNode) myClient.getAgentNode()).updateJobStatus(jobStatus);
 		myClient.getJobExecution().updateJobStatusDuration(jobStatus, jobUpdate.getChangeTime());
-		myClient.getGuiController().updateClientsCountByValue(-1);
 		myClient.getGuiController().updateFailedJobsCountByValue(1);
 		myClient.manage().writeClientData(true);
 		myClient.doDelete();
