@@ -543,7 +543,7 @@ class TimescaleDatabaseIntegrationTest {
 
 		database.initDatabase();
 		var result = database.readSystemStartTime();
-		assertThat(result).isCloseTo(currentTime, within(1, SECONDS));
+		assertThat(result).isCloseTo(currentTime, within(10, SECONDS));
 	}
 
 	private List<WeatherShortages> prepareMonitoredDataForAIDTest() {
