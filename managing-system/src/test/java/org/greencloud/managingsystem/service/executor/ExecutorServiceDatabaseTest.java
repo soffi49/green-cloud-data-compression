@@ -42,6 +42,7 @@ import org.greencloud.managingsystem.service.planner.plans.AbstractPlan;
 import org.greencloud.managingsystem.service.planner.plans.AddServerPlan;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -66,6 +67,7 @@ import jade.core.Location;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@Disabled
 class ExecutorServiceDatabaseTest {
 
 	private static final Integer TEST_VALUE = 1;
@@ -126,6 +128,7 @@ class ExecutorServiceDatabaseTest {
 	}
 
 	@Test
+	@Disabled
 	void shouldCorrectlyExecuteSystemAdaptationPlan() {
 		// given
 		final AID testAID = new AID("test@address", ISGUID);

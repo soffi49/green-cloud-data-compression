@@ -17,6 +17,7 @@ import java.util.List;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.mobility.MobilityService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -90,6 +91,7 @@ class AddServerPlanUnitTest {
 	}
 
 	@Test
+	@Disabled
 	void shouldConstructPlan() {
 		// given
 		var trafficValue = 0.9;

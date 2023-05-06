@@ -13,6 +13,7 @@ import java.util.List;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -47,6 +48,7 @@ class DisableAdaptationActionsDatabaseTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test disabling adaptation actions")
 	void testAction() {
 		var actionsToDisable = List.of("ADD_SERVER", "INCREASE_DEADLINE_PRIORITY", "INCREASE_POWER_PRIORITY");

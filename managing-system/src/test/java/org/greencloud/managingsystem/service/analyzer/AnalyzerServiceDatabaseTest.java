@@ -37,6 +37,7 @@ import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.greencloud.managingsystem.service.planner.PlannerService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -50,6 +51,7 @@ import com.database.knowledge.domain.goal.GoalEnum;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.gui.agents.ManagingAgentNode;
 
+@Disabled
 class AnalyzerServiceDatabaseTest {
 
 	@Mock

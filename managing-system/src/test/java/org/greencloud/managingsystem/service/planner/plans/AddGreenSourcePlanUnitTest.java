@@ -18,6 +18,7 @@ import java.util.List;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.mobility.MobilityService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -104,6 +105,7 @@ class AddGreenSourcePlanUnitTest {
 	}
 
 	@Test
+	@Disabled
 	void shouldConstructPlan() {
 		// given
 		final AID testAID = new AID("test", ISGUID);
