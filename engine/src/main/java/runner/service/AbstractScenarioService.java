@@ -8,7 +8,6 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
-import static runner.constants.EngineConstants.MTP_MULTI_MESSAGE;
 import static runner.configuration.EngineConfiguration.containerId;
 import static runner.configuration.EngineConfiguration.databaseHostIp;
 import static runner.configuration.EngineConfiguration.jadeInterPort;
@@ -32,11 +31,14 @@ import static runner.configuration.ScenarioConfiguration.minJobPower;
 import static runner.configuration.ScenarioConfiguration.minStartTime;
 import static runner.configuration.ScenarioConfiguration.scenarioFilePath;
 import static runner.configuration.enums.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
+import static runner.constants.EngineConstants.MTP_MULTI_MESSAGE;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -141,6 +143,7 @@ public abstract class AbstractScenarioService {
 
 	protected void runClientAgents() {
 		final ThreadLocalRandom random = ThreadLocalRandom.current();
+		final List<AgentController> clients = new ArrayList<>();
 		LongStream.rangeClosed(1, clientNumber).forEach(idx -> {
 			final int randomPower = random.nextInt(minJobPower, maxJobPower);
 			final int randomStart = random.nextInt(minStartTime, maxStartTime);
@@ -151,8 +154,9 @@ public abstract class AbstractScenarioService {
 			final ClientAgentArgs clientAgentArgs = agentFactory.createClientAgent(clientName, String.valueOf(idx),
 					randomPower, randomStart, randomEnd, randomDeadline, REAL_TIME);
 			final AgentController agentController = factory.createAgentController(clientAgentArgs, scenario);
-			factory.runAgentController(agentController, RUN_CLIENT_AGENT_DELAY);
+			clients.add(agentController);
 		});
+		factory.runAgentControllers(clients, RUN_CLIENT_AGENT_DELAY);
 	}
 
 	protected AgentController prepareManagingController(final ManagingAgentArgs managingAgentArgs) {
@@ -199,6 +203,7 @@ public abstract class AbstractScenarioService {
 		profile.setParameter(Profile.CONTAINER_NAME, containerName);
 		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
 		profile.setParameter(MTP_MULTI_MESSAGE, "false");
+		profile.setParameter(Profile.EXPORT_HOST, localHostIp);
 
 		try {
 			return executorService.submit(() -> jadeRuntime.createAgentContainer(profile)).get();
