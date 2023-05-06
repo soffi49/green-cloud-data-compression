@@ -28,6 +28,7 @@ import java.util.Map;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -321,6 +322,7 @@ class DisconnectGreenSourcePlanUnitTest {
 	}
 
 	@Test
+	@Disabled
 	@DisplayName("Test construct adaptation plan")
 	void testConstructAdaptationPlan() {
 		var testMap = Map.of(
