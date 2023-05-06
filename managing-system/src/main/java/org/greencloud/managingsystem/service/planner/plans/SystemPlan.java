@@ -3,9 +3,9 @@ package org.greencloud.managingsystem.service.planner.plans;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.action.AdaptationActionEnum;
-import com.greencloud.commons.agentfactory.AgentFactory;
-import com.greencloud.commons.agentfactory.AgentFactoryImpl;
 import com.greencloud.commons.managingsystem.planner.SystemAdaptationActionParameters;
+import com.greencloud.factory.AgentFactory;
+import com.greencloud.factory.AgentFactoryImpl;
 
 /**
  * Abstract class used for the plans that are executed over entire agent system (i.e. plans that modify the structure of

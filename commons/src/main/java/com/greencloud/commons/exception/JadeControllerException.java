@@ -1,4 +1,4 @@
-package org.greencloud.managingsystem.service.executor.jade;
+package com.greencloud.commons.exception;
 
 public class JadeControllerException extends RuntimeException {
 

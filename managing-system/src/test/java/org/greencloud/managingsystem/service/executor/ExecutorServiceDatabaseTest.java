@@ -10,6 +10,7 @@ import static com.greencloud.application.yellowpages.domain.DFServiceConstants.C
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.FINISHED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
+import static com.greencloud.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
 import static jade.core.AID.ISGUID;
 import static java.util.Collections.emptyList;
 import static org.greencloud.managingsystem.service.common.TestAdaptationPlanFactory.getTestAdaptationPlan;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +36,6 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.agent.behaviour.executor.InitiateAdaptationActionRequest;
 import org.greencloud.managingsystem.agent.behaviour.executor.VerifyAdaptationActionResult;
 import org.greencloud.managingsystem.service.common.TestPlanParameters;
-import org.greencloud.managingsystem.service.executor.jade.AgentRunner;
 import org.greencloud.managingsystem.service.mobility.MobilityService;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.greencloud.managingsystem.service.planner.plans.AbstractPlan;
@@ -57,6 +58,7 @@ import com.greencloud.application.yellowpages.YellowPagesService;
 import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.args.agent.server.ImmutableServerAgentArgs;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
+import com.greencloud.factory.AgentControllerFactory;
 import com.gui.agents.ManagingAgentNode;
 
 import jade.core.AID;
@@ -77,7 +79,7 @@ class ExecutorServiceDatabaseTest {
 	Location location;
 
 	MobilityService mobilityService;
-	AgentRunner agentRunner;
+	AgentControllerFactory agentFactory;
 	AbstractPlan adaptationPlan;
 	TimescaleDatabase database;
 	MonitoringService monitoringService;
@@ -90,9 +92,9 @@ class ExecutorServiceDatabaseTest {
 		database = spy(TimescaleDatabase.setUpForTests());
 		database.initDatabase();
 
-		agentRunner = mock(AgentRunner.class);
+		agentFactory = mock(AgentControllerFactory.class);
 		monitoringService = spy(new MonitoringService(managingAgent));
-		executorService = spy(new ExecutorService(managingAgent, agentRunner));
+		executorService = spy(new ExecutorService(managingAgent, agentFactory));
 		yellowPagesService = mockStatic(YellowPagesService.class);
 
 		when(managingAgent.monitor()).thenReturn(monitoringService);
@@ -143,7 +145,7 @@ class ExecutorServiceDatabaseTest {
 		executorService.executeAdaptationAction(adaptationPlan);
 
 		// then
-		verify(agentRunner).runAgents(anyList());
+		verify(agentFactory, times(3)).createAgentController(any(), any());
 		verify(abstractAgentNode).logNewAdaptation(eq(ADD_SERVER), any(Instant.class), eq(Optional.empty()));
 		verify(managingAgent).addBehaviour(any(VerifyAdaptationActionResult.class));
 	}

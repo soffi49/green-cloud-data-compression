@@ -1,4 +1,4 @@
-package com.greencloud.commons.agentfactory.domain;
+package com.greencloud.factory.constants;
 
 public class AgentTemplatesConstants {
 
@@ -12,7 +12,5 @@ public class AgentTemplatesConstants {
     public static final String TEMPLATE_GREEN_ENERGY_LONGITUDE = "20";
     public static final String TEMPLATE_GREEN_ENERGY_PRICE = "10";
     public static final String TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY = "200";
-    public static final String TEMPLATE_GREEN_ENERGY_WEATHER_PREDICTION_ERROR = "0.02";
-
     public static final String TEMPLATE_GREEN_ENERGY_TYPE = "WIND";
 }

@@ -17,6 +17,7 @@
 		<module>commons</module>
 		<module>knowledge-database</module>
 		<module>managing-system</module>
+		<module>agent-factory</module>
 	</modules>
 
 	<properties>

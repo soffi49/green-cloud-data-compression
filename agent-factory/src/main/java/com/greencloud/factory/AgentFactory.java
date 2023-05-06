@@ -1,9 +1,12 @@
-package com.greencloud.commons.agentfactory;
+package com.greencloud.factory;
 
 import com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum;
+import com.greencloud.commons.args.agent.client.ClientAgentArgs;
+import com.greencloud.commons.args.agent.client.ClientTimeType;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
+import com.greencloud.commons.args.event.newclient.NewClientEventArgs;
 
 /**
  * Interface with a set methods that create extra agents with specified parameters
@@ -69,4 +72,33 @@ public interface AgentFactory {
 	 * @return newly created monitoring agent args
 	 */
 	MonitoringAgentArgs createMonitoringAgent();
+
+	/**
+	 * Method creates new client agent args that can be used to initialize new agent
+	 *
+	 * @param name     client name
+	 * @param jobId    job identifier
+	 * @param power    job required power
+	 * @param start    job start time
+	 * @param end      job finish time
+	 * @param deadline job deadline
+	 * @param timeType type of time when the client should join cloud (i.e. in simulation time or in real time)
+	 * @return newly created client agent args
+	 */
+	ClientAgentArgs createClientAgent(String name,
+			String jobId,
+			int power,
+			int start,
+			int end,
+			int deadline,
+			ClientTimeType timeType);
+
+	/**
+	 * Method creates new client agent args that can be used to initialize new agent
+	 *
+	 * @param clientEventArgs arguments to generate new client
+	 * @return newly created client agent args
+	 */
+	ClientAgentArgs createClientAgent(NewClientEventArgs clientEventArgs);
+
 }

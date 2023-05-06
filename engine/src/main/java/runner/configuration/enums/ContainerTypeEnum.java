@@ -1,4 +1,4 @@
-package runner.domain.enums;
+package runner.configuration.enums;
 
 /**
  * Enumerable describing available container types
@@ -6,7 +6,7 @@ package runner.domain.enums;
 public enum ContainerTypeEnum {
 	CLIENTS_CONTAINER_ID("Clients");
 
-	private String name;
+	private final String name;
 
 	ContainerTypeEnum(String name) {
 		this.name = name;

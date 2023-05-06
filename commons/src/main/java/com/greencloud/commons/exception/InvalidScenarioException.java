@@ -1,4 +1,4 @@
-package runner.exception;
+package com.greencloud.commons.exception;
 
 public class InvalidScenarioException extends RuntimeException {
 

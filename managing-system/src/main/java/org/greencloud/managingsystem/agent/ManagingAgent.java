@@ -34,13 +34,14 @@ public class ManagingAgent extends AbstractManagingAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
+		super.initializeAgent(args);
 		disabledByDefaultActions = new ArrayList<>();
 
-		if (Objects.nonNull(args) && args.length >= 3) {
+		if (args.length >= 5) {
 			try {
-				this.systemQualityThreshold = parseDouble(args[0].toString());
-				this.greenCloudStructure = (ScenarioStructureArgs) args[1];
-				this.greenCloudController = (ContainerController) args[2];
+				this.systemQualityThreshold = parseDouble(args[2].toString());
+				this.greenCloudStructure = (ScenarioStructureArgs) args[3];
+				this.greenCloudController = (ContainerController) args[4];
 				parseAdditionalParameters(args);
 			} catch (NumberFormatException e) {
 				logger.info("Incorrect argument: please check arguments in the documentation");
@@ -78,13 +79,13 @@ public class ManagingAgent extends AbstractManagingAgent {
 
 	@SuppressWarnings({ "unchecked", "static" })
 	private void parseAdditionalParameters(final Object[] args) {
-		if (args.length > 3) {
-			if (Objects.nonNull(args[3])) {
-				POWER_SHORTAGE_THRESHOLD = Integer.parseInt(String.valueOf(args[3]));
+		if (args.length > 5) {
+			if (Objects.nonNull(args[5])) {
+				POWER_SHORTAGE_THRESHOLD = Integer.parseInt(String.valueOf(args[5]));
 			}
 
-			if (Objects.nonNull(args[4])) {
-				disabledByDefaultActions = (ArrayList<String>) args[4];
+			if (Objects.nonNull(args[6])) {
+				disabledByDefaultActions = (ArrayList<String>) args[6];
 			}
 		}
 	}

@@ -1,15 +1,17 @@
 package runner.service;
 
+import static com.greencloud.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static runner.constants.EngineConstants.RUN_AGENT_DELAY;
-import static runner.domain.EngineConfiguration.containerId;
-import static runner.domain.EngineConfiguration.locationId;
-import static runner.domain.EngineConfiguration.mainHost;
-import static runner.domain.EngineConfiguration.newPlatform;
-import static runner.domain.ScenarioConfiguration.eventFilePath;
-import static runner.domain.ScenarioConfiguration.scenarioFilePath;
-import static runner.domain.enums.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
+import static runner.configuration.EngineConfiguration.containerId;
+import static runner.configuration.EngineConfiguration.locationId;
+import static runner.configuration.EngineConfiguration.mainDFAddress;
+import static runner.configuration.EngineConfiguration.mainHost;
+import static runner.configuration.EngineConfiguration.mainHostPlatformId;
+import static runner.configuration.EngineConfiguration.newPlatform;
+import static runner.configuration.ScenarioConfiguration.eventFilePath;
+import static runner.configuration.ScenarioConfiguration.scenarioFilePath;
+import static runner.configuration.enums.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,14 +25,17 @@ import org.slf4j.LoggerFactory;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.args.agent.cloudnetwork.CloudNetworkArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
+import com.greencloud.commons.args.agent.managing.ManagingAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
+import com.greencloud.commons.exception.JadeControllerException;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
+import com.greencloud.factory.AgentControllerFactoryImpl;
+import com.greencloud.factory.AgentNodeFactoryImpl;
 
 import jade.wrapper.AgentController;
+import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import runner.factory.AgentControllerFactory;
-import runner.factory.AgentControllerFactoryImpl;
 
 /**
  * Scenario service responsible for running Green Cloud dispersed among multiple hosts.
@@ -47,6 +52,9 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 	public MultiContainerScenarioService()
 			throws StaleProxyException, ExecutionException, InterruptedException {
 		super();
+		final ContainerController container = mainHost ? mainContainer : agentContainer;
+		this.factory = new AgentControllerFactoryImpl(container, timescaleDatabase, guiController, mainDFAddress,
+				mainHostPlatformId);
 	}
 
 	/**
@@ -67,55 +75,62 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 
 		if (nonNull(locationId) && locationId.contains(CLIENTS_CONTAINER_ID.getName())) {
 			if (eventFilePath.isPresent()) {
-				var factory = new AgentControllerFactoryImpl(agentContainer);
-				eventService.runScenarioEvents(factory);
+				eventService.runScenarioEvents();
 			} else {
-				runClients();
+				runClientAgents();
 			}
 		} else {
-			List<AgentController> controllers = runCloudNetworkContainers(scenario);
-
+			final List<AgentController> controllers = runCloudNetworkContainers(scenario);
 			if (controllers.isEmpty()) {
 				logger.info("No agents to be run! Make sure that you passed a correct configuration.");
 			} else {
-				runAgents(controllers);
+				factory.runAgentControllers(controllers, RUN_AGENT_DELAY);
 			}
 		}
 	}
 
-	private void runClients() {
-		final AgentControllerFactory clientFactory = new AgentControllerFactoryImpl(agentContainer);
-		runClientAgents(clientFactory);
-	}
-
 	private void runCommonAgentContainers(final ScenarioStructureArgs scenario) {
-		final AgentControllerFactory factory = new AgentControllerFactoryImpl(mainContainer);
-		final AgentController schedulerController = runAgentController(scenario.getSchedulerAgentArgs(),
-				scenario, factory);
-		final AgentController managingAgentController = runAgentController(scenario.getManagingAgentArgs(),
-				scenario, factory);
+		final AgentController schedulerController = factory.createAgentController(scenario.getSchedulerAgentArgs(),
+				scenario);
+		final AgentController managingAgentController = prepareManagingController(scenario.getManagingAgentArgs());
 
-		runAgent(schedulerController, RUN_AGENT_DELAY);
-		runAgent(managingAgentController, RUN_AGENT_DELAY);
+		factory.runAgentController(schedulerController, RUN_AGENT_DELAY);
+		factory.runAgentController(managingAgentController, RUN_AGENT_DELAY);
 	}
 
 	private List<AgentController> runCloudNetworkContainers(final ScenarioStructureArgs scenario) {
-		var factory = new AgentControllerFactoryImpl(agentContainer);
-
 		var clouds = selectCloudNetworksForContainers();
 		var servers = selectServersForContainer(clouds);
 		var sources = selectGreenSourcesForContainer(servers);
 		var monitors = selectMonitoringForContainer(sources);
 
 		var controllers = new ArrayList<AgentController>();
-		controllers.addAll(monitors.stream().map(m -> runAgentController(m, scenario, factory)).toList());
-		controllers.addAll(sources.stream().map(s -> runAgentController(s, scenario, factory)).toList());
-		controllers.addAll(servers.stream().map(s -> runAgentController(s, scenario, factory)).toList());
+		controllers.addAll(monitors.stream().map(m -> factory.createAgentController(m, scenario)).toList());
+		controllers.addAll(sources.stream().map(s -> factory.createAgentController(s, scenario)).toList());
+		controllers.addAll(servers.stream().map(s -> factory.createAgentController(s, scenario)).toList());
 
 		if (newPlatform || isNull(containerId)) {
-			controllers.addAll(clouds.stream().map(cloud -> runAgentController(cloud, scenario, factory)).toList());
+			controllers.addAll(clouds.stream().map(cloud -> factory.createAgentController(cloud, scenario)).toList());
 		}
 		return controllers;
+	}
+
+	private AgentController prepareManagingController(final ManagingAgentArgs managingAgentArgs) {
+		try {
+			var managingNode = new AgentNodeFactoryImpl().createAgentNode(managingAgentArgs, scenario);
+			return mainContainer.createNewAgent(managingAgentArgs.getName(),
+					"org.greencloud.managingsystem.agent.ManagingAgent",
+					new Object[] { managingNode,
+							guiController,
+							managingAgentArgs.getSystemQualityThreshold(),
+							scenario,
+							mainContainer,
+							managingAgentArgs.getPowerShortageThreshold(),
+							managingAgentArgs.getDisabledActions()
+					});
+		} catch (StaleProxyException e) {
+			throw new JadeControllerException("Failed to run managing agent controller", e);
+		}
 	}
 
 	private List<CloudNetworkArgs> selectCloudNetworksForContainers() {

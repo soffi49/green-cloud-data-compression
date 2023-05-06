@@ -1,13 +1,17 @@
-package com.greencloud.commons.agentfactory;
+package com.greencloud.factory;
 
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_LATITUDE;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_LONGITUDE;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_PRICE;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_TYPE;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_SERVER_JOB_LIMIT;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_SERVER_MAXIMUM_CAPACITY;
-import static com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants.TEMPLATE_SERVER_PRICE;
+import static com.greencloud.commons.args.agent.client.ClientTimeType.REAL_TIME;
+import static com.greencloud.commons.args.agent.client.ClientTimeType.SIMULATION;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_LATITUDE;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_LONGITUDE;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_PRICE;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_TYPE;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_SERVER_JOB_LIMIT;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_SERVER_MAXIMUM_CAPACITY;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_SERVER_PRICE;
+import static java.lang.String.format;
+import static java.lang.String.valueOf;
 import static java.util.Objects.isNull;
 
 import java.time.temporal.ValueRange;
@@ -15,12 +19,16 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum;
+import com.greencloud.commons.args.agent.client.ClientAgentArgs;
+import com.greencloud.commons.args.agent.client.ClientTimeType;
+import com.greencloud.commons.args.agent.client.ImmutableClientAgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.ImmutableGreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.ImmutableMonitoringAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ImmutableServerAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
+import com.greencloud.commons.args.event.newclient.NewClientEventArgs;
 
 public class AgentFactoryImpl implements AgentFactory {
 
@@ -101,9 +109,6 @@ public class AgentFactoryImpl implements AgentFactory {
 		if (Objects.nonNull(longitude) && ValueRange.of(-180, 180).isValidIntValue(longitude)) {
 			throw new IllegalArgumentException("longitude is invalid");
 		}
-		if (Objects.nonNull(weatherPredictionError) && weatherPredictionError < 0.0 && weatherPredictionError > 100.0) {
-			throw new IllegalArgumentException("weather prediction is invalid");
-		}
 
 		String greenEnergyAgentName = "ExtraGreenEnergy" + greenEnergyAgentsCreated.incrementAndGet();
 		return ImmutableGreenEnergyAgentArgs.builder()
@@ -128,6 +133,38 @@ public class AgentFactoryImpl implements AgentFactory {
 		String monitoringAgentName = "ExtraMonitoring" + monitoringAgentsCreated.incrementAndGet();
 		return ImmutableMonitoringAgentArgs.builder()
 				.name(monitoringAgentName)
+				.build();
+	}
+
+	@Override
+	public ClientAgentArgs createClientAgent(final String name,
+			final String jobId,
+			final int power,
+			final int start,
+			final int end,
+			final int deadline,
+			final ClientTimeType timeType) {
+		return ImmutableClientAgentArgs.builder()
+				.name(name)
+				.jobId(jobId)
+				.power(String.valueOf(power))
+				.start(String.valueOf(start))
+				.end(String.valueOf(end))
+				.deadline(String.valueOf(deadline))
+				.timeType(timeType)
+				.build();
+	}
+
+	@Override
+	public ClientAgentArgs createClientAgent(NewClientEventArgs clientEventArgs) {
+		return ImmutableClientAgentArgs.builder()
+				.name(clientEventArgs.getName())
+				.jobId(valueOf(clientEventArgs.getJobId()))
+				.power(String.valueOf(clientEventArgs.getPower()))
+				.start(String.valueOf(clientEventArgs.getStart()))
+				.end(String.valueOf(clientEventArgs.getEnd()))
+				.deadline(String.valueOf(clientEventArgs.getDeadline()))
+				.timeType(SIMULATION)
 				.build();
 	}
 }

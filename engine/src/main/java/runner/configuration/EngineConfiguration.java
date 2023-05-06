@@ -1,13 +1,14 @@
-package runner.domain;
+package runner.configuration;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.io.File.separator;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.String.format;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import runner.exception.InvalidPropertiesException;
+import com.greencloud.commons.exception.InvalidPropertiesException;
 import runner.service.AbstractScenarioService;
 
 /**
@@ -17,7 +18,7 @@ import runner.service.AbstractScenarioService;
 public final class EngineConfiguration {
 
 	private static final String PROPERTIES_DIR = "properties";
-	private static  String SYSTEM_PROPERTIES_FILE = "system.properties";
+	private static  String SYSTEM_PROPERTIES_FILE = "system4.properties";
 
 	/**
 	 * Port used for the intra-platform (i.e. inside the platform) agent communication
@@ -69,6 +70,10 @@ public final class EngineConfiguration {
 	 */
 	public static String mainHostInterPort;
 	/**
+	 * Address of the main Directory Facilitator
+	 */
+	public static String mainDFAddress;
+	/**
 	 * Host's local IP that is used by the JADE Framework within Docker container for networking with other containers
 	 * on different hosts. Must be provided as Docker containers by default don't have access to the network outside the
 	 * Docker container.
@@ -82,6 +87,10 @@ public final class EngineConfiguration {
 	 * Local IP of the host running socket server.
 	 */
 	public static String websocketHostIp;
+	/**
+	 * Address of web sockets
+	 */
+	public static String websocketAddress;
 	/**
 	 * Flag indicates if the JADE GUI should be started along with the main container
 	 */
@@ -142,11 +151,13 @@ public final class EngineConfiguration {
 		mainHostIp = ifNotBlankThenGetOrElse(props.getProperty("main.hostip"), "127.0.0.1");
 		mainHostPlatformId = ifNotBlankThenGetOrElse(props.getProperty("main.platformid"), "MainPlatform");
 		mainHostInterPort = ifNotBlankThenGetOrElse(props.getProperty("main.inter"), "7778");
+		mainDFAddress = format("http://%s:%s/acc", mainHostIp, mainHostInterPort);
 	}
 
 	private static void setUpExternalConnection(final Properties props) {
 		databaseHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.database.hostip"), "localhost");
 		websocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.hostip"), "localhost");
+		websocketAddress = format("ws://%s:8080/", websocketHostIp);
 	}
 
 	private static void setUpJADEGUISettings(final Properties props) {

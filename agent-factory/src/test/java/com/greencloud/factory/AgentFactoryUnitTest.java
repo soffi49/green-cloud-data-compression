@@ -1,5 +1,8 @@
-package com.greencloud.commons.agentfactory;
+package com.greencloud.factory;
 
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_SERVER_MAXIMUM_CAPACITY;
+import static com.greencloud.factory.constants.AgentTemplatesConstants.TEMPLATE_SERVER_PRICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -12,14 +15,13 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import com.greencloud.commons.agent.greenenergy.GreenEnergySourceTypeEnum;
-import com.greencloud.commons.agentfactory.domain.AgentTemplatesConstants;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class AgentFactoryTest {
+class AgentFactoryUnitTest {
 
 	AgentFactory factory = new AgentFactoryImpl();
 
@@ -34,8 +36,8 @@ class AgentFactoryTest {
 		ServerAgentArgs result = factory.createServerAgent("OwnerCna1", null, null, null);
 
 		Assertions.assertThat(result.getName()).isEqualTo("ExtraServer1");
-		assertThat(result.getMaximumCapacity()).isEqualTo(AgentTemplatesConstants.TEMPLATE_SERVER_MAXIMUM_CAPACITY);
-		assertThat(result.getPrice()).isEqualTo(AgentTemplatesConstants.TEMPLATE_SERVER_PRICE);
+		assertThat(result.getMaximumCapacity()).isEqualTo(TEMPLATE_SERVER_MAXIMUM_CAPACITY);
+		assertThat(result.getPrice()).isEqualTo(TEMPLATE_SERVER_PRICE);
 		assertThat(result.getOwnerCloudNetwork()).isEqualTo("OwnerCna1");
 		assertThat(result.getJobProcessingLimit()).isEqualTo("20");
 	}
@@ -52,7 +54,7 @@ class AgentFactoryTest {
 				null);
 
 		assertThat(result.getName()).isEqualTo("ExtraGreenEnergy1");
-		assertThat(result.getMaximumCapacity()).isEqualTo(AgentTemplatesConstants.TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY);
+		assertThat(result.getMaximumCapacity()).isEqualTo(TEMPLATE_GREEN_ENERGY_MAXIMUM_CAPACITY);
 		assertThat(result.getLatitude()).isEqualTo("50");
 		assertThat(result.getLongitude()).isEqualTo("20");
 		assertThat(result.getPricePerPowerUnit()).isEqualTo("10");

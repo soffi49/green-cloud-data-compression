@@ -1,4 +1,4 @@
-package runner.domain;
+package runner.configuration;
 
 import static java.io.File.separator;
 import static java.lang.Boolean.parseBoolean;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
-import runner.exception.InvalidPropertiesException;
+import com.greencloud.commons.exception.InvalidPropertiesException;
 import runner.service.AbstractScenarioService;
 
 /**

@@ -3,6 +3,7 @@ package org.greencloud.managingsystem.service.executor;
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_PROTOCOL;
+import static com.greencloud.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Optional.empty;
 import static org.greencloud.managingsystem.agent.behaviour.executor.VerifyAdaptationActionResult.createForSystemAction;
@@ -15,8 +16,6 @@ import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.agent.behaviour.executor.InitiateAdaptationActionRequest;
 import org.greencloud.managingsystem.service.AbstractManagingService;
-import org.greencloud.managingsystem.service.executor.jade.AgentControllerFactory;
-import org.greencloud.managingsystem.service.executor.jade.AgentRunner;
 import org.greencloud.managingsystem.service.planner.plans.AbstractPlan;
 import org.greencloud.managingsystem.service.planner.plans.SystemPlan;
 import org.slf4j.Logger;
@@ -27,6 +26,8 @@ import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.message.MessageBuilder;
+import com.greencloud.factory.AgentControllerFactory;
+import com.greencloud.factory.AgentControllerFactoryImpl;
 import com.gui.agents.ManagingAgentNode;
 
 import jade.core.Location;
@@ -40,18 +41,18 @@ public class ExecutorService extends AbstractManagingService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExecutorService.class);
 
-	private final AgentRunner agentRunner;
+	private final AgentControllerFactory factory;
 
 	public ExecutorService(AbstractManagingAgent managingAgent) {
 		super(managingAgent);
-		var agentControllerFactory = new AgentControllerFactory(this.managingAgent.getGreenCloudController());
-		agentRunner = new AgentRunner(this.managingAgent, agentControllerFactory);
+		factory = new AgentControllerFactoryImpl(managingAgent.getContainerController(),
+				managingAgent.getAgentNode().getDatabaseClient(), managingAgent.getGuiController());
 	}
 
 	@VisibleForTesting
-	protected ExecutorService(ManagingAgent managingAgent, AgentRunner agentRunner) {
+	protected ExecutorService(ManagingAgent managingAgent, AgentControllerFactory factory) {
 		super(managingAgent);
-		this.agentRunner = agentRunner;
+		this.factory = factory;
 	}
 
 	/**
@@ -93,7 +94,7 @@ public class ExecutorService extends AbstractManagingService {
 		final List<AgentController> createdAgents = createAgents(systemAdaptationPlan);
 		final Location location = systemAdaptationPlan.getSystemAdaptationActionParameters().getAgentsTargetLocation();
 
-		agentRunner.runAgents(createdAgents);
+		factory.runAgentControllers(createdAgents, RUN_AGENT_DELAY);
 		managingAgent.move().moveContainers(location, createdAgents);
 		((ManagingAgentNode) managingAgent.getAgentNode()).logNewAdaptation(actionToBeExecuted.getAction(),
 				getCurrentTime(), empty());
@@ -103,10 +104,10 @@ public class ExecutorService extends AbstractManagingService {
 	}
 
 	private List<AgentController> createAgents(SystemPlan systemAdaptationPlan) {
-		List<AgentArgs> args = systemAdaptationPlan.getSystemAdaptationActionParameters().getAgentsArguments();
+		final List<AgentArgs> args = systemAdaptationPlan.getSystemAdaptationActionParameters().getAgentsArguments();
 		managingAgent.move().addAgentsToStructure(args);
 		return args.stream()
-				.map(agentRunner::runAgentController)
+				.map(agentArgs -> factory.createAgentController(agentArgs, managingAgent.getGreenCloudStructure()))
 				.toList();
 	}
 
