@@ -15,6 +15,7 @@ import static com.greencloud.commons.args.event.powershortage.PowerShortageCause
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.function.BiConsumer;
 
@@ -31,7 +32,7 @@ import jade.core.behaviours.TickerBehaviour;
 /**
  * Behaviour checks the current weather periodically and evaluates if the power drop has happened
  */
-public class RequestWeatherPeriodically extends TickerBehaviour {
+public class RequestWeatherPeriodically extends TickerBehaviour implements Serializable {
 
 	private static final Logger logger = getLogger(RequestWeatherPeriodically.class);
 
@@ -79,13 +80,16 @@ public class RequestWeatherPeriodically extends TickerBehaviour {
 	}
 
 	private Runnable getResponseRefuseHandler() {
-		return () -> logger.info(WEATHER_UNAVAILABLE_LOG, getCurrentTime());
+		return (Runnable & Serializable) () -> logger.info(WEATHER_UNAVAILABLE_LOG, getCurrentTime());
 	}
 
 	private void reportAvailableEnergyData(final double availablePower) {
 		final double currentMaximumCapacity = myGreenEnergyAgent.getCurrentMaximumCapacity();
 		final double energyPercentage = getPowerPercent(availablePower, currentMaximumCapacity);
 		myGreenEnergyAgent.writeMonitoringData(AVAILABLE_GREEN_ENERGY, new AvailableGreenEnergy(energyPercentage));
-		((GreenEnergyAgentNode) myGreenEnergyAgent.getAgentNode()).updateGreenEnergyAmount(availablePower);
+
+		if (nonNull(myGreenEnergyAgent.getAgentNode())) {
+			((GreenEnergyAgentNode) myGreenEnergyAgent.getAgentNode()).updateGreenEnergyAmount(availablePower);
+		}
 	}
 }

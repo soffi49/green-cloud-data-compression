@@ -9,6 +9,7 @@ import static com.greencloud.application.yellowpages.YellowPagesService.deregist
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -16,7 +17,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 
@@ -53,22 +53,27 @@ public class ServerAgent extends AbstractServerAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (Objects.nonNull(args) && args.length == 4) {
-			this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+		super.initializeAgent(args);
+		if (args.length >= 6) {
+			this.ownerCloudNetworkAgent = new AID(args[2].toString(), AID.ISLOCALNAME);
 
 			try {
-				this.pricePerHour = parseDouble(args[1].toString());
-				this.currentMaximumCapacity = parseInt(args[2].toString());
-				this.initialMaximumCapacity = parseInt(args[2].toString());
-				this.jobProcessingLimit = parseInt(args[3].toString());
+				this.pricePerHour = parseDouble(args[3].toString());
+				this.currentMaximumCapacity = parseInt(args[4].toString());
+				this.initialMaximumCapacity = parseInt(args[4].toString());
+				this.jobProcessingLimit = parseInt(args[5].toString());
+
+				// Last argument indicates if the ServerAgent is going to be moved to another container
+				// In such case, its service should be registered after moving
+				if (args.length != 7 || !parseBoolean(args[6].toString())) {
+					register(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME,
+							this.getOwnerCloudNetworkAgent().getName());
+				}
 
 			} catch (final NumberFormatException e) {
 				logger.info("Some of the arguments are not a number!");
 				doDelete();
 			}
-
-			register(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME,
-					this.getOwnerCloudNetworkAgent().getName());
 		} else {
 			logger.info("Incorrect arguments: some parameters for server agent are missing");
 			doDelete();
@@ -77,11 +82,10 @@ public class ServerAgent extends AbstractServerAgent {
 
 	@Override
 	protected void initializeAgentManagements() {
-		this.agentManagementServices = new EnumMap<>(Map.of(
-				STATE_MANAGEMENT, new ServerStateManagement(this),
-				ADAPTATION_MANAGEMENT, new ServerAdaptationManagement(this),
-				COMMUNICATION_MANAGEMENT, new ServerCommunicationManagement(this)
-		));
+		this.agentManagementServices = new EnumMap<>(
+				Map.of(STATE_MANAGEMENT, new ServerStateManagement(this),
+						ADAPTATION_MANAGEMENT, new ServerAdaptationManagement(this),
+						COMMUNICATION_MANAGEMENT, new ServerCommunicationManagement(this)));
 	}
 
 	@Override
@@ -106,8 +110,7 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	public boolean executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters) {
 		if (adaptationAction.getAction() == CHANGE_GREEN_SOURCE_WEIGHT) {
-			return adapt()
-					.changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
+			return adapt().changeGreenSourceWeights(((ChangeGreenSourceWeights) actionParameters).greenSourceName());
 		}
 		return false;
 	}
@@ -129,7 +132,7 @@ public class ServerAgent extends AbstractServerAgent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		initializeAgentManagements();
+		register(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME, this.getOwnerCloudNetworkAgent().getName());
 
 		// restoring default values
 		this.pricePerHour = 20;

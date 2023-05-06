@@ -1,5 +1,6 @@
 package com.greencloud.application.domain.job;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 import org.immutables.value.Value;
@@ -15,7 +16,7 @@ import com.greencloud.commons.domain.ImmutableConfig;
 @JsonDeserialize(as = ImmutableJobInstanceIdentifier.class)
 @Value.Immutable
 @ImmutableConfig
-public interface JobInstanceIdentifier {
+public interface JobInstanceIdentifier extends Serializable {
 
 	/**
 	 * @return unique job id

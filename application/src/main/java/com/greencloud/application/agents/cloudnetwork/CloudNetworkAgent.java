@@ -6,7 +6,6 @@ import static com.greencloud.application.yellowpages.YellowPagesService.prepareD
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.CNA_SERVICE_TYPE;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.List;
@@ -35,10 +34,9 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (nonNull(args) && args.length == 2) {
-			parentDFAddress = prepareDF(args[0].toString(), args[1].toString());
-			register(this, parentDFAddress, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
-
+		super.initializeAgent(args);
+		if (args.length == 4) {
+			this.parentDFAddress = prepareDF(args[2].toString(), args[3].toString());
 			this.maximumCapacity = new AtomicDouble(0.0);
 		} else {
 			logger.error("Incorrect arguments: some parameters for CNA are missing");
@@ -59,6 +57,8 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected List<Behaviour> prepareStartingBehaviours() {
+		register(this, parentDFAddress, CNA_SERVICE_TYPE, CNA_SERVICE_NAME);
+
 		return List.of(
 				prepareDFBehaviour(),
 				SubscribeServerService.create(this),

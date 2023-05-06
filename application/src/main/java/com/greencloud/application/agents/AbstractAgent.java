@@ -17,8 +17,8 @@ import org.slf4j.MDC;
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
-import com.database.knowledge.timescale.TimescaleDatabase;
-import com.greencloud.application.behaviours.ReceiveGUIController;
+import com.greencloud.application.behaviours.ListenForAdaptationAction;
+import com.greencloud.application.behaviours.ReportHealthCheck;
 import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
@@ -42,8 +42,7 @@ public abstract class AbstractAgent extends Agent {
 	protected AID parentDFAddress;
 	protected GuiController guiController;
 	protected AbstractAgentNode agentNode;
-	protected Map<AgentManagementEnum, AbstractAgentManagement> agentManagementServices;
-
+	protected transient Map<AgentManagementEnum, AbstractAgentManagement> agentManagementServices;
 	protected ParallelBehaviour mainBehaviour;
 
 	protected AbstractAgent() {
@@ -63,6 +62,13 @@ public abstract class AbstractAgent extends Agent {
 	 * @param arguments arguments passed by the user
 	 */
 	protected void initializeAgent(final Object[] arguments) {
+		if (arguments.length >= 2) {
+			this.agentNode = (AbstractAgentNode) arguments[0];
+			this.guiController = (GuiController) arguments[1];
+		} else {
+			logger.info("Incorrect arguments: GUIController and AgentNode were not passed to the agent");
+			doDelete();
+		}
 	}
 
 	/**
@@ -82,7 +88,13 @@ public abstract class AbstractAgent extends Agent {
 	 * Abstract method responsible for running starting behaviours
 	 */
 	protected void runStartingBehaviours() {
-		addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviours()));
+		final List<Behaviour> initialBehaviours = prepareStartingBehaviours();
+		final ParallelBehaviour behaviour = new ParallelBehaviour();
+		initialBehaviours.forEach(behaviour::addSubBehaviour);
+		behaviour.addSubBehaviour(new ReportHealthCheck(this));
+		behaviour.addSubBehaviour(new ListenForAdaptationAction(this));
+		this.addBehaviour(behaviour);
+		this.setMainBehaviour(behaviour);
 	}
 
 	/**
@@ -130,9 +142,9 @@ public abstract class AbstractAgent extends Agent {
 			MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		}
 		initializeAgent(getArguments());
-		initializeAgentManagements();
 		validateAgentArguments();
 		runStartingBehaviours();
+		initializeAgentManagements();
 	}
 
 	@Override
@@ -144,9 +156,8 @@ public abstract class AbstractAgent extends Agent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		guiController.addAgentNodeToGraph(agentNode);
-		agentNode.setDatabaseClient(new TimescaleDatabase());
-		this.initializeAgentManagements();
+		this.agentNode.addToGraph(guiController.getWebSocketClient());
+		initializeAgentManagements();
 	}
 
 	@Override
@@ -161,6 +172,7 @@ public abstract class AbstractAgent extends Agent {
 	public AgentType getAgentType() {
 		return agentType;
 	}
+
 	public AID getParentDFAddress() {
 		return parentDFAddress;
 	}
@@ -186,7 +198,9 @@ public abstract class AbstractAgent extends Agent {
 	}
 
 	public void writeMonitoringData(DataType dataType, MonitoringData monitoringData) {
-		agentNode.getDatabaseClient().writeMonitoringData(this.getAID().getName(), dataType, monitoringData);
+		if (nonNull(agentNode)) {
+			agentNode.getDatabaseClient().writeMonitoringData(this.getAID().getName(), dataType, monitoringData);
+		}
 	}
 
 	/**

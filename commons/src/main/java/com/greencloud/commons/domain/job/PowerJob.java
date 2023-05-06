@@ -1,5 +1,6 @@
 package com.greencloud.commons.domain.job;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import com.greencloud.commons.domain.ImmutableConfig;
 @JsonDeserialize(as = ImmutablePowerJob.class)
 @Value.Immutable
 @ImmutableConfig
-public interface PowerJob {
+public interface PowerJob extends Serializable {
 
 	/**
 	 * @return unique job identifier

@@ -14,6 +14,7 @@ import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ON_
 import static java.util.Objects.isNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
@@ -41,11 +42,11 @@ import jade.lang.acl.ACLMessage;
 /**
  * Abstract class inherited by all agent state management services which gathers their common methods and properties
  */
-public abstract class AbstractStateManagement extends AbstractAgentManagement {
+public abstract class AbstractStateManagement extends AbstractAgentManagement implements Serializable {
 
 	private static final Logger logger = getLogger(AbstractStateManagement.class);
 
-	protected final ConcurrentMap<JobExecutionResultEnum, JobCounter> jobCounters;
+	protected final transient ConcurrentMap<JobExecutionResultEnum, JobCounter> jobCounters;
 
 	protected AbstractStateManagement() {
 		this.jobCounters = getJobCountersMap();

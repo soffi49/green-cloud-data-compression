@@ -8,7 +8,6 @@ import static com.greencloud.application.yellowpages.domain.DFServiceConstants.S
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SCHEDULER_SERVICE_TYPE;
 import static com.greencloud.commons.utils.CommonUtils.isFibonacci;
 import static java.lang.Integer.parseInt;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.EnumMap;
@@ -37,13 +36,14 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (nonNull(args) && args.length == 5) {
+		super.initializeAgent(args);
+		if (args.length == 7) {
 			try {
-				this.deadlinePriority = parseInt(args[0].toString());
-				this.powerPriority = parseInt(args[1].toString());
-				this.maximumQueueSize = parseInt(args[2].toString());
-				this.jobSplitThreshold = parseInt(args[3].toString());
-				this.splittingFactor = parseInt(args[4].toString());
+				this.deadlinePriority = parseInt(args[2].toString());
+				this.powerPriority = parseInt(args[3].toString());
+				this.maximumQueueSize = parseInt(args[4].toString());
+				this.jobSplitThreshold = parseInt(args[5].toString());
+				this.splittingFactor = parseInt(args[6].toString());
 
 				this.setUpPriorityQueue();
 				register(this, getDefaultDF(), SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);

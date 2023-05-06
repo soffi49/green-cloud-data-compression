@@ -5,6 +5,7 @@ import java.time.Instant;
 
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
+import com.gui.websocket.GuiWebSocketClient;
 
 /**
  * Controller for GUI
@@ -60,4 +61,9 @@ public interface GuiController extends Runnable, Serializable {
 	 */
 	void triggerPowerShortageEvent(final PowerShortageEvent powerShortageEvent, final String agentName);
 
+	/**
+	 * Method returns the connected web socket client
+	 * @return GuiWebSocketClient
+	 */
+	GuiWebSocketClient getWebSocketClient();
 }

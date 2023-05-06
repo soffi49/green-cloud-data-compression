@@ -15,6 +15,7 @@ import static java.lang.Math.max;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Random;
 
@@ -33,7 +34,7 @@ import jade.lang.acl.ACLMessage;
 /**
  * Behaviour listens for the upcoming forecast requests
  */
-public class ServeForecastWeather extends CyclicBehaviour {
+public class ServeForecastWeather extends CyclicBehaviour implements Serializable {
 
 	private static final Logger logger = getLogger(ServeForecastWeather.class);
 	private static final Random STUB_DATA_RANDOM = new Random();

@@ -17,6 +17,7 @@ import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PRO
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -37,7 +38,7 @@ import jade.lang.acl.ACLMessage;
 /**
  * Behaviour listens for the power supply request coming from parent Server Agent
  */
-public class ListenForPowerSupplyRequest extends CyclicBehaviour {
+public class ListenForPowerSupplyRequest extends CyclicBehaviour implements Serializable {
 
 	private static final Logger logger = getLogger(ListenForPowerSupplyRequest.class);
 

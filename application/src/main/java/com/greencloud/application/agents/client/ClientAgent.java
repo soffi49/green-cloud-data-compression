@@ -1,7 +1,6 @@
 package com.greencloud.application.agents.client;
 
 import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.CLIENT_MANAGEMENT;
-import static com.greencloud.application.utils.GUIUtils.connectToGui;
 import static com.greencloud.application.utils.TimeUtils.convertToInstantTime;
 import static com.greencloud.application.utils.TimeUtils.convertToSimulationTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
@@ -11,10 +10,10 @@ import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static java.lang.Integer.parseInt;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -26,7 +25,7 @@ import com.greencloud.application.agents.client.domain.ClientJobExecution;
 import com.greencloud.application.agents.client.management.ClientManagement;
 import com.greencloud.application.exception.IncorrectTaskDateException;
 
-import jade.core.behaviours.ParallelBehaviour;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.SequentialBehaviour;
 
 /**
@@ -59,15 +58,16 @@ public class ClientAgent extends AbstractClientAgent {
 
 	@Override
 	public void initializeAgent(final Object[] arguments) {
-		if (nonNull(arguments) && arguments.length == 7) {
+		super.initializeAgent(arguments);
+		if (arguments.length == 9) {
 			try {
-				parentDFAddress = prepareDF(arguments[0].toString(), arguments[1].toString());
+				parentDFAddress = prepareDF(arguments[2].toString(), arguments[3].toString());
 
-				final Instant startTime = convertToInstantTime(arguments[2].toString());
-				final Instant endTime = convertToInstantTime(arguments[3].toString());
-				final Instant deadline = convertToInstantTime(arguments[4].toString());
-				final int power = parseInt(arguments[5].toString());
-				final String jobId = arguments[6].toString();
+				final Instant startTime = convertToInstantTime(arguments[4].toString());
+				final Instant endTime = convertToInstantTime(arguments[5].toString());
+				final Instant deadline = convertToInstantTime(arguments[6].toString());
+				final int power = parseInt(arguments[7].toString());
+				final String jobId = arguments[8].toString();
 				initializeJob(startTime, endTime, deadline, power, jobId);
 
 			} catch (IncorrectTaskDateException e) {
@@ -89,18 +89,11 @@ public class ClientAgent extends AbstractClientAgent {
 	}
 
 	@Override
-	protected void runStartingBehaviours() {
+	protected List<Behaviour> prepareStartingBehaviours() {
 		final SequentialBehaviour startingBehaviour = new SequentialBehaviour(this);
 		startingBehaviour.addSubBehaviour(new FindSchedulerAgent(this));
 		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this));
-
-		connectToGui(this);
-
-		final ParallelBehaviour main = new ParallelBehaviour();
-		main.addSubBehaviour(new ListenForJobUpdate(this));
-		main.addSubBehaviour(startingBehaviour);
-		addBehaviour(main);
-		setMainBehaviour(main);
+		return List.of(startingBehaviour, new ListenForJobUpdate(this));
 	}
 
 	/**

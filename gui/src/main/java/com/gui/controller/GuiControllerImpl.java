@@ -6,9 +6,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableRemoveAgentMessage;
@@ -19,13 +16,8 @@ import com.gui.websocket.GuiWebSocketListener;
 
 public class GuiControllerImpl implements GuiController {
 
-	private static final Logger logger = LoggerFactory.getLogger(GuiControllerImpl.class);
-
 	private static GuiWebSocketClient webSocketClient;
 	private static GuiWebSocketListener webSocketListener;
-
-	public GuiControllerImpl() {
-	}
 
 	public GuiControllerImpl(final String mainHostUri) {
 		if (webSocketClient == null) {
@@ -84,5 +76,10 @@ public class GuiControllerImpl implements GuiController {
 	@Override
 	public void triggerPowerShortageEvent(final PowerShortageEvent powerShortageEvent, final String agentName) {
 		webSocketListener.triggerPowerShortage(powerShortageEvent, agentName);
+	}
+
+	@Override
+	public GuiWebSocketClient getWebSocketClient() {
+		return webSocketClient;
 	}
 }

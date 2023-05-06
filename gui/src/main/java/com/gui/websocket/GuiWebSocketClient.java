@@ -12,9 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GuiWebSocketClient extends WebSocketClient {
 
-	private static final Logger logger = LoggerFactory.getLogger(GuiWebSocketClient.class);
-
 	protected static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+	private static final Logger logger = LoggerFactory.getLogger(GuiWebSocketClient.class);
 
 	public GuiWebSocketClient(URI serverUri) {
 		super(serverUri);

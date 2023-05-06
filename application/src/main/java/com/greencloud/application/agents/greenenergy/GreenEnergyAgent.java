@@ -7,9 +7,9 @@ import static com.greencloud.application.yellowpages.YellowPagesService.deregist
 import static com.greencloud.application.yellowpages.YellowPagesService.register;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.GS_SERVICE_NAME;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.GS_SERVICE_TYPE;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.EnumMap;
@@ -51,24 +51,30 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (nonNull(args) && args.length == 8) {
-			this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
-			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
+		super.initializeAgent(args);
+		if (args.length >= 10) {
+			this.monitoringAgent = new AID(args[2].toString(), AID.ISLOCALNAME);
+			this.ownerServer = new AID(args[3].toString(), AID.ISLOCALNAME);
 
-			register(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
 			try {
-				final double latitude = parseDouble(args[4].toString());
-				final double longitude = parseDouble(args[5].toString());
-				final int maxCapacity = parseInt(args[2].toString());
+				final int maxCapacity = parseInt(args[4].toString());
+				final double latitude = parseDouble(args[6].toString());
+				final double longitude = parseDouble(args[7].toString());
 
 				this.initialMaximumCapacity = maxCapacity;
 				this.currentMaximumCapacity = maxCapacity;
-				this.pricePerPowerUnit = parseDouble(args[3].toString());
-				this.weatherPredictionError = parseDouble(args[7].toString());
+				this.pricePerPowerUnit = parseDouble(args[5].toString());
+				this.weatherPredictionError = parseDouble(args[9].toString());
 				this.location = new ImmutableLocation(latitude, longitude);
-				this.energyType = args[6] instanceof String type ?
+				this.energyType = args[8] instanceof String type ?
 						GreenEnergySourceTypeEnum.valueOf(type) :
-						(GreenEnergySourceTypeEnum) args[6];
+						(GreenEnergySourceTypeEnum) args[8];
+
+				// Last argument indicates if the GreenSourceAgent is going to be moved to another container
+				// In such case, its service should be registered after moving
+				if (args.length != 11 || !parseBoolean(args[10].toString())) {
+					register(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
+				}
 
 			} catch (final NumberFormatException e) {
 				logger.info("Couldn't parse one of the numerical arguments");
@@ -135,7 +141,6 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		initializeAgentManagements();
+		register(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
 	}
-
 }

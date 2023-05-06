@@ -20,7 +20,7 @@ public abstract class AbstractMonitoringAgent extends AbstractAgent {
 	 */
 	AbstractMonitoringAgent() {
 		super();
-		this.agentType = MONITORING;
+		agentType = MONITORING;
 	}
 
 	public MonitoringWeatherManagement manageWeather() {

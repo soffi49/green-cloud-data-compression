@@ -40,6 +40,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -79,7 +80,7 @@ import jade.lang.acl.ACLMessage;
 /**
  * Set of utilities used to manage the internal state of the server agent
  */
-public class ServerStateManagement extends AbstractStateManagement {
+public class ServerStateManagement extends AbstractStateManagement implements Serializable {
 
 	private static final Logger logger = getLogger(ServerStateManagement.class);
 	private final ServerAgent serverAgent;
@@ -97,7 +98,7 @@ public class ServerStateManagement extends AbstractStateManagement {
 	 * <p> val < 0 - if the offer2 is better</p>
 	 */
 	public BiFunction<ACLMessage, ACLMessage, Integer> offerComparator() {
-		return (offer1, offer2) -> {
+		return (BiFunction<ACLMessage, ACLMessage, Integer> & Serializable) (offer1, offer2) -> {
 			final int weight1 = serverAgent.getWeightsForGreenSourcesMap().get(offer1.getSender());
 			final int weight2 = serverAgent.getWeightsForGreenSourcesMap().get(offer2.getSender());
 
@@ -259,7 +260,7 @@ public class ServerStateManagement extends AbstractStateManagement {
 	 */
 	public void finishJobExecutionWithResult(final ClientJob jobToFinish, final boolean informCNA,
 			final JobExecutionResultEnum resultType) {
-		if(nonNull(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()))) {
+		if (nonNull(serverAgent.getGreenSourceForJobMap().get(jobToFinish.getJobId()))) {
 			final JobExecutionStatusEnum jobStatus = serverAgent.getServerJobs().get(jobToFinish);
 
 			sendFinishInformation(jobToFinish, informCNA);

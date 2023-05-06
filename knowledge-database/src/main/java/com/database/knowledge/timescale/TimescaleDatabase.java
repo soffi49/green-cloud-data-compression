@@ -25,6 +25,7 @@ import static com.database.knowledge.timescale.DmlQueries.INSERT_DEFAULT_SYSTEM_
 import static java.lang.String.format;
 
 import java.io.Closeable;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -48,7 +49,7 @@ import com.database.knowledge.timescale.exception.ReadDataException;
 import com.database.knowledge.timescale.exception.WriteDataException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class TimescaleDatabase implements Closeable {
+public class TimescaleDatabase implements Closeable, Serializable {
 
 	private static final String DATABASE_NAME = "postgres";
 	private static final String USER = "postgres";

@@ -13,10 +13,10 @@ import com.gui.websocket.GuiWebSocketClient;
  */
 public abstract class AbstractAgentNode implements AbstractAgentNodeInterface {
 
-	protected String agentName;
-	protected transient GuiWebSocketClient webSocketClient;
-	protected transient TimescaleDatabase databaseClient;
 	protected final Queue<AbstractEvent> eventsQueue = new ConcurrentLinkedQueue<>();
+	protected transient GuiWebSocketClient webSocketClient;
+	protected TimescaleDatabase databaseClient;
+	protected String agentName;
 
 	protected AbstractAgentNode() {
 	}
