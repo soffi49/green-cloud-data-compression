@@ -50,6 +50,7 @@
 	<cloudNetworkAgentsArgs>
 		<cloudNetworkAgent>
 			<name>CNA</name>
+			<locationId>CNA</locationId>
 		</cloudNetworkAgent>
 	</cloudNetworkAgentsArgs>
 </ScenarioStructureArgs>

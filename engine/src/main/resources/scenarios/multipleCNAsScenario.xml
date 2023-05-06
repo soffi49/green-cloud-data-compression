@@ -116,7 +116,6 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>30.5</price>
-			<containerId>Servers3</containerId>
 		</serverAgentsArgs>
 	</serverAgentsArgs>
 	<cloudNetworkAgentsArgs>

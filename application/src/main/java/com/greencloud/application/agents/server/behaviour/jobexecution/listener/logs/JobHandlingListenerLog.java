@@ -9,6 +9,8 @@ public class JobHandlingListenerLog {
 	public static final String SERVER_NEW_JOB_LOOK_FOR_SOURCE_LOG = "Sending call for proposal to Green Source Agents";
 	public static final String SERVER_NEW_JOB_LACK_OF_POWER_LOG =
 			"Not enough available power! Sending refuse message to Cloud Network Agent";
+	public static final String SERVER_NEW_NO_SOURCES_LOG =
+			"There are no green sources connected with given Server! Sending refuse message to Cloud Network Agent";
 
 	// POWER SUPPLY UPDATE LOG MESSAGES
 	public static final String SUPPLY_CONFIRMATION_JOB_ANNOUNCEMENT_LOG = "Announcing new job {} in network!";

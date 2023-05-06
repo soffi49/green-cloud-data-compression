@@ -46,13 +46,16 @@ import java.util.stream.LongStream;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.greencloud.commons.args.agent.client.ClientAgentArgs;
+import com.greencloud.commons.args.agent.managing.ManagingAgentArgs;
 import com.greencloud.commons.exception.InvalidScenarioException;
 import com.greencloud.commons.exception.JadeContainerException;
+import com.greencloud.commons.exception.JadeControllerException;
 import com.greencloud.commons.scenario.ScenarioEventsArgs;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
 import com.greencloud.factory.AgentControllerFactory;
 import com.greencloud.factory.AgentFactory;
 import com.greencloud.factory.AgentFactoryImpl;
+import com.greencloud.factory.AgentNodeFactoryImpl;
 import com.gui.controller.GuiController;
 import com.gui.controller.GuiControllerImpl;
 
@@ -150,6 +153,27 @@ public abstract class AbstractScenarioService {
 			final AgentController agentController = factory.createAgentController(clientAgentArgs, scenario);
 			factory.runAgentController(agentController, RUN_CLIENT_AGENT_DELAY);
 		});
+	}
+
+	protected AgentController prepareManagingController(final ManagingAgentArgs managingAgentArgs) {
+		try {
+			var managingNode = new AgentNodeFactoryImpl().createAgentNode(managingAgentArgs, scenario);
+			managingNode.setDatabaseClient(timescaleDatabase);
+			guiController.addAgentNodeToGraph(managingNode);
+
+			return mainContainer.createNewAgent(managingAgentArgs.getName(),
+					"org.greencloud.managingsystem.agent.ManagingAgent",
+					new Object[] { managingNode,
+							guiController,
+							managingAgentArgs.getSystemQualityThreshold(),
+							scenario,
+							mainContainer,
+							managingAgentArgs.getPowerShortageThreshold(),
+							managingAgentArgs.getDisabledActions()
+					});
+		} catch (StaleProxyException e) {
+			throw new JadeControllerException("Failed to run managing agent controller", e);
+		}
 	}
 
 	private ContainerController runMainContainer() throws ExecutionException, InterruptedException {

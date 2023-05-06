@@ -9,6 +9,7 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.averagingDouble;
 import static java.util.stream.Collectors.flatMapping;
 import static java.util.stream.Collectors.groupingBy;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_TIME_PERIOD;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
+import com.greencloud.commons.args.agent.cloudnetwork.CloudNetworkArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
@@ -82,11 +84,22 @@ public class AddServerPlan extends SystemPlan {
 				comparingDouble(Map.Entry::getValue))
 				.getKey();
 
+		final CloudNetworkArgs cloudNetwork = managingAgent.getGreenCloudStructure().getCloudNetworkAgentsArgs()
+				.stream()
+				.filter(cna -> cna.getName().equals(targetCloudNetworkAgent))
+				.findFirst()
+				.orElse(null);
+
+		if (isNull(cloudNetwork)) {
+			return null;
+		}
+
+		final String cloudNetworkLocation = defaultIfNull(cloudNetwork.getLocationId(), targetCloudNetworkAgent);
 		final ServerAgentArgs extraServerArguments = agentFactory.createDefaultServerAgent(targetCloudNetworkAgent);
 		final MonitoringAgentArgs extraMonitoringAgentArguments = agentFactory.createMonitoringAgent();
 		final GreenEnergyAgentArgs extraGreenEnergyArguments = agentFactory.createDefaultGreenEnergyAgent(
 				extraMonitoringAgentArguments.getName(), extraServerArguments.getName());
-		final Map.Entry<Location, AID> targetLocation = managingAgent.move().findTargetLocation(targetCloudNetworkAgent);
+		final Map.Entry<Location, AID> targetLocation = managingAgent.move().findTargetLocation(cloudNetworkLocation);
 
 		if (isNull(targetLocation)) {
 			return null;

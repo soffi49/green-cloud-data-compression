@@ -115,24 +115,6 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 		return controllers;
 	}
 
-	private AgentController prepareManagingController(final ManagingAgentArgs managingAgentArgs) {
-		try {
-			var managingNode = new AgentNodeFactoryImpl().createAgentNode(managingAgentArgs, scenario);
-			return mainContainer.createNewAgent(managingAgentArgs.getName(),
-					"org.greencloud.managingsystem.agent.ManagingAgent",
-					new Object[] { managingNode,
-							guiController,
-							managingAgentArgs.getSystemQualityThreshold(),
-							scenario,
-							mainContainer,
-							managingAgentArgs.getPowerShortageThreshold(),
-							managingAgentArgs.getDisabledActions()
-					});
-		} catch (StaleProxyException e) {
-			throw new JadeControllerException("Failed to run managing agent controller", e);
-		}
-	}
-
 	private List<CloudNetworkArgs> selectCloudNetworksForContainers() {
 		final List<CloudNetworkArgs> cloudNetworkArgs = scenario.getCloudNetworkAgentsArgs();
 
