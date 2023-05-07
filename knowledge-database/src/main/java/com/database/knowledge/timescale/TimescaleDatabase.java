@@ -53,9 +53,9 @@ public class TimescaleDatabase implements Closeable, Serializable {
 
 	private static final String DATABASE_NAME = "postgres";
 	private static final String USER = "postgres";
-	private static final String PASSWORD = "password_1";
+	private static final String PASSWORD = "password";
 	private static final String LOCAL_DATABASE_HOST_NAME = "timescale";
-	private static final String TEST_DATABASE_HOST_NAME = "timescaledb.postgres.database.azure.com";
+	private static final String TEST_DATABASE_HOST_NAME = "localhost";
 
 	private static Connection sqlConnection;
 	private static JdbcStatementsExecutor statementsExecutor;
