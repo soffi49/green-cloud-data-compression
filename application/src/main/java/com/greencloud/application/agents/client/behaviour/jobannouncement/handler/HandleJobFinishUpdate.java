@@ -7,9 +7,9 @@ import static com.greencloud.application.agents.client.behaviour.jobannouncement
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_DELAY_LOG;
 import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_FINISH_ON_TIME_LOG;
 import static com.greencloud.application.agents.client.constants.ClientAgentConstants.MAX_TIME_DIFFERENCE;
-import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.utils.MessagingUtils.readMessageContent;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
+import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -56,6 +56,7 @@ public class HandleJobFinishUpdate extends AbstractJobUpdateHandler {
 	public void action() {
 		final JobClientStatusEnum jobStatus = updateEnum.getJobStatus();
 		final JobStatusUpdate jobUpdate = readMessageContent(message, JobStatusUpdate.class);
+		measureTimeToRetrieveTheMessage(jobUpdate);
 
 		if (!myClient.isSplit()) {
 			updateInformationOfJobStatusUpdate(jobUpdate);

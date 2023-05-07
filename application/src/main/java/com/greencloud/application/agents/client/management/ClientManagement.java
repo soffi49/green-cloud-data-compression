@@ -1,5 +1,6 @@
 package com.greencloud.application.agents.client.management;
 
+import static com.database.knowledge.domain.agent.DataType.CLIENT_JOB_EXECUTION;
 import static com.database.knowledge.domain.agent.DataType.CLIENT_MONITORING;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
@@ -11,12 +12,14 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.toMap;
 
+import java.time.Duration;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ToLongFunction;
 
 import com.database.knowledge.domain.agent.client.ClientMonitoringData;
+import com.database.knowledge.domain.agent.client.ImmutableClientJobExecutionData;
 import com.database.knowledge.domain.agent.client.ImmutableClientMonitoringData;
 import com.greencloud.application.agents.AbstractAgentManagement;
 import com.greencloud.application.agents.client.ClientAgent;
@@ -85,6 +88,24 @@ public class ClientManagement extends AbstractAgentManagement {
 
 		clientAgent.writeMonitoringData(CLIENT_MONITORING, data);
 		updateJobDurationMapGUI();
+
+		if (isFinished) {
+			writeJobExecutionPercentage();
+		}
+	}
+
+	private void writeJobExecutionPercentage() {
+		final long jobInProgress = getJobStatusDurationMap().get(IN_PROGRESS);
+		final long executionTime = clientAgent.isSplit()
+				? jobInProgress / clientAgent.getJobParts().size()
+				: jobInProgress;
+		final long expectedExecution = Duration.between(clientAgent.getJobExecution().getJobSimulatedStart(),
+				clientAgent.getJobExecution().getJobSimulatedEnd()).toMillis();
+		final double executedPercentage = expectedExecution == 0 ? 0 : (double) executionTime / expectedExecution;
+
+		clientAgent.writeMonitoringData(CLIENT_JOB_EXECUTION, ImmutableClientJobExecutionData.builder()
+				.jobExecutionPercentage(executedPercentage)
+				.build());
 	}
 
 	private void updateJobDurationMapGUI() {

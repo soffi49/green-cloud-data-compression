@@ -1,9 +1,13 @@
 package com.greencloud.application.agents.client.behaviour.jobannouncement.handler;
 
+import static com.database.knowledge.domain.agent.DataType.CLIENT_STATISTICS;
 import static com.greencloud.application.utils.TimeUtils.convertToRealTime;
+import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 
+import java.time.Duration;
 import java.time.Instant;
 
+import com.database.knowledge.domain.agent.client.ImmutableClientStatisticsData;
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.domain.ClientJobExecution;
 import com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum;
@@ -56,6 +60,21 @@ public abstract class AbstractJobUpdateHandler extends OneShotBehaviour {
 	protected void updateInformationOfJobStatusUpdate(final JobStatusUpdate jobUpdate) {
 		((ClientAgentNode) myClient.getAgentNode()).updateJobStatus(updateEnum.getJobStatus());
 		myClient.getJobExecution().updateJobStatusDuration(updateEnum.getJobStatus(), jobUpdate.getChangeTime());
+	}
+
+	/**
+	 * Method passes the information about message retrieval time to the database
+	 *
+	 * @param jobUpdate data of job update
+	 */
+	protected void measureTimeToRetrieveTheMessage(final JobStatusUpdate jobUpdate) {
+		final Instant timeWhenTheMessageWasSent = jobUpdate.getChangeTime();
+		final Instant timeWhenTheMessageWasReceived = getCurrentTime();
+		final long elapsedTime = Duration.between(timeWhenTheMessageWasSent, timeWhenTheMessageWasReceived).toMillis();
+
+		myClient.writeMonitoringData(CLIENT_STATISTICS, ImmutableClientStatisticsData.builder()
+				.messageRetrievalTime(elapsedTime)
+				.build());
 	}
 
 	/**

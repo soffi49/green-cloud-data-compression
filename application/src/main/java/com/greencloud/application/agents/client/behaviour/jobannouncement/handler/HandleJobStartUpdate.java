@@ -43,7 +43,8 @@ public class HandleJobStartUpdate extends AbstractJobUpdateHandler {
 	public void action() {
 		final JobClientStatusEnum jobStatus = updateEnum.getJobStatus();
 		final JobStatusUpdate jobUpdate = readMessageContent(message, JobStatusUpdate.class);
-
+		measureTimeToRetrieveTheMessage(jobUpdate);
+		
 		if (!myClient.isSplit()) {
 			updateInformationOfJobStatusUpdate(jobUpdate);
 			checkIfJobStartedOnTime(jobUpdate.getChangeTime(), myClient.getJobExecution().getJobSimulatedStart());
