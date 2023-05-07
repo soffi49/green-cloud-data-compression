@@ -143,20 +143,19 @@ public abstract class AbstractScenarioService {
 
 	protected void runClientAgents() {
 		final ThreadLocalRandom random = ThreadLocalRandom.current();
-		final List<AgentController> clients = new ArrayList<>();
 		LongStream.rangeClosed(1, clientNumber).forEach(idx -> {
+			final int jobId = timescaleDatabase.getNextClientId();
 			final int randomPower = random.nextInt(minJobPower, maxJobPower);
 			final int randomStart = random.nextInt(minStartTime, maxStartTime);
 			final int randomEnd = random.nextInt(randomStart + 2, maxEndTime);
 			final int randomDeadline = randomEnd + 3 + random.nextInt(maxDeadline);
-			final String clientName = format("Client%d", timescaleDatabase.getNextClientId());
+			final String clientName = format("Client%d", jobId);
 
-			final ClientAgentArgs clientAgentArgs = agentFactory.createClientAgent(clientName, String.valueOf(idx),
+			final ClientAgentArgs clientAgentArgs = agentFactory.createClientAgent(clientName, String.valueOf(jobId),
 					randomPower, randomStart, randomEnd, randomDeadline, REAL_TIME);
 			final AgentController agentController = factory.createAgentController(clientAgentArgs, scenario);
-			clients.add(agentController);
+			factory.runAgentController(agentController, RUN_CLIENT_AGENT_DELAY);
 		});
-		factory.runAgentControllers(clients, RUN_CLIENT_AGENT_DELAY);
 	}
 
 	protected AgentController prepareManagingController(final ManagingAgentArgs managingAgentArgs) {
