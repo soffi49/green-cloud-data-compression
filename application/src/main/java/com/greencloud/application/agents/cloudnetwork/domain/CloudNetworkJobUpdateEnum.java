@@ -8,12 +8,14 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandli
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_JOB_START_STATUS_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.logs.JobHandlingListenerLog.SEND_ON_HOLD_STATUS_LOG;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
+import static com.greencloud.application.utils.GuiUtils.announceFinishedJob;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FINISH;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 
 import java.util.function.BiConsumer;
 
@@ -76,6 +78,9 @@ public enum CloudNetworkJobUpdateEnum {
 			if (isJobStarted(job, myCloudNetworkAgent.getNetworkJobs())) {
 				myCloudNetworkAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FINISH);
 			}
+			if(!PROCESSING.equals(myCloudNetworkAgent.getNetworkJobs().get(job))) {
+				announceFinishedJob(myCloudNetworkAgent);
+			}
 			myCloudNetworkAgent.getNetworkJobs().remove(job);
 			myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
 			myCloudNetworkAgent.manage().updateGUI();
@@ -87,6 +92,9 @@ public enum CloudNetworkJobUpdateEnum {
 	 */
 	private static BiConsumer<ClientJob, CloudNetworkAgent> processJobFail() {
 		return (job, myCloudNetworkAgent) -> {
+			if (!myCloudNetworkAgent.getNetworkJobs().get(job).equals(PROCESSING)) {
+				myCloudNetworkAgent.getGuiController().updateAllJobsCountByValue(-1);
+			}
 			myCloudNetworkAgent.getNetworkJobs().remove(job);
 			myCloudNetworkAgent.getServerForJobMap().remove(job.getJobId());
 			myCloudNetworkAgent.manage().incrementJobCounter(mapToJobInstanceId(job), FAILED);

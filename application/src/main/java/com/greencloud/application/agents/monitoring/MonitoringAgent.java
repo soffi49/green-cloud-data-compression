@@ -23,9 +23,8 @@ public class MonitoringAgent extends AbstractMonitoringAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		super.initializeAgent(args);
-		if (args.length > 2 && nonNull(args[2])) {
-			this.badStubProbability = parseDouble(String.valueOf(args[2]));
+		if (args.length > 0 && nonNull(args[0])) {
+			this.badStubProbability = parseDouble(String.valueOf(args[0]));
 		} else {
 			this.badStubProbability = BAD_STUB_PROBABILITY;
 		}

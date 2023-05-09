@@ -53,19 +53,18 @@ public class ServerAgent extends AbstractServerAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		super.initializeAgent(args);
-		if (args.length >= 6) {
-			this.ownerCloudNetworkAgent = new AID(args[2].toString(), AID.ISLOCALNAME);
+		if (args.length >= 4) {
+			this.ownerCloudNetworkAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
 
 			try {
-				this.pricePerHour = parseDouble(args[3].toString());
-				this.currentMaximumCapacity = parseInt(args[4].toString());
-				this.initialMaximumCapacity = parseInt(args[4].toString());
-				this.jobProcessingLimit = parseInt(args[5].toString());
+				this.pricePerHour = parseDouble(args[1].toString());
+				this.currentMaximumCapacity = parseInt(args[2].toString());
+				this.initialMaximumCapacity = parseInt(args[2].toString());
+				this.jobProcessingLimit = parseInt(args[3].toString());
 
 				// Last argument indicates if the ServerAgent is going to be moved to another container
 				// In such case, its service should be registered after moving
-				if (args.length != 7 || !parseBoolean(args[6].toString())) {
+				if (args.length != 5 || !parseBoolean(args[4].toString())) {
 					register(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME,
 							this.getOwnerCloudNetworkAgent().getName());
 				}

@@ -36,14 +36,13 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		super.initializeAgent(args);
-		if (args.length == 7) {
+		if (args.length == 5) {
 			try {
-				this.deadlinePriority = parseInt(args[2].toString());
-				this.powerPriority = parseInt(args[3].toString());
-				this.maximumQueueSize = parseInt(args[4].toString());
-				this.jobSplitThreshold = parseInt(args[5].toString());
-				this.splittingFactor = parseInt(args[6].toString());
+				this.deadlinePriority = parseInt(args[0].toString());
+				this.powerPriority = parseInt(args[1].toString());
+				this.maximumQueueSize = parseInt(args[2].toString());
+				this.jobSplitThreshold = parseInt(args[3].toString());
+				this.splittingFactor = parseInt(args[4].toString());
 
 				this.setUpPriorityQueue();
 				register(this, getDefaultDF(), SCHEDULER_SERVICE_TYPE, SCHEDULER_SERVICE_NAME);

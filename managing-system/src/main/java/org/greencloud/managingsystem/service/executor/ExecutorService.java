@@ -41,12 +41,10 @@ public class ExecutorService extends AbstractManagingService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExecutorService.class);
 
-	private final AgentControllerFactory factory;
+	private AgentControllerFactory factory;
 
 	public ExecutorService(AbstractManagingAgent managingAgent) {
 		super(managingAgent);
-		factory = new AgentControllerFactoryImpl(managingAgent.getContainerController(),
-				managingAgent.getAgentNode().getDatabaseClient(), managingAgent.getGuiController());
 	}
 
 	@VisibleForTesting
@@ -111,4 +109,7 @@ public class ExecutorService extends AbstractManagingService {
 				.toList();
 	}
 
+	public void setFactory(AgentControllerFactory factory) {
+		this.factory = factory;
+	}
 }

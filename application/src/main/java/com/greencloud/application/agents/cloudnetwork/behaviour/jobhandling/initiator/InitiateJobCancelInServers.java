@@ -80,6 +80,8 @@ public class InitiateJobCancelInServers extends AbstractCancelInitiator<ClientJo
 		if (!PRE_EXECUTION.getStatuses().contains(jobStatus)) {
 			if (!jobStatus.equals(ACCEPTED)) {
 				myCloudNetwork.manage().incrementJobCounter(mapToJobInstanceId(job), FINISH);
+			} else {
+				myCloudNetwork.getGuiController().updateAllJobsCountByValue(-1);
 			}
 		}
 	}

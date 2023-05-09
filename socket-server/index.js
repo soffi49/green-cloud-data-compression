@@ -4,61 +4,19 @@ var express = require("express");
 var app = express();
 var expressWs = require("express-ws")(app);
 
-var { WELCOMING_MESSAGE, ROUTE_TYPES } = require("./constants/constants");
-const { MESSAGE_HANDLERS } = require("./utils/message-utils");
-var { parseData } = require("./utils/parse-utils");
-var { logNewMessage, logStateReset, logUserConnected, logState } = require('./utils/logger-utils');
-const { handlePowerShortage } = require("./utils/event-utils");
-const { getNewReportsState } = require("./utils/report-utils");
-
-let STATE = {
-  systemStartTime: null,
-  secondsPerHour: 0,
-  network: {
-    finishedJobsNo: 0,
-    failedJobsNo: 0,
-    currPlannedJobsNo: 0,
-    currActiveJobsNo: 0,
-    currClientsNo: 0
-  },
-  agents: {
-    agents: [],
-    clients: []
-  },
-  managingSystem: {
-    systemIndicator: 0,
-    jobSuccessRatio: 0,
-    performedAdaptations: 0,
-    weakAdaptations: 0,
-    strongAdaptations: 0,
-    adaptationLogs: [],
-    adaptationGoals: []
-  },
-  graph: {
-    nodes: [],
-    connections: []
-  },
-}
-
-let REPORTS_STATE = {
-  failJobsReport: [],
-  finishJobsReport: [],
-  executedJobsReport: [],
-  clientsReport: [],
-  systemTrafficReport: [],
-  avgJobSizeReport: [],
-  minJobSizeReport: [],
-  maxJobSizeReport: [],
-  agentsReports: []
-}
-
-const REPORTING_TIME = 1
+const { WELCOMING_MESSAGE, ROUTE_TYPES } = require("./lib/constants/constants");
+const { MESSAGE_HANDLERS } = require("./lib/constants/message-handlers");
+const { handlePowerShortage } = require("./lib/module/agents/event-handler");
+const { reportSimulationStatistics } = require("./lib/module/simulation/report-handler");
+const { parseData } = require("./lib/utils/parse-utils")
+const { logUserConnected, logNewMessage, logStateReset } = require("./lib/utils/logger-utils")
+const { resetSystemState, getSystemState, getReportsState } = require("./lib/utils/state-utils")
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.ws("/", function (ws, req) {
+app.ws("/", function (ws, _) {
   ws.route = '/'
   logUserConnected()
   ws.send(JSON.stringify(WELCOMING_MESSAGE))
@@ -69,79 +27,35 @@ app.ws("/", function (ws, req) {
     const messageHandler = MESSAGE_HANDLERS[type]
 
     if (messageHandler) {
-      logNewMessage(STATE, message)
-      messageHandler(STATE, message, REPORTS_STATE)
+      logNewMessage(message)
+      messageHandler(message)
     }
   });
 });
 
-app.ws("/powerShortage", function (ws, req) {
+app.ws("/powerShortage", function (ws, _) {
   ws.route = '/powerShortage'
   logUserConnected()
   ws.send(JSON.stringify(WELCOMING_MESSAGE))
 });
 
 
-app.get(ROUTE_TYPES.FRONT, (req, res) => {
-  res.send(JSON.stringify(STATE))
+app.get(ROUTE_TYPES.FRONT, (_, res) => {
+  res.send(JSON.stringify(getSystemState()))
 })
 
 app.get(ROUTE_TYPES.FRONT + '/reset', async (req, res) => {
-  const newState = {
-    systemStartTime: null,
-    secondsPerHour: 0,
-    network: {
-      finishedJobsNo: 0,
-      failedJobsNo: 0,
-      currPlannedJobsNo: 0,
-      currActiveJobsNo: 0,
-      currClientsNo: 0
-    },
-    agents: {
-      agents: [],
-      clients: [],
-    },
-    managingSystem: {
-      systemIndicator: 0,
-      jobSuccessRatio: 0,
-      performedAdaptations: 0,
-      weakAdaptations: 0,
-      strongAdaptations: 0,
-      adaptationLogs: [],
-      adaptationGoals: []
-    },
-    graph: {
-      nodes: [],
-      connections: []
-    }
-  }
-  const newReportsState = {
-    failJobsReport: [],
-    finishJobsReport: [],
-    executedJobsReport: [],
-    clientsReport: [],
-    systemTrafficReport: [],
-    avgJobSizeReport: [],
-    minJobSizeReport: [],
-    maxJobSizeReport: [],
-    agentsReports: []
-  }
-
-  await Object.assign(STATE, newState)
-  await Object.assign(REPORTS_STATE, newReportsState)
-
+  resetSystemState()
   logStateReset()
-  logState(STATE)
-  logState(REPORTS_STATE)
 })
 
 app.get(ROUTE_TYPES.FRONT + '/reports', async (req, res) => {
-  res.send(JSON.stringify(REPORTS_STATE))
+  res.send(JSON.stringify(getReportsState()))
 })
 
 app.post(ROUTE_TYPES.FRONT + '/powerShortage', (req, res) => {
   const msg = req.body
-  const dataToPass = handlePowerShortage(STATE, msg)
+  const dataToPass = handlePowerShortage(msg)
   expressWs.getWss().clients.forEach(client => {
     if (client.route === '/powerShortage') {
       client.send(JSON.stringify(dataToPass))
@@ -149,10 +63,6 @@ app.post(ROUTE_TYPES.FRONT + '/powerShortage', (req, res) => {
   })
 })
 
-setInterval(function () {
-  if (STATE.systemStartTime !== null) {
-    Object.assign(REPORTS_STATE, getNewReportsState(STATE, REPORTS_STATE))
-  }
-}, REPORTING_TIME * 1000);
 
+reportSimulationStatistics
 app.listen(8080);  

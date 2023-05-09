@@ -100,6 +100,7 @@ public class CloudNetworkStateManagement extends AbstractStateManagement {
 				STARTED, new JobCounter(jobId -> {
 					logger.info(COUNT_JOB_START_LOG, jobId, jobCounters.get(STARTED).getCount(),
 							jobCounters.get(ACCEPTED).getCount());
+					cloudNetworkAgent.getGuiController().updateActiveJobsCountByValue(1);
 				}),
 				FINISH,
 				new JobCounter(jobId -> logger.info(COUNT_JOB_FINISH_LOG, jobId, jobCounters.get(FINISH).getCount(),

@@ -1,6 +1,8 @@
 package com.greencloud.factory;
 
 import static com.greencloud.factory.constants.AgentControllerConstants.GRAPH_INITIALIZATION_DELAY;
+import static jade.wrapper.AgentController.ASYNC;
+import static java.util.Objects.nonNull;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -67,25 +69,32 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 	@Override
 	public AgentController createAgentController(final AgentArgs agentArgs, final ScenarioStructureArgs scenario) {
 		final AbstractAgentNode agentNode = agentNodeFactory.createAgentNode(agentArgs, scenario);
-		agentNode.setDatabaseClient(timescaleDatabase);
-		guiController.addAgentNodeToGraph(agentNode);
+		var agentController = (AgentController) null;
 
 		try {
 			logger.info("Created {} agent.", agentArgs.getName());
 			if (agentArgs instanceof ClientAgentArgs clientAgent) {
-				return createClientController(clientAgent, guiController, agentNode);
+				agentController = createClientController(clientAgent);
 			} else if (agentArgs instanceof ServerAgentArgs serverAgent) {
-				return createServerController(serverAgent, guiController, agentNode);
+				agentController = createServerController(serverAgent);
 			} else if (agentArgs instanceof CloudNetworkArgs cloudNetworkAgent) {
-				return createCloudNetworkController(cloudNetworkAgent, guiController, agentNode);
+				agentController = createCloudNetworkController(cloudNetworkAgent);
 			} else if (agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent) {
-				return createGreenSourceController(greenEnergyAgent, guiController, agentNode);
+				agentController = createGreenSourceController(greenEnergyAgent);
 			} else if (agentArgs instanceof MonitoringAgentArgs monitoringAgent) {
-				return createMonitoringController(monitoringAgent, guiController, agentNode);
+				agentController = createMonitoringController(monitoringAgent);
 			} else if (agentArgs instanceof SchedulerAgentArgs schedulerAgent) {
-				return createSchedulerController(schedulerAgent, guiController, agentNode);
+				agentController = createSchedulerController(schedulerAgent);
 			}
-			return null;
+
+			if(nonNull(agentController)) {
+				agentNode.setDatabaseClient(timescaleDatabase);
+				guiController.addAgentNodeToGraph(agentNode);
+				agentController.putO2AObject(guiController, ASYNC);
+				agentController.putO2AObject(agentNode, ASYNC);
+			}
+
+			return agentController;
 		} catch (StaleProxyException e) {
 			throw new JadeControllerException("Failed to run agent controller", e);
 		}
@@ -125,17 +134,14 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 		}
 	}
 
-	private AgentController createClientController(final ClientAgentArgs clientAgent, final GuiController guiController,
-			final AbstractAgentNode agentNode) throws StaleProxyException {
+	private AgentController createClientController(final ClientAgentArgs clientAgent) throws StaleProxyException {
 		final String startDate = clientAgent.formatClientTime(clientAgent.getStart());
 		final String endDate = clientAgent.formatClientTime(clientAgent.getEnd());
 		final String deadline = clientAgent.formatClientTime(clientAgent.getDeadline());
 
 		return containerController.createNewAgent(clientAgent.getName(),
 				"com.greencloud.application.agents.client.ClientAgent",
-				new Object[] { agentNode,
-						guiController,
-						mainDFAddress,
+				new Object[] { mainDFAddress,
 						mainHostPlatformId,
 						startDate,
 						endDate,
@@ -144,48 +150,38 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 						clientAgent.getJobId() });
 	}
 
-	private AgentController createSchedulerController(final SchedulerAgentArgs schedulerAgent,
-			final GuiController guiController, final AbstractAgentNode agentNode) throws StaleProxyException {
+	private AgentController createSchedulerController(final SchedulerAgentArgs schedulerAgent)
+			throws StaleProxyException {
 		return containerController.createNewAgent(schedulerAgent.getName(),
 				"com.greencloud.application.agents.scheduler.SchedulerAgent",
-				new Object[] { agentNode,
-						guiController,
-						schedulerAgent.getDeadlineWeight(),
+				new Object[] { schedulerAgent.getDeadlineWeight(),
 						schedulerAgent.getPowerWeight(),
 						schedulerAgent.getMaximumQueueSize(),
 						schedulerAgent.getJobSplitThreshold(),
 						schedulerAgent.getSplittingFactor() });
 	}
 
-	private AgentController createCloudNetworkController(final CloudNetworkArgs cloudNetworkAgent,
-			final GuiController guiController, final AbstractAgentNode agentNode) throws StaleProxyException {
+	private AgentController createCloudNetworkController(final CloudNetworkArgs cloudNetworkAgent)
+			throws StaleProxyException {
 		return containerController.createNewAgent(cloudNetworkAgent.getName(),
 				"com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent",
-				new Object[] { agentNode,
-						guiController,
-						mainDFAddress,
-						mainHostPlatformId });
+				new Object[] { mainDFAddress, mainHostPlatformId });
 	}
 
-	private AgentController createServerController(final ServerAgentArgs serverAgent, final GuiController guiController,
-			final AbstractAgentNode agentNode) throws StaleProxyException {
+	private AgentController createServerController(final ServerAgentArgs serverAgent) throws StaleProxyException {
 		return containerController.createNewAgent(serverAgent.getName(),
 				"com.greencloud.application.agents.server.ServerAgent",
-				new Object[] { agentNode,
-						guiController,
-						serverAgent.getOwnerCloudNetwork(),
+				new Object[] { serverAgent.getOwnerCloudNetwork(),
 						serverAgent.getPrice(),
 						serverAgent.getMaximumCapacity(),
 						serverAgent.getJobProcessingLimit() });
 	}
 
-	private AgentController createGreenSourceController(final GreenEnergyAgentArgs greenEnergyAgent,
-			final GuiController guiController, final AbstractAgentNode agentNode) throws StaleProxyException {
+	private AgentController createGreenSourceController(final GreenEnergyAgentArgs greenEnergyAgent)
+			throws StaleProxyException {
 		return containerController.createNewAgent(greenEnergyAgent.getName(),
 				"com.greencloud.application.agents.greenenergy.GreenEnergyAgent",
-				new Object[] { agentNode,
-						guiController,
-						greenEnergyAgent.getMonitoringAgent(),
+				new Object[] { greenEnergyAgent.getMonitoringAgent(),
 						greenEnergyAgent.getOwnerSever(),
 						greenEnergyAgent.getMaximumCapacity(),
 						greenEnergyAgent.getPricePerPowerUnit(),
@@ -195,12 +191,10 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 						greenEnergyAgent.getWeatherPredictionError() });
 	}
 
-	private AgentController createMonitoringController(final MonitoringAgentArgs monitoringAgent,
-			final GuiController guiController, final AbstractAgentNode agentNode) throws StaleProxyException {
+	private AgentController createMonitoringController(final MonitoringAgentArgs monitoringAgent)
+			throws StaleProxyException {
 		return containerController.createNewAgent(monitoringAgent.getName(),
 				"com.greencloud.application.agents.monitoring.MonitoringAgent",
-				new Object[] { agentNode,
-						guiController,
-						monitoringAgent.getBadStubProbability() });
+				new Object[] { monitoringAgent.getBadStubProbability() });
 	}
 }

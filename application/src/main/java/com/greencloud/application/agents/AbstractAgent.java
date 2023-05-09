@@ -18,6 +18,7 @@ import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
 import com.greencloud.application.behaviours.ListenForAdaptationAction;
+import com.greencloud.application.behaviours.ReceiveGUIController;
 import com.greencloud.application.behaviours.ReportHealthCheck;
 import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.agent.AgentType;
@@ -62,13 +63,6 @@ public abstract class AbstractAgent extends Agent {
 	 * @param arguments arguments passed by the user
 	 */
 	protected void initializeAgent(final Object[] arguments) {
-		if (arguments.length >= 2) {
-			this.agentNode = (AbstractAgentNode) arguments[0];
-			this.guiController = (GuiController) arguments[1];
-		} else {
-			logger.info("Incorrect arguments: GUIController and AgentNode were not passed to the agent");
-			doDelete();
-		}
 	}
 
 	/**
@@ -88,13 +82,7 @@ public abstract class AbstractAgent extends Agent {
 	 * Abstract method responsible for running starting behaviours
 	 */
 	protected void runStartingBehaviours() {
-		final List<Behaviour> initialBehaviours = prepareStartingBehaviours();
-		final ParallelBehaviour behaviour = new ParallelBehaviour();
-		initialBehaviours.forEach(behaviour::addSubBehaviour);
-		behaviour.addSubBehaviour(new ReportHealthCheck(this));
-		behaviour.addSubBehaviour(new ListenForAdaptationAction(this));
-		this.addBehaviour(behaviour);
-		this.setMainBehaviour(behaviour);
+		addBehaviour(new ReceiveGUIController(this, prepareStartingBehaviours()));
 	}
 
 	/**

@@ -4,6 +4,7 @@ import static com.greencloud.application.utils.TimeUtils.setSystemStartTime;
 import static com.greencloud.commons.args.agent.client.ClientTimeType.REAL_TIME;
 import static com.greencloud.factory.constants.AgentControllerConstants.RUN_CLIENT_AGENT_DELAY;
 import static jade.core.Runtime.instance;
+import static jade.wrapper.AgentController.ASYNC;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
@@ -37,8 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -161,19 +160,21 @@ public abstract class AbstractScenarioService {
 	protected AgentController prepareManagingController(final ManagingAgentArgs managingAgentArgs) {
 		try {
 			var managingNode = new AgentNodeFactoryImpl().createAgentNode(managingAgentArgs, scenario);
-			managingNode.setDatabaseClient(timescaleDatabase);
-			guiController.addAgentNodeToGraph(managingNode);
-
-			return mainContainer.createNewAgent(managingAgentArgs.getName(),
+			var managingAgent = mainContainer.createNewAgent(managingAgentArgs.getName(),
 					"org.greencloud.managingsystem.agent.ManagingAgent",
-					new Object[] { managingNode,
-							guiController,
-							managingAgentArgs.getSystemQualityThreshold(),
+					new Object[] { managingAgentArgs.getSystemQualityThreshold(),
 							scenario,
 							mainContainer,
 							managingAgentArgs.getPowerShortageThreshold(),
 							managingAgentArgs.getDisabledActions()
 					});
+
+			managingNode.setDatabaseClient(timescaleDatabase);
+			guiController.addAgentNodeToGraph(managingNode);
+			managingAgent.putO2AObject(guiController, ASYNC);
+			managingAgent.putO2AObject(managingNode, ASYNC);
+
+			return managingAgent;
 		} catch (StaleProxyException e) {
 			throw new JadeControllerException("Failed to run managing agent controller", e);
 		}
@@ -182,7 +183,7 @@ public abstract class AbstractScenarioService {
 	private ContainerController runMainContainer() throws ExecutionException, InterruptedException {
 		final Profile profile = new ProfileImpl(localHostIp, Integer.parseInt(jadeIntraPort), platformId, true);
 		profile.setParameter(Profile.ACCEPT_FOREIGN_AGENTS, "true");
-		profile.setParameter(MTP_MULTI_MESSAGE, "false");
+		profile.setParameter(MTP_MULTI_MESSAGE, newPlatform ? "false" : "true");
 
 		if (localHostIp != null) {
 			final String platformAddress = format("http://%s:%s/acc", localHostIp, jadeInterPort);

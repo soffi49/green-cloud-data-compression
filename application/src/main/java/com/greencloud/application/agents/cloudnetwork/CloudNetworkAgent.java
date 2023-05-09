@@ -34,9 +34,8 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		super.initializeAgent(args);
-		if (args.length == 4) {
-			this.parentDFAddress = prepareDF(args[2].toString(), args[3].toString());
+		if (args.length == 2) {
+			this.parentDFAddress = prepareDF(args[0].toString(), args[1].toString());
 			this.maximumCapacity = new AtomicDouble(0.0);
 		} else {
 			logger.error("Incorrect arguments: some parameters for CNA are missing");

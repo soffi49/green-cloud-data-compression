@@ -51,28 +51,27 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		super.initializeAgent(args);
-		if (args.length >= 10) {
-			this.monitoringAgent = new AID(args[2].toString(), AID.ISLOCALNAME);
-			this.ownerServer = new AID(args[3].toString(), AID.ISLOCALNAME);
+		if (args.length >= 8) {
+			this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
+			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
 
 			try {
-				final int maxCapacity = parseInt(args[4].toString());
-				final double latitude = parseDouble(args[6].toString());
-				final double longitude = parseDouble(args[7].toString());
+				final int maxCapacity = parseInt(args[2].toString());
+				final double latitude = parseDouble(args[4].toString());
+				final double longitude = parseDouble(args[5].toString());
 
 				this.initialMaximumCapacity = maxCapacity;
 				this.currentMaximumCapacity = maxCapacity;
-				this.pricePerPowerUnit = parseDouble(args[5].toString());
-				this.weatherPredictionError = parseDouble(args[9].toString());
+				this.pricePerPowerUnit = parseDouble(args[3].toString());
+				this.weatherPredictionError = parseDouble(args[7].toString());
 				this.location = new ImmutableLocation(latitude, longitude);
-				this.energyType = args[8] instanceof String type ?
+				this.energyType = args[6] instanceof String type ?
 						GreenEnergySourceTypeEnum.valueOf(type) :
-						(GreenEnergySourceTypeEnum) args[8];
+						(GreenEnergySourceTypeEnum) args[6];
 
 				// Last argument indicates if the GreenSourceAgent is going to be moved to another container
 				// In such case, its service should be registered after moving
-				if (args.length != 11 || !parseBoolean(args[10].toString())) {
+				if (args.length != 9 || !parseBoolean(args[8].toString())) {
 					register(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
 				}
 

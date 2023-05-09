@@ -58,16 +58,15 @@ public class ClientAgent extends AbstractClientAgent {
 
 	@Override
 	public void initializeAgent(final Object[] arguments) {
-		super.initializeAgent(arguments);
-		if (arguments.length == 9) {
+		if (arguments.length == 7) {
 			try {
-				parentDFAddress = prepareDF(arguments[2].toString(), arguments[3].toString());
+				parentDFAddress = prepareDF(arguments[0].toString(), arguments[1].toString());
 
-				final Instant startTime = convertToInstantTime(arguments[4].toString());
-				final Instant endTime = convertToInstantTime(arguments[5].toString());
-				final Instant deadline = convertToInstantTime(arguments[6].toString());
-				final int power = parseInt(arguments[7].toString());
-				final String jobId = arguments[8].toString();
+				final Instant startTime = convertToInstantTime(arguments[2].toString());
+				final Instant endTime = convertToInstantTime(arguments[3].toString());
+				final Instant deadline = convertToInstantTime(arguments[4].toString());
+				final int power = parseInt(arguments[5].toString());
+				final String jobId = arguments[6].toString();
 				initializeJob(startTime, endTime, deadline, power, jobId);
 
 			} catch (IncorrectTaskDateException e) {
