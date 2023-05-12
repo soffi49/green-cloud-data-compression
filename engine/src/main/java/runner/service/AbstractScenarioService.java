@@ -21,7 +21,7 @@ import static runner.configuration.EngineConfiguration.newPlatform;
 import static runner.configuration.EngineConfiguration.platformId;
 import static runner.configuration.EngineConfiguration.runJadeGUI;
 import static runner.configuration.EngineConfiguration.runJadeSniffer;
-import static runner.configuration.EngineConfiguration.websocketAddress;
+import static runner.configuration.EngineConfiguration.websocketAddresses;
 import static runner.configuration.ScenarioConfiguration.clientNumber;
 import static runner.configuration.ScenarioConfiguration.eventFilePath;
 import static runner.configuration.ScenarioConfiguration.maxDeadline;
@@ -95,7 +95,7 @@ public abstract class AbstractScenarioService {
 	protected AbstractScenarioService()
 			throws ExecutionException, InterruptedException, StaleProxyException {
 		this.agentFactory = new AgentFactoryImpl();
-		this.guiController = new GuiControllerImpl(websocketAddress);
+		this.guiController = new GuiControllerImpl(websocketAddresses);
 		this.eventService = new ScenarioEventService(this);
 		this.jadeRuntime = instance();
 		this.timescaleDatabase = new TimescaleDatabase(databaseHostIp);

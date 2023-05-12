@@ -7,17 +7,19 @@ import static com.gui.websocket.WebSocketConnections.getEventSocket;
 import static com.gui.websocket.WebSocketConnections.getManagingSystemSocket;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableUpdateSingleValueMessage;
 import com.gui.websocket.WebSocketConnections;
+import com.gui.websocket.enums.SocketTypeEnum;
 
 public class GuiControllerImpl implements GuiController {
 
-	public GuiControllerImpl(final String mainHostUri) {
-		WebSocketConnections.initialize(mainHostUri);
+	public GuiControllerImpl(final Map<SocketTypeEnum, String> hostUris) {
+		WebSocketConnections.initialize(hostUris);
 	}
 
 	@Override

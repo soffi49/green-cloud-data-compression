@@ -1,8 +1,11 @@
 package com.gui.websocket;
 
+import com.gui.websocket.enums.SocketTypeEnum;
+
 import static java.util.Optional.ofNullable;
 
 import java.net.URI;
+import java.util.Map;
 
 /**
  * Class stores the information about available websocket connections
@@ -37,19 +40,15 @@ public class WebSocketConnections {
 	/**
 	 * Method initializes the connection to websockets
 	 *
-	 * @param agentsUrl   agents websocket url
-	 * @param clientsUrl  clients websocket url
-	 * @param managingUrl managing agent websocket url
-	 * @param networkUrl  network statistics websocket url
-	 * @param eventUrl    event handler websocket url
+	 * @param hostUrls - addresses of all web socket hosts
 	 */
-	public static void initialize(final String agentsUrl, final String clientsUrl,
-			final String managingUrl, final String networkUrl, final String eventUrl) {
-		AGENTS_WEB_SOCKET = initializeSocket(AGENTS_WEB_SOCKET, agentsUrl);
-		CLIENTS_WEB_SOCKET = initializeSocket(CLIENTS_WEB_SOCKET, clientsUrl);
-		MANAGING_SYSTEM_SOCKET = initializeSocket(MANAGING_SYSTEM_SOCKET, managingUrl);
-		CLOUD_NETWORK_SOCKET = initializeSocket(CLOUD_NETWORK_SOCKET, networkUrl);
-		EVENT_SOCKET = initializeListener(EVENT_SOCKET, eventUrl);
+	public static void initialize(final Map<SocketTypeEnum, String> hostUrls) {
+		AGENTS_WEB_SOCKET = initializeSocket(AGENTS_WEB_SOCKET, hostUrls.get(SocketTypeEnum.AGENTS_WEB_SOCKET));
+		CLIENTS_WEB_SOCKET = initializeSocket(CLIENTS_WEB_SOCKET, hostUrls.get(SocketTypeEnum.CLIENTS_WEB_SOCKET));
+		MANAGING_SYSTEM_SOCKET = initializeSocket(MANAGING_SYSTEM_SOCKET,
+				hostUrls.get(SocketTypeEnum.MANAGING_SYSTEM_WEB_SOCKET));
+		CLOUD_NETWORK_SOCKET = initializeSocket(CLOUD_NETWORK_SOCKET, hostUrls.get(SocketTypeEnum.NETWORK_WEB_SOCKET));
+		EVENT_SOCKET = initializeListener(EVENT_SOCKET, hostUrls.get(SocketTypeEnum.EVENTS_WEB_SOCKET));
 	}
 
 	/**

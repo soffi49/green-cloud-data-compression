@@ -1,14 +1,24 @@
 package runner.configuration;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.gui.websocket.enums.SocketTypeEnum.AGENTS_WEB_SOCKET;
+import static com.gui.websocket.enums.SocketTypeEnum.CLIENTS_WEB_SOCKET;
+import static com.gui.websocket.enums.SocketTypeEnum.EVENTS_WEB_SOCKET;
+import static com.gui.websocket.enums.SocketTypeEnum.MANAGING_SYSTEM_WEB_SOCKET;
+import static com.gui.websocket.enums.SocketTypeEnum.NETWORK_WEB_SOCKET;
 import static java.io.File.separator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.greencloud.commons.exception.InvalidPropertiesException;
+
+import com.gui.websocket.enums.SocketTypeEnum;
+
 import runner.service.AbstractScenarioService;
 
 /**
@@ -18,7 +28,7 @@ import runner.service.AbstractScenarioService;
 public final class EngineConfiguration {
 
 	private static final String PROPERTIES_DIR = "properties";
-	private static  String SYSTEM_PROPERTIES_FILE = "system.properties";
+	private static String SYSTEM_PROPERTIES_FILE = "system.properties";
 
 	/**
 	 * Port used for the intra-platform (i.e. inside the platform) agent communication
@@ -84,13 +94,29 @@ public final class EngineConfiguration {
 	 */
 	public static String databaseHostIp;
 	/**
-	 * Local IP of the host running socket server.
+	 * Local IP of the host running socket server processing agents data.
 	 */
-	public static String websocketHostIp;
+	public static String agentWebsocketHostIp;
 	/**
-	 * Address of web sockets
+	 * Local IP of the host running socket server processing clients data.
 	 */
-	public static String websocketAddress;
+	public static String clientWebsocketHostIp;
+	/**
+	 * Local IP of the host running socket server processing managing system data.
+	 */
+	public static String managingWebsocketHostIp;
+	/**
+	 * Local IP of the host running socket server processing cloud network statistics data.
+	 */
+	public static String networkWebsocketHostIp;
+	/**
+	 * Local IP of the host running socket server sensing events from gui.
+	 */
+	public static String eventWebsocketHostIp;
+	/**
+	 * Addresses of web sockets
+	 */
+	public static Map<SocketTypeEnum, String> websocketAddresses;
 	/**
 	 * Flag indicates if the JADE GUI should be started along with the main container
 	 */
@@ -156,8 +182,19 @@ public final class EngineConfiguration {
 
 	private static void setUpExternalConnection(final Properties props) {
 		databaseHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.database.hostip"), "localhost");
-		websocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.hostip"), "localhost");
-		websocketAddress = format("ws://%s:8080/", websocketHostIp);
+		agentWebsocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.agentsip"), "localhost");
+		clientWebsocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.clientsip"), "localhost");
+		managingWebsocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.managingip"),
+				"localhost");
+		networkWebsocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.networkip"), "localhost");
+		eventWebsocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.eventip"), "localhost");
+		websocketAddresses = Map.of(
+				AGENTS_WEB_SOCKET, format("ws://%s:8080/", agentWebsocketHostIp),
+				CLIENTS_WEB_SOCKET, format("ws://%s:8081/", clientWebsocketHostIp),
+				MANAGING_SYSTEM_WEB_SOCKET, format("ws://%s:8082/", managingWebsocketHostIp),
+				NETWORK_WEB_SOCKET, format("ws://%s:8083/", networkWebsocketHostIp),
+				EVENTS_WEB_SOCKET, format("ws://%s:8084/", eventWebsocketHostIp)
+		);
 	}
 
 	private static void setUpJADEGUISettings(final Properties props) {
