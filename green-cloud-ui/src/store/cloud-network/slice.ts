@@ -38,12 +38,20 @@ export const cloudNetworkSlice = createSlice({
          const { isServerConnected, ...prevState } = INITIAL_STATE
          Object.assign(state, { ...prevState })
          if (state.isServerConnected) {
-            resetServerState()
+            resetState()
          } else {
             state.isServerConnected = true
             state.connectionToast = true
-            resetServerState()
+            resetState()
          }
       },
    },
 })
+
+const resetState = () => {
+   resetServerState(process.env.REACT_APP_WEB_SOCKET_AGENTS_FRONTEND_URL)
+   resetServerState(process.env.REACT_APP_WEB_SOCKET_CLIENTS_FRONTEND_URL)
+   resetServerState(process.env.REACT_APP_WEB_SOCKET_MANAGING_FRONTEND_URL)
+   resetServerState(process.env.REACT_APP_WEB_SOCKET_NETWORK_FRONTEND_URL)
+   resetServerState(process.env.REACT_APP_WEB_SOCKET_EVENT_FRONTEND_URL)
+}

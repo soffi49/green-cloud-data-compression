@@ -190,10 +190,10 @@ public final class EngineConfiguration {
 		eventWebsocketHostIp = ifNotBlankThenGetOrElse(props.getProperty("service.websocket.eventip"), "localhost");
 		websocketAddresses = Map.of(
 				AGENTS_WEB_SOCKET, format("ws://%s:8080/", agentWebsocketHostIp),
-				CLIENTS_WEB_SOCKET, format("ws://%s:8081/", clientWebsocketHostIp),
-				MANAGING_SYSTEM_WEB_SOCKET, format("ws://%s:8082/", managingWebsocketHostIp),
-				NETWORK_WEB_SOCKET, format("ws://%s:8083/", networkWebsocketHostIp),
-				EVENTS_WEB_SOCKET, format("ws://%s:8084/", eventWebsocketHostIp)
+				CLIENTS_WEB_SOCKET, format("ws://%s:8080/", clientWebsocketHostIp),
+				MANAGING_SYSTEM_WEB_SOCKET, format("ws://%s:8080/", managingWebsocketHostIp),
+				NETWORK_WEB_SOCKET, format("ws://%s:8080/", networkWebsocketHostIp),
+				EVENTS_WEB_SOCKET, format("ws://%s:8080/", eventWebsocketHostIp)
 		);
 	}
 

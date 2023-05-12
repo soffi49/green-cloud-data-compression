@@ -47,15 +47,15 @@ const getSystemState = () => {
 
 const getAgentsState = () => {
     return ({
-        agents: { ...AGENTS_STATE },
-        agentsReports: { ...AGENTS_REPORTS_STATE },
+        ...AGENTS_STATE ,
+        ...AGENTS_REPORTS_STATE,
         graph: { ...GRAPH_STATE }
     })
 }
 
 const getClientsState = () => {
     return ({
-        clients: { ...CLIENTS_STATE },
+        ...CLIENTS_STATE,
         clientsReports: { ...CLIENTS_REPORTS_STATE },
     })
 }

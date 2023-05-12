@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { AgentStore, FetchStateMessage, PowerShortageEventData } from '@types'
+import { Agent, AgentStore, ClientAgent, PowerShortageEventData } from '@types'
 import { getAgentByName, triggerPowerShortage } from './api'
 
 const INITIAL_STATE: AgentStore = {
@@ -23,8 +23,11 @@ export const agentSlice = createSlice({
             triggerPowerShortage(agentName, newMaximumCapacity)
          }
       },
-      setAgentsData(state, action: PayloadAction<FetchStateMessage>) {
-         Object.assign(state, { ...state, ...action.payload })
+      setAgentsData(state, action: PayloadAction<Agent[]>) {
+         Object.assign(state, { ...state, agents: action.payload })
+      },
+      setClientsData(state, action: PayloadAction<ClientAgent[]>) {
+         Object.assign(state, { ...state, clients: action.payload })
       },
       setSelectedAgent(state, action: PayloadAction<string>) {
          Object.assign(state, { ...state, selectedAgent: action.payload })

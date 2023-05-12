@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
-export const resetServerState = () => {
+export const resetServerState = (address: string) => {
    axios
-      .get(process.env.REACT_APP_WEB_SOCKET_FRONTEND_URL + '/reset')
+      .get(address + '/reset')
       .then(() => console.log('Reset successful'))
       .catch((err) => {
          if (err.code === 'ERR_NETWORK') {

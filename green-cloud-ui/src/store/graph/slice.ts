@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { FetchStateMessage, GraphStore } from '@types'
+import { FethGraphStateMessage, GraphStore } from '@types'
 
 const INITIAL_STATE: GraphStore = {
    nodes: [],
@@ -13,7 +13,7 @@ export const graphSlice = createSlice({
    name: 'graph',
    initialState: INITIAL_STATE,
    reducers: {
-      setGraphData(state, action: PayloadAction<FetchStateMessage>) {
+      setGraphData(state, action: PayloadAction<FethGraphStateMessage>) {
          Object.assign(state, { ...state, ...action.payload })
       },
       resetGraph(state) {

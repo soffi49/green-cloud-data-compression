@@ -18,7 +18,6 @@ const resetSimulationState = () =>
         }))
 
 export {
-    SimulationState,
     SIMULATION_STATE,
     resetSimulationState
 }

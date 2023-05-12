@@ -1,5 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ReportsStore, SystemTimeMessage } from '@types'
+import {
+   AgentStatisticReport,
+   FetchClientReportsMessage,
+   FetchNetworkReportsMessage,
+   ReportsStore,
+   SystemTimeMessage,
+} from '@types'
 
 const INITIAL_STATE: ReportsStore = {
    systemStartTime: null,
@@ -24,6 +30,15 @@ export const reportsSlice = createSlice({
    reducers: {
       updateReports(state, action: PayloadAction<ReportsStore>) {
          Object.assign(state, action.payload)
+      },
+      updateAgentsReports(state, action: PayloadAction<AgentStatisticReport[]>) {
+         Object.assign(state, { ...state, agentsReports: action.payload })
+      },
+      updateClientsReports(state, action: PayloadAction<FetchClientReportsMessage>) {
+         Object.assign(state, { ...state, ...action.payload })
+      },
+      updateNetworkReports(state, action: PayloadAction<FetchNetworkReportsMessage>) {
+         Object.assign(state, { ...state, ...action.payload })
       },
       updateSystemTime(state, action: PayloadAction<SystemTimeMessage>) {
          state.secondsPerHour = action.payload.secondsPerHour

@@ -17,7 +17,7 @@ export const triggerPowerShortage = (agentName: string, maxCapacity: number) => 
    }
 
    axios
-      .post(process.env.REACT_APP_WEB_SOCKET_FRONTEND_URL + '/powerShortage', data)
+      .post(process.env.REACT_APP_WEB_SOCKET_EVENT_FRONTEND_URL + '/powerShortage', data)
       .then(() => console.log('Power shortage event triggered successfully'))
       .catch((err) => console.error('An error occured while triggering power shortage: ' + err))
 }

@@ -1,11 +1,21 @@
-import { Agent } from 'types/agents'
+import { AgentNode } from 'types/agent-nodes'
 import { GraphEdge } from 'types/graph'
-import { CloudNetworkStore } from 'types/store'
+import { LiveStatisticReport } from 'types/reports'
 
-export type FetchStateMessage = {
-   network: CloudNetworkStore
-   agents: {
-      agents: Agent[]
-      connections: GraphEdge[]
-   }
+export type FethGraphStateMessage = {
+   nodes: AgentNode[]
+   connections: GraphEdge[]
+}
+
+export type FetchClientReportsMessage = {
+   executedJobsReport: LiveStatisticReport[]
+   avgJobSizeReport: LiveStatisticReport[]
+   minJobSizeReport: LiveStatisticReport[]
+   maxJobSizeReport: LiveStatisticReport[]
+}
+
+export type FetchNetworkReportsMessage = {
+   finishJobsReport: LiveStatisticReport[]
+   failJobsReport: LiveStatisticReport[]
+   clientsReport: LiveStatisticReport[]
 }
