@@ -5,7 +5,6 @@ import java.time.Instant;
 
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
-import com.gui.websocket.GuiWebSocketClient;
 
 /**
  * Controller for GUI
@@ -30,13 +29,6 @@ public interface GuiController extends Runnable, Serializable {
 	 * @param time time of system start
 	 */
 	void reportSystemStartTime(final Instant time);
-
-	/**
-	 * Method remove agent node from the graph
-	 *
-	 * @param agentNode agent node that is to be removed
-	 */
-	void removeAgentNodeFromGraph(final AbstractAgentNode agentNode);
 
 	/**
 	 * Method updates the failed jobs number by given value
@@ -81,9 +73,4 @@ public interface GuiController extends Runnable, Serializable {
 	 */
 	void triggerPowerShortageEvent(final PowerShortageEvent powerShortageEvent, final String agentName);
 
-	/**
-	 * Method returns the connected web socket client
-	 * @return GuiWebSocketClient
-	 */
-	GuiWebSocketClient getWebSocketClient();
 }

@@ -1,5 +1,7 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +10,6 @@ import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableDisableServerMessage;
 import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
-import com.gui.websocket.GuiWebSocketClient;
 
 import jade.util.leap.Serializable;
 
@@ -43,9 +44,8 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 	}
 
 	@Override
-	public void addToGraph(GuiWebSocketClient webSocketClient) {
-		this.webSocketClient = webSocketClient;
-		webSocketClient.send(ImmutableRegisterAgentMessage.builder()
+	public void addToGraph() {
+		getAgentsWebSocket().send(ImmutableRegisterAgentMessage.builder()
 				.agentType("SERVER")
 				.data(ImmutableServerNodeArgs.builder()
 						.name(agentName)
@@ -62,7 +62,7 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 	 * @param backUpPowerInUse current power in use coming from back-up energy
 	 */
 	public void updateBackUpTraffic(final double backUpPowerInUse) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(backUpPowerInUse)
 				.agentName(agentName)
 				.type("SET_SERVER_BACK_UP_TRAFFIC")
@@ -75,7 +75,7 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 	 * @param value new clients count
 	 */
 	public void updateClientNumber(final int value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(value)
 				.agentName(agentName)
 				.type("SET_CLIENT_NUMBER")
@@ -86,7 +86,7 @@ public class ServerAgentNode extends AbstractNetworkAgentNode implements Seriali
 	 * Function disables the server
 	 */
 	public void disableServer() {
-		webSocketClient.send(ImmutableDisableServerMessage.builder()
+		getAgentsWebSocket().send(ImmutableDisableServerMessage.builder()
 				.cna(cloudNetworkAgent)
 				.server(agentName)
 				.capacity(initialMaximumCapacity.get())

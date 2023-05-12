@@ -115,8 +115,8 @@ public abstract class AbstractAgent extends Agent {
 
 	@Override
 	public void clean(boolean ok) {
-		if (!ok && nonNull(getGuiController()) && !agentType.equals(CLIENT)) {
-			getGuiController().removeAgentNodeFromGraph(getAgentNode());
+		if (!ok && nonNull(getAgentNode()) && !agentType.equals(CLIENT)) {
+			getAgentNode().removeAgentNodeFromGraph();
 		}
 		super.clean(ok);
 	}
@@ -144,7 +144,6 @@ public abstract class AbstractAgent extends Agent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		this.agentNode.addToGraph(guiController.getWebSocketClient());
 		initializeAgentManagements();
 	}
 

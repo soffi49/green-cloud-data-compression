@@ -1,5 +1,6 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
 import static java.lang.Double.parseDouble;
 import static java.util.Optional.ofNullable;
 
@@ -15,7 +16,6 @@ import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
 import com.gui.message.ImmutableUpdateServerConnectionMessage;
 import com.gui.message.domain.ImmutableServerConnection;
-import com.gui.websocket.GuiWebSocketClient;
 
 /**
  * Agent node class representing the green energy source
@@ -47,9 +47,8 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	}
 
 	@Override
-	public void addToGraph(GuiWebSocketClient webSocketClient) {
-		this.webSocketClient = webSocketClient;
-		webSocketClient.send(ImmutableRegisterAgentMessage.builder()
+	public void addToGraph() {
+		getAgentsWebSocket().send(ImmutableRegisterAgentMessage.builder()
 				.agentType("GREEN_ENERGY")
 				.data(ImmutableGreenEnergyNodeArgs.builder()
 						.maximumCapacity(String.valueOf(initialMaximumCapacity))
@@ -69,7 +68,7 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	 * @param value new weather prediction error value
 	 */
 	public void updatePredictionError(final double value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(value * 100)
 				.agentName(agentName)
 				.type("SET_WEATHER_PREDICTION_ERROR")
@@ -82,7 +81,7 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	 * @param value amount of available green energy
 	 */
 	public void updateGreenEnergyAmount(final double value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(value)
 				.agentName(agentName)
 				.type("SET_AVAILABLE_GREEN_ENERGY")
@@ -96,7 +95,7 @@ public class GreenEnergyAgentNode extends AbstractNetworkAgentNode implements Se
 	 * @param isConnected flag indicating if the server should be connected/disconnected
 	 */
 	public void updateServerConnection(final String serverName, final boolean isConnected) {
-		webSocketClient.send(ImmutableUpdateServerConnectionMessage.builder()
+		getAgentsWebSocket().send(ImmutableUpdateServerConnectionMessage.builder()
 				.agentName(this.agentName)
 				.data(ImmutableServerConnection.builder()
 						.isConnected(isConnected)

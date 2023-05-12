@@ -2,8 +2,6 @@ package com.gui.agents;
 
 import java.io.Serializable;
 
-import com.gui.websocket.GuiWebSocketClient;
-
 public interface AbstractAgentNodeInterface extends Serializable {
 
 	/**
@@ -16,5 +14,10 @@ public interface AbstractAgentNodeInterface extends Serializable {
 	/**
 	 * Method responsible for adding the node to the graph
 	 */
-	void addToGraph(GuiWebSocketClient webSocketClient);
+	void addToGraph();
+
+	/**
+	 * Method remove agent node from the graph
+	 */
+	void removeAgentNodeFromGraph();
 }

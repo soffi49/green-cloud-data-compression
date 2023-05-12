@@ -1,11 +1,12 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+
 import java.util.List;
 
 import com.greencloud.commons.args.agent.cloudnetwork.ImmutableCloudNetworkNodeArgs;
 import com.gui.message.ImmutableRegisterAgentMessage;
 import com.gui.message.ImmutableSetNumericValueMessage;
-import com.gui.websocket.GuiWebSocketClient;
 
 /**
  * Agent node class representing the cloud network
@@ -27,9 +28,8 @@ public class CloudNetworkAgentNode extends AbstractNetworkAgentNode {
 	}
 
 	@Override
-	public void addToGraph(GuiWebSocketClient webSocketClient) {
-		this.webSocketClient = webSocketClient;
-		webSocketClient.send(ImmutableRegisterAgentMessage.builder()
+	public void addToGraph() {
+		getAgentsWebSocket().send(ImmutableRegisterAgentMessage.builder()
 				.agentType("CLOUD_NETWORK")
 				.data(ImmutableCloudNetworkNodeArgs.builder()
 						.name(agentName)
@@ -45,7 +45,7 @@ public class CloudNetworkAgentNode extends AbstractNetworkAgentNode {
 	 * @param value value indicating the client number
 	 */
 	public void updateClientNumber(final int value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(value)
 				.agentName(agentName)
 				.type("SET_CLIENT_NUMBER")

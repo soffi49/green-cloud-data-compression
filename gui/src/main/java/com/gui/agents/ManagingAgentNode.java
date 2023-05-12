@@ -1,6 +1,8 @@
 package com.gui.agents;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+import static com.gui.websocket.WebSocketConnections.getManagingSystemSocket;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,7 +39,7 @@ public class ManagingAgentNode extends AbstractAgentNode {
 	 * @param goals list of initial adaptation goals
 	 */
 	public void registerManagingAgent(final List<AdaptationGoal> goals) {
-		webSocketClient.send(ImmutableRegisterManagingAgentMessage.builder()
+		getManagingSystemSocket().send(ImmutableRegisterManagingAgentMessage.builder()
 				.data(goals)
 				.build());
 	}
@@ -50,7 +52,7 @@ public class ManagingAgentNode extends AbstractAgentNode {
 	 */
 	public void updateQualityIndicators(final double systemQualityIndicator,
 			final Map<Integer, Double> goalQualityMap) {
-		webSocketClient.send(ImmutableUpdateSystemIndicatorsMessage.builder()
+		getManagingSystemSocket().send(ImmutableUpdateSystemIndicatorsMessage.builder()
 				.systemIndicator(systemQualityIndicator)
 				.data(goalQualityMap)
 				.build());
@@ -67,7 +69,7 @@ public class ManagingAgentNode extends AbstractAgentNode {
 			final Optional<String> agentName) {
 		var adaptationAction = getAdaptationAction(action);
 
-		webSocketClient.send(ImmutableLogAdaptationActionMessage.builder()
+		getManagingSystemSocket().send(ImmutableLogAdaptationActionMessage.builder()
 				.data(ImmutableAdaptationLog.builder()
 						.time(adaptationTime)
 						.type(adaptationAction.getType())
@@ -75,7 +77,7 @@ public class ManagingAgentNode extends AbstractAgentNode {
 						.description(adaptationAction.getAction().getName())
 						.build())
 				.build());
-		webSocketClient.send(ImmutableIncrementCounterMessage.builder()
+		getManagingSystemSocket().send(ImmutableIncrementCounterMessage.builder()
 				.type(getCounterToIncrement(adaptationAction.getType()))
 				.build());
 	}

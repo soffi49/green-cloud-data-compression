@@ -1,65 +1,50 @@
 package com.gui.controller;
 
-import static com.greencloud.commons.time.TimeConstants.SECONDS_PER_HOUR;
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+import static com.gui.websocket.WebSocketConnections.getClientsWebSocket;
+import static com.gui.websocket.WebSocketConnections.getCloudNetworkSocket;
+import static com.gui.websocket.WebSocketConnections.getEventSocket;
+import static com.gui.websocket.WebSocketConnections.getManagingSystemSocket;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.Objects;
 
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
-import com.gui.message.ImmutableRemoveAgentMessage;
-import com.gui.message.ImmutableReportSystemStartTimeMessage;
 import com.gui.message.ImmutableUpdateSingleValueMessage;
-import com.gui.websocket.GuiWebSocketClient;
-import com.gui.websocket.GuiWebSocketListener;
+import com.gui.websocket.WebSocketConnections;
 
 public class GuiControllerImpl implements GuiController {
 
-	private static GuiWebSocketClient webSocketClient;
-	private static GuiWebSocketListener webSocketListener;
-
 	public GuiControllerImpl(final String mainHostUri) {
-		if (webSocketClient == null) {
-			webSocketClient = new GuiWebSocketClient(URI.create(mainHostUri));
-		}
-		if (webSocketListener == null) {
-			webSocketListener = new GuiWebSocketListener(URI.create(mainHostUri + "powerShortage"));
-		}
+		WebSocketConnections.initialize(mainHostUri);
 	}
 
 	@Override
 	public void run() {
-		webSocketClient.connect();
-		webSocketListener.connect();
+		WebSocketConnections.connect();
 	}
 
 	@Override
 	public void reportSystemStartTime(final Instant time) {
-		webSocketClient.send(ImmutableReportSystemStartTimeMessage.builder()
-				.time(time.toEpochMilli())
-				.secondsPerHour(SECONDS_PER_HOUR)
-				.build());
+		getAgentsWebSocket().reportSystemStartTime(time);
+		getClientsWebSocket().reportSystemStartTime(time);
+		getManagingSystemSocket().reportSystemStartTime(time);
+		getCloudNetworkSocket().reportSystemStartTime(time);
+		getEventSocket().reportSystemStartTime(time);
 	}
 
 	@Override
 	public void addAgentNodeToGraph(final AbstractAgentNode agent) {
 		if (Objects.nonNull(agent)) {
-			webSocketListener.addAgentNode(agent);
-			agent.addToGraph(webSocketClient);
+			getEventSocket().addAgentNode(agent);
+			agent.addToGraph();
 		}
 	}
 
 	@Override
-	public void removeAgentNodeFromGraph(final AbstractAgentNode agentNode) {
-		webSocketClient.send(ImmutableRemoveAgentMessage.builder()
-				.agentName(agentNode.getAgentName())
-				.build());
-	}
-
-	@Override
 	public void updateFailedJobsCountByValue(final int value) {
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
+		getCloudNetworkSocket().send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("INCREMENT_FAILED_JOBS")
 				.build());
@@ -67,7 +52,7 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void updateFinishedJobsCountByValue(final int value) {
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
+		getCloudNetworkSocket().send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("INCREMENT_FINISHED_JOBS")
 				.build());
@@ -75,7 +60,7 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void updateClientsCountByValue(final int value) {
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
+		getCloudNetworkSocket().send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_CLIENTS")
 				.build());
@@ -83,7 +68,7 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void updateActiveJobsCountByValue(final int value) {
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
+		getCloudNetworkSocket().send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_ACTIVE_JOBS")
 				.build());
@@ -91,7 +76,7 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void updateAllJobsCountByValue(final int value) {
-		webSocketClient.send(ImmutableUpdateSingleValueMessage.builder()
+		getCloudNetworkSocket().send(ImmutableUpdateSingleValueMessage.builder()
 				.data(value)
 				.type("UPDATE_CURRENT_PLANNED_JOBS")
 				.build());
@@ -99,11 +84,6 @@ public class GuiControllerImpl implements GuiController {
 
 	@Override
 	public void triggerPowerShortageEvent(final PowerShortageEvent powerShortageEvent, final String agentName) {
-		webSocketListener.triggerPowerShortage(powerShortageEvent, agentName);
-	}
-
-	@Override
-	public GuiWebSocketClient getWebSocketClient() {
-		return webSocketClient;
+		getEventSocket().triggerPowerShortage(powerShortageEvent, agentName);
 	}
 }

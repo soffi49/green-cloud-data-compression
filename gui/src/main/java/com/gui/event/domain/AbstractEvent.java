@@ -23,13 +23,6 @@ public abstract class AbstractEvent implements Serializable {
 	}
 
 	/**
-	 * @return type of the event
-	 */
-	public EventTypeEnum getEventTypeEnum() {
-		return eventTypeEnum;
-	}
-
-	/**
 	 * @return time when the event will occur
 	 */
 	public Instant getOccurrenceTime() {

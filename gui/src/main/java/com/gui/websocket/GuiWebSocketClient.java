@@ -1,6 +1,9 @@
 package com.gui.websocket;
 
+import static com.greencloud.commons.time.TimeConstants.SECONDS_PER_HOUR;
+
 import java.net.URI;
+import java.time.Instant;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -9,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gui.message.ImmutableReportSystemStartTimeMessage;
 
 public class GuiWebSocketClient extends WebSocketClient {
 
@@ -47,5 +51,23 @@ public class GuiWebSocketClient extends WebSocketClient {
 	@Override
 	public void onError(Exception e) {
 		logger.error("WebSocket error! {}", e.getMessage());
+	}
+
+	@Override
+	public void connect() {
+		if(!isOpen()) {
+			super.connect();
+		}
+	}
+
+	/**
+	 * Method sends the information about simulation start time to a given Websocket server
+	 * @param time time when the simulation has started
+	 */
+	public void reportSystemStartTime(final Instant time) {
+		this.send(ImmutableReportSystemStartTimeMessage.builder()
+				.time(time.toEpochMilli())
+				.secondsPerHour(SECONDS_PER_HOUR)
+				.build());
 	}
 }

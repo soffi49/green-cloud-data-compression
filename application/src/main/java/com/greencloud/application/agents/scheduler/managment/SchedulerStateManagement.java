@@ -146,7 +146,7 @@ public class SchedulerStateManagement extends AbstractStateManagement {
 	public BiFunction<ACLMessage, ACLMessage, Integer> offerComparator() {
 		return (offer1, offer2) -> {
 			final Comparator<JobWithPrice> comparator = (cna1, cna2) -> {
-				final int powerDifference = (int) (cna2.getAvailablePower() - cna1.getAvailablePower());
+				final int powerDifference = (int) (cna1.getAvailablePower() - cna2.getAvailablePower());
 				final int priceDifference = (int) (cna1.getPriceForJob() - cna2.getPriceForJob());
 
 				return MAX_TRAFFIC_DIFFERENCE.isValidIntValue(powerDifference) ? priceDifference : powerDifference;

@@ -104,7 +104,7 @@ public class ServerStateManagement extends AbstractStateManagement implements Se
 
 			final Comparator<GreenSourceData> comparator = (gs1Data, gs2Data) -> {
 				double powerDifference =
-						gs2Data.getAvailablePowerInTime() * weight2 - gs1Data.getAvailablePowerInTime() * weight1;
+						gs1Data.getAvailablePowerInTime() * weight2 - gs2Data.getAvailablePowerInTime() * weight1;
 				double errorDifference = (gs1Data.getPowerPredictionError() - gs2Data.getPowerPredictionError());
 				int priceDifference = (int) (gs1Data.getPricePerPowerUnit() - gs2Data.getPricePerPowerUnit());
 

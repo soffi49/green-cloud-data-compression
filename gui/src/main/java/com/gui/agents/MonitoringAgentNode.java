@@ -1,10 +1,11 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+
 import java.io.Serializable;
 
 import com.greencloud.commons.args.agent.monitoring.ImmutableMonitoringNodeArgs;
 import com.gui.message.ImmutableRegisterAgentMessage;
-import com.gui.websocket.GuiWebSocketClient;
 
 /**
  * Agent node class representing the monitoring agent
@@ -25,9 +26,8 @@ public class MonitoringAgentNode extends AbstractAgentNode implements Serializab
 	}
 
 	@Override
-	public void addToGraph(GuiWebSocketClient webSocketClient) {
-		this.webSocketClient = webSocketClient;
-		webSocketClient.send(ImmutableRegisterAgentMessage.builder()
+	public void addToGraph() {
+		getAgentsWebSocket().send(ImmutableRegisterAgentMessage.builder()
 				.agentType("MONITORING")
 				.data(ImmutableMonitoringNodeArgs.builder()
 						.name(agentName)

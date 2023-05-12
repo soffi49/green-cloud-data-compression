@@ -45,6 +45,35 @@ const getSystemState = () => {
     })
 }
 
+const getAgentsState = () => {
+    return ({
+        agents: { ...AGENTS_STATE },
+        agentsReports: { ...AGENTS_REPORTS_STATE },
+        graph: { ...GRAPH_STATE }
+    })
+}
+
+const getClientsState = () => {
+    return ({
+        clients: { ...CLIENTS_STATE },
+        clientsReports: { ...CLIENTS_REPORTS_STATE },
+    })
+}
+
+const getManagingState = () => {
+    return ({
+        managing: { ...MANAGING_SYSTEM_STATE },
+    })
+}
+
+const getNetworkState = () => {
+    return ({
+        network: { ...NETWORK_STATE },
+        networkReport: {...NETWORK_REPORTS_STATE},
+        simulation: {...SIMULATION_STATE}
+    })
+}
+
 const getReportsState = () => {
     return ({
         ...NETWORK_REPORTS_STATE,
@@ -56,5 +85,9 @@ const getReportsState = () => {
 export {
     resetSystemState,
     getSystemState,
+    getAgentsState,
+    getClientsState,
+    getManagingState,
+    getNetworkState,
     getReportsState
 }

@@ -1,5 +1,7 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getClientsWebSocket;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,6 @@ import com.gui.message.ImmutableSplitJobMessage;
 import com.gui.message.domain.ImmutableJobStatus;
 import com.gui.message.domain.ImmutableJobTimeFrame;
 import com.gui.message.domain.ImmutableSplitJob;
-import com.gui.websocket.GuiWebSocketClient;
 
 /**
  * Agent node class representing the client
@@ -39,9 +40,8 @@ public class ClientAgentNode extends AbstractAgentNode {
 	}
 
 	@Override
-	public void addToGraph(GuiWebSocketClient webSocketClient) {
-		this.webSocketClient = webSocketClient;
-		webSocketClient.send(ImmutableRegisterAgentMessage.builder()
+	public void addToGraph() {
+		getClientsWebSocket().send(ImmutableRegisterAgentMessage.builder()
 				.agentType("CLIENT")
 				.data(args)
 				.build());
@@ -53,7 +53,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 * @param clientJobStatusEnum new job status
 	 */
 	public void updateJobStatus(final JobClientStatusEnum clientJobStatusEnum) {
-		webSocketClient.send(ImmutableSetClientJobStatusMessage.builder()
+		getClientsWebSocket().send(ImmutableSetClientJobStatusMessage.builder()
 				.data(ImmutableJobStatus.builder()
 						.status(clientJobStatusEnum.getStatus())
 						.splitJobId(null)
@@ -68,7 +68,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 * @param jobParts job parts created after the split
 	 */
 	public void informAboutSplitJob(List<ClientJob> jobParts) {
-		webSocketClient.send(ImmutableSplitJobMessage.builder()
+		getClientsWebSocket().send(ImmutableSplitJobMessage.builder()
 				.addAllData(jobParts.stream().map(jobPart -> ImmutableSplitJob.builder()
 						.power(jobPart.getPower())
 						.start(jobPart.getStartTime())
@@ -85,7 +85,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 * @param clientJobStatusEnum new job status
 	 */
 	public void updateJobStatus(final JobClientStatusEnum clientJobStatusEnum, String jobPartId) {
-		webSocketClient.send(ImmutableSetClientJobStatusMessage.builder()
+		getClientsWebSocket().send(ImmutableSetClientJobStatusMessage.builder()
 				.data(ImmutableJobStatus.builder()
 						.status(clientJobStatusEnum.getStatus())
 						.splitJobId(jobPartId)
@@ -101,7 +101,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 * @param jobEnd   new job end time
 	 */
 	public void updateJobTimeFrame(final Instant jobStart, final Instant jobEnd) {
-		webSocketClient.send(ImmutableSetClientJobTimeFrameMessage.builder()
+		getClientsWebSocket().send(ImmutableSetClientJobTimeFrameMessage.builder()
 				.data(ImmutableJobTimeFrame.builder()
 						.start(jobStart)
 						.end(jobEnd)
@@ -117,7 +117,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 * @param jobEnd   new job end time
 	 */
 	public void updateJobTimeFrame(final Instant jobStart, final Instant jobEnd, String jobPartId) {
-		webSocketClient.send(ImmutableSetClientJobTimeFrameMessage.builder()
+		getClientsWebSocket().send(ImmutableSetClientJobTimeFrameMessage.builder()
 				.data(ImmutableJobTimeFrame.builder()
 						.start(jobStart)
 						.end(jobEnd)
@@ -133,7 +133,7 @@ public class ClientAgentNode extends AbstractAgentNode {
 	 * @param durationMap map of job duration
 	 */
 	public void updateJobDurationMap(final Map<JobClientStatusEnum, Long> durationMap) {
-		webSocketClient.send(ImmutableSetClientJobDurationMapMessage.builder()
+		getClientsWebSocket().send(ImmutableSetClientJobDurationMapMessage.builder()
 				.data(durationMap)
 				.agentName(agentName)
 				.build());

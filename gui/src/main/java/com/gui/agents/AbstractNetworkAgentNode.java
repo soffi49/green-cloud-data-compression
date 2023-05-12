@@ -1,5 +1,7 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+
 import java.io.Serializable;
 
 import com.google.common.util.concurrent.AtomicDouble;
@@ -36,7 +38,7 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 * @param powerInUse  current power in use
 	 */
 	public void updateMaximumCapacity(final int maxCapacity, final int powerInUse) {
-		webSocketClient.send(ImmutableSetMaximumCapacityMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetMaximumCapacityMessage.builder()
 				.agentName(agentName)
 				.data(ImmutableCapacity.builder()
 						.maximumCapacity(maxCapacity)
@@ -51,7 +53,7 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 * @param powerInUse current power in use
 	 */
 	public void updateTraffic(final double powerInUse) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(powerInUse)
 				.agentName(agentName)
 				.type("SET_TRAFFIC")
@@ -65,7 +67,7 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 */
 	public void updateIsActive(final boolean isActive) {
 		if (!(this instanceof CloudNetworkAgentNode)) {
-			webSocketClient.send(ImmutableIsActiveMessage.builder()
+			getAgentsWebSocket().send(ImmutableIsActiveMessage.builder()
 					.data(isActive)
 					.agentName(agentName)
 					.build());
@@ -78,7 +80,7 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 * @param value new jobs count
 	 */
 	public void updateJobsCount(final int value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.data(value)
 				.agentName(agentName)
 				.type("SET_JOBS_COUNT")
@@ -92,7 +94,7 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 */
 	public void updateJobsOnHoldCount(final int value) {
 		if (!(this instanceof CloudNetworkAgentNode)) {
-			webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+			getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 					.data(value)
 					.agentName(agentName)
 					.type("SET_ON_HOLD_JOBS_COUNT")
@@ -106,7 +108,7 @@ public abstract class AbstractNetworkAgentNode extends AbstractAgentNode impleme
 	 * @param value new success ratio
 	 */
 	public void updateCurrentJobSuccessRatio(final double value) {
-		webSocketClient.send(ImmutableSetNumericValueMessage.builder()
+		getAgentsWebSocket().send(ImmutableSetNumericValueMessage.builder()
 				.type("SET_JOB_SUCCESS_RATIO")
 				.agentName(agentName)
 				.data(value * 100)

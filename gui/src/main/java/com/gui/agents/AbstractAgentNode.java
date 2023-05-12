@@ -1,12 +1,14 @@
 package com.gui.agents;
 
+import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
+
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.gui.event.domain.AbstractEvent;
-import com.gui.websocket.GuiWebSocketClient;
+import com.gui.message.ImmutableRemoveAgentMessage;
 
 /**
  * Class represents abstract generic agent node
@@ -14,7 +16,6 @@ import com.gui.websocket.GuiWebSocketClient;
 public abstract class AbstractAgentNode implements AbstractAgentNodeInterface {
 
 	protected final Queue<AbstractEvent> eventsQueue = new ConcurrentLinkedQueue<>();
-	protected transient GuiWebSocketClient webSocketClient;
 	protected TimescaleDatabase databaseClient;
 	protected String agentName;
 
@@ -31,6 +32,18 @@ public abstract class AbstractAgentNode implements AbstractAgentNodeInterface {
 	}
 
 	@Override
+	public void addToGraph() {
+
+	}
+
+	@Override
+	public void removeAgentNodeFromGraph() {
+		getAgentsWebSocket().send(ImmutableRemoveAgentMessage.builder()
+				.agentName(agentName)
+				.build());
+	}
+
+	@Override
 	public String getAgentName() {
 		return agentName;
 	}
@@ -43,11 +56,6 @@ public abstract class AbstractAgentNode implements AbstractAgentNodeInterface {
 			return false;
 		AbstractAgentNode agentNode = (AbstractAgentNode) o;
 		return agentName.equals(agentNode.agentName);
-	}
-
-	@Override
-	public void addToGraph(GuiWebSocketClient webSocketClient) {
-		this.webSocketClient = webSocketClient;
 	}
 
 	@Override
