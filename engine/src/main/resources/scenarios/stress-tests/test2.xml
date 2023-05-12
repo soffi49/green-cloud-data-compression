@@ -290,6 +290,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>10.5</price>
+			<containerId>Servers11</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server4</name>
@@ -297,6 +298,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>10.5</price>
+			<containerId>Servers11</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server5</name>
@@ -320,6 +322,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>30.5</price>
+			<containerId>Servers22</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server8</name>
@@ -327,6 +330,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>30.5</price>
+			<containerId>Servers22</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server9</name>
@@ -350,6 +354,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>10.5</price>
+			<containerId>Servers33</containerId>
 		</serverAgentsArgs>
 		<serverAgentsArgs>
 			<name>Server12</name>
@@ -357,6 +362,7 @@
 			<maximumCapacity>300</maximumCapacity>
 			<jobProcessingLimit>20</jobProcessingLimit>
 			<price>10.5</price>
+			<containerId>Servers33</containerId>
 		</serverAgentsArgs>
 	</serverAgentsArgs>
 	<cloudNetworkAgentsArgs>
