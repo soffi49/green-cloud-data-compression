@@ -1,4 +1,5 @@
 import { IconClients, IconCloudMenu, IconGear, IconNetwork } from '@assets'
+import { MenuTab } from '@types'
 
 export const ICON_SIZE = '45px'
 export const ICON_OFFSET = -70
@@ -8,24 +9,24 @@ export const MENU_BUTTONS = [
       header: 'CLOUD SUMMARY',
       icon: <IconCloudMenu size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: 'cloud',
+      id: MenuTab.CLOUD_SUMMARY,
    },
    {
       header: 'AGENTS',
       icon: <IconNetwork size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: 'agents',
+      id: MenuTab.AGENTS,
    },
    {
       header: 'CLIENTS',
       icon: <IconClients size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: 'clients',
+      id: MenuTab.CLIENTS,
    },
    {
       header: 'ADAPTATION',
       icon: <IconGear size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: 'adaptation',
+      id: MenuTab.ADAPTATION,
    },
 ]

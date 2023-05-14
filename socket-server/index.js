@@ -11,7 +11,7 @@ const { handlePowerShortage, async } = require("./lib/module/agents/event-handle
 const { reportSimulationStatistics } = require("./lib/module/simulation/report-handler");
 const { parseData } = require("./lib/utils/parse-utils")
 const { logUserConnected, logNewMessage, logStateReset } = require("./lib/utils/logger-utils")
-const { resetSystemState, getSystemState, getReportsState, getAgentsState, getClientsState, getManagingState, getNetworkState } = require("./lib/utils/state-utils");
+const { resetSystemState, getSystemState, getReportsState, getAgentsState, getClientsState, getManagingState, getNetworkState, getClient, getGraphState } = require("./lib/utils/state-utils");
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -49,8 +49,16 @@ app.get(ROUTE_TYPES.FRONT + '/agents', async (req, res) => {
   res.send(JSON.stringify(getAgentsState()))
 })
 
+app.get(ROUTE_TYPES.FRONT + '/graph', async (req, res) => {
+  res.send(JSON.stringify(getGraphState()))
+})
+
 app.get(ROUTE_TYPES.FRONT + '/clients', async (req, res) => {
   res.send(JSON.stringify(getClientsState()))
+})
+
+app.get(ROUTE_TYPES.FRONT + '/client', async (req, res) => {
+  res.send(JSON.stringify(getClient(req.query.name)))
 })
 
 app.get(ROUTE_TYPES.FRONT + '/managing', async (req, res) => {

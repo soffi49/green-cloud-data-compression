@@ -16,7 +16,7 @@ public class ServerAgentConstants {
 	public static final ValueRange MAX_AVAILABLE_POWER_DIFFERENCE = ValueRange.of(-10, 10);
 	public static final long SERVER_ENVIRONMENT_SENSOR_TIMEOUT = 100;
 	public static final long SERVER_CHECK_POWER_SHORTAGE_JOBS = 2000L;
-	public static final int MAX_MESSAGE_NUMBER = 10;
+	public static final int MAX_MESSAGE_NUMBER = 1;
 	public static final long TRANSFER_EXPIRATION_TIME = 3000L;
 }
 

@@ -99,21 +99,25 @@ public class ServerStateManagement extends AbstractStateManagement implements Se
 	 */
 	public BiFunction<ACLMessage, ACLMessage, Integer> offerComparator() {
 		return (BiFunction<ACLMessage, ACLMessage, Integer> & Serializable) (offer1, offer2) -> {
-			final int weight1 = serverAgent.getWeightsForGreenSourcesMap().get(offer1.getSender());
-			final int weight2 = serverAgent.getWeightsForGreenSourcesMap().get(offer2.getSender());
+			if(serverAgent.getWeightsForGreenSourcesMap().containsKey(offer1.getSender()) &&
+					serverAgent.getWeightsForGreenSourcesMap().containsKey(offer2.getSender())) {
+				final int weight1 = serverAgent.getWeightsForGreenSourcesMap().get(offer1.getSender());
+				final int weight2 = serverAgent.getWeightsForGreenSourcesMap().get(offer2.getSender());
 
-			final Comparator<GreenSourceData> comparator = (gs1Data, gs2Data) -> {
-				double powerDifference =
-						gs1Data.getAvailablePowerInTime() * weight2 - gs2Data.getAvailablePowerInTime() * weight1;
-				double errorDifference = (gs1Data.getPowerPredictionError() - gs2Data.getPowerPredictionError());
-				int priceDifference = (int) (gs1Data.getPricePerPowerUnit() - gs2Data.getPricePerPowerUnit());
+				final Comparator<GreenSourceData> comparator = (gs1Data, gs2Data) -> {
+					double powerDifference =
+							gs1Data.getAvailablePowerInTime() * weight2 - gs2Data.getAvailablePowerInTime() * weight1;
+					double errorDifference = (gs1Data.getPowerPredictionError() - gs2Data.getPowerPredictionError());
+					int priceDifference = (int) (gs1Data.getPricePerPowerUnit() - gs2Data.getPricePerPowerUnit());
 
-				return (int) (errorDifference != 0 ? signum(errorDifference) :
-						MAX_AVAILABLE_POWER_DIFFERENCE.isValidValue((long) powerDifference) ?
-								priceDifference :
-								signum(powerDifference));
-			};
-			return compareReceivedOffers(offer1, offer2, GreenSourceData.class, comparator);
+					return (int) (errorDifference != 0 ? signum(errorDifference) :
+							MAX_AVAILABLE_POWER_DIFFERENCE.isValidValue((long) powerDifference) ?
+									priceDifference :
+									signum(powerDifference));
+				};
+				return compareReceivedOffers(offer1, offer2, GreenSourceData.class, comparator);
+			}
+			return 0;
 		};
 	}
 

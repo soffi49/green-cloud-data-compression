@@ -1,6 +1,6 @@
 import { styles } from './client-select-styles'
 import { SingleValue } from 'react-select'
-import { ClientAgent } from '@types'
+import { ClientAgent, ClientAgentStatus } from '@types'
 import { useEffect, useState } from 'react'
 import { JOB_STATUS_MAP } from '../client-panel-config'
 import FilterModal from './filter-modal/filter-modal'
@@ -9,9 +9,10 @@ import { SelectOption } from 'components/common'
 import { IconSettings } from '@assets'
 
 interface Props {
-   clients: ClientAgent[]
+   clients: ClientAgentStatus[]
    selectedClient: ClientAgent | null
    setSelectedClient: (client: string | null) => void
+   updateClientData: () => void
 }
 
 /**
@@ -19,7 +20,7 @@ interface Props {
  *
  * @returns JSX Element
  */
-const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient }: Props) => {
+const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient, updateClientData }: Props) => {
    const { selectorContainer, iconContainer } = styles
    const [jobStatusMap, setJobStatusMap] = useState<SelectOption[]>(JOB_STATUS_MAP)
    const [splitFilter, setSplitFilter] = useState<boolean | null>(null)
@@ -33,6 +34,7 @@ const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient }: 
 
    const changeSelectedClient = (value: SingleValue<SelectOption>) => {
       setSelectedClient(value?.label ?? null)
+      updateClientData()
    }
 
    const changeSplitFilter = (newValue: boolean | null) => {

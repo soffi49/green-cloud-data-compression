@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import com.greencloud.application.agents.server.ServerAgent;
+import com.greencloud.application.agents.server.behaviour.adaptation.handler.HandleServerDisabling;
 import com.greencloud.application.domain.job.JobInstanceIdentifier;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum;
@@ -62,6 +63,9 @@ public class ListenForManualJobFinish extends CyclicBehaviour {
 						MDC.put(MDC_JOB_ID, job.getJobId());
 						logger.debug(SUPPLY_FINISHED_MANUALLY_LOG, clientName, clientName);
 						myServerAgent.manage().finishJobExecution(job, true);
+					} else{
+						myServerAgent.getServerJobs().remove(job);
+						myServerAgent.manage().updateGUI();
 					}
 				}
 			});

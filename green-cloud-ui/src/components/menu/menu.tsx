@@ -5,11 +5,12 @@ import MenuModal from 'components/menu/menu-modal/menu-modal-connected'
 import { ModalButton } from 'components/common'
 import MenuElement from './menu-element/menu-element'
 import { ICON_SIZE, MENU_BUTTONS } from './menu-config'
+import { MenuTab } from '@types'
 
 const header = 'Green cloud network'
 
 interface Props {
-   changeTab: React.Dispatch<React.SetStateAction<string>>
+   changeTab: (tab: MenuTab) => void
 }
 
 /**

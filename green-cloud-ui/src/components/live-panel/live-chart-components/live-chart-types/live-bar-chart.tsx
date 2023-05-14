@@ -26,9 +26,6 @@ interface Props {
  */
 export const LiveBarChart = ({ data, labels, valueDomain, yAxisFormatter }: Props) => {
    const { chartContainer, chart } = styles
-
-   console.warn(labels)
-
    const getBarData = () =>
       labels.map((label) => ({
          name: label.name,

@@ -1,5 +1,5 @@
 import { styles } from './client-panel-styles'
-import { ClientAgent } from '@types'
+import { ClientAgent, ClientAgentStatus } from '@types'
 import SubtitleContainer from 'components/common/subtitle-container/subtitle-container'
 import { useEffect, useState } from 'react'
 import { CLIENT_STATISTICS } from './client-panel-config'
@@ -14,9 +14,10 @@ import { convertTimeToString } from 'utils/time-utils'
 const description = 'Select client from the list to diplay current job statistics'
 
 interface Props {
-   clients: ClientAgent[]
-   selectedClient: ClientAgent
+   clients: ClientAgentStatus[]
+   selectedClient: ClientAgent | null
    setSelectedClient: (client: string | null) => void
+   updateClientData: () => void
 }
 
 /**
@@ -24,7 +25,7 @@ interface Props {
  *
  * @returns JSX Element
  */
-export const ClientPanel = ({ clients, selectedClient, setSelectedClient }: Props) => {
+export const ClientPanel = ({ clients, selectedClient, setSelectedClient, updateClientData }: Props) => {
    const [isOpen, setIsOpen] = useState(false)
    const [isDurationOpen, setIsDurationOpen] = useState(false)
    const { clientContent, clientStatistics } = styles
@@ -98,7 +99,7 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient }: Prop
    }
 
    const getJobDurationModal = () => {
-      if (selectedClient.durationMap) {
+      if (selectedClient && selectedClient.durationMap) {
          return (
             <ClientJobDurationModal
                {...{
@@ -113,7 +114,7 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient }: Prop
 
    return (
       <div style={clientContent}>
-         <ClientStatisticsSelect {...{ clients, selectedClient, setSelectedClient }} />
+         <ClientStatisticsSelect {...{ clients, selectedClient, setSelectedClient, updateClientData }} />
          {!selectedClient || clients.length === 0 ? (
             <SubtitleContainer text={description} />
          ) : (

@@ -1,5 +1,5 @@
 import { MultiValue, SingleValue } from 'react-select'
-import { ClientAgent } from '@types'
+import { ClientAgent, ClientAgentStatus } from '@types'
 import { useMemo } from 'react'
 import { CLIENTS_ORDER } from '../../client-panel-config'
 import { Dropdown, GroupedOption, SelectOption } from 'components/common'
@@ -11,7 +11,7 @@ const selectNoClients = 'Client list is empty'
 interface Props {
    selectedClient: ClientAgent | null
    changeSelectedClient: (client: SingleValue<SelectOption>) => void
-   clients: ClientAgent[]
+   clients: ClientAgentStatus[]
    jobStatusMap: SelectOption[]
    splitFilter: boolean | null
 }
@@ -34,7 +34,7 @@ const ClientDropdown = ({ selectedClient, changeSelectedClient, clients, jobStat
             (splitFilter === null || client.isSplit === splitFilter)
       )
 
-   const aggregateOptions = (prev: GroupedOption[], curr: ClientAgent) => {
+   const aggregateOptions = (prev: GroupedOption[], curr: ClientAgentStatus) => {
       const currJob = curr.status.toString()
       const clientName = curr.name.toUpperCase()
       const prevGroup = prev.find((opt) => opt.label === currJob)

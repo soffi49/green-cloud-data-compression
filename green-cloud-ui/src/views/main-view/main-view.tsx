@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { styles } from './main-view-style'
 import { Menu, GraphPanel, MainPanel, LivePanel } from '@components'
+import { MenuTab } from '@types'
 
 interface Props {
    resetServerConnection: () => void
+   setSelectedTab: (tab: MenuTab) => void
 }
 
 /**
@@ -11,7 +13,7 @@ interface Props {
  *
  * @returns JSX Element
  */
-export const MainView = ({ resetServerConnection }: Props) => {
+export const MainView = ({ resetServerConnection, setSelectedTab }: Props) => {
    const {
       mainContainer,
       menuContainer,
@@ -23,24 +25,27 @@ export const MainView = ({ resetServerConnection }: Props) => {
       rightSectionContainer,
       sectionContainer,
    } = styles
-   const [selectedTabId, setSelectedTabId] = useState<string>('cloud')
 
    useEffect(() => {
       resetServerConnection()
    }, [])
 
+   const changeTab = (tab: MenuTab) => {
+      setSelectedTab(tab)
+   }
+
    return (
       <div style={mainContainer}>
          <div style={menuContainer}>
-            <Menu {...{ changeTab: setSelectedTabId }} />
+            <Menu {...{ changeTab }} />
          </div>
          <div style={contentContainer}>
             <div style={{ ...sectionContainer, ...leftSectionContainer }}>
                <div style={mainPanelContainer}>
-                  <MainPanel {...{ selectedTabId }} />
+                  <MainPanel />
                </div>
                <div style={livePanelContainer}>
-                  <LivePanel {...{ selectedTabId }} />
+                  <LivePanel />
                </div>
             </div>
             <div style={{ ...sectionContainer, ...rightSectionContainer }}>

@@ -47,8 +47,6 @@ export const LiveChartGeneric = ({ data, timeRestriction, chart, additionalProps
 
    const formattedData = typeof data[0].statistics === 'number' ? formatNumericData() : formatTimeData()
 
-   console.warn(formattedData)
-
    return <Chart data={formattedData} labels={formatLabeling()} {...additionalProps} />
 }
 

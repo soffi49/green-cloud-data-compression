@@ -47,7 +47,6 @@ const LiveChartModal = ({ isOpen, setIsOpen, reports, agentReports, selectedTabI
       systemReports.valueFields?.map((configuration) => {
          const Field = configuration.indicator
          const icon = configuration.icon
-         console.error(configuration.value(reports))
          return <Field {...{ title: configuration.title, value: configuration.value(reports), icon }} />
       })
 

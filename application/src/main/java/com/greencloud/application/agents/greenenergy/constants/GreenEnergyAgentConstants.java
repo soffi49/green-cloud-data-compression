@@ -30,6 +30,6 @@ public class GreenEnergyAgentConstants {
 	public static final int TEST_MULTIPLIER = 1;
 	public static final boolean MOCK_SOLAR_ENERGY = true;
 	public static final double SUB_INTERVAL_ERROR = 0.01;
-	public static final int MAX_NUMBER_OF_SERVER_MESSAGES = 30;
+	public static final int MAX_NUMBER_OF_SERVER_MESSAGES = 1;
 
 }

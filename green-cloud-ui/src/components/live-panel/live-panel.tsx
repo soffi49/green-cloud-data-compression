@@ -3,12 +3,12 @@ import React, { useState } from 'react'
 import { styles } from './live-panel-styles'
 
 import { Button, Card, SubtitleContainer } from '@components'
-import { AgentStatisticReport, ReportsStore } from '@types'
+import { AgentStatisticReport, MenuTab, ReportsStore } from '@types'
 import { CHARTS, CHART_MODALS } from './live-panel-config'
 import LiveChartModal from './live-chart-modal/live-chart-modal'
 
 interface Props {
-   selectedTabId: string
+   selectedTab: MenuTab
    reports: ReportsStore
    agentReports: AgentStatisticReport | null
 }
@@ -19,16 +19,15 @@ const buttonTitle = 'Display all statistics'
 /**
  * Component represents a panel gathering all infromations about cloud network
  *
- * @param {string}[selectedTabId] - id of selected tab
  * @returns JSX Element
  */
-export const LivePanel = ({ selectedTabId = 'cloud', reports, agentReports }: Props) => {
+export const LivePanel = ({ selectedTab, reports, agentReports }: Props) => {
    const [isOpen, setIsOpen] = useState<boolean>(false)
    const { mainContainer, contentContainer, headerContainer, headerStyle } = styles
 
-   const isAgentTab = selectedTabId === 'agents'
+   const isAgentTab = selectedTab === MenuTab.AGENTS
    const hasData = reports.clientsReport.length !== 0
-   const reportsId = isAgentTab && agentReports ? `agent${agentReports?.type}` : selectedTabId
+   const reportsId = isAgentTab && agentReports ? `agent${agentReports?.type}` : selectedTab.toString()
 
    const buttonClassName = [
       'medium-green-button',

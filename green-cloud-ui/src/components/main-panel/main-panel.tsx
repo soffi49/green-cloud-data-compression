@@ -4,34 +4,33 @@ import { styles } from './main-panel-styles'
 
 import { Card } from '@components'
 import { PANEL_TABS } from './main-panel-config'
-import { Agent } from '@types'
+import { Agent, MenuTab } from '@types'
 
 interface Props {
-   selectedTabId: string
    selectedAgent?: Agent
+   selectedTab: MenuTab
 }
 
 /**
  * Component represents a panel gathering all infromations about cloud network
  *
- * @param {string}[selectedTabId] - id of selected tab
  * @returns JSX Element
  */
-export const MainPanel = ({ selectedTabId = 'cloud', selectedAgent }: Props) => {
+export const MainPanel = ({ selectedTab, selectedAgent }: Props) => {
    const { mainContainer } = styles
-   const selectedTab = PANEL_TABS.filter((tab) => tab.id === selectedTabId)[0]
-   const subHeader = selectedTabId === 'agents' ? selectedAgent?.name : undefined
+   const tab = PANEL_TABS.filter((tab) => tab.id === selectedTab)[0]
+   const subHeader = selectedTab === MenuTab.AGENTS ? selectedAgent?.name : undefined
 
    return (
       <Card
          {...{
             containerStyle: mainContainer,
-            header: selectedTab.header,
+            header: tab.header,
             subHeader,
-            removeScroll: selectedTab.removeScroll,
+            removeScroll: tab.removeScroll,
          }}
       >
-         {selectedTab.panel}
+         {tab.panel}
       </Card>
    )
 }

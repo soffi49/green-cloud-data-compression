@@ -84,6 +84,7 @@ const resetClientsReportsState = () =>
 export {
     CLIENTS_STATE,
     CLIENTS_REPORTS_STATE,
+    Client,
     resetClientsState,
     resetClientsReportsState
 }

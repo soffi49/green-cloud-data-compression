@@ -1,4 +1,4 @@
-import { Agent } from '@types'
+import { Agent, ClientAgentStatus } from '@types'
 
 export interface GroupedOption {
    label: string
@@ -6,7 +6,7 @@ export interface GroupedOption {
 }
 
 export interface SelectOption {
-   value: Agent | null | string | number
+   value: Agent | ClientAgentStatus | null | string | number
    label: string
    isSelected?: boolean
 }

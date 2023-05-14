@@ -47,17 +47,27 @@ const getSystemState = () => {
 
 const getAgentsState = () => {
     return ({
-        ...AGENTS_STATE ,
+        ...AGENTS_STATE,
         ...AGENTS_REPORTS_STATE,
         graph: { ...GRAPH_STATE }
     })
 }
 
+const getGraphState = () => {
+    return ({
+        ...GRAPH_STATE
+    })
+}
+
 const getClientsState = () => {
     return ({
-        ...CLIENTS_STATE,
+        clients: CLIENTS_STATE.clients.map(client => ({ name: client.name, status: client.status, isSplit: client.isSplit })),
         clientsReports: { ...CLIENTS_REPORTS_STATE },
     })
+}
+
+const getClient = (clientName: string) => {
+    return CLIENTS_STATE.clients.filter(client => client.name.toUpperCase() === clientName.toUpperCase())[0] ?? null
 }
 
 const getManagingState = () => {
@@ -69,8 +79,8 @@ const getManagingState = () => {
 const getNetworkState = () => {
     return ({
         network: { ...NETWORK_STATE },
-        networkReport: {...NETWORK_REPORTS_STATE},
-        simulation: {...SIMULATION_STATE}
+        networkReport: { ...NETWORK_REPORTS_STATE },
+        simulation: { ...SIMULATION_STATE }
     })
 }
 
@@ -86,7 +96,9 @@ export {
     resetSystemState,
     getSystemState,
     getAgentsState,
+    getGraphState,
     getClientsState,
+    getClient,
     getManagingState,
     getNetworkState,
     getReportsState
