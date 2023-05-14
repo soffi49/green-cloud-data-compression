@@ -49,7 +49,7 @@ public class ListenForJobStatusChange extends CyclicBehaviour {
 	 */
 	@Override
 	public void action() {
-		final List<ACLMessage> messages = myAgent.receive(JOB_STATUS_CHANGE_TEMPLATE, 50);
+		final List<ACLMessage> messages = myAgent.receive(JOB_STATUS_CHANGE_TEMPLATE, MAX_MESSAGE_NUMBER_IN_BATCH);
 
 		if (nonNull(messages)) {
 			messages.forEach(message -> {

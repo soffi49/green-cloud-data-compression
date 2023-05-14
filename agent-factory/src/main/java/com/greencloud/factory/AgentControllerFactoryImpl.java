@@ -3,12 +3,11 @@ package com.greencloud.factory;
 import static com.greencloud.factory.constants.AgentControllerConstants.GRAPH_INITIALIZATION_DELAY;
 import static jade.wrapper.AgentController.ASYNC;
 import static java.util.Objects.nonNull;
-import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -102,7 +101,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
 	@Override
 	public void runAgentControllers(final List<AgentController> controllers, final long agentRunDelay) {
-		final ScheduledExecutorService scheduledExecutor = newSingleThreadScheduledExecutor();
+		var scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 		scheduledExecutor.schedule(
 				() -> controllers.forEach(controller -> runAgentController(controller, agentRunDelay)),
 				GRAPH_INITIALIZATION_DELAY, SECONDS);
