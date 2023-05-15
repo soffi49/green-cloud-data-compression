@@ -10,9 +10,4 @@ export const SCHEDULER_CONFIGURATION = [
    { key: 'maxQueueSize', label: 'Maximum number of scheduled jobs' },
 ]
 
-export const JOB_FIELD_CONFIG = [
-   { key: 'power', label: 'Power:' },
-   { key: 'start', label: 'Start:' },
-   { key: 'end', label: 'End:' },
-   { key: 'deadline', label: 'Deadline:' },
-]
+export const JOB_FIELD_CONFIG = [{ key: 'clientName', label: 'Client:' }]

@@ -7,7 +7,7 @@ import { PANEL_TABS } from './main-panel-config'
 import { Agent, MenuTab } from '@types'
 
 interface Props {
-   selectedAgent?: Agent
+   selectedAgent?: Agent | null
    selectedTab: MenuTab
 }
 

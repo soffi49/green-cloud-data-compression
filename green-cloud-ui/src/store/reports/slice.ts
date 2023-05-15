@@ -1,7 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
+   AgentSchedulerStatisticReports,
    AgentStatisticReport,
+   AgentType,
    FetchClientReportsMessage,
+   FetchManagingReportsMessage,
    FetchNetworkReportsMessage,
    ReportsStore,
    SystemTimeMessage,
@@ -19,6 +22,9 @@ const INITIAL_STATE: ReportsStore = {
    minJobSizeReport: [],
    maxJobSizeReport: [],
    agentsReports: [],
+   jobSuccessRatioReport: [],
+   trafficDistributionReport: [],
+   backUpPowerUsageReport: [],
 }
 
 /**
@@ -32,12 +38,19 @@ export const reportsSlice = createSlice({
          Object.assign(state, action.payload)
       },
       updateAgentsReports(state, action: PayloadAction<AgentStatisticReport[]>) {
-         Object.assign(state, { ...state, agentsReports: action.payload })
+         const reports = action.payload.filter((reports) => reports.type === AgentType.SCHEDULER)[0]?.reports
+         const systemTraffic = reports
+            ? (reports as AgentSchedulerStatisticReports).trafficReport
+            : state.systemTrafficReport
+         Object.assign(state, { ...state, agentsReports: action.payload, systemTrafficReport: systemTraffic })
       },
       updateClientsReports(state, action: PayloadAction<FetchClientReportsMessage>) {
          Object.assign(state, { ...state, ...action.payload })
       },
       updateNetworkReports(state, action: PayloadAction<FetchNetworkReportsMessage>) {
+         Object.assign(state, { ...state, ...action.payload })
+      },
+      updateManagingReports(state, action: PayloadAction<FetchManagingReportsMessage>) {
          Object.assign(state, { ...state, ...action.payload })
       },
       updateSystemTime(state, action: PayloadAction<SystemTimeMessage>) {

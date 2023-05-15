@@ -7,7 +7,7 @@ import { Agent } from '@types'
 import { EventPanel } from '@components'
 
 interface Props {
-   selectedAgent?: Agent
+   selectedAgent?: Agent | null
 }
 
 const buttonTitle = 'TRIGGER EVENT ON THE SYSTEM'

@@ -1,5 +1,8 @@
 import {
    AgentCloudNetworkStatisticReports,
+   AgentGreenSourceStatisticReports,
+   AgentSchedulerStatisticReports,
+   AgentServerStatisticReports,
    AgentStatisticReport,
    AgentType,
    CloudNetworkAgent,
@@ -18,9 +21,17 @@ import {
    ClientsNumberLiveChart,
    TrafficDistributionLiveChart,
    TrafficLiveChart,
+   SuccessRatioChart,
+   GreenPowerToBackUpUsageLiveChart,
+   GreenToOnHoldLiveChart,
+   AvailableGreenPowerLiveChart,
+   SchedulerPriorityLiveChart,
+   QueueCapacityLiveChart,
+   ClientJobExecutionLiveChart,
 } from './live-charts'
 import { useSelector } from 'react-redux'
 import { RootState, selectChosenNetworkAgent } from '@store'
+import { QualityPropertiesLiveChart } from './live-charts/managing-system-charts'
 
 type ChartGenerator = (reports?: ReportsStore, agentReports?: AgentStatisticReport | null) => React.ReactNode
 
@@ -32,8 +43,16 @@ interface ChartOptions {
    systemTrafficDistribution: ChartGenerator
    agentClients: ChartGenerator
    agentTraffic: ChartGenerator
+   agentBackUpUsage: ChartGenerator
+   agentJobsOnHold: ChartGenerator
+   agentSuccessRatio: ChartGenerator
+   agentAvailableGreenPower: ChartGenerator
    agentTrafficDistribution: ChartGenerator
    agentMaximumCapacity: ChartGenerator
+   agentSchedulerPriorities: ChartGenerator
+   agentQueueCapacity: ChartGenerator
+   clientJobExecutionSize: ChartGenerator
+   managingGoalQualities: ChartGenerator
 }
 
 type AvgGenerator = (reports: ReportsStore | AgentStatisticReport) => number
@@ -59,6 +78,8 @@ interface LiveDashboard {
    [key: string]: {
       name: string
       charts: ChartGenerator[]
+      mainChartId: number
+      disableChartDashboard?: boolean
       valueFields?: AvgConfiguration[]
    }
 }
@@ -128,6 +149,40 @@ export const CHARTS: ChartOptions = {
       const trafficReport = (reportsMapped.reports as CommonAgentReports).trafficReport
       return <TrafficLiveChart {...{ title: `${reportsMapped.name} traffic over time`, trafficReport }} />
    },
+   agentSuccessRatio: (_, agentReports) => {
+      const reportsMapped = agentReports as AgentStatisticReport
+      const successRatio = (reportsMapped.reports as CommonAgentReports).successRatioReport
+      return <SuccessRatioChart {...{ title: `${reportsMapped.name} success ratio over time`, successRatio }} />
+   },
+   agentBackUpUsage: (_, agentReports) => {
+      const reportsMapped = agentReports as AgentStatisticReport
+      const greenPowerReport = (reportsMapped.reports as AgentServerStatisticReports).greenPowerUsageReport
+      const backUpPowerReport = (reportsMapped.reports as AgentServerStatisticReports).backUpPowerUsageReport
+      return (
+         <GreenPowerToBackUpUsageLiveChart
+            {...{ title: `${reportsMapped.name} green to back-up power usage`, backUpPowerReport, greenPowerReport }}
+         />
+      )
+   },
+   agentJobsOnHold: (_, agentReports) => {
+      const reportsMapped = agentReports as AgentStatisticReport
+      const jobsOnHoldReport = (reportsMapped.reports as AgentGreenSourceStatisticReports).jobsOnHoldReport
+      const jobsOnGreenPowerReport = (reportsMapped.reports as AgentGreenSourceStatisticReports).jobsOnGreenPowerReport
+      return (
+         <GreenToOnHoldLiveChart
+            {...{ title: `${reportsMapped.name} jobs on hold over time`, jobsOnHoldReport, jobsOnGreenPowerReport }}
+         />
+      )
+   },
+   agentAvailableGreenPower: (_, agentReports) => {
+      const reportsMapped = agentReports as AgentStatisticReport
+      const availableGreenPower = (reportsMapped.reports as AgentGreenSourceStatisticReports).availableGreenPowerReport
+      return (
+         <AvailableGreenPowerLiveChart
+            {...{ title: `${reportsMapped.name} available green power over time`, availableGreenPower }}
+         />
+      )
+   },
    agentTrafficDistribution: (reports) => {
       const selectedAgent = useSelector((state: RootState) => selectChosenNetworkAgent(state))
       const connectedAgents =
@@ -152,6 +207,38 @@ export const CHARTS: ChartOptions = {
       return (
          <AgentMaximumCapacityLiveChart
             {...{ title: `Maximum capacity of ${reportsMapped.name} over time`, capacityReport }}
+         />
+      )
+   },
+   agentSchedulerPriorities: (_, agentReports) => {
+      const reportsMapped = agentReports as AgentStatisticReport
+      const { powerPriorityReport, deadlinePriorityReport } = reportsMapped.reports as AgentSchedulerStatisticReports
+      return (
+         <SchedulerPriorityLiveChart
+            {...{ title: `${reportsMapped.name} job priority over time`, powerPriorityReport, deadlinePriorityReport }}
+         />
+      )
+   },
+   agentQueueCapacity: (_, agentReports) => {
+      const reportsMapped = agentReports as AgentStatisticReport
+      const { queueCapacityReport } = reportsMapped.reports as AgentSchedulerStatisticReports
+      return (
+         <QueueCapacityLiveChart
+            {...{ title: `${reportsMapped.name} number of jobs in queue over time`, queueCapacityReport }}
+         />
+      )
+   },
+   clientJobExecutionSize: (reports, _) => {
+      const reportsMapped = reports as ReportsStore
+      const { avgJobSizeReport, maxJobSizeReport, minJobSizeReport } = reportsMapped
+      return <ClientJobExecutionLiveChart {...{ avgJobSizeReport, minJobSizeReport, maxJobSizeReport }} />
+   },
+   managingGoalQualities: (reports, _) => {
+      const reportsMapped = reports as ReportsStore
+      const { jobSuccessRatioReport, trafficDistributionReport, backUpPowerUsageReport } = reportsMapped
+      return (
+         <QualityPropertiesLiveChart
+            {...{ jobSuccessRatioReport, trafficDistributionReport, backUpPowerUsageReport }}
          />
       )
    },
@@ -187,11 +274,58 @@ export const CHART_MODALS: LiveDashboard = {
          CHARTS.systemTraffic,
          CHARTS.systemTrafficDistribution,
       ],
+      mainChartId: 3,
       valueFields: [AVG_INDICATORS.systemAvgTraffic, AVG_INDICATORS.systemAvgClients, AVG_INDICATORS.systemAvgJobs],
+   },
+   clients: {
+      name: 'Clients statistics reports',
+      charts: [CHARTS.clientJobExecutionSize],
+      mainChartId: 0,
+      disableChartDashboard: true,
+      valueFields: [],
+   },
+   adaptation: {
+      name: 'Managing system reports',
+      charts: [CHARTS.managingGoalQualities],
+      mainChartId: 0,
+      disableChartDashboard: true,
+      valueFields: [],
+   },
+   [`agent${AgentType.SCHEDULER}`]: {
+      name: 'Scheduler Agent reports',
+      charts: [CHARTS.agentQueueCapacity],
+      disableChartDashboard: true,
+      mainChartId: 0,
+      valueFields: [],
    },
    [`agent${AgentType.CLOUD_NETWORK}`]: {
       name: 'Cloud Network Agent reports',
-      charts: [CHARTS.agentClients, CHARTS.agentMaximumCapacity, CHARTS.agentTraffic, CHARTS.agentTrafficDistribution],
+      charts: [
+         CHARTS.agentClients,
+         CHARTS.agentSuccessRatio,
+         CHARTS.agentMaximumCapacity,
+         CHARTS.agentTraffic,
+         CHARTS.agentTrafficDistribution,
+      ],
+      mainChartId: 3,
+      valueFields: [],
+   },
+   [`agent${AgentType.SERVER}`]: {
+      name: 'Server Agent reports',
+      charts: [
+         CHARTS.agentSuccessRatio,
+         CHARTS.agentTraffic,
+         CHARTS.agentBackUpUsage,
+         CHARTS.agentMaximumCapacity,
+         CHARTS.agentTrafficDistribution,
+      ],
+      mainChartId: 1,
+      valueFields: [],
+   },
+   [`agent${AgentType.GREEN_ENERGY}`]: {
+      name: 'Green Energy Agent reports',
+      charts: [CHARTS.agentSuccessRatio, CHARTS.agentTraffic, CHARTS.agentJobsOnHold, CHARTS.agentAvailableGreenPower],
+      mainChartId: 3,
       valueFields: [],
    },
 }

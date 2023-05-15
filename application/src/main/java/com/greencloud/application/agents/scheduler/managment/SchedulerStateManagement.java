@@ -72,7 +72,6 @@ public class SchedulerStateManagement extends AbstractStateManagement {
 	 */
 	public void sendStatusMessageToClient(final ACLMessage message, final String jobId) {
 		schedulerAgent.send(message);
-		schedulerAgent.addBehaviour(ListenForAMSError.create(schedulerAgent, message, jobId));
 	}
 
 

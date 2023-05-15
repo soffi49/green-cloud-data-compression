@@ -170,7 +170,7 @@ const handleUpdateJobQueue = (msg) => {
     const agent = AGENTS_STATE.agents.find(agent => agent.type === AGENT_TYPES.SCHEDULER)
 
     if (agent && agent.type === AGENT_TYPES.SCHEDULER) {
-        agent.scheduledJobs = msg.data.map(job => job.jobId)
+        agent.scheduledJobs = msg.data.map(job => ({ clientName: (job.clientIdentifier as string).split("@")[0], jobId: job.jobId }))
     }
 }
 

@@ -1,6 +1,7 @@
 package com.greencloud.application.agents.client;
 
 import static com.greencloud.application.domain.agent.enums.AgentManagementEnum.CLIENT_MANAGEMENT;
+import static com.greencloud.application.utils.GuiUtils.connectToGui;
 import static com.greencloud.application.utils.TimeUtils.convertToInstantTime;
 import static com.greencloud.application.utils.TimeUtils.convertToSimulationTime;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
@@ -10,6 +11,7 @@ import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static java.lang.Integer.parseInt;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.emptyList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
@@ -26,6 +28,7 @@ import com.greencloud.application.agents.client.management.ClientManagement;
 import com.greencloud.application.exception.IncorrectTaskDateException;
 
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 
 /**
@@ -92,7 +95,15 @@ public class ClientAgent extends AbstractClientAgent {
 		final SequentialBehaviour startingBehaviour = new SequentialBehaviour(this);
 		startingBehaviour.addSubBehaviour(new FindSchedulerAgent(this));
 		startingBehaviour.addSubBehaviour(new InitiateNewJobAnnouncement(this));
-		return List.of(startingBehaviour, new ListenForJobUpdate(this));
+
+		connectToGui(this);
+
+		final ParallelBehaviour main = new ParallelBehaviour();
+		main.addSubBehaviour(new ListenForJobUpdate(this));
+		main.addSubBehaviour(startingBehaviour);
+		addBehaviour(main);
+		setMainBehaviour(main);
+		return emptyList();
 	}
 
 	/**

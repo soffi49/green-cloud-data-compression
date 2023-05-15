@@ -30,7 +30,7 @@ const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, headerStyle,
    const { modalStyle, modalTitle, mainContainer, contentWrapper, nested } = styles
    const { content, overlay, ...otherStyles } = modalStyle
    const styleModal = {
-      content: { ...contentStyle, ...content },
+      content: { ...content, ...contentStyle },
       overlay: { ...overlay, ...(isNested ? nested : undefined) },
       ...otherStyles,
    }

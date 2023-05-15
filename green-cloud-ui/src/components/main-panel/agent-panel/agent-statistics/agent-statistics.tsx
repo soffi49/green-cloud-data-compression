@@ -16,7 +16,7 @@ import { styles } from './agent-statistics-styles'
 import { Header } from 'components/common'
 
 interface Props {
-   selectedAgent?: Agent
+   selectedAgent?: Agent | null
 }
 
 const description = 'Click on an agent to display its statistics'

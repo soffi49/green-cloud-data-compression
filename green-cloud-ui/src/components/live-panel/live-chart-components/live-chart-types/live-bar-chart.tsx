@@ -10,8 +10,6 @@ interface Props {
    data: LiveChartTimeValues[] | LiveChartNumericValues[]
    labels: LiveChartLabeling[]
    valueDomain?: number[]
-   referenceValue?: number
-   referenceLabel?: string
    yAxisFormatter?: (data: any) => string
 }
 

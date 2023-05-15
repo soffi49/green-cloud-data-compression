@@ -7,7 +7,7 @@ import AgentStatisticsPanel from './agent-statistics/agent-statistics'
 import { SchedulerStatistics } from './scheduler-statistics/scheduler-statistics'
 
 interface Props {
-   selectedAgent?: Agent
+   selectedAgent?: Agent | null
 }
 
 /**

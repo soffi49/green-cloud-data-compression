@@ -7,9 +7,7 @@ export const agentSelector = (state: RootState) => state.agents
 /**
  * Method returns selected network agent
  */
-export const selectChosenNetworkAgent = createSelector([agentSelector], (agentSelector) =>
-   agentSelector.agents.find((agent) => agent.name === agentSelector.selectedAgent)
-)
+export const selectChosenNetworkAgent = createSelector([agentSelector], (agentSelector) => agentSelector.agentData)
 
 /**
  * Method returns selected network agent id

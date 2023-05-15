@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Agent, AgentStore, PowerShortageEventData } from '@types'
-import { getAgentByName, triggerPowerShortage } from './api'
+import { getAgentByName } from './api/get-agent-by-name'
+import { triggerPowerShortage } from './api/trigger-power-shortage'
 
 const INITIAL_STATE: AgentStore = {
    agents: [],
    selectedAgent: null,
+   agentData: null,
 }
 
 /**
@@ -21,8 +23,11 @@ export const agentSlice = createSlice({
             triggerPowerShortage(agentName, newMaximumCapacity)
          }
       },
-      setAgentsData(state, action: PayloadAction<Agent[]>) {
+      setAgents(state, action: PayloadAction<Agent[]>) {
          Object.assign(state, { ...state, agents: action.payload })
+      },
+      setAgentData(state, action: PayloadAction<Agent>) {
+         Object.assign(state, { ...state, agentData: action.payload })
       },
       setSelectedAgent(state, action: PayloadAction<string>) {
          Object.assign(state, { ...state, selectedAgent: action.payload })

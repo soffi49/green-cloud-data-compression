@@ -1,3 +1,5 @@
+import { ReportEntry } from "../../types"
+
 type AdaptationGoalQuality = {
     id: number
     quality: number
@@ -7,7 +9,7 @@ enum LogType {
     RECONFIGURE = 'RECONFIGURE' as any,
     ADD_COMPONENT = 'ADD_COMPONENT' as any,
     REMOVE_COMPONENT = 'REMOVE_COMPONENT' as any,
- }
+}
 
 type AdaptationLog = {
     type: LogType
@@ -35,6 +37,18 @@ interface ManagingSystemState {
     adaptationGoals: AdaptationGoal[]
 }
 
+interface ManagingSystemReportsState {
+    jobSuccessRatioReport: ReportEntry[]
+    trafficDistributionReport: ReportEntry[]
+    backUpPowerUsageReport: ReportEntry[]
+}
+
+let MANAGING_SYSTEM_REPORTS: ManagingSystemReportsState = {
+    jobSuccessRatioReport: [],
+    trafficDistributionReport: [],
+    backUpPowerUsageReport: []
+}
+
 let MANAGING_SYSTEM_STATE: ManagingSystemState = {
     systemIndicator: 0,
     goalQualityIndicators: [],
@@ -46,16 +60,24 @@ let MANAGING_SYSTEM_STATE: ManagingSystemState = {
 }
 
 const resetManagingSystemState = () =>
-  Object.assign(MANAGING_SYSTEM_STATE,
-    ({
-        systemIndicator: 0,
-        goalQualityIndicators: [],
-        performedAdaptations: 0,
-        weakAdaptations: 0,
-        strongAdaptations: 0,
-        adaptationLogs: [],
-        adaptationGoals: []
-    }))
+    Object.assign(MANAGING_SYSTEM_STATE,
+        ({
+            systemIndicator: 0,
+            goalQualityIndicators: [],
+            performedAdaptations: 0,
+            weakAdaptations: 0,
+            strongAdaptations: 0,
+            adaptationLogs: [],
+            adaptationGoals: []
+        }))
+
+const resetManagingSystemReportsState = () =>
+    Object.assign(MANAGING_SYSTEM_REPORTS,
+        ({
+            jobSuccessRatioReport: [],
+            trafficDistributionReport: [],
+            backUpPowerUsageReport: []
+        }))
 
 export {
     AdaptationGoal,
@@ -63,5 +85,7 @@ export {
     AdaptationLog,
     ManagingSystemState,
     MANAGING_SYSTEM_STATE,
-    resetManagingSystemState
+    MANAGING_SYSTEM_REPORTS,
+    resetManagingSystemState,
+    resetManagingSystemReportsState
 }

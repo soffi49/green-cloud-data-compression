@@ -35,11 +35,12 @@ const reportSystemTraffic = (time) => {
 const reportSchedulerData = (agent, time) => {
     const reports = AGENTS_REPORTS_STATE.agentsReports.filter(agentReport => agentReport.name === agent.name)[0].reports
 
-    const queueCapacity = agent.maxQueueSize === 0 ? 0 : agent.scheduledJobs.length / agent.maxQueueSize
+    const queueCapacity = agent.maxQueueSize === 0 ? 0 : agent.scheduledJobs.length
 
     reports.deadlinePriorityReport.push({ time, value: agent.deadlinePriority })
     reports.powerPriorityReport.push({ time, value: agent.powerPriority })
     reports.queueCapacityReport.push({ time, value: queueCapacity })
+    reports.trafficReport.push(reportSystemTraffic(time))
 }
 
 const reportCloudNetworkData = (agent, time) => {
@@ -48,7 +49,7 @@ const reportCloudNetworkData = (agent, time) => {
     reports.clientsReport.push({ time, value: agent.totalNumberOfClients })
     reports.capacityReport.push({ time, value: agent.maximumCapacity })
     reports.trafficReport.push({ time, value: agent.traffic })
-    reports.successRatioReport.push({ time, value: agent.successRatio })
+    reports.successRatioReport.push({ time, value: agent.successRatio ?? 0 })
 }
 
 const reportServerData = (agent, time) => {
@@ -57,8 +58,8 @@ const reportServerData = (agent, time) => {
     reports.trafficReport.push({ time, value: agent.traffic })
     reports.capacityReport.push({ time, value: agent.currentMaximumCapacity })
     reports.greenPowerUsageReport.push({ time, value: agent.traffic })
-    reports.greenPowerUsageReport.push({ time, value: agent.currentMaximumCapacity * agent.backUpTraffic })
-    reports.successRatioReport.push({ time, value: agent.successRatio })
+    reports.backUpPowerUsageReport.push({ time, value: agent.currentMaximumCapacity * agent.backUpTraffic })
+    reports.successRatioReport.push({ time, value: agent.successRatio ?? 0 })
 }
 
 const reportGreenSourceData = (agent, time) => {
@@ -69,7 +70,7 @@ const reportGreenSourceData = (agent, time) => {
     reports.capacityReport.push({ time, value: agent.currentMaximumCapacity })
     reports.jobsOnGreenPowerReport.push({ time, value: agent.numberOfExecutedJobs })
     reports.jobsOnHoldReport.push({ time, value: agent.numberOfJobsOnHold })
-    reports.successRatioReport.push({ time, value: agent.successRatio })
+    reports.successRatioReport.push({ time, value: agent.successRatio ?? 0 })
 }
 
 const updateAgentsReportsState = (time) => {

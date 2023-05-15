@@ -19,3 +19,9 @@ export type FetchNetworkReportsMessage = {
    failJobsReport: LiveStatisticReport[]
    clientsReport: LiveStatisticReport[]
 }
+
+export type FetchManagingReportsMessage = {
+   jobSuccessRatioReport: LiveStatisticReport[]
+   trafficDistributionReport: LiveStatisticReport[]
+   backUpPowerUsageReport: LiveStatisticReport[]
+}

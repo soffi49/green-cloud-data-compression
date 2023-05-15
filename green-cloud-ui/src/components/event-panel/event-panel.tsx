@@ -5,7 +5,7 @@ import { Agent, PowerShortageEventData } from '@types'
 import { DetailsField, Modal } from 'components/common'
 
 interface Props {
-   selectedAgent?: Agent
+   selectedAgent?: Agent | null
    triggerPowerShortage: (data: PowerShortageEventData) => void
    isOpen: boolean
    setIsOpen: (state: boolean) => void

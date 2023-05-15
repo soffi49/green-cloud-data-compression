@@ -1,5 +1,7 @@
 export { default as ClientsNumberLiveChart } from './clients-number-live-chart'
 export { default as TrafficLiveChart } from './traffic-live-chart'
+export { default as SuccessRatioChart } from './success-ratio-live-chart'
 export { default as TrafficDistributionLiveChart } from './traffic-distribution-live-chart'
 export * from './cloud-network-charts'
-export * from './agent-charts'
+export * from './agent-charts/'
+export * from './client-charts'

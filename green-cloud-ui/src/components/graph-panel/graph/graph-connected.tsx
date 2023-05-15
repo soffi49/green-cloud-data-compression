@@ -8,10 +8,12 @@ import {
 } from '@store'
 import { connect } from 'react-redux'
 import { DisplayGraph } from './graph'
+import { GET_AGENT_DATA } from 'store/saga-types'
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
    return {
       setSelectedAgent: (id: string) => dispatch(agentsActions.setSelectedAgent(id)),
+      updateAgentData: () => dispatch({ type: GET_AGENT_DATA }),
    }
 }
 

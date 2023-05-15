@@ -42,6 +42,8 @@ const LiveChartModal = ({ isOpen, setIsOpen, reports, agentReports, selectedTabI
    const header = selectedTabId.startsWith('agents')
       ? `${agentReports?.name} ${systemReports.name.toUpperCase()}`
       : systemReports.name.toUpperCase()
+   const hasAvgFields = systemReports.valueFields && systemReports.valueFields?.length > 0
+   const chartStatisticsWidth = hasAvgFields ? '70%' : '100%'
 
    const getValueFields = () =>
       systemReports.valueFields?.map((configuration) => {
@@ -69,13 +71,15 @@ const LiveChartModal = ({ isOpen, setIsOpen, reports, agentReports, selectedTabI
          }}
       >
          <div style={wrapper}>
-            <div style={avgContentWrapper}>
-               <div style={headerContainer}>
-                  <div style={headerText}>{headerAverage.toUpperCase()}</div>
+            {hasAvgFields && (
+               <div style={avgContentWrapper}>
+                  <div style={headerContainer}>
+                     <div style={headerText}>{headerAverage.toUpperCase()}</div>
+                  </div>
+                  <div style={avgContainerWrapper}>{getValueFields()}</div>
                </div>
-               <div style={avgContainerWrapper}>{getValueFields()}</div>
-            </div>
-            <div style={chartContentWrapper}>
+            )}
+            <div style={{ ...chartContentWrapper, width: chartStatisticsWidth }}>
                <div style={headerContainer}>
                   <div style={headerText}>{headerReal.toUpperCase()}</div>
                </div>

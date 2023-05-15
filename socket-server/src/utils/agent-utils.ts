@@ -35,7 +35,8 @@ const registerScheduler = (data) => {
             deadlinePriorityReport: [],
             powerPriorityReport: [],
             clientRequestReport: [],
-            queueCapacityReport: []
+            queueCapacityReport: [],
+            trafficReport: []
         },
         events: []
     })

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { all, call, delay, put, select } from 'redux-saga/effects'
+import { call, delay, put, select } from 'redux-saga/effects'
 import { reportsActions, selectSystemStartTime } from 'store/reports'
 import { handleConnectionError } from 'store/common'
 import { cloudNetworkActions } from '../actions'
@@ -16,10 +16,7 @@ export function* fetchNetworkState() {
                timeout: 2000,
             })
          )
-         yield all([
-            put(cloudNetworkActions.setNetworkData(data.network)),
-            put(reportsActions.updateNetworkReports(data.networkReport)),
-         ])
+         yield put(cloudNetworkActions.setNetworkData(data.network))
          yield put(cloudNetworkActions.openServerConnection())
 
          const startTime: number | null = yield select(selectSystemStartTime)

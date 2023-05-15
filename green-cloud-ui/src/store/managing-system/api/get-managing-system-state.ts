@@ -7,7 +7,7 @@ import { handleConnectionError } from 'store/common'
  * Method retrieves clients from backend
  *
  */
-export function* fetchManagingkState() {
+export function* fetchManagingState() {
    while (true) {
       try {
          const { data } = yield call(() =>

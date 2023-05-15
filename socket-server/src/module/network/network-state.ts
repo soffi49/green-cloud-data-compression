@@ -39,7 +39,7 @@ const resetNetworkState = () =>
     }))
 
 const resetNetworkReportsState = () =>
-  Object.assign(NETWORK_STATE,
+  Object.assign(NETWORK_REPORTS_STATE,
     ({
       failJobsReport: [],
       finishJobsReport: [],

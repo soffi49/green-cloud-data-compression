@@ -88,8 +88,8 @@ public class RequestWeatherPeriodically extends TickerBehaviour implements Seria
 		final double energyPercentage = getPowerPercent(availablePower, currentMaximumCapacity);
 		myGreenEnergyAgent.writeMonitoringData(AVAILABLE_GREEN_ENERGY, new AvailableGreenEnergy(energyPercentage));
 
-//		if (nonNull(myGreenEnergyAgent.getAgentNode())) {
-//			((GreenEnergyAgentNode) myGreenEnergyAgent.getAgentNode()).updateGreenEnergyAmount(availablePower);
-//		}
+		if (nonNull(myGreenEnergyAgent.getAgentNode())) {
+			((GreenEnergyAgentNode) myGreenEnergyAgent.getAgentNode()).updateGreenEnergyAmount(availablePower);
+		}
 	}
 }

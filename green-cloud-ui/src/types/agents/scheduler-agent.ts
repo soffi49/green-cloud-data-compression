@@ -1,7 +1,8 @@
+import { ScheduledJob } from 'types/job'
 import { CommonAgentInterface } from './common/common-agent'
 
 export interface SchedulerAgent extends CommonAgentInterface {
-   scheduledJobs: string[]
+   scheduledJobs: ScheduledJob[]
    deadlinePriority: number
    powerPriority: number
    maxQueueSize: number

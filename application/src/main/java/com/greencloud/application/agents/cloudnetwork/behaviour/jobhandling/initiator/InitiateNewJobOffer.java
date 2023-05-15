@@ -66,7 +66,6 @@ public class InitiateNewJobOffer extends ProposeInitiator {
 				.withObjectContent(pricedJob)
 				.withPerformative(PROPOSE)
 				.build();
-		agent.addBehaviour(ListenForAMSError.create(agent, proposal, pricedJob.getJobId()));
 		return new InitiateNewJobOffer(agent, proposal, serverMessage);
 	}
 

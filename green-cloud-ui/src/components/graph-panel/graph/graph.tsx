@@ -14,6 +14,7 @@ interface Props {
    nodes: AgentNode[]
    connections: GraphEdge[]
    setSelectedAgent: (id: string) => void
+   updateAgentData: () => void
    selectedAgent: string | null
 }
 
@@ -22,7 +23,7 @@ interface Props {
  *
  * @returns Cytoscape graph
  */
-export const DisplayGraph = ({ nodes, connections, setSelectedAgent, selectedAgent }: Props) => {
+export const DisplayGraph = ({ nodes, connections, setSelectedAgent, updateAgentData, selectedAgent }: Props) => {
    const [core, setCyCore] = useState<Cytoscape.Core>()
    const nodesRef = useRef<number>(-1)
    const elements = useMemo(
@@ -52,6 +53,7 @@ export const DisplayGraph = ({ nodes, connections, setSelectedAgent, selectedAge
 
             if (!selectedAgent || selectedAgent !== id) {
                setSelectedAgent(id)
+               updateAgentData()
             }
          })
       }

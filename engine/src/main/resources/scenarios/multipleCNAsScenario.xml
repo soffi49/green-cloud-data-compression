@@ -24,6 +24,9 @@
 		<monitoringAgent>
 			<name>Weather4</name>
 		</monitoringAgent>
+		<monitoringAgent>
+			<name>Weather5</name>
+		</monitoringAgent>
 	</monitoringAgentsArgs>
 	<greenEnergyAgentsArgs>
 		<greenenergyAgent>
@@ -63,6 +66,17 @@
 			<name>Wind3</name>
 			<monitoringAgent>Weather4</monitoringAgent>
 			<ownerSever>Server2</ownerSever>
+			<latitude>10.0</latitude>
+			<longitude>88.1</longitude>
+			<pricePerPowerUnit>10</pricePerPowerUnit>
+			<maximumCapacity>400</maximumCapacity>
+			<energyType>WIND</energyType>
+			<weatherPredictionError>0.02</weatherPredictionError>
+		</greenenergyAgent>
+		<greenenergyAgent>
+			<name>Wind4</name>
+			<monitoringAgent>Weather5</monitoringAgent>
+			<ownerSever>Server3</ownerSever>
 			<latitude>10.0</latitude>
 			<longitude>88.1</longitude>
 			<pricePerPowerUnit>10</pricePerPowerUnit>

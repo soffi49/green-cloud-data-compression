@@ -11,5 +11,8 @@ export type ReportsStore = {
    avgJobSizeReport: LiveStatisticReport[]
    minJobSizeReport: LiveStatisticReport[]
    maxJobSizeReport: LiveStatisticReport[]
+   jobSuccessRatioReport: LiveStatisticReport[]
+   trafficDistributionReport: LiveStatisticReport[]
+   backUpPowerUsageReport: LiveStatisticReport[]
    agentsReports: AgentStatisticReport[]
 }

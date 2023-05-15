@@ -12,7 +12,8 @@ export const styles: Styles = {
       marginBottom: '10px',
    },
    modalContainer: {
-      width: '30%',
+      width: '40%',
+      minWidth: '0',
       height: 'fit-content',
    },
    modalHeader: {

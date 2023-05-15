@@ -1,6 +1,5 @@
 import axios from 'axios'
-import { all, call, delay, put } from 'redux-saga/effects'
-import { reportsActions } from 'store/reports'
+import { call, delay, put } from 'redux-saga/effects'
 import { handleConnectionError } from 'store/common'
 import { agentsActions } from '../actions'
 
@@ -16,11 +15,7 @@ export function* fetchAgentsState() {
                timeout: 2000,
             })
          )
-         yield all([
-            put(agentsActions.setAgentsData(data.agents)),
-            put(reportsActions.updateAgentsReports(data.agentsReports)),
-         ])
-
+         yield put(agentsActions.setAgents(data.agents))
          yield delay(200)
       } catch (err: any) {
          handleConnectionError(err, 'Agents')

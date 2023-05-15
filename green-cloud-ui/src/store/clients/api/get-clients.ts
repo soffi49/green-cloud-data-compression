@@ -1,7 +1,6 @@
 import axios from 'axios'
-import { all, call, delay, put } from 'redux-saga/effects'
+import { call, delay, put } from 'redux-saga/effects'
 import { clientActions } from '../actions'
-import { reportsActions } from 'store/reports'
 import { getClientData } from './get-client-data'
 import { handleConnectionError } from 'store/common'
 
@@ -17,10 +16,7 @@ export function* fetchClientsState() {
                timeout: 2000,
             })
          )
-         yield all([
-            put(clientActions.setClients(data.clients)),
-            put(reportsActions.updateClientsReports(data.clientsReports)),
-         ])
+         yield put(clientActions.setClients(data.clients))
          yield call(getClientData)
 
          yield delay(200)

@@ -73,7 +73,7 @@ const resetClientsState = () =>
         }))
 
 const resetClientsReportsState = () =>
-    Object.assign(CLIENTS_STATE,
+    Object.assign(CLIENTS_REPORTS_STATE,
         ({
             executedJobsReport: [],
             avgJobSizeReport: [],
