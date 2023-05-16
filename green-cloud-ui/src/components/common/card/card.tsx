@@ -14,10 +14,10 @@ interface Props {
 /**
  * Component representing common container with shadow effect
  *
- * @param {object}[children] - content to be displayed inside container
+ * @param {object}[children] - content to be displayed inside the container
  * @param {string}[header] - header displayed at the top of the container
- * @param {string}[subHeader] - optional part of header displayed in the right side as header DetailedField
- * @param {boolean}[removeScroll] -flag indicating whether the scroll bar   should be removed
+ * @param {string}[subHeader] - optional part of header displayed in the right side of the container
+ * @param {boolean}[removeScroll] - flag indicating whether the scroll bar should be removed from the container
  * @param {object}[containerStyle] - optional styling applied to the container
  * @param {object}[contentStyle] - optional styling applied to the content
  *
@@ -38,24 +38,27 @@ const Card = ({ header, subHeader, children, containerStyle, contentStyle, remov
       ? { ...cardContent, ...contentStyle }
       : { ...cardContent, ...cardContentScroll }
    const parentContainerStyle = { ...cardContainer, ...containerStyle }
+   const headerSubContainerStyle = { ...cardHeader, ...cardHeaderWithSubheader }
+
+   const getHeaderWithSubHeader = () => {
+      return (
+         <div style={cardHeaderContainer}>
+            <div style={headerSubContainerStyle}>{(header as string).toUpperCase()}</div>
+            <DetailsField
+               {...{
+                  label: subHeader,
+                  fieldContainerStyle: cardSubHeader,
+                  fieldLabelStyle: cardSubHeaderText,
+                  isHeader: true,
+               }}
+            />
+         </div>
+      )
+   }
 
    const mapHeader = () => {
       if (typeof header === 'string') {
-         return subHeader ? (
-            <div style={cardHeaderContainer}>
-               <div style={{ ...cardHeader, ...cardHeaderWithSubheader }}>{header.toUpperCase()}</div>
-               <DetailsField
-                  {...{
-                     label: subHeader,
-                     fieldContainerStyle: cardSubHeader,
-                     fieldLabelStyle: cardSubHeaderText,
-                     isHeader: true,
-                  }}
-               />
-            </div>
-         ) : (
-            <div style={cardHeader}>{header?.toUpperCase()}</div>
-         )
+         return subHeader ? getHeaderWithSubHeader() : <div style={cardHeader}>{header?.toUpperCase()}</div>
       }
       return header
    }

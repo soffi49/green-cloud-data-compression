@@ -1,8 +1,8 @@
+import { DropdownOption } from '@types'
 import { StylesConfig, ThemeConfig, Theme } from 'react-select'
-import { SelectOption } from './dropdown-config'
 
 interface Styles {
-   select: StylesConfig<SelectOption>
+   select: StylesConfig<DropdownOption>
    selectTheme: ThemeConfig
    headerStyle: React.CSSProperties
 }

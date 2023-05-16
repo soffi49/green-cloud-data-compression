@@ -8,7 +8,7 @@ interface Props {
 }
 
 /**
- * Component represents a circular indicator that displays some percentage value
+ * Component represents a circular indicator that with percentage value inside
  *
  * @param {number}[value] - percentage value
  * @param {string}[title] - title displayed over the indicator

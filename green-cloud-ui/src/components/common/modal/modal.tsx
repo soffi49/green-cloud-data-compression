@@ -29,6 +29,7 @@ interface Props {
 const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, headerStyle, isNested, disableScroll }: Props) => {
    const { modalStyle, modalTitle, mainContainer, contentWrapper, nested } = styles
    const { content, overlay, ...otherStyles } = modalStyle
+
    const styleModal = {
       content: { ...content, ...contentStyle },
       overlay: { ...overlay, ...(isNested ? nested : undefined) },

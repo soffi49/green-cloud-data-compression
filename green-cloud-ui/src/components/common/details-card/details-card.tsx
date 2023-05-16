@@ -9,7 +9,7 @@ interface Props {
 }
 
 /**
- * Component represents a details card with title
+ * Component represents a shadow container consisting of fields representing details of a given object
  *
  * @param {DetailField[]}[fieldMap] - map describing fields that will be desplayed in the card
  * @param {string}[title] - title of the card

@@ -8,7 +8,8 @@ interface Props {
    icon?: IconElement
 }
 /**
- * Component represents a container that displays information about particular value
+ * Component represents a container that displays information about particular value and
+ * optionally, a relevant icon
  *
  * @param {number}[value] - percentage value
  * @param {string}[title] - title displayed over the indicator

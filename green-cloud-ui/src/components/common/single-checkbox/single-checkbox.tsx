@@ -1,17 +1,17 @@
 import { styles } from './single-checkbox-styles'
 import { Checkbox } from 'pretty-checkbox-react'
 import '@djthoms/pretty-checkbox'
-import { SelectOption } from 'components/common'
+import { DropdownOption } from '@types'
 
 interface Props {
-   option: SelectOption
+   option: DropdownOption
    onChange: (status: string, isSelected: boolean) => void
 }
 
 /**
  * Component representing checkbox with single options
  *
- * @param {SelectOption}[option] - option data
+ * @param {DropdownOption}[option] - option data
  * @param {func}[onChange] - function being executed when value of checkbox is changed
  * @returns JSX Element
  */

@@ -1,8 +1,9 @@
+import { DropdownOption } from '@types'
 import { styles } from './multi-checkbox-styles'
-import { SelectOption, SingleCheckBox } from 'components/common'
+import { SingleCheckBox } from 'components/common'
 
 interface Props {
-   options: SelectOption[]
+   options: DropdownOption[]
    onChange: (status: string, isSelected: boolean) => void
    header?: string
 }

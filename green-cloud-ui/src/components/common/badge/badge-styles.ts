@@ -10,11 +10,11 @@ export const styles: Styles = {
    badge: {
       display: 'block',
       textAlign: 'center',
+      width: 'fit-content',
       color: 'var(--white)',
       fontSize: 'var(--font-size-4)',
       fontWeight: '500',
       borderRadius: '10px',
-      width: 'fit-content',
       padding: '0 20px',
    },
    inActiveBadge: {
