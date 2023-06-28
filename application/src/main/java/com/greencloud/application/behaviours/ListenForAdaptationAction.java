@@ -35,18 +35,18 @@ public class ListenForAdaptationAction extends CyclicBehaviour {
 
 		if (nonNull(message)) {
 			final AdaptationActionEnum adaptationActionEnum = AdaptationActionEnum.valueOf(message.getConversationId());
-			final AdaptationAction adaptationAction = getAdaptationAction(adaptationActionEnum);
+			final AdaptationAction adaptationAction = getAdaptationAction(adaptationActionEnum).get(0);
 			final AdaptationActionParameters adaptationActionParameters =
 					readMessageContent(message, getActionParametersClass(adaptationActionEnum));
 
 			if (!adaptationActionParameters.dependsOnOtherAgents()) {
-				if (myAbstractAgent.executeAction(adaptationAction, adaptationActionParameters)) {
+				if (myAbstractAgent.executeAction(adaptationAction.getAction(), adaptationActionParameters)) {
 					myAbstractAgent.send(prepareInformReply(message));
 				} else {
 					myAbstractAgent.send(prepareFailureReply(message));
 				}
 			} else {
-				myAbstractAgent.executeAction(adaptationAction, adaptationActionParameters, message);
+				myAbstractAgent.executeAction(adaptationAction.getAction(), adaptationActionParameters, message);
 			}
 		}
 	}

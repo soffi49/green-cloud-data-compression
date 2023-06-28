@@ -104,6 +104,21 @@ public class ScenarioStructureArgs implements Serializable {
 	}
 
 	/**
+	 * Method retrieves servers connected to given green source agent
+	 *
+	 * @param greenSourceName name of the green source or its AID
+	 * @return list of connected server
+	 */
+	public List<String> getServersConnectedToGreenSource(final String greenSourceName) {
+		return getGreenEnergyAgentsArgs()
+				.stream()
+				.filter(agent -> agent.getName().equals(greenSourceName.split("@")[0]))
+				.map(GreenEnergyAgentArgs::getConnectedServers)
+				.flatMap(Collection::stream)
+				.toList();
+	}
+
+	/**
 	 * Method retrieves green sources connected to given server agent
 	 *
 	 * @param serverAgentName name of the Server of interest

@@ -27,6 +27,7 @@ import org.greencloud.managingsystem.service.planner.plans.domain.AgentsTraffic;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.GreenSourceMonitoringData;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
@@ -42,8 +43,8 @@ public class DisconnectGreenSourcePlan extends AbstractPlan {
 
 	private Map<String, List<String>> greenSourcesWithServers;
 
-	public DisconnectGreenSourcePlan(ManagingAgent managingAgent) {
-		super(DISCONNECT_GREEN_SOURCE, managingAgent);
+	public DisconnectGreenSourcePlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(DISCONNECT_GREEN_SOURCE, managingAgent, violatedGoal);
 		this.greenSourcesWithServers = new HashMap<>();
 	}
 

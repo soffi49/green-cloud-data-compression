@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
-import com.database.knowledge.domain.action.AdaptationAction;
+import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerPowerInformation;
 import com.greencloud.application.agents.greenenergy.behaviour.powershortage.listener.ListenForServerReSupplyRequest;
 import com.greencloud.application.agents.greenenergy.behaviour.powersupply.listener.ListenForGreenEnergyJobCancellation;
@@ -51,7 +51,7 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (args.length >= 8) {
+		if (args.length >= 10) {
 			this.monitoringAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
 			this.ownerServer = new AID(args[1].toString(), AID.ISLOCALNAME);
 
@@ -69,9 +69,9 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 						GreenEnergySourceTypeEnum.valueOf(type) :
 						(GreenEnergySourceTypeEnum) args[6];
 
-				// Last argument indicates if the GreenSourceAgent is going to be moved to another container
+				// Additional argument indicates if the GreenSourceAgent is going to be moved to another container
 				// In such case, its service should be registered after moving
-				if (args.length != 9 || !parseBoolean(args[8].toString())) {
+				if (args.length != 10 || !parseBoolean(args[8].toString())) {
 					register(this, getDefaultDF(), GS_SERVICE_TYPE, GS_SERVICE_NAME, ownerServer.getName());
 				}
 
@@ -109,9 +109,9 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 	}
 
 	@Override
-	public boolean executeAction(final AdaptationAction adaptationAction,
+	public boolean executeAction(final AdaptationActionEnum adaptationActionEnum,
 			final AdaptationActionParameters actionParameters) {
-		return switch (adaptationAction.getAction()) {
+		return switch (adaptationActionEnum) {
 			case INCREASE_GREEN_SOURCE_ERROR, DECREASE_GREEN_SOURCE_ERROR ->
 					adapt().adaptAgentWeatherPredictionError((AdjustGreenSourceErrorParameters) actionParameters);
 			default -> false;
@@ -119,9 +119,9 @@ public class GreenEnergyAgent extends AbstractGreenEnergyAgent {
 	}
 
 	@Override
-	public void executeAction(AdaptationAction adaptationAction, AdaptationActionParameters actionParameters,
+	public void executeAction(AdaptationActionEnum adaptationActionEnum, AdaptationActionParameters actionParameters,
 			ACLMessage adaptationMessage) {
-		switch (adaptationAction.getAction()) {
+		switch (adaptationActionEnum) {
 			case CONNECT_GREEN_SOURCE ->
 					adapt().connectNewServerToGreenSource((ChangeGreenSourceConnectionParameters) actionParameters,
 							adaptationMessage);

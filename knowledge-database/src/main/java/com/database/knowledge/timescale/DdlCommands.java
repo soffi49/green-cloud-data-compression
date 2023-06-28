@@ -75,14 +75,15 @@ public final class DdlCommands {
 	static final String CREATE_ADAPTATION_ACTIONS = """
 			CREATE TABLE adaptation_actions (
 			action_id INTEGER PRIMARY KEY,
-			action_name VARCHAR(50) UNIQUE NOT NULL,
+			action_name VARCHAR(50) NOT NULL,
 			type VARCHAR(50) NOT NULL,
 			dedicated_goal_id INTEGER NOT NULL,
 			action_results JSON NOT NULL,
 			is_available BOOLEAN NOT NULL,
 			runs INTEGER NOT NULL,
-			FOREIGN KEY (dedicated_goal_id)
-			      REFERENCES adaptation_goals (goal_id))
+			average_duration DOUBLE PRECISION NOT NULL,
+			FOREIGN KEY (dedicated_goal_id) REFERENCES adaptation_goals (goal_id),
+			UNIQUE (action_id, dedicated_goal_id))
 			""";
 
 	/**

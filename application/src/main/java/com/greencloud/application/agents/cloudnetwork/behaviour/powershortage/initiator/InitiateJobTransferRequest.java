@@ -7,7 +7,7 @@ import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.FAILURE;
@@ -60,7 +60,7 @@ public class InitiateJobTransferRequest extends AbstractCFPInitiator<ServerData>
 	 */
 	public static InitiateJobTransferRequest create(final CloudNetworkAgent agent, final ACLMessage serverRequest,
 			final ClientJob jobToTransfer, final Instant shortageStartTime, final List<AID> servers) {
-		final ACLMessage cfp = createCallForProposal(jobToTransfer, servers, CNA_JOB_CFP_PROTOCOL);
+		final ACLMessage cfp = prepareCallForProposal(jobToTransfer, servers, CNA_JOB_CFP_PROTOCOL);
 		return new InitiateJobTransferRequest(agent, cfp, serverRequest, mapToJobInstanceId(jobToTransfer),
 				shortageStartTime);
 	}

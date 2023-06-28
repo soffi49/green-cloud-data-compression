@@ -7,6 +7,7 @@ import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DECREASE_GREEN_SOURCE_ERROR;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DISCONNECT_GREEN_SOURCE;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.ENABLE_SERVER;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_ERROR;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIORITY;
@@ -17,6 +18,7 @@ import static org.greencloud.managingsystem.service.planner.logs.ManagingAgentPl
 import static org.greencloud.managingsystem.service.planner.logs.ManagingAgentPlannerLog.SELECTING_BEST_ACTION_LOG;
 
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ import org.greencloud.managingsystem.service.planner.plans.ConnectGreenSourcePla
 import org.greencloud.managingsystem.service.planner.plans.DecrementGreenSourceErrorPlan;
 import org.greencloud.managingsystem.service.planner.plans.DisableServerPlan;
 import org.greencloud.managingsystem.service.planner.plans.DisconnectGreenSourcePlan;
+import org.greencloud.managingsystem.service.planner.plans.EnableServerPlan;
 import org.greencloud.managingsystem.service.planner.plans.IncreaseDeadlinePriorityPlan;
 import org.greencloud.managingsystem.service.planner.plans.IncreaseJobDivisionPowerPriorityPlan;
 import org.greencloud.managingsystem.service.planner.plans.IncrementGreenSourceErrorPlan;
@@ -39,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.action.AdaptationActionEnum;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -58,9 +62,10 @@ public class PlannerService extends AbstractManagingService {
 	 * Method is used to trigger the system adaptation planning based on specific adaptation action qualities
 	 *
 	 * @param adaptationActions set of available adaptation actions with computed qualities
+	 * @param violatedGoal      goal that has been violated
 	 */
-	public void trigger(final Map<AdaptationAction, Double> adaptationActions) {
-		initializePlansForActions();
+	public void trigger(final Map<AdaptationAction, Double> adaptationActions, final GoalEnum violatedGoal) {
+		initializePlansForActions(violatedGoal);
 		final Map<AdaptationAction, Double> executableActions = getPlansWhichCanBeExecuted(adaptationActions);
 
 		if (executableActions.isEmpty()) {
@@ -110,19 +115,31 @@ public class PlannerService extends AbstractManagingService {
 		return planForActionMap.getOrDefault(action.getAction(), null);
 	}
 
-	protected void initializePlansForActions() {
-		planForActionMap = Map.of(
-				ADD_SERVER, new AddServerPlan(managingAgent),
-				ADD_GREEN_SOURCE, new AddGreenSourcePlan(managingAgent),
-				CONNECT_GREEN_SOURCE, new ConnectGreenSourcePlan(managingAgent),
-				DISCONNECT_GREEN_SOURCE, new DisconnectGreenSourcePlan(managingAgent),
-				INCREASE_DEADLINE_PRIORITY, new IncreaseDeadlinePriorityPlan(managingAgent),
-				INCREASE_POWER_PRIORITY, new IncreaseJobDivisionPowerPriorityPlan(managingAgent),
-				INCREASE_GREEN_SOURCE_ERROR, new IncrementGreenSourceErrorPlan(managingAgent),
-				CHANGE_GREEN_SOURCE_WEIGHT, new ChangeGreenSourceWeightPlan(managingAgent),
-				DECREASE_GREEN_SOURCE_ERROR, new DecrementGreenSourceErrorPlan(managingAgent),
-				DISABLE_SERVER, new DisableServerPlan(managingAgent)
-		);
+	protected void initializePlansForActions(final GoalEnum violatedGoal) {
+		planForActionMap = new EnumMap<>(AdaptationActionEnum.class);
+
+		planForActionMap.put(ADD_SERVER,
+				new AddServerPlan(managingAgent, violatedGoal));
+		planForActionMap.put(ADD_GREEN_SOURCE,
+				new AddGreenSourcePlan(managingAgent, violatedGoal));
+		planForActionMap.put(CONNECT_GREEN_SOURCE,
+				new ConnectGreenSourcePlan(managingAgent, violatedGoal));
+		planForActionMap.put(DISCONNECT_GREEN_SOURCE,
+				new DisconnectGreenSourcePlan(managingAgent, violatedGoal));
+		planForActionMap.put(INCREASE_DEADLINE_PRIORITY,
+				new IncreaseDeadlinePriorityPlan(managingAgent, violatedGoal));
+		planForActionMap.put(INCREASE_POWER_PRIORITY,
+				new IncreaseJobDivisionPowerPriorityPlan(managingAgent, violatedGoal));
+		planForActionMap.put(INCREASE_GREEN_SOURCE_ERROR,
+				new IncrementGreenSourceErrorPlan(managingAgent, violatedGoal));
+		planForActionMap.put(CHANGE_GREEN_SOURCE_WEIGHT,
+				new ChangeGreenSourceWeightPlan(managingAgent, violatedGoal));
+		planForActionMap.put(DECREASE_GREEN_SOURCE_ERROR,
+				new DecrementGreenSourceErrorPlan(managingAgent, violatedGoal));
+		planForActionMap.put(DISABLE_SERVER,
+				new DisableServerPlan(managingAgent, violatedGoal));
+		planForActionMap.put(ENABLE_SERVER,
+				new EnableServerPlan(managingAgent, violatedGoal));
 	}
 
 	@VisibleForTesting

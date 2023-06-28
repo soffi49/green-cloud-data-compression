@@ -6,7 +6,7 @@ import static com.greencloud.application.agents.server.behaviour.jobexecution.in
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_JOB_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.factory.OfferMessageFactory.makeServerJobOffer;
+import static com.greencloud.application.messages.factory.OfferMessageFactory.prepareServerJobOffer;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
@@ -65,7 +65,7 @@ public class InitiateExecutionOfferForJob extends ProposeInitiator {
 			final ACLMessage cnaMessage) {
 		final GreenSourceData data = readMessageContent(greenSourceOffer, GreenSourceData.class);
 		final double servicePrice = agent.manage().calculateServicePrice(data);
-		final ACLMessage proposalMessage = makeServerJobOffer(agent, servicePrice, data.getJobId(), cnaMessage);
+		final ACLMessage proposalMessage = prepareServerJobOffer(agent, servicePrice, data.getJobId(), cnaMessage);
 
 		return new InitiateExecutionOfferForJob(agent, proposalMessage, greenSourceOffer);
 	}

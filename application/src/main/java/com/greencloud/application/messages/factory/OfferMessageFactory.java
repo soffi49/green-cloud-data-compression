@@ -31,7 +31,7 @@ public class OfferMessageFactory {
 	 * @param cnaMessage   reply message as which the job offer is to be sent
 	 * @return PROPOSE ACLMessage
 	 */
-	public static ACLMessage makeServerJobOffer(final ServerAgent serverAgent, final double servicePrice,
+	public static ACLMessage prepareServerJobOffer(final ServerAgent serverAgent, final double servicePrice,
 			final String jobId, final ACLMessage cnaMessage) {
 		final ClientJob job = getJobById(jobId, serverAgent.getServerJobs());
 
@@ -58,7 +58,7 @@ public class OfferMessageFactory {
 	 * @param message               reply message as which the power supply offer is to be sent
 	 * @return PROPOSE ACLMessage
 	 */
-	public static ACLMessage makeGreenEnergyPowerSupplyOffer(final GreenEnergyAgent greenEnergyAgent,
+	public static ACLMessage prepareGreenEnergyPowerSupplyOffer(final GreenEnergyAgent greenEnergyAgent,
 			final double averageAvailablePower, final double predictionError, final String jobId,
 			final ACLMessage message) {
 		final GreenSourceData responseData = ImmutableGreenSourceData.builder()

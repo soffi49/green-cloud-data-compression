@@ -12,7 +12,7 @@ import static com.greencloud.application.messages.constants.MessageConversationC
 import static com.greencloud.application.messages.constants.MessageConversationConstants.ON_HOLD_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getJobByInstanceId;
@@ -79,7 +79,7 @@ public class InitiateJobTransferInGreenSources extends AbstractCFPInitiator<Gree
 	public static InitiateJobTransferInGreenSources create(final ServerAgent agent,
 			final JobDivided<ClientJob> newJobInstances, final List<AID> greenSources,
 			final ACLMessage greenSourceRequest, final Instant shortageTime) {
-		final ACLMessage cfp = createCallForProposal(mapJobToPowerJob(newJobInstances.getSecondInstance()),
+		final ACLMessage cfp = prepareCallForProposal(mapJobToPowerJob(newJobInstances.getSecondInstance()),
 				greenSources, SERVER_JOB_CFP_PROTOCOL);
 
 		return new InitiateJobTransferInGreenSources(agent, cfp, greenSourceRequest, newJobInstances, shortageTime);

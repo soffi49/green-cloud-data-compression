@@ -95,10 +95,10 @@ public abstract class AbstractScenarioService {
 	protected AbstractScenarioService()
 			throws ExecutionException, InterruptedException, StaleProxyException {
 		this.agentFactory = new AgentFactoryImpl();
-		this.guiController = new GuiControllerImpl(websocketAddresses);
 		this.eventService = new ScenarioEventService(this);
 		this.jadeRuntime = instance();
 		this.timescaleDatabase = new TimescaleDatabase(databaseHostIp);
+		this.guiController = new GuiControllerImpl(websocketAddresses, timescaleDatabase);
 
 		if (mainHost) {
 			timescaleDatabase.initDatabase();
@@ -189,7 +189,6 @@ public abstract class AbstractScenarioService {
 			final String platformAddress = format("http://%s:%s/acc", localHostIp, jadeInterPort);
 			profile.setParameter(Profile.MTPS, format("jade.mtp.http.MessageTransportProtocol(%s)", platformAddress));
 			timescaleDatabase.writeAMSData("ams@" + platformId, platformAddress);
-
 		}
 		return executorService.submit(() -> jadeRuntime.createMainContainer(profile)).get();
 	}

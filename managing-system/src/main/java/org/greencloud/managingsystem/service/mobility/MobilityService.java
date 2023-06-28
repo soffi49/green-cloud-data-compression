@@ -30,6 +30,7 @@ import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
+import com.greencloud.commons.exception.MapperException;
 
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
@@ -122,7 +123,7 @@ public class MobilityService extends AbstractManagingService {
 			logger.info(MOVE_CONTAINER_LOG, agentController.getName(), targetContainer.getName());
 			agentController.move(targetContainer);
 		} catch (StaleProxyException e) {
-			throw new RuntimeException(e);
+			throw new MapperException(e);
 		}
 	}
 

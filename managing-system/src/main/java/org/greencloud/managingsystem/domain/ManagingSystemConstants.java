@@ -37,7 +37,8 @@ public final class ManagingSystemConstants {
 
 	// EXECUTOR CONSTANTS
 	public static final int VERIFY_ADAPTATION_ACTION_DELAY_IN_SECONDS = 5;
-	public static final Integer SYSTEM_ADAPTATION_PLAN_VERIFY_DELAY = 20;
+	public static final Integer SYSTEM_ADAPTATION_PLAN_VERIFY_DELAY = 10;
+	public static final Integer SYSTEM_ADAPTATION_PLAN_CONFIRMATION_TIMEOUT = 20000;
 
 	private ManagingSystemConstants() {
 	}

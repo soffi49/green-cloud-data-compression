@@ -26,6 +26,7 @@ import com.greencloud.commons.scenario.ScenarioStructureArgs;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
 
+import jade.core.AID;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
@@ -67,6 +68,17 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
 	@Override
 	public AgentController createAgentController(final AgentArgs agentArgs, final ScenarioStructureArgs scenario) {
+		return createController(agentArgs, scenario, false, null);
+	}
+
+	@Override
+	public AgentController createAgentController(final AgentArgs agentArgs, final ScenarioStructureArgs scenario,
+			boolean isInformer, AID managingAgent) {
+		return createController(agentArgs, scenario, isInformer, managingAgent);
+	}
+
+	private AgentController createController(final AgentArgs agentArgs, final ScenarioStructureArgs scenario,
+			Boolean isInformer, AID managingAgent) {
 		final AbstractAgentNode agentNode = agentNodeFactory.createAgentNode(agentArgs, scenario);
 		var agentController = (AgentController) null;
 
@@ -75,18 +87,18 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 			if (agentArgs instanceof ClientAgentArgs clientAgent) {
 				agentController = createClientController(clientAgent);
 			} else if (agentArgs instanceof ServerAgentArgs serverAgent) {
-				agentController = createServerController(serverAgent);
+				agentController = createServerController(serverAgent, isInformer, managingAgent);
 			} else if (agentArgs instanceof CloudNetworkArgs cloudNetworkAgent) {
-				agentController = createCloudNetworkController(cloudNetworkAgent);
+				agentController = createCloudNetworkController(cloudNetworkAgent, isInformer, managingAgent);
 			} else if (agentArgs instanceof GreenEnergyAgentArgs greenEnergyAgent) {
-				agentController = createGreenSourceController(greenEnergyAgent);
+				agentController = createGreenSourceController(greenEnergyAgent, isInformer, managingAgent);
 			} else if (agentArgs instanceof MonitoringAgentArgs monitoringAgent) {
-				agentController = createMonitoringController(monitoringAgent);
+				agentController = createMonitoringController(monitoringAgent, isInformer, managingAgent);
 			} else if (agentArgs instanceof SchedulerAgentArgs schedulerAgent) {
-				agentController = createSchedulerController(schedulerAgent);
+				agentController = createSchedulerController(schedulerAgent, isInformer, managingAgent);
 			}
 
-			if(nonNull(agentController)) {
+			if (nonNull(agentController)) {
 				agentNode.setDatabaseClient(timescaleDatabase);
 				guiController.addAgentNodeToGraph(agentNode);
 				agentController.putO2AObject(guiController, ASYNC);
@@ -133,7 +145,8 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 		}
 	}
 
-	private AgentController createClientController(final ClientAgentArgs clientAgent) throws StaleProxyException {
+	private AgentController createClientController(final ClientAgentArgs clientAgent)
+			throws StaleProxyException {
 		final String startDate = clientAgent.formatClientTime(clientAgent.getStart());
 		final String endDate = clientAgent.formatClientTime(clientAgent.getEnd());
 		final String deadline = clientAgent.formatClientTime(clientAgent.getDeadline());
@@ -149,7 +162,8 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 						clientAgent.getJobId() });
 	}
 
-	private AgentController createSchedulerController(final SchedulerAgentArgs schedulerAgent)
+	private AgentController createSchedulerController(final SchedulerAgentArgs schedulerAgent, Boolean isInformer,
+			AID managingAgent)
 			throws StaleProxyException {
 		return containerController.createNewAgent(schedulerAgent.getName(),
 				"com.greencloud.application.agents.scheduler.SchedulerAgent",
@@ -157,26 +171,34 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 						schedulerAgent.getPowerWeight(),
 						schedulerAgent.getMaximumQueueSize(),
 						schedulerAgent.getJobSplitThreshold(),
-						schedulerAgent.getSplittingFactor() });
+						schedulerAgent.getSplittingFactor(),
+						isInformer,
+						managingAgent });
 	}
 
-	private AgentController createCloudNetworkController(final CloudNetworkArgs cloudNetworkAgent)
+	private AgentController createCloudNetworkController(final CloudNetworkArgs cloudNetworkAgent, Boolean isInformer,
+			AID managingAgent)
 			throws StaleProxyException {
 		return containerController.createNewAgent(cloudNetworkAgent.getName(),
 				"com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent",
-				new Object[] { mainDFAddress, mainHostPlatformId });
+				new Object[] { mainDFAddress, mainHostPlatformId, isInformer, managingAgent });
 	}
 
-	private AgentController createServerController(final ServerAgentArgs serverAgent) throws StaleProxyException {
+	private AgentController createServerController(final ServerAgentArgs serverAgent, Boolean isInformer,
+			AID managingAgent)
+			throws StaleProxyException {
 		return containerController.createNewAgent(serverAgent.getName(),
 				"com.greencloud.application.agents.server.ServerAgent",
 				new Object[] { serverAgent.getOwnerCloudNetwork(),
 						serverAgent.getPrice(),
 						serverAgent.getMaximumCapacity(),
-						serverAgent.getJobProcessingLimit() });
+						serverAgent.getJobProcessingLimit(),
+						isInformer,
+						managingAgent });
 	}
 
-	private AgentController createGreenSourceController(final GreenEnergyAgentArgs greenEnergyAgent)
+	private AgentController createGreenSourceController(final GreenEnergyAgentArgs greenEnergyAgent, Boolean isInformer,
+			AID managingAgent)
 			throws StaleProxyException {
 		return containerController.createNewAgent(greenEnergyAgent.getName(),
 				"com.greencloud.application.agents.greenenergy.GreenEnergyAgent",
@@ -187,13 +209,16 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 						greenEnergyAgent.getLatitude(),
 						greenEnergyAgent.getLongitude(),
 						greenEnergyAgent.getEnergyType(),
-						greenEnergyAgent.getWeatherPredictionError() });
+						greenEnergyAgent.getWeatherPredictionError(),
+						isInformer,
+						managingAgent });
 	}
 
-	private AgentController createMonitoringController(final MonitoringAgentArgs monitoringAgent)
+	private AgentController createMonitoringController(final MonitoringAgentArgs monitoringAgent, Boolean isInformer,
+			AID managingAgent)
 			throws StaleProxyException {
 		return containerController.createNewAgent(monitoringAgent.getName(),
 				"com.greencloud.application.agents.monitoring.MonitoringAgent",
-				new Object[] { monitoringAgent.getBadStubProbability() });
+				new Object[] { monitoringAgent.getBadStubProbability(), isInformer, managingAgent });
 	}
 }

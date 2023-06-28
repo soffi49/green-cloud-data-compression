@@ -3,6 +3,7 @@ package com.greencloud.application.agents.scheduler.behaviour.job.scheduling.lis
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.JOB_FAILED_RETRY_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.logs.JobSchedulingListenerLog.JOB_UPDATE_RECEIVED_LOG;
 import static com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.templates.JobSchedulingMessageTemplates.JOB_UPDATE_TEMPLATE;
+import static com.greencloud.application.agents.scheduler.constants.SchedulerAgentConstants.SCHEDULER_MESSAGE_BATCH;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FINISH_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
@@ -15,6 +16,8 @@ import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.PROCESSING;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -50,14 +53,16 @@ public class ListenForJobUpdate extends CyclicBehaviour {
 	 */
 	@Override
 	public void action() {
-		final ACLMessage message = myAgent.receive(JOB_UPDATE_TEMPLATE);
+		final List<ACLMessage> messages = myAgent.receive(JOB_UPDATE_TEMPLATE, SCHEDULER_MESSAGE_BATCH);
 
-		if (nonNull(message)) {
-			final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
+		if (nonNull(messages)) {
+			messages.stream().parallel().forEach(message -> {
+				final JobStatusUpdate jobStatusUpdate = readMessageContent(message, JobStatusUpdate.class);
 
-			MDC.put(MDC_JOB_ID, jobStatusUpdate.getJobInstance().getJobId());
-			logger.info(JOB_UPDATE_RECEIVED_LOG, jobStatusUpdate.getJobInstance().getJobId());
-			handleJobStatusChange(jobStatusUpdate, message.getConversationId());
+				MDC.put(MDC_JOB_ID, jobStatusUpdate.getJobInstance().getJobId());
+				logger.info(JOB_UPDATE_RECEIVED_LOG, jobStatusUpdate.getJobInstance().getJobId());
+				handleJobStatusChange(jobStatusUpdate, message.getConversationId());
+			});
 		} else {
 			block();
 		}

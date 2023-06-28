@@ -6,7 +6,6 @@ import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.WEATHER_SHORTAGES;
 import static com.database.knowledge.domain.goal.GoalEnum.MINIMIZE_USED_BACKUP_POWER;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
-import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -39,6 +38,7 @@ import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.GreenSourceMonitoringData;
 import com.database.knowledge.domain.agent.greensource.WeatherShortages;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.managingsystem.planner.ImmutableAdjustGreenSourceErrorParameters;
 
@@ -54,14 +54,14 @@ public class DecrementGreenSourceErrorPlan extends AbstractPlan {
 	private static final double MINIMUM_PREDICTION_ERROR = 0.02;
 	private Map<AgentsBackUpPower, List<AgentsPowerShortages>> greenSourcesPerServers;
 
-	public DecrementGreenSourceErrorPlan(ManagingAgent managingAgent) {
-		super(DECREASE_GREEN_SOURCE_ERROR, managingAgent);
+	public DecrementGreenSourceErrorPlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(DECREASE_GREEN_SOURCE_ERROR, managingAgent, violatedGoal);
 		this.greenSourcesPerServers = new HashMap<>();
 	}
 
 	/**
 	 * Method verifies if the plan is executable. The plan is executable if:
-	 * 1. there are some servers which average back up power during last timespan
+	 * 1. there are some active servers which average back up power during last timespan
 	 * was above the desired threshold (i.e. green sources use considerably more back-up power than green power)
 	 * 2. the aforementioned servers have at least 1 green source which weather prediction error is greater
 	 * than 0.02 (i.e. the green sources have prediction error above minimal value)
@@ -115,7 +115,7 @@ public class DecrementGreenSourceErrorPlan extends AbstractPlan {
 
 	@VisibleForTesting
 	protected List<AgentsBackUpPower> getConsideredServers(final double threshold) {
-		final List<String> aliveServers = managingAgent.monitor().getAliveAgents(SERVER);
+		final List<String> aliveServers = managingAgent.monitor().getActiveServers();
 
 		if (aliveServers.isEmpty()) {
 			return emptyList();

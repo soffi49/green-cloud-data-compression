@@ -8,7 +8,7 @@ import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.mapper.JobMapper.mapJobToPowerJob;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static jade.lang.acl.ACLMessage.REJECT_PROPOSAL;
@@ -60,7 +60,7 @@ public class InitiatePowerDeliveryForJob extends AbstractCFPInitiator<GreenSourc
 	public static InitiatePowerDeliveryForJob create(final ClientJob job, final ServerAgent agent,
 			final ACLMessage cnaMessage) {
 		final List<AID> greenSources = agent.manage().getOwnedActiveGreenSources().stream().toList();
-		final ACLMessage cfp = createCallForProposal(mapJobToPowerJob(job), greenSources, SERVER_JOB_CFP_PROTOCOL);
+		final ACLMessage cfp = prepareCallForProposal(mapJobToPowerJob(job), greenSources, SERVER_JOB_CFP_PROTOCOL);
 
 		return new InitiatePowerDeliveryForJob(agent, cfp, cnaMessage, job);
 	}

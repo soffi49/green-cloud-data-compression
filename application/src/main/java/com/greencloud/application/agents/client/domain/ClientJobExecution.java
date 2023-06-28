@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.toMap;
 import java.time.Instant;
 import java.util.Map;
 
-import com.greencloud.application.utils.domain.Timer;
+import com.greencloud.commons.time.Timer;
 import com.greencloud.commons.domain.job.ClientJob;
 import com.greencloud.commons.domain.job.ImmutableClientJob;
 import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;

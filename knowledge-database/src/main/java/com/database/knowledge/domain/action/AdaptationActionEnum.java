@@ -15,7 +15,8 @@ public enum AdaptationActionEnum {
 	DECREASE_GREEN_SOURCE_ERROR("Decrement Green Source weather prediction error"),
 	CONNECT_GREEN_SOURCE("Connecting Green Source"),
 	DISCONNECT_GREEN_SOURCE("Disconnecting Green Source"),
-	DISABLE_SERVER("Disable server");
+	DISABLE_SERVER("Disable server"),
+	ENABLE_SERVER("Enable server");
 
 	private final String name;
 

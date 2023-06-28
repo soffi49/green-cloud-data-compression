@@ -95,6 +95,7 @@ public class JdbcStatementsExecutor {
 			statement.setObject(5, jsonObject);
 			statement.setBoolean(6, adaptationAction.getAvailable());
 			statement.setInt(7, adaptationAction.getRuns());
+			statement.setDouble(8, adaptationAction.getExecutionDuration());
 			statement.executeUpdate();
 		}
 	}
@@ -131,7 +132,8 @@ public class JdbcStatementsExecutor {
 		try (var statement = sqlConnection.prepareStatement(UPDATE_ADAPTATION_ACTION)) {
 			statement.setObject(1, jsonObject);
 			statement.setInt(2, adaptationAction.getRuns());
-			statement.setInt(3, adaptationAction.getActionId());
+			statement.setDouble(3, adaptationAction.getExecutionDuration());
+			statement.setInt(4, adaptationAction.getActionId());
 			statement.executeUpdate();
 		}
 	}

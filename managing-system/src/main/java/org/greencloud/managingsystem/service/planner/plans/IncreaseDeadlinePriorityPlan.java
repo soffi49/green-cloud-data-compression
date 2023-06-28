@@ -8,6 +8,7 @@ import static java.util.Objects.nonNull;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.action.AdaptationAction;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.greencloud.commons.managingsystem.planner.ImmutableIncreaseDeadlinePriorityParameters;
 
 import jade.core.AID;
@@ -18,8 +19,8 @@ import jade.core.AID;
  */
 public class IncreaseDeadlinePriorityPlan extends AbstractPlan {
 
-	public IncreaseDeadlinePriorityPlan(ManagingAgent managingAgent) {
-		super(INCREASE_DEADLINE_PRIORITY, managingAgent);
+	public IncreaseDeadlinePriorityPlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(INCREASE_DEADLINE_PRIORITY, managingAgent, violatedGoal);
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class IncreaseDeadlinePriorityPlan extends AbstractPlan {
 	}
 
 	private void changePowerPriorityActionAvailability(boolean availability) {
-		final AdaptationAction increaseDeadlineAction = getAdaptationAction(INCREASE_POWER_PRIORITY);
+		final AdaptationAction increaseDeadlineAction = getAdaptationAction(INCREASE_POWER_PRIORITY, violatedGoal);
 
 		managingAgent.getAgentNode().getDatabaseClient()
 				.setAdaptationActionAvailability(increaseDeadlineAction.getActionId(), availability);

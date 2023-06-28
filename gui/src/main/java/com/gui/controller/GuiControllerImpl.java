@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
+import com.database.knowledge.timescale.TimescaleDatabase;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
 import com.gui.message.ImmutableUpdateSingleValueMessage;
@@ -18,8 +19,8 @@ import com.gui.websocket.enums.SocketTypeEnum;
 
 public class GuiControllerImpl implements GuiController {
 
-	public GuiControllerImpl(final Map<SocketTypeEnum, String> hostUris) {
-		WebSocketConnections.initialize(hostUris);
+	public GuiControllerImpl(final Map<SocketTypeEnum, String> hostUris, final TimescaleDatabase databaseClient) {
+		WebSocketConnections.initialize(hostUris, databaseClient);
 	}
 
 	@Override

@@ -66,7 +66,7 @@ public class AnalyzerService extends AbstractManagingService {
 			final Map<AdaptationAction, Double> actionsQualityMap = availableActions.stream()
 					.collect(toMap(action -> action, this::computeQualityOfAdaptationAction));
 
-			managingAgent.plan().trigger(actionsQualityMap);
+			managingAgent.plan().trigger(actionsQualityMap, violatedGoal);
 		}
 	}
 

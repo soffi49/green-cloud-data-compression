@@ -1,4 +1,4 @@
-package com.greencloud.application.utils.domain;
+package com.greencloud.commons.time;
 
 import java.time.Duration;
 import java.time.Instant;

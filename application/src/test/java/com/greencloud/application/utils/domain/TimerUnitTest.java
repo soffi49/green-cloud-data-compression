@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.greencloud.commons.time.Timer;
+
 class TimerUnitTest {
 
 	private Timer timer;

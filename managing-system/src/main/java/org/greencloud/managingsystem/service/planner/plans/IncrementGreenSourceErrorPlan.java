@@ -26,6 +26,7 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.GreenSourceMonitoringData;
 import com.database.knowledge.domain.agent.greensource.WeatherShortages;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.managingsystem.planner.ImmutableAdjustGreenSourceErrorParameters;
 
@@ -41,8 +42,8 @@ public class IncrementGreenSourceErrorPlan extends AbstractPlan {
 	private static final int MAXIMUM_PREDICTION_ERROR = 1;
 	private Map<String, Integer> greenSourcesPowerShortages;
 
-	public IncrementGreenSourceErrorPlan(ManagingAgent managingAgent) {
-		super(INCREASE_GREEN_SOURCE_ERROR, managingAgent);
+	public IncrementGreenSourceErrorPlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(INCREASE_GREEN_SOURCE_ERROR, managingAgent, violatedGoal);
 		this.greenSourcesPowerShortages = new HashMap<>();
 	}
 

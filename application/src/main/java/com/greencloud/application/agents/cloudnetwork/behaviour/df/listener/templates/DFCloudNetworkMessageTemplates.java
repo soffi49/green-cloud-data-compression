@@ -1,7 +1,7 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.templates;
 
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.DISABLE_SERVER_PROTOCOL;
-import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.ANNOUNCE_NETWORK_CHANGE_PROTOCOL;
+import static com.greencloud.application.messages.constants.MessageProtocolConstants.ENABLE_SERVER_PROTOCOL;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static jade.lang.acl.MessageTemplate.MatchPerformative;
@@ -16,11 +16,8 @@ import jade.lang.acl.MessageTemplate;
  */
 public class DFCloudNetworkMessageTemplates {
 
-	public static final MessageTemplate ANNOUNCE_NETWORK_CHANGE_TEMPLATE = and(MatchPerformative(INFORM),
-			MatchProtocol(ANNOUNCE_NETWORK_CHANGE_PROTOCOL));
-
-	public static final MessageTemplate DISABLE_SERVER_TEMPLATE = and(
+	public static final MessageTemplate SERVER_STATUS_CHANGE_TEMPLATE = and(
 			or(MatchPerformative(INFORM), MatchPerformative(REQUEST)),
-			MatchProtocol(DISABLE_SERVER_PROTOCOL)
+			or(MatchProtocol(DISABLE_SERVER_PROTOCOL), MatchProtocol(ENABLE_SERVER_PROTOCOL))
 	);
 }

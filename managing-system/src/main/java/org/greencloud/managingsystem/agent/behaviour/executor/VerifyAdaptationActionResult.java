@@ -1,6 +1,5 @@
 package org.greencloud.managingsystem.agent.behaviour.executor;
 
-import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.constants.CommonConstants.DATA_NOT_AVAILABLE_INDICATOR;
 import static java.util.stream.Collectors.toMap;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.database.knowledge.domain.action.AdaptationAction;
-import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.database.knowledge.domain.goal.GoalEnum;
 import com.database.knowledge.timescale.TimescaleDatabase;
 
@@ -36,24 +34,26 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 
 	private final ManagingAgent myManagingAgent;
 	private final TimescaleDatabase databaseClient;
-	private final Instant actionExecutionTime;
+	private final Instant executionTime;
+	private final long executionDuration;
 	private final Integer adaptationActionId;
 	private final AID targetAgent;
 	private final Map<GoalEnum, Double> initialGoalQualities;
 	private final Runnable enablePlanAction;
 
-	protected VerifyAdaptationActionResult(Agent agent, Instant actionExecutionTime,
-			AdaptationActionEnum adaptationActionType, AID targetAgent, Map<GoalEnum, Double> initialGoalQualities,
-			Runnable enablePlanAction, int delayInSeconds) {
+	protected VerifyAdaptationActionResult(Agent agent, Instant executionTime, long executionDuration, int actionId,
+			AID targetAgent, Map<GoalEnum, Double> initialGoalQualities, Runnable enablePlanAction,
+			int delayInSeconds) {
 		super(agent, delayInSeconds * 1000L);
 
 		this.myManagingAgent = (ManagingAgent) agent;
 		this.databaseClient = myManagingAgent.getAgentNode().getDatabaseClient();
-		this.actionExecutionTime = actionExecutionTime;
-		this.adaptationActionId = getAdaptationAction(adaptationActionType).getActionId();
+		this.executionTime = executionTime;
+		this.adaptationActionId = actionId;
 		this.targetAgent = targetAgent;
 		this.initialGoalQualities = initialGoalQualities;
 		this.enablePlanAction = enablePlanAction;
+		this.executionDuration = executionDuration;
 	}
 
 	/**
@@ -61,18 +61,20 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 	 * (with behaviour execution delay equals to VERIFY_ADAPTATION_ACTION_DELAY_IN_SECONDS)
 	 *
 	 * @param agent                - agent executing the behaviour
-	 * @param actionExecutionTime  - time when the adaptation was executed
-	 * @param adaptationActionType - type of the executed action
+	 * @param executionTime        - time when the adaptation was executed
+	 * @param executionDuration    - time that it took for the action to be executed
+	 * @param adaptationAction     -  executed action
 	 * @param targetAgent          - agent on which adaptation was executed
 	 * @param initialGoalQualities - values of the goal qualities before performing the adaptation
 	 * @param enablePlanAction     - method performed in order to enable availability of an action corresponding to
-	 *                             *                           given plan
+	 *                             given plan
 	 * @return VerifyAdaptationActionResult behaviour
 	 */
-	public static VerifyAdaptationActionResult createForAgentAction(Agent agent, Instant actionExecutionTime,
-			AdaptationActionEnum adaptationActionType, AID targetAgent, Map<GoalEnum, Double> initialGoalQualities,
-			Runnable enablePlanAction) {
-		return new VerifyAdaptationActionResult(agent, actionExecutionTime, adaptationActionType, targetAgent,
+	public static VerifyAdaptationActionResult createForAgentAction(Agent agent, Instant executionTime,
+			long executionDuration, AdaptationAction adaptationAction, AID targetAgent,
+			Map<GoalEnum, Double> initialGoalQualities, Runnable enablePlanAction) {
+		final int actionId = adaptationAction.getActionId();
+		return new VerifyAdaptationActionResult(agent, executionTime, executionDuration, actionId, targetAgent,
 				initialGoalQualities, enablePlanAction, VERIFY_ADAPTATION_ACTION_DELAY_IN_SECONDS);
 	}
 
@@ -81,16 +83,18 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 	 * (with behaviour execution delay equals to SYSTEM_ADAPTATION_PLAN_VERIFY_DELAY)
 	 *
 	 * @param agent                - agent executing the behaviour
-	 * @param adaptationActionType - type of the executed action
+	 * @param adaptationAction     - executed action
 	 * @param initialGoalQualities - values of the goal qualities before performing the adaptation
 	 * @param enablePlanAction     - method performed in order to enable availability of an action corresponding to
-	 *                             *                           given plan
+	 *                             given plan
+	 * @param executionDuration    - time that it took for the action to be executed
 	 * @return VerifyAdaptationActionResult behaviour
 	 */
 	public static VerifyAdaptationActionResult createForSystemAction(Agent agent,
-			AdaptationActionEnum adaptationActionType, Map<GoalEnum, Double> initialGoalQualities,
-			Runnable enablePlanAction) {
-		return new VerifyAdaptationActionResult(agent, getCurrentTime(), adaptationActionType, null,
+			AdaptationAction adaptationAction, Map<GoalEnum, Double> initialGoalQualities,
+			Runnable enablePlanAction, long executionDuration) {
+		final int actionId = adaptationAction.getActionId();
+		return new VerifyAdaptationActionResult(agent, getCurrentTime(), executionDuration, actionId, null,
 				initialGoalQualities, enablePlanAction, SYSTEM_ADAPTATION_PLAN_VERIFY_DELAY);
 	}
 
@@ -100,10 +104,10 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 	@Override
 	protected void onWake() {
 		AdaptationAction performedAction = databaseClient.readAdaptationAction(adaptationActionId);
-		logger.info(VERIFY_ACTION_START_LOG, performedAction, targetAgent, actionExecutionTime);
+		logger.info(VERIFY_ACTION_START_LOG, performedAction, targetAgent, executionTime);
 
 		var actionResults = getActionResults();
-		databaseClient.updateAdaptationAction(performedAction.getActionId(), actionResults);
+		databaseClient.updateAdaptationAction(performedAction.getActionId(), actionResults, executionDuration);
 		enablePlanAction.run();
 
 		logger.info(VERIFY_ACTION_END_LOG, performedAction, actionResults);
@@ -116,7 +120,7 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 	}
 
 	private double getGoalQualityDelta(GoalEnum goalEnum) {
-		final int elapsedTime = (int) Duration.between(actionExecutionTime, getCurrentTime()).toSeconds();
+		final int elapsedTime = (int) Duration.between(executionTime, getCurrentTime()).toSeconds();
 		final double initialGoalQuality = initialGoalQualities.get(goalEnum);
 		final double currentGoalQuality = myManagingAgent.monitor().getGoalService(goalEnum)
 				.computeCurrentGoalQuality(elapsedTime);

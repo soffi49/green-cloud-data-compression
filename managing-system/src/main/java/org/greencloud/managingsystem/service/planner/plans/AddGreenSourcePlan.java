@@ -1,25 +1,22 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_GREEN_SOURCE;
-import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
+import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
 import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
-import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_TIME_PERIOD;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoublePredicate;
-import java.util.function.ToDoubleFunction;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.greencloud.commons.args.agent.cloudnetwork.CloudNetworkArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
@@ -37,27 +34,24 @@ public class AddGreenSourcePlan extends SystemPlan {
 	private static final Double RELATIVE_BACKUP_POWER_VALUE_THRESHOLD = 0.2;
 	private static final DoublePredicate isOverThreshold = value -> value >= RELATIVE_BACKUP_POWER_VALUE_THRESHOLD;
 
-	private Map<String, List<Double>> serversData;
+	private Map<String, Double> serversData;
 
-	public AddGreenSourcePlan(ManagingAgent managingAgent) {
-		super(ADD_GREEN_SOURCE, managingAgent);
+	public AddGreenSourcePlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(ADD_GREEN_SOURCE, managingAgent, violatedGoal);
 		serversData = emptyMap();
 	}
 
 	/**
 	 * Method verifies if the plan is executable. The plan is executable if:
 	 * 1. any server in the system was using back-up power over specified relative back-up power threshold
+	 * 2. the considered servers have not been disabled/are not being disabled
 	 *
 	 * @return boolean value indicating if the plan is executable
 	 */
 	@Override
 	public boolean isPlanExecutable() {
-		serversData = getServerData().stream()
-				.collect(groupingBy(AgentData::aid))
-				.entrySet().stream()
-				.collect(toMap(Map.Entry::getKey, this::getBackUpPowerForServer));
-		return serversData.entrySet().stream()
-				.anyMatch(entry -> entry.getValue().stream().anyMatch(isOverThreshold::test));
+		serversData = getServersData();
+		return serversData.entrySet().stream().anyMatch(entry -> isOverThreshold.test(entry.getValue()));
 	}
 
 	/**
@@ -67,8 +61,7 @@ public class AddGreenSourcePlan extends SystemPlan {
 	 */
 	@Override
 	public AbstractPlan constructAdaptationPlan() {
-		final String targetServer = max(serversData.entrySet(),
-				comparingDouble(entry -> max(entry.getValue()))).getKey();
+		final String targetServer = max(serversData.entrySet(), comparingDouble(Map.Entry::getValue)).getKey();
 
 		if (isNull(targetServer)) {
 			return null;
@@ -107,25 +100,22 @@ public class AddGreenSourcePlan extends SystemPlan {
 			return null;
 		}
 
+		adaptationPlanInformer = extraGreenEnergyArguments.getName();
 		actionParameters = new AddGreenSourceActionParameters(extraGreenEnergyArguments, extraMonitoringAgentArguments,
 				targetLocation.getKey(), targetLocation.getValue());
 
 		return this;
 	}
 
-	private List<AgentData> getServerData() {
-		return managingAgent.getAgentNode().getDatabaseClient()
-				.readMonitoringDataForDataTypes(List.of(SERVER_MONITORING), MONITOR_SYSTEM_DATA_TIME_PERIOD);
+	private Map<String, Double> getServersData() {
+		final List<AgentData> activeServers = managingAgent.monitor().getActiveServersData();
+		return managingAgent.monitor()
+				.concatLatestAgentDataWithNotRegistered(activeServers, SERVER, this::getBackUpPowerForServer, 0.0);
 	}
 
-	private List<Double> getBackUpPowerForServer(final Map.Entry<String, List<AgentData>> dataPerServer) {
-		final ToDoubleFunction<ServerMonitoringData> getRelativeBackUpPower = data ->
-				data.getCurrentBackUpPowerUsage() / (data.getCurrentTraffic() + data.getCurrentBackUpPowerUsage());
+	private Double getBackUpPowerForServer(final AgentData dataPerServer) {
+		final ServerMonitoringData data = (ServerMonitoringData) dataPerServer.monitoringData();
+		return data.getCurrentBackUpPowerUsage() / (data.getCurrentTraffic() + data.getCurrentBackUpPowerUsage());
 
-		return dataPerServer.getValue().stream()
-				.map(AgentData::monitoringData)
-				.map(ServerMonitoringData.class::cast)
-				.map(getRelativeBackUpPower::applyAsDouble)
-				.toList();
 	}
 }

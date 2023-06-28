@@ -21,6 +21,7 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.greencloud.commons.args.agent.cloudnetwork.CloudNetworkArgs;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
@@ -34,12 +35,12 @@ import jade.core.Location;
  * Class containing adaptation plan which realizes the action of adding new server to the system
  */
 public class AddServerPlan extends SystemPlan {
-	protected static final double TRAFFIC_LOAD_THRESHOLD = 0.6;
+	protected static final double TRAFFIC_LOAD_THRESHOLD = 0.4;
 
 	private List<AgentData> serversData;
 
-	public AddServerPlan(ManagingAgent managingAgent) {
-		super(ADD_SERVER, managingAgent);
+	public AddServerPlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(ADD_SERVER, managingAgent, violatedGoal);
 		serversData = emptyList();
 	}
 
@@ -48,12 +49,18 @@ public class AddServerPlan extends SystemPlan {
 	 * 1. all servers have traffic load over specified constant TRAFFIC_LOAD_THRESHOLD value
 	 * (in order to make sure that new servers are not unnecessarily added to the not yet saturated
 	 * green cloud network)
+	 * 2. there are no servers in the system that has been disabled
 	 *
 	 * @return boolean value indicating if the plan is executable
 	 */
 	@Override
 	public boolean isPlanExecutable() {
 		serversData = getLastServerData();
+
+		if(serversData.stream().anyMatch(server -> ((ServerMonitoringData)server.monitoringData()).isDisabled())) {
+			return false;
+		}
+
 		return serversData.stream()
 				.map(AgentData::monitoringData)
 				.map(ServerMonitoringData.class::cast)
@@ -105,6 +112,7 @@ public class AddServerPlan extends SystemPlan {
 			return null;
 		}
 
+		adaptationPlanInformer = extraServerArguments.getName();
 		actionParameters = new AddServerActionParameters(extraServerArguments, extraGreenEnergyArguments,
 				extraMonitoringAgentArguments, targetLocation.getKey(), targetLocation.getValue());
 

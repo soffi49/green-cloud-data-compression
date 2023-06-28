@@ -19,4 +19,5 @@ public class ServerManagementLog {
 
 	// ADAPTATION MANAGEMENT LOG MESSAGES
 	public static final String DISABLE_SERVER_LOG = "Disabling Server and informing CNA {}.";
+	public static final String ENABLE_SERVER_LOG = "Enabling Server and informing CNA {}.";
 }

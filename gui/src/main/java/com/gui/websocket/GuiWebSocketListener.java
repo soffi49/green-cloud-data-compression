@@ -9,6 +9,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.database.knowledge.timescale.TimescaleDatabase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.event.domain.PowerShortageEvent;
@@ -19,10 +20,12 @@ public class GuiWebSocketListener extends GuiWebSocketClient {
 	private static final Logger logger = LoggerFactory.getLogger(GuiWebSocketListener.class);
 
 	private final Map<String, AbstractAgentNode> agentNodes;
+	private final TimescaleDatabase database;
 
-	public GuiWebSocketListener(URI serverUri) {
+	public GuiWebSocketListener(URI serverUri, final TimescaleDatabase database) {
 		super(serverUri);
 		agentNodes = new HashMap<>();
+		this.database = database;
 	}
 
 	public void addAgentNode(AbstractAgentNode agentNode) {

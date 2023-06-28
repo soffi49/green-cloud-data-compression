@@ -148,14 +148,17 @@ public class TimescaleDatabase implements Closeable, Serializable {
 	/**
 	 * Updates given adaptation action with additional goals changes data
 	 *
-	 * @param actionId    id of the adaptation action to update
-	 * @param goalChanges additional goals changes data for the given adaptation action
+	 * @param actionId          id of the adaptation action to update
+	 * @param goalChanges       additional goals changes data for the given adaptation action
+	 * @param executionDuration time to execute adaptation action
 	 * @return updated {@link AdaptationAction}
 	 */
-	public AdaptationAction updateAdaptationAction(Integer actionId, Map<GoalEnum, Double> goalChanges) {
+	public AdaptationAction updateAdaptationAction(Integer actionId, Map<GoalEnum, Double> goalChanges,
+			long executionDuration) {
 		try {
 			var action = readAdaptationAction(actionId);
 			action.mergeActionResults(goalChanges);
+			action.updateAvgExecutionDuration(executionDuration);
 			action.increaseRuns();
 			statementsExecutor.executeUpdateActionStatement(action);
 			return readAdaptationAction(actionId);

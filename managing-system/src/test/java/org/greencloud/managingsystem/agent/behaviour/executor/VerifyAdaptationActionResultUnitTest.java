@@ -81,7 +81,7 @@ class VerifyAdaptationActionResultUnitTest {
 		// given
 		verifyAdaptationActionResult = new VerifyAdaptationActionResult(managingAgent, ACTION_TIMESTAMP,
 				adaptationPlan.getAdaptationActionEnum(), null, INITIAL_QUALITIES, adaptationPlan.enablePlanAction(),
-				5);
+				5, null);
 
 		when(monitoringService.getGoalService(MAXIMIZE_JOB_SUCCESS_RATIO)).thenReturn(jobSuccessRatioService);
 		when(monitoringService.getGoalService(MINIMIZE_USED_BACKUP_POWER)).thenReturn(backUpPowerUsageService);

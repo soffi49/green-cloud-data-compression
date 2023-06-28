@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.scenario.ScenarioStructureArgs;
 
+import jade.core.AID;
 import jade.wrapper.AgentController;
 
 /**
@@ -21,6 +22,18 @@ public interface AgentControllerFactory {
 	 * @return AgentController that can be started
 	 */
 	AgentController createAgentController(AgentArgs agentArgs, ScenarioStructureArgs scenario);
+
+	/**
+	 * Method creates the agent controllers
+	 *
+	 * @param agentArgs     agent arguments
+	 * @param scenario      which has to be passed to managing agent
+	 * @param isInformer    flag indicating if the created controller should send starting information to managing agent
+	 * @param managingAgent AID of managing agent with which the given agent should communicate
+	 * @return AgentController that can be started
+	 */
+	AgentController createAgentController(AgentArgs agentArgs, ScenarioStructureArgs scenario, boolean isInformer,
+			AID managingAgent);
 
 	/**
 	 * Method runs the agent controllers

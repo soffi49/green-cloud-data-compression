@@ -74,7 +74,7 @@ class InitiateAdaptationActionRequestTest {
 		doNothing().when(managingAgentNode).logNewAdaptation(any(), any(), any());
 
 		behaviour = new InitiateAdaptationActionRequest(managingAgent, message, GOAL_QUALITIES, mockRunnable,
-				mockRunnable);
+				mockRunnable, null);
 
 	}
 

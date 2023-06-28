@@ -1,6 +1,8 @@
 package com.greencloud.application.agents;
 
+import static com.greencloud.application.messages.factory.AgentDiscoveryMessageFactory.prepareMessageToManagingAgent;
 import static com.greencloud.commons.agent.AgentType.CLIENT;
+import static com.greencloud.commons.agent.AgentType.MANAGING;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_AGENT_NAME;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_CLIENT_NAME;
 import static java.util.Collections.emptyList;
@@ -14,14 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.database.knowledge.domain.action.AdaptationAction;
+import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.MonitoringData;
-import com.greencloud.application.behaviours.ListenForAdaptationAction;
 import com.greencloud.application.behaviours.ReceiveGUIController;
-import com.greencloud.application.behaviours.ReportHealthCheck;
 import com.greencloud.application.domain.agent.enums.AgentManagementEnum;
 import com.greencloud.commons.agent.AgentType;
+import com.greencloud.commons.exception.JadeContainerException;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
@@ -31,6 +32,7 @@ import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.wrapper.ControllerException;
 
 /**
  * Abstract class representing agent which has the connection with GUI controller
@@ -88,11 +90,11 @@ public abstract class AbstractAgent extends Agent {
 	/**
 	 * Abstract method invoked when the agent is the target of adaptation
 	 *
-	 * @param adaptationAction adaptation action
-	 * @param actionParameters parameters related with given adaptation
+	 * @param adaptationActionEnum adaptation action type
+	 * @param actionParameters     parameters related with given adaptation
 	 * @return flag indicating if adaptation was successful
 	 */
-	public boolean executeAction(final AdaptationAction adaptationAction,
+	public boolean executeAction(final AdaptationActionEnum adaptationActionEnum,
 			final AdaptationActionParameters actionParameters) {
 		// this method must be overwritten in agent types that will be a target to adaptation
 		throw new UnsupportedOperationException();
@@ -102,11 +104,11 @@ public abstract class AbstractAgent extends Agent {
 	 * Abstract method invoked when the agent is the target of adaptation and the adaptation requires communicating
 	 * with other agents (i.e. cannot be executed on the spot)
 	 *
-	 * @param adaptationAction  adaptation action
-	 * @param actionParameters  parameters related with given adaptation
-	 * @param adaptationMessage message with adaptation request
+	 * @param adaptationActionEnum adaptation action type
+	 * @param actionParameters     parameters related with given adaptation
+	 * @param adaptationMessage    message with adaptation request
 	 */
-	public void executeAction(final AdaptationAction adaptationAction,
+	public void executeAction(final AdaptationActionEnum adaptationActionEnum,
 			final AdaptationActionParameters actionParameters,
 			final ACLMessage adaptationMessage) {
 		// this method can be overwritten in agent types that will be a target to adaptation
@@ -129,10 +131,24 @@ public abstract class AbstractAgent extends Agent {
 		} else {
 			MDC.put(MDC_AGENT_NAME, super.getLocalName());
 		}
-		initializeAgent(getArguments());
+		final Object[] arguments = getArguments();
+
+		initializeAgent(arguments);
 		validateAgentArguments();
 		runStartingBehaviours();
 		initializeAgentManagements();
+
+		// checking if the managing agent should be informed about agent creation
+		if (arguments.length > 0 && !List.of(CLIENT, MANAGING).contains(agentType)
+				&& (boolean) arguments[arguments.length - 2]) {
+			try {
+				final AID managingAgent = (AID) arguments[arguments.length - 1];
+				send(prepareMessageToManagingAgent(getContainerController().getContainerName(), getLocalName(),
+						managingAgent));
+			} catch (ControllerException e) {
+				throw new JadeContainerException("Container not found!", e);
+			}
+		}
 	}
 
 	@Override

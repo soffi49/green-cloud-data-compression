@@ -8,8 +8,12 @@ public class AdaptationServerLog {
 	// INITIATE SERVER DISABLING LOG MESSAGES
 	public static final String DISABLING_FAILED_LOG =
 			"Disabling server failed - Server {} does not exists in a given Cloud Network.";
+	public static final String ENABLING_FAILED_LOG =
+			"Enabling server failed - Server {} does not exists in a given Cloud Network.";
 	public static final String DISABLING_SUCCEEDED_LOG =
 			"Server was successfully disabled in Cloud Network {}.";
+	public static final String ENABLING_SUCCEEDED_LOG =
+			"Server was successfully enabled in Cloud Network {}.";
 	public static final String DISABLING_LEFT_JOBS_LOG =
 			"Server will finish executing {} planned jobs before being fully disabled.";
 }

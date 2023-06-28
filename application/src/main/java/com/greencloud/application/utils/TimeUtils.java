@@ -18,6 +18,7 @@ import java.time.format.DateTimeParseException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.shredzone.commons.suncalc.SunTimes;
@@ -214,6 +215,22 @@ public class TimeUtils {
 	public static Instant postponeTime(final Instant time, final long minutes) {
 		final long simulationAdjustment = convertToSimulationTime(minutes * 60);
 		return time.plus(simulationAdjustment, MILLIS);
+	}
+
+	/**
+	 * Method converts milliseconds to string of the form "x min. y sec. z ms."
+	 *
+	 * @param ms number of milliseconds
+	 * @return formatted string
+	 */
+	public static String convertMillisecondsToTimeString(final long ms) {
+		final long min = TimeUnit.MILLISECONDS.toMinutes(ms);
+		final long sec = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(min);
+		final long msRest = ms - (TimeUnit.MINUTES.toMillis(min) + TimeUnit.MINUTES.toMillis(sec));
+
+		return min != 0 ?
+				String.format("%02d min. %02d sec. %02d ms.", min, sec, msRest) :
+				(sec != 0 ? String.format("%02d sec. %02d ms.", sec, msRest) : String.format("%02d ms.", msRest));
 	}
 
 	/**

@@ -6,6 +6,7 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.action.AdaptationActionEnum;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 
 import jade.core.AID;
@@ -19,6 +20,7 @@ public abstract class AbstractPlan {
 	protected final AdaptationActionEnum adaptationActionEnum;
 	protected AdaptationActionParameters actionParameters;
 	protected AID targetAgent;
+	protected GoalEnum violatedGoal;
 
 	protected Runnable postActionHandler;
 
@@ -28,9 +30,10 @@ public abstract class AbstractPlan {
 	 * @param actionEnum    type of adaptation action
 	 * @param managingAgent managing agent executing the action
 	 */
-	protected AbstractPlan(AdaptationActionEnum actionEnum, ManagingAgent managingAgent) {
+	protected AbstractPlan(AdaptationActionEnum actionEnum, ManagingAgent managingAgent, GoalEnum violatedGoal) {
 		this.adaptationActionEnum = actionEnum;
 		this.managingAgent = managingAgent;
+		this.violatedGoal = violatedGoal;
 	}
 
 	/**
@@ -55,7 +58,7 @@ public abstract class AbstractPlan {
 	 */
 	public Runnable disablePlanAction() {
 		return () -> {
-			final AdaptationAction action = getAdaptationAction(adaptationActionEnum);
+			final AdaptationAction action = getAdaptationAction(adaptationActionEnum, violatedGoal);
 
 			managingAgent.getAgentNode().getDatabaseClient()
 					.setAdaptationActionAvailability(action.getActionId(), false);
@@ -67,7 +70,7 @@ public abstract class AbstractPlan {
 	 */
 	public Runnable enablePlanAction() {
 		return () -> {
-			final AdaptationAction action = getAdaptationAction(adaptationActionEnum);
+			final AdaptationAction action = getAdaptationAction(adaptationActionEnum, violatedGoal);
 
 			managingAgent.getAgentNode().getDatabaseClient()
 					.setAdaptationActionAvailability(action.getActionId(), true);
@@ -88,5 +91,9 @@ public abstract class AbstractPlan {
 
 	public Runnable getPostActionHandler() {
 		return postActionHandler;
+	}
+
+	public GoalEnum getViolatedGoal() {
+		return violatedGoal;
 	}
 }

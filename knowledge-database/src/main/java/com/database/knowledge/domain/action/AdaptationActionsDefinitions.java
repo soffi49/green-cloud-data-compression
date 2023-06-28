@@ -5,11 +5,12 @@ import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_SERV
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CONNECT_GREEN_SOURCE;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DECREASE_GREEN_SOURCE_ERROR;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.DISABLE_SERVER;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.DISCONNECT_GREEN_SOURCE;
+import static com.database.knowledge.domain.action.AdaptationActionEnum.ENABLE_SERVER;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_GREEN_SOURCE_ERROR;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIORITY;
-import static com.database.knowledge.domain.action.AdaptationActionEnum.*;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.ADD_COMPONENT;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.RECONFIGURE;
 import static com.database.knowledge.domain.action.AdaptationActionTypeEnum.REMOVE_COMPONENT;
@@ -20,12 +21,14 @@ import static com.database.knowledge.domain.goal.GoalEnum.MINIMIZE_USED_BACKUP_P
 import java.util.List;
 import java.util.Map;
 
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.database.knowledge.exception.InvalidAdaptationActionException;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceConnectionParameters;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
 import com.greencloud.commons.managingsystem.planner.DisableServerActionParameters;
+import com.greencloud.commons.managingsystem.planner.EnableServerActionParameters;
 import com.greencloud.commons.managingsystem.planner.IncreaseDeadlinePriorityParameters;
 import com.greencloud.commons.managingsystem.planner.IncreaseJobDivisionPriorityParameters;
 
@@ -40,6 +43,7 @@ public final class AdaptationActionsDefinitions {
 			new AdaptationAction(1, ADD_SERVER, ADD_COMPONENT, MAXIMIZE_JOB_SUCCESS_RATIO),
 			new AdaptationAction(2, INCREASE_DEADLINE_PRIORITY, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
 			new AdaptationAction(3, INCREASE_POWER_PRIORITY, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
+			new AdaptationAction(12, ENABLE_SERVER, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
 			new AdaptationAction(4, CHANGE_GREEN_SOURCE_WEIGHT, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
 			new AdaptationAction(5, INCREASE_GREEN_SOURCE_ERROR, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO),
 			new AdaptationAction(6, CONNECT_GREEN_SOURCE, ADD_COMPONENT, MAXIMIZE_JOB_SUCCESS_RATIO),
@@ -48,8 +52,8 @@ public final class AdaptationActionsDefinitions {
 			new AdaptationAction(8, ADD_GREEN_SOURCE, ADD_COMPONENT, MINIMIZE_USED_BACKUP_POWER),
 			// DISTRIBUTE TRAFFIC EVENLY
 			new AdaptationAction(9, DISCONNECT_GREEN_SOURCE, REMOVE_COMPONENT, DISTRIBUTE_TRAFFIC_EVENLY),
-			new AdaptationAction(10, DISABLE_SERVER, RECONFIGURE, DISTRIBUTE_TRAFFIC_EVENLY)
-
+			new AdaptationAction(10, DISABLE_SERVER, RECONFIGURE, DISTRIBUTE_TRAFFIC_EVENLY),
+			new AdaptationAction(11, ENABLE_SERVER, RECONFIGURE, DISTRIBUTE_TRAFFIC_EVENLY)
 	);
 
 	private static final Map<AdaptationActionEnum, Class<? extends AdaptationActionParameters>> ACTION_TO_PARAMS_MAP =
@@ -61,7 +65,8 @@ public final class AdaptationActionsDefinitions {
 					CHANGE_GREEN_SOURCE_WEIGHT, ChangeGreenSourceWeights.class,
 					INCREASE_DEADLINE_PRIORITY, IncreaseDeadlinePriorityParameters.class,
 					INCREASE_POWER_PRIORITY, IncreaseJobDivisionPriorityParameters.class,
-					DISABLE_SERVER, DisableServerActionParameters.class
+					DISABLE_SERVER, DisableServerActionParameters.class,
+					ENABLE_SERVER, EnableServerActionParameters.class
 			);
 
 	private AdaptationActionsDefinitions() {
@@ -71,9 +76,19 @@ public final class AdaptationActionsDefinitions {
 		return ADAPTATION_ACTIONS;
 	}
 
-	public static AdaptationAction getAdaptationAction(final AdaptationActionEnum action) {
+	public static List<AdaptationAction> getAdaptationAction(final AdaptationActionEnum action) {
+		if (ADAPTATION_ACTIONS.stream().noneMatch(val -> val.getAction().equals(action))) {
+			throw new InvalidAdaptationActionException(action.getName());
+		}
+
 		return ADAPTATION_ACTIONS.stream()
 				.filter(val -> val.getAction().equals(action))
+				.toList();
+	}
+
+	public static AdaptationAction getAdaptationAction(final AdaptationActionEnum action, final GoalEnum goalEnum) {
+		return ADAPTATION_ACTIONS.stream()
+				.filter(val -> val.getAction().equals(action) && val.getGoal().equals(goalEnum))
 				.findFirst().orElseThrow(() -> new InvalidAdaptationActionException(action.getName()));
 	}
 

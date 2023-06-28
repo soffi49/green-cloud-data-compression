@@ -7,7 +7,7 @@ import static com.greencloud.application.agents.scheduler.behaviour.job.scheduli
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SCHEDULER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForClient;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.preparePostponeJobMessageForClient;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
@@ -51,7 +51,7 @@ public class InitiateCNALookup extends AbstractCFPInitiator<JobWithPrice> {
 	 * @return InitiateCNALookup
 	 */
 	public static InitiateCNALookup create(final SchedulerAgent scheduler, final ClientJob job) {
-		final ACLMessage cfp = createCallForProposal(job, scheduler.getAvailableCloudNetworks(),
+		final ACLMessage cfp = prepareCallForProposal(job, scheduler.getAvailableCloudNetworks(),
 				SCHEDULER_JOB_CFP_PROTOCOL);
 
 		return new InitiateCNALookup(scheduler, cfp, job);

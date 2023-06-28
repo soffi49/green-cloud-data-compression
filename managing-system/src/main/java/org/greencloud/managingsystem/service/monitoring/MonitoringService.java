@@ -13,11 +13,13 @@ import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONIT
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_LONG_TIME_PERIOD;
 import static org.greencloud.managingsystem.service.monitoring.logs.ManagingAgentMonitoringLog.READ_ADAPTATION_GOALS_LOG;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
@@ -205,16 +207,33 @@ public class MonitoringService extends AbstractManagingService {
 	 * @return list of active servers
 	 */
 	public List<String> getActiveServers() {
+		final List<AgentData> activeServers = getActiveServersData();
+		final List<String> aliveServers = managingAgent.monitor().getAliveAgents(SERVER);
+
+		// getting servers which are active but have not yet registered data in the database
+		final List<String> activeServersWithoutData =
+				managingAgent.monitor().getAgentsNotPresentInTheDatabase(activeServers, aliveServers);
+		final List<String> activeServersNames = new ArrayList<>(activeServers.stream().map(AgentData::aid).toList());
+		activeServersNames.addAll(activeServersWithoutData);
+
+		return activeServersNames;
+	}
+
+	/**
+	 * Method retrieves list of latest data registered by active servers
+	 *
+	 * @return list of active servers
+	 */
+	public List<AgentData> getActiveServersData() {
 		final List<String> servers = getAliveAgents(SERVER);
 
 		final Predicate<AgentData> isServerActive = data ->
-				((ServerMonitoringData) data.monitoringData()).isDisabled() &&
+				!((ServerMonitoringData) data.monitoringData()).isDisabled() &&
 						servers.contains(data.aid());
 
 		return managingAgent.getAgentNode().getDatabaseClient()
 				.readLastMonitoringDataForDataTypes(singletonList(SERVER_MONITORING)).stream()
 				.filter(isServerActive)
-				.map(AgentData::aid)
 				.toList();
 	}
 
@@ -257,7 +276,7 @@ public class MonitoringService extends AbstractManagingService {
 	 * Method returns list od agents which did not report the data into database but despite that should be considered
 	 *
 	 * @param agentsFromDatabase  - list retrieved from the database
-	 * @param allConsideredAgents - list of all agents that should be considered
+	 * @param allConsideredAgents - list of all agents that should be considered (their AIDs or names)
 	 * @return list of AIDs (or names) of agents not present in the database
 	 */
 	public List<String> getAgentsNotPresentInTheDatabase(final List<AgentData> agentsFromDatabase,
@@ -298,6 +317,32 @@ public class MonitoringService extends AbstractManagingService {
 		agentsWithRecordsMap.putAll(agentsWithNoRecords);
 
 		return agentsWithRecordsMap;
+	}
+
+	/**
+	 * Method concatenate data of given agents with data of alive agents that has not yet registered data
+	 *
+	 * @param databaseAgentData data registered in the database
+	 * @param agentType         type of agents for which the data is retrieved
+	 * @param valueFunction     function used to retrieve given data field
+	 * @param defaultValue      default value used when no data is in the database
+	 * @return map of agents and assigned to them values
+	 */
+	public <T> Map<String, T> concatLatestAgentDataWithNotRegistered(final List<AgentData> databaseAgentData,
+			final AgentType agentType, final Function<AgentData, T> valueFunction, final T defaultValue) {
+		if (databaseAgentData.isEmpty()) {
+			return emptyMap();
+		}
+		final List<String> aliveServers = managingAgent.monitor().getAliveAgents(agentType);
+		final Map<String, T> agentsNotPresentInDatabase = managingAgent.monitor()
+				.getAgentsNotPresentInTheDatabase(databaseAgentData, aliveServers).stream()
+				.collect(toMap(aid -> aid, aid -> defaultValue));
+
+		final Map<String, T> agentsWithDataInDatabase =
+				databaseAgentData.stream().collect(toMap(AgentData::aid, valueFunction));
+		agentsWithDataInDatabase.putAll(agentsNotPresentInDatabase);
+
+		return agentsWithDataInDatabase;
 	}
 
 	/**

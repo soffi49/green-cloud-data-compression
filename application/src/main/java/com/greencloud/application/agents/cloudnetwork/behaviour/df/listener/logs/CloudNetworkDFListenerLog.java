@@ -6,7 +6,7 @@ package com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.log
 public class CloudNetworkDFListenerLog {
 
 	// DISABLE SERVER LOG MESSAGES
-	public static final String DISABLING_SERVER_IN_CNA_LOG = "CNA is disabling Server {}.";
-	public static final String SERVER_FOR_DISABLING_NOT_FOUND_LOG = "CNA didn't find the Server {} for disabling.";
+	public static final String SERVER_STATUS_CHANGE_IN_CNA_LOG = "CNA is {} Server {}.";
+	public static final String SERVER_FOR_STATUS_CHANGE_NOT_FOUND_LOG = "CNA didn't find the Server {} for {}.";
 
 }

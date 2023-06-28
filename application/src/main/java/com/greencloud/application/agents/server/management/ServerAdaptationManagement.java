@@ -1,6 +1,7 @@
 package com.greencloud.application.agents.server.management;
 
 import static com.greencloud.application.agents.server.management.logs.ServerManagementLog.DISABLE_SERVER_LOG;
+import static com.greencloud.application.agents.server.management.logs.ServerManagementLog.ENABLE_SERVER_LOG;
 import static com.greencloud.application.utils.AlgorithmUtils.nextFibonacci;
 import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import com.greencloud.application.agents.AbstractAgentManagement;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.behaviour.adaptation.initiator.InitiateServerDisabling;
+import com.greencloud.application.agents.server.behaviour.adaptation.initiator.InitiateServerEnabling;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -72,6 +74,18 @@ public class ServerAdaptationManagement extends AbstractAgentManagement {
 		serverAgent.disable();
 		serverAgent.manage().writeStateToDatabase();
 		serverAgent.addBehaviour(InitiateServerDisabling.create(serverAgent, adaptationMessage));
+	}
+
+	/**
+	 * Method enables given Server and passes the information to parent CNA
+	 *
+	 * @param adaptationMessage original adaptation request
+	 */
+	public void enableServer(final ACLMessage adaptationMessage) {
+		logger.info(ENABLE_SERVER_LOG, serverAgent.getOwnerCloudNetworkAgent().getLocalName());
+		serverAgent.enable();
+		serverAgent.manage().writeStateToDatabase();
+		serverAgent.addBehaviour(InitiateServerEnabling.create(serverAgent, adaptationMessage));
 	}
 
 	private void increaseWeight(final Map.Entry<AID, Integer> entry, final String targetGreenSource) {

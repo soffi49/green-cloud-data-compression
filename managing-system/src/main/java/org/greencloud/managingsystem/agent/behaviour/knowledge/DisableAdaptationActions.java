@@ -1,12 +1,12 @@
 package org.greencloud.managingsystem.agent.behaviour.knowledge;
 
-import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
-
+import java.util.Collection;
 import java.util.List;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.action.AdaptationActionEnum;
+import com.database.knowledge.domain.action.AdaptationActionsDefinitions;
 import com.database.knowledge.timescale.TimescaleDatabase;
 
 import jade.core.behaviours.OneShotBehaviour;
@@ -37,7 +37,10 @@ public class DisableAdaptationActions extends OneShotBehaviour {
 	public void action() {
 		final TimescaleDatabase database = managingAgent.getAgentNode().getDatabaseClient();
 
-		actionsToDisable.forEach(action -> database.setAdaptationActionAvailability(
-				getAdaptationAction(AdaptationActionEnum.valueOf(action)).getActionId(), false));
+		actionsToDisable.stream()
+				.map(AdaptationActionEnum::valueOf)
+				.map(AdaptationActionsDefinitions::getAdaptationAction)
+				.flatMap(Collection::stream)
+				.forEach(action -> database.setAdaptationActionAvailability(action.getActionId(), false));
 	}
 }

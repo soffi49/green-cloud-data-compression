@@ -22,7 +22,7 @@ public class CallForProposalMessageFactory {
 	 * @param protocol     protocol of the call for proposal message
 	 * @return call for proposal ACLMessage
 	 */
-	public static ACLMessage createCallForProposal(final Object content, final Collection<AID> receiverList,
+	public static ACLMessage prepareCallForProposal(final Object content, final Collection<AID> receiverList,
 			final String protocol) {
 		return MessageBuilder.builder()
 				.withPerformative(CFP)

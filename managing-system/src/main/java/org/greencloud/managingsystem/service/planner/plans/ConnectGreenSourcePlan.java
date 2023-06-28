@@ -5,7 +5,6 @@ import static com.database.knowledge.domain.agent.DataType.AVAILABLE_GREEN_ENERG
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
-import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.toList;
@@ -26,6 +25,7 @@ import org.greencloud.managingsystem.service.planner.plans.domain.AgentsTraffic;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.AvailableGreenEnergy;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.managingsystem.planner.ImmutableChangeGreenSourceConnectionParameters;
@@ -43,8 +43,8 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 
 	private Map<AgentsGreenPower, List<AgentsTraffic>> connectableServersForGreenSource;
 
-	public ConnectGreenSourcePlan(ManagingAgent managingAgent) {
-		super(CONNECT_GREEN_SOURCE, managingAgent);
+	public ConnectGreenSourcePlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(CONNECT_GREEN_SOURCE, managingAgent, violatedGoal);
 		connectableServersForGreenSource = new HashMap<>();
 	}
 
@@ -56,7 +56,7 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 	 * 3. the available power for these Green Sources in last timestamp was on average equal to at least 70% of
 	 * maximum capacity (i.e. the green sources were not on idle due to bad weather conditions)
 	 * 4. there are some Servers in the Cloud Network which traffic is less than 90% (i.e. not all servers are using
-	 * all operational power)
+	 * all operational power) and which are active
 	 * 5. the list of Servers (satisfying the above thresholds) to which a Green Source (which also satisfy
 	 * above thresholds) may connect, is not empty (i.e. the Green Sources can be connected to new Servers)
 	 *
@@ -64,7 +64,7 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 	 */
 	@Override
 	public boolean isPlanExecutable() {
-		// verifying which server complies with a thresholds
+		// verifying which server complies with thresholds
 		final Map<String, List<AgentsTraffic>> serversForCloudNetworks = getAvailableServersMap();
 		if (serversForCloudNetworks.isEmpty()) {
 			return false;
@@ -122,10 +122,10 @@ public class ConnectGreenSourcePlan extends AbstractPlan {
 
 	@VisibleForTesting
 	protected Map<String, List<AgentsTraffic>> getAvailableServersMap() {
-		final List<String> aliveServers = managingAgent.monitor().getAliveAgents(SERVER);
+		final List<String> activeServers = managingAgent.monitor().getActiveServers();
 
 		return managingAgent.getGreenCloudStructure().getCloudNetworkAgentsArgs().stream()
-				.collect(toMap(AgentArgs::getName, cna -> getServersForCNA(cna.getName(), aliveServers)))
+				.collect(toMap(AgentArgs::getName, cna -> getServersForCNA(cna.getName(), activeServers)))
 				.entrySet().stream()
 				.filter(entry -> !entry.getValue().isEmpty())
 				.collect(toMap(Map.Entry::getKey, Map.Entry::getValue));

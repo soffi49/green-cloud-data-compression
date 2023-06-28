@@ -8,7 +8,7 @@ import static com.greencloud.application.messages.constants.MessageProtocolConst
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.FAILED_TRANSFER_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_JOB_CONFIRMATION_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
-import static com.greencloud.application.messages.factory.OfferMessageFactory.makeGreenEnergyPowerSupplyOffer;
+import static com.greencloud.application.messages.factory.OfferMessageFactory.prepareGreenEnergyPowerSupplyOffer;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareFailureReply;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareReply;
 import static com.greencloud.application.utils.JobUtils.getJobByInstanceIdAndServer;
@@ -63,7 +63,7 @@ public class InitiatePowerSupplyOffer extends ProposeInitiator {
 	 */
 	public static InitiatePowerSupplyOffer create(final GreenEnergyAgent agent, final ServerJob job,
 			final double availablePower, final ACLMessage serverMessage, final MonitoringData data) {
-		final ACLMessage offer = makeGreenEnergyPowerSupplyOffer(agent, availablePower,
+		final ACLMessage offer = prepareGreenEnergyPowerSupplyOffer(agent, availablePower,
 				agent.power().computeCombinedPowerError(job),
 				job.getJobId(), serverMessage);
 

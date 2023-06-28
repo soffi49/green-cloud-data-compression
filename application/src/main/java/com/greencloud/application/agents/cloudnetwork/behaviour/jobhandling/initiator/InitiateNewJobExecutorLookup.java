@@ -5,7 +5,7 @@ import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandli
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.NO_SERVER_RESPONSES_LOG;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
 import static com.greencloud.application.utils.PowerUtils.getCurrentPowerInUse;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -50,7 +50,7 @@ public class InitiateNewJobExecutorLookup extends AbstractCFPInitiator<ServerDat
 	 */
 	public static InitiateNewJobExecutorLookup create(final CloudNetworkAgent agent, final ACLMessage schedulerMessage,
 			final ClientJob job) {
-		final ACLMessage cfp = createCallForProposal(job, agent.manage().getOwnedActiveServers(), CNA_JOB_CFP_PROTOCOL);
+		final ACLMessage cfp = prepareCallForProposal(job, agent.manage().getOwnedActiveServers(), CNA_JOB_CFP_PROTOCOL);
 		return new InitiateNewJobExecutorLookup(agent, cfp, schedulerMessage, job);
 	}
 

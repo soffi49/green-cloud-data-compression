@@ -1,6 +1,6 @@
 package com.greencloud.application.messages.factory;
 
-import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.createCallForProposal;
+import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -59,7 +59,7 @@ class CallForProposalMessageFactoryUnitTest {
 	@MethodSource("parametersMessageParams")
 	@DisplayName("Test creating call for proposal message")
 	void testCreateCallForProposal(Object content, List<AID> receivers, String protocol, String expectedContent) {
-		final ACLMessage result = createCallForProposal(content, receivers, protocol);
+		final ACLMessage result = prepareCallForProposal(content, receivers, protocol);
 		final Iterable<AID> receiversIt = result::getAllReceiver;
 
 		assertThat(result.getContent()).isEqualTo(expectedContent);

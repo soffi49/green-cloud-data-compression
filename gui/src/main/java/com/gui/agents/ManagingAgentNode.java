@@ -1,7 +1,6 @@
 package com.gui.agents;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
-import static com.gui.websocket.WebSocketConnections.getAgentsWebSocket;
 import static com.gui.websocket.WebSocketConnections.getManagingSystemSocket;
 
 import java.time.Instant;
@@ -67,7 +66,7 @@ public class ManagingAgentNode extends AbstractAgentNode {
 	 */
 	public void logNewAdaptation(final AdaptationActionEnum action, final Instant adaptationTime,
 			final Optional<String> agentName) {
-		var adaptationAction = getAdaptationAction(action);
+		var adaptationAction = getAdaptationAction(action).get(0);
 
 		getManagingSystemSocket().send(ImmutableLogAdaptationActionMessage.builder()
 				.data(ImmutableAdaptationLog.builder()

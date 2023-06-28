@@ -5,7 +5,6 @@ import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.util.Collections.max;
 import static java.util.Map.Entry.comparingByValue;
-import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.HashMap;
@@ -18,6 +17,7 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
 import com.greencloud.commons.managingsystem.planner.ImmutableDisableServerActionParameters;
@@ -34,8 +34,8 @@ public class DisableServerPlan extends AbstractPlan {
 
 	private final Map<String, Integer> idleServers;
 
-	public DisableServerPlan(ManagingAgent managingAgent) {
-		super(DISABLE_SERVER, managingAgent);
+	public DisableServerPlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(DISABLE_SERVER, managingAgent, violatedGoal);
 		idleServers = new HashMap<>();
 	}
 
@@ -44,7 +44,6 @@ public class DisableServerPlan extends AbstractPlan {
 	 * 1. there are some idle servers in the system (i.e. servers which traffic as well as number
 	 * of planned jobs is below corresponding thresholds)
 	 * 2. those servers haven't been yet disabled
-	 * 3. the parent CNA of those Servers have more than 1 Server
 	 *
 	 * @return boolean information if the plan is executable in current conditions
 	 */
@@ -64,9 +63,6 @@ public class DisableServerPlan extends AbstractPlan {
 
 		// consider servers which has not registered any data in database (i.e. did not accept any jobs)
 		idleServers.putAll(getServersNotInDatabase(serverData));
-
-		// remove servers which parent CNA contains only 1 server
-		idleServers.entrySet().removeIf(server -> parentCNAWithOneServer().test(server.getKey()));
 
 		return !idleServers.isEmpty();
 	}
@@ -105,14 +101,6 @@ public class DisableServerPlan extends AbstractPlan {
 			return serverMonitoringData.getServerJobs() <= SERVER_JOBS_NO_THRESHOLDS
 					&& !serverMonitoringData.isDisabled()
 					&& serversToConsider.contains(agentData.aid());
-		};
-	}
-
-	private Predicate<String> parentCNAWithOneServer() {
-		return server -> {
-			var cna = managingAgent.getGreenCloudStructure().getParentCNAForServer(server);
-			return isNull(cna) ||
-					managingAgent.getGreenCloudStructure().getServersForCloudNetworkAgent(cna).size() == 1;
 		};
 	}
 

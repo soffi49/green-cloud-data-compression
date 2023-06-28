@@ -2,8 +2,8 @@ package com.greencloud.application.messages.factory;
 
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.SERVER_JOB_CFP_PROTOCOL;
-import static com.greencloud.application.messages.factory.OfferMessageFactory.makeGreenEnergyPowerSupplyOffer;
-import static com.greencloud.application.messages.factory.OfferMessageFactory.makeServerJobOffer;
+import static com.greencloud.application.messages.factory.OfferMessageFactory.prepareGreenEnergyPowerSupplyOffer;
+import static com.greencloud.application.messages.factory.OfferMessageFactory.prepareServerJobOffer;
 import static com.greencloud.application.messages.fixtures.Fixtures.TEST_CNA;
 import static com.greencloud.application.messages.fixtures.Fixtures.TEST_SERVER;
 import static com.greencloud.application.messages.fixtures.Fixtures.buildClientJob;
@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.database.knowledge.exception.InvalidGoalIdentifierException;
 import com.greencloud.application.agents.greenenergy.GreenEnergyAgent;
 import com.greencloud.application.agents.server.ServerAgent;
 import com.greencloud.application.agents.server.management.ServerStateManagement;
@@ -57,7 +56,7 @@ class OfferMessageFactoryUnitTest {
 		doReturn(mockPower).when(mockManagement).getAvailableCapacity(mockJob, null, null);
 
 		// when
-		final ACLMessage result = makeServerJobOffer(mockServer, servicePrice, jobId, replyMessage);
+		final ACLMessage result = prepareServerJobOffer(mockServer, servicePrice, jobId, replyMessage);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 
 		// then
@@ -87,7 +86,7 @@ class OfferMessageFactoryUnitTest {
 		doReturn(new ConcurrentHashMap<>(Map.of(mockJob, PROCESSING))).when(mockServer).getServerJobs();
 
 		// when & then
-		assertThatThrownBy(() -> makeServerJobOffer(mockServer, servicePrice, jobId, replyMessage))
+		assertThatThrownBy(() -> prepareServerJobOffer(mockServer, servicePrice, jobId, replyMessage))
 				.isInstanceOf(JobNotFoundException.class)
 				.hasMessage("Job does not exists in given agent");
 	}
@@ -115,7 +114,7 @@ class OfferMessageFactoryUnitTest {
 		doReturn(10.0).when(mockGreenEnergy).getPricePerPowerUnit();
 
 		// when
-		final ACLMessage result = makeGreenEnergyPowerSupplyOffer(mockGreenEnergy, averageAvailablePower,
+		final ACLMessage result = prepareGreenEnergyPowerSupplyOffer(mockGreenEnergy, averageAvailablePower,
 				predictionError, jobId, replyMessage);
 		final Iterable<AID> receiverIt = result::getAllReceiver;
 

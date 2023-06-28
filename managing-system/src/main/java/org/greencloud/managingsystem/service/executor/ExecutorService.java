@@ -6,7 +6,6 @@ import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProt
 import static com.greencloud.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Optional.empty;
-import static org.greencloud.managingsystem.agent.behaviour.executor.VerifyAdaptationActionResult.createForSystemAction;
 import static org.greencloud.managingsystem.service.executor.logs.ManagingAgentExecutorLog.EXECUTING_ADAPTATION_ACTION_LOG;
 
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.Map;
 import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.agent.behaviour.executor.InitiateAdaptationActionRequest;
+import org.greencloud.managingsystem.agent.behaviour.executor.WaitForSystemPlanExecutionConfirmation;
 import org.greencloud.managingsystem.service.AbstractManagingService;
 import org.greencloud.managingsystem.service.planner.plans.AbstractPlan;
 import org.greencloud.managingsystem.service.planner.plans.SystemPlan;
@@ -27,7 +27,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.greencloud.commons.args.agent.AgentArgs;
 import com.greencloud.commons.message.MessageBuilder;
 import com.greencloud.factory.AgentControllerFactory;
-import com.greencloud.factory.AgentControllerFactoryImpl;
 import com.gui.agents.ManagingAgentNode;
 
 import jade.core.Location;
@@ -59,7 +58,8 @@ public class ExecutorService extends AbstractManagingService {
 	 * @param adaptationPlan plan containing all necessary data to correctly execute adaptation action
 	 */
 	public void executeAdaptationAction(final AbstractPlan adaptationPlan) {
-		final AdaptationAction actionToBeExecuted = getAdaptationAction(adaptationPlan.getAdaptationActionEnum());
+		final AdaptationAction actionToBeExecuted = getAdaptationAction(adaptationPlan.getAdaptationActionEnum(),
+				adaptationPlan.getViolatedGoal());
 		final Map<GoalEnum, Double> initialGoalQualities = managingAgent.monitor().getCurrentGoalQualities();
 
 		logger.info(EXECUTING_ADAPTATION_ACTION_LOG, actionToBeExecuted.getAction());
@@ -67,14 +67,14 @@ public class ExecutorService extends AbstractManagingService {
 		if (adaptationPlan instanceof SystemPlan systemAdaptationPlan) {
 			executeAdaptationActionOnSystem(systemAdaptationPlan, actionToBeExecuted, initialGoalQualities);
 		} else {
-			executeAdaptationActionOnAgent(adaptationPlan, initialGoalQualities);
+			executeAdaptationActionOnAgent(adaptationPlan, initialGoalQualities, actionToBeExecuted);
 		}
 
 		adaptationPlan.disablePlanAction().run();
 	}
 
 	private void executeAdaptationActionOnAgent(final AbstractPlan adaptationPlan,
-			final Map<GoalEnum, Double> initialGoalQualities) {
+			final Map<GoalEnum, Double> initialGoalQualities, final AdaptationAction actionToBeExecuted) {
 		final ACLMessage adaptationActionRequest = MessageBuilder.builder()
 				.withPerformative(REQUEST)
 				.withConversationId(adaptationPlan.getAdaptationActionEnum().toString())
@@ -84,7 +84,8 @@ public class ExecutorService extends AbstractManagingService {
 				.build();
 
 		managingAgent.addBehaviour(new InitiateAdaptationActionRequest(managingAgent, adaptationActionRequest,
-				initialGoalQualities, adaptationPlan.getPostActionHandler(), adaptationPlan.enablePlanAction()));
+				initialGoalQualities, adaptationPlan.getPostActionHandler(), adaptationPlan.enablePlanAction(),
+				actionToBeExecuted));
 	}
 
 	private void executeAdaptationActionOnSystem(final SystemPlan systemAdaptationPlan,
@@ -92,20 +93,28 @@ public class ExecutorService extends AbstractManagingService {
 		final List<AgentController> createdAgents = createAgents(systemAdaptationPlan);
 		final Location location = systemAdaptationPlan.getSystemAdaptationActionParameters().getAgentsTargetLocation();
 
+		managingAgent.addBehaviour(WaitForSystemPlanExecutionConfirmation.create(managingAgent,
+				systemAdaptationPlan.getAdaptationPlanInformer(), location.getName(), systemAdaptationPlan,
+				initialGoalQualities, actionToBeExecuted));
+
 		factory.runAgentControllers(createdAgents, RUN_AGENT_DELAY);
 		managingAgent.move().moveContainers(location, createdAgents);
 		((ManagingAgentNode) managingAgent.getAgentNode()).logNewAdaptation(actionToBeExecuted.getAction(),
 				getCurrentTime(), empty());
-		managingAgent.addBehaviour(createForSystemAction(managingAgent,
-				systemAdaptationPlan.getAdaptationActionEnum(), initialGoalQualities,
-				systemAdaptationPlan.enablePlanAction()));
 	}
 
 	private List<AgentController> createAgents(SystemPlan systemAdaptationPlan) {
 		final List<AgentArgs> args = systemAdaptationPlan.getSystemAdaptationActionParameters().getAgentsArguments();
+		final String informerAgent = systemAdaptationPlan.getAdaptationPlanInformer();
 		managingAgent.move().addAgentsToStructure(args);
 		return args.stream()
-				.map(agentArgs -> factory.createAgentController(agentArgs, managingAgent.getGreenCloudStructure()))
+				.map(agentArgs -> {
+					final boolean isInformer = agentArgs.getName().equals(informerAgent);
+					return isInformer ?
+							factory.createAgentController(agentArgs, managingAgent.getGreenCloudStructure(), true,
+									managingAgent.getAID()) :
+							factory.createAgentController(agentArgs, managingAgent.getGreenCloudStructure());
+				})
 				.toList();
 	}
 

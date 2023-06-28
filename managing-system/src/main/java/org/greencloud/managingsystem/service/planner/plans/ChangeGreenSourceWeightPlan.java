@@ -2,6 +2,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
 import static com.database.knowledge.domain.agent.DataType.SHORTAGES;
+import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static java.util.Collections.min;
 import static java.util.Comparator.comparingInt;
 import static java.util.List.of;
@@ -16,6 +17,7 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.Shortages;
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.collect.Maps;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
@@ -32,26 +34,25 @@ public class ChangeGreenSourceWeightPlan extends AbstractPlan {
 
 	private final Map<String, Integer> recentShortages;
 
-	public ChangeGreenSourceWeightPlan(ManagingAgent managingAgent) {
-		super(CHANGE_GREEN_SOURCE_WEIGHT, managingAgent);
+	public ChangeGreenSourceWeightPlan(ManagingAgent managingAgent, GoalEnum violatedGoal) {
+		super(CHANGE_GREEN_SOURCE_WEIGHT, managingAgent, violatedGoal);
 		recentShortages = new HashMap<>();
 	}
 
 	/**
 	 * Method verifies if the plan is executable. The plan is executable if:
 	 * 1. any of the green sources reported any power shortages, both caused by physical or weather factors
+	 * 2. there are some green sources connected to at least 1 active server (i.e. if the green source is currently
+	 * connected to the servers that are being disabled - such source should not be taken under consideration)
 	 *
 	 * @return boolean value indicating if the plan is executable
 	 */
 	@Override
 	public boolean isPlanExecutable() {
-		var readGreenSourceShortages = managingAgent.getAgentNode().getDatabaseClient()
-				.readLastMonitoringDataForDataTypes(of(SHORTAGES))
-				.stream()
-				.filter(filterAliveGreenEnergyAgents())
-				.collect(toMap(AgentData::aid, data -> ((Shortages) data.monitoringData()).shortages()));
+		var readGreenSourceShortages = getGreenSourceData();
 
 		if (readGreenSourceShortages.isEmpty()) {
+			// if there are no alive green sources
 			return false;
 		}
 
@@ -115,11 +116,30 @@ public class ChangeGreenSourceWeightPlan extends AbstractPlan {
 		return this;
 	}
 
+	private Map<String, Integer> getGreenSourceData() {
+		final List<AgentData> agentsWithShortages = managingAgent.getAgentNode().getDatabaseClient()
+				.readLastMonitoringDataForDataTypes(of(SHORTAGES)).stream()
+				.filter(filterAliveGreenEnergyAgents())
+				.toList();
+		final Map<String, Integer> allAgentsWithShortages = managingAgent.monitor()
+				.concatLatestAgentDataWithNotRegistered(agentsWithShortages, GREEN_SOURCE,
+						data -> ((Shortages) data.monitoringData()).shortages(), 0);
+
+		return allAgentsWithShortages.entrySet().stream()
+				.filter(entry -> filterGreenSourcesConnectedToActiveServer().test(entry.getKey()))
+				.collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
 	private Predicate<AgentData> filterAliveGreenEnergyAgents() {
-		return data -> managingAgent.getGreenCloudStructure()
-				.getGreenEnergyAgentsArgs()
+		final List<String> aliveGreenSources = managingAgent.monitor().getAliveAgents(GREEN_SOURCE);
+		return data -> aliveGreenSources.stream().anyMatch(greenSource -> data.aid().contains(greenSource));
+	}
+
+	private Predicate<String> filterGreenSourcesConnectedToActiveServer() {
+		final List<String> activeServers = managingAgent.monitor().getActiveServers();
+		return name -> managingAgent.getGreenCloudStructure().getServersConnectedToGreenSource(name)
 				.stream()
-				.anyMatch(args -> data.aid().contains(args.getName()));
+				.anyMatch(activeServers::contains);
 	}
 
 	private Map<String, Integer> getGreenSourceExecutedActionsForRecentShortages() {

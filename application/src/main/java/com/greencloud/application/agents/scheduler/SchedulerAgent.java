@@ -16,7 +16,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
-import com.database.knowledge.domain.action.AdaptationAction;
+import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.greencloud.application.agents.scheduler.behaviour.df.SubscribeCloudNetworkService;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.handler.HandleJobAnnouncement;
 import com.greencloud.application.agents.scheduler.behaviour.job.scheduling.listener.ListenForClientJob;
@@ -36,7 +36,7 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (args.length == 5) {
+		if (args.length == 7) {
 			try {
 				this.deadlinePriority = parseInt(args[0].toString());
 				this.powerPriority = parseInt(args[1].toString());
@@ -95,9 +95,9 @@ public class SchedulerAgent extends AbstractSchedulerAgent {
 	}
 
 	@Override
-	public boolean executeAction(final AdaptationAction adaptationAction,
+	public boolean executeAction(final AdaptationActionEnum adaptationActionEnum,
 			final AdaptationActionParameters actionParameters) {
-		return switch (adaptationAction.getAction()) {
+		return switch (adaptationActionEnum) {
 			case INCREASE_DEADLINE_PRIORITY -> adapt().increaseDeadlineWeight();
 			case INCREASE_POWER_PRIORITY -> adapt().increasePowerWeight();
 			default -> false;

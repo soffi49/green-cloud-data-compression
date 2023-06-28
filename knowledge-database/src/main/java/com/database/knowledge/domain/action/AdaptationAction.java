@@ -20,6 +20,7 @@ public class AdaptationAction {
 	private final Boolean isAvailable;
 	private final AdaptationActionTypeEnum type;
 	private Integer runs;
+	private double executionDuration;
 
 	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type,
 			GoalEnum goal) {
@@ -31,6 +32,7 @@ public class AdaptationAction {
 				.collect(toMap(goalEnum -> goalEnum, goalEnum -> new ActionResult(0.0D, 0)));
 		this.isAvailable = true;
 		this.runs = 0;
+		this.executionDuration = 0;
 	}
 
 	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type,
@@ -42,6 +44,7 @@ public class AdaptationAction {
 		this.isAvailable = isAvailable;
 		this.actionResults = actionResults;
 		this.runs = runs;
+		this.executionDuration = 0;
 	}
 
 	public Integer getActionId() {
@@ -68,6 +71,16 @@ public class AdaptationAction {
 	public Map<GoalEnum, Double> getActionResultDifferences() {
 		return actionResults.entrySet().stream()
 				.collect(toMap(Map.Entry::getKey, result -> result.getValue().diff()));
+	}
+
+	/**
+	 * Method updates the average time of action execution
+	 *
+	 * @param newExecutionDuration the latest action execution duration
+	 */
+	public void updateAvgExecutionDuration(long newExecutionDuration) {
+		executionDuration =
+				runs == 0 ? newExecutionDuration : (runs * executionDuration + newExecutionDuration) / (runs + 1);
 	}
 
 	/**
@@ -112,6 +125,10 @@ public class AdaptationAction {
 
 	private double getUpdatedGoalChange(final ActionResult actionResult, final Double newDiff) {
 		return (actionResult.diff() * actionResult.runs() + newDiff) / (actionResult.runs() + 1);
+	}
+
+	public double getExecutionDuration() {
+		return executionDuration;
 	}
 
 	@Override

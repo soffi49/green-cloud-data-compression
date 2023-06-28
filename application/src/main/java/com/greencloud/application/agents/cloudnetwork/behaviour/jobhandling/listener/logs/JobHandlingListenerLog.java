@@ -9,6 +9,8 @@ public class JobHandlingListenerLog {
 	// CLIENTS JOB LISTENER LOG MESSAGES
 	public static final String SEND_CFP_NEW_LOG =
 			"Sending call for proposal to Server Agents for a job request with jobId {}!";
+	public static final String NEW_JOB_NO_SERVERS_LOG =
+			"There are no active servers in given CNA to handle job execution! Sending refuse.";
 
 	// JOB STATUS CHANGE LOG MESSAGES
 	public static final String JOB_CONFIRMED_STATUS_LOG =

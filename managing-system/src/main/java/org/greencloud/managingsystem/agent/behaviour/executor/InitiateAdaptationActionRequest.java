@@ -1,6 +1,6 @@
 package org.greencloud.managingsystem.agent.behaviour.executor;
 
-import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
+import static com.greencloud.application.utils.TimeUtils.convertMillisecondsToTimeString;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static org.greencloud.managingsystem.agent.behaviour.executor.VerifyAdaptationActionResult.createForAgentAction;
 import static org.greencloud.managingsystem.agent.behaviour.executor.logs.ManagingExecutorLog.ACTION_FAILED_LOG;
@@ -14,8 +14,10 @@ import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.database.knowledge.domain.goal.GoalEnum;
+import com.greencloud.commons.time.Timer;
 import com.gui.agents.ManagingAgentNode;
 
 import jade.core.AID;
@@ -33,11 +35,12 @@ public class InitiateAdaptationActionRequest extends AchieveREInitiator {
 
 	private final ManagingAgent myManagingAgent;
 	private final ManagingAgentNode managingAgentNode;
-	private final AdaptationActionEnum adaptationActionType;
+	private final AdaptationAction adaptationAction;
 	private final AID targetAgent;
 	private final Map<GoalEnum, Double> initialGoalQualities;
 	private final Runnable postActionHandler;
 	private final Runnable enablePlanAction;
+	private final Timer timer;
 
 	/**
 	 * Behaviour constructor
@@ -48,17 +51,21 @@ public class InitiateAdaptationActionRequest extends AchieveREInitiator {
 	 * @param postActionHandler    - action performed after adaptation is finished
 	 * @param enablePlanAction     - method performed in order to enable availability of an action corresponding to
 	 *                             given plan
+	 * @param adaptationAction     - action that is to be executed
 	 */
 	public InitiateAdaptationActionRequest(Agent agent, ACLMessage message, Map<GoalEnum, Double> initialGoalQualities,
-			Runnable postActionHandler, Runnable enablePlanAction) {
+			Runnable postActionHandler, Runnable enablePlanAction, AdaptationAction adaptationAction) {
 		super(agent, message);
-		this.adaptationActionType = AdaptationActionEnum.valueOf(message.getConversationId());
+		this.timer = new Timer();
+		timer.startTimeMeasure(getCurrentTime());
+
 		this.targetAgent = (AID) message.getAllReceiver().next();
 		this.myManagingAgent = (ManagingAgent) agent;
 		this.managingAgentNode = (ManagingAgentNode) myManagingAgent.getAgentNode();
 		this.initialGoalQualities = initialGoalQualities;
 		this.postActionHandler = postActionHandler;
 		this.enablePlanAction = enablePlanAction;
+		this.adaptationAction = adaptationAction;
 	}
 
 	/**
@@ -72,17 +79,19 @@ public class InitiateAdaptationActionRequest extends AchieveREInitiator {
 	@Override
 	protected void handleInform(ACLMessage inform) {
 		var actionExecutionTime = getCurrentTime();
-		logger.info(COMPLETED_ACTION_LOG, adaptationActionType, actionExecutionTime, targetAgent);
+		final long executionDuration = timer.stopTimeMeasure(actionExecutionTime);
+		final String formattedDuration = convertMillisecondsToTimeString(executionDuration);
+		final AdaptationActionEnum actionType = adaptationAction.getAction();
+		logger.info(COMPLETED_ACTION_LOG, adaptationAction.getAction(), actionType, targetAgent, formattedDuration);
 
 		if (Objects.nonNull(postActionHandler)) {
 			postActionHandler.run();
 		}
 		var verifyingBehaviour = createForAgentAction(myManagingAgent, actionExecutionTime,
-				adaptationActionType, targetAgent, initialGoalQualities, enablePlanAction);
+				executionDuration, adaptationAction, targetAgent, initialGoalQualities, enablePlanAction);
 
 		myManagingAgent.addBehaviour(verifyingBehaviour);
-		managingAgentNode.logNewAdaptation(adaptationActionType, actionExecutionTime,
-				Optional.of(targetAgent.getLocalName()));
+		managingAgentNode.logNewAdaptation(actionType, actionExecutionTime, Optional.of(targetAgent.getLocalName()));
 	}
 
 	/**
@@ -93,8 +102,8 @@ public class InitiateAdaptationActionRequest extends AchieveREInitiator {
 	 */
 	@Override
 	protected void handleFailure(ACLMessage failure) {
-		logger.info(ACTION_FAILED_LOG, adaptationActionType, targetAgent);
+		logger.info(ACTION_FAILED_LOG, adaptationAction.getAction(), targetAgent);
 		myManagingAgent.getAgentNode().getDatabaseClient()
-				.setAdaptationActionAvailability(getAdaptationAction(adaptationActionType).getActionId(), true);
+				.setAdaptationActionAvailability(adaptationAction.getActionId(), true);
 	}
 }

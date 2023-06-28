@@ -13,7 +13,7 @@ import java.util.List;
 import org.slf4j.Logger;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.ListenForServerDisabling;
+import com.greencloud.application.agents.cloudnetwork.behaviour.df.listener.ListenForServerStatusChange;
 import com.greencloud.application.agents.cloudnetwork.behaviour.df.subscribe.FindSchedulerAgent;
 import com.greencloud.application.agents.cloudnetwork.behaviour.df.subscribe.SubscribeServerService;
 import com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.listener.ListenForCloudNetworkJobCancellation;
@@ -34,7 +34,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (args.length == 2) {
+		if (args.length == 4) {
 			this.parentDFAddress = prepareDF(args[0].toString(), args[1].toString());
 			this.maximumCapacity = new AtomicDouble(0.0);
 		} else {
@@ -64,7 +64,7 @@ public class CloudNetworkAgent extends AbstractCloudNetworkAgent {
 				new ListenForJobStatusChange(),
 				new ListenForServerJobTransferRequest(),
 				new ListenForCloudNetworkJobCancellation(),
-				new ListenForServerDisabling(this)
+				new ListenForServerStatusChange(this)
 		);
 	}
 

@@ -79,13 +79,6 @@ public abstract class AbstractManagingAgent extends AbstractAgent {
 	}
 
 	/**
-	 * @return green cloud controller, used to modify green cloud structure, add/remove agents
-	 */
-	public ContainerController getGreenCloudController() {
-		return greenCloudController;
-	}
-
-	/**
 	 * @return locations of all agent containers present in the system
 	 */
 	public Map<Location, AID> getContainersLocations() {
