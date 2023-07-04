@@ -20,7 +20,7 @@ public class AdaptationAction {
 	private final Boolean isAvailable;
 	private final AdaptationActionTypeEnum type;
 	private Integer runs;
-	private double executionDuration;
+	private Double executionDuration;
 
 	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type,
 			GoalEnum goal) {
@@ -32,11 +32,12 @@ public class AdaptationAction {
 				.collect(toMap(goalEnum -> goalEnum, goalEnum -> new ActionResult(0.0D, 0)));
 		this.isAvailable = true;
 		this.runs = 0;
-		this.executionDuration = 0;
+		this.executionDuration = 0.0;
 	}
 
 	public AdaptationAction(Integer actionId, AdaptationActionEnum action, AdaptationActionTypeEnum type,
-			GoalEnum goal, Map<GoalEnum, ActionResult> actionResults, Boolean isAvailable, Integer runs) {
+			GoalEnum goal, Map<GoalEnum, ActionResult> actionResults, Boolean isAvailable, Integer runs,
+			Double executionDuration) {
 		this.actionId = actionId;
 		this.action = action;
 		this.type = type;
@@ -44,7 +45,7 @@ public class AdaptationAction {
 		this.isAvailable = isAvailable;
 		this.actionResults = actionResults;
 		this.runs = runs;
-		this.executionDuration = 0;
+		this.executionDuration = executionDuration;
 	}
 
 	public Integer getActionId() {

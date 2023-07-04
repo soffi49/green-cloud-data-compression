@@ -1,16 +1,20 @@
 package com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator;
 
+import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.JOB_HAS_FAILED_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.JOB_HAS_NOT_STARTED_LOG;
 import static com.greencloud.application.agents.cloudnetwork.behaviour.jobhandling.initiator.logs.JobHandlingInitiatorLog.JOB_HAS_STARTED_LOG;
 import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.DELAYED_JOB_ID;
+import static com.greencloud.application.messages.constants.MessageConversationConstants.FAILED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageConversationConstants.STARTED_JOB_ID;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.JOB_START_STATUS_PROTOCOL;
 import static com.greencloud.application.messages.factory.JobStatusMessageFactory.prepareJobStatusMessageForScheduler;
 import static com.greencloud.application.utils.JobUtils.getJobById;
 import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
 import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
+import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.FAILED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionResultEnum.STARTED;
+import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.ACCEPTED;
 import static com.greencloud.commons.domain.job.enums.JobExecutionStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Objects.nonNull;
@@ -109,6 +113,27 @@ public class InitiateJobStartCheck extends AchieveREInitiator {
 			final JobStatusUpdate jobStatusUpdate = new ImmutableJobStatusUpdate(mapToJobInstanceId(job),
 					getCurrentTime());
 			myAgent.send(prepareJobStatusMessageForScheduler(myCloudNetwork, jobStatusUpdate, DELAYED_JOB_ID));
+		}
+	}
+
+	@Override
+	protected void handleFailure(ACLMessage failure) {
+		final ClientJob job = getJobById(jobId, myCloudNetwork.getNetworkJobs());
+
+		if (nonNull(job) && !myCloudNetwork.getNetworkJobs().get(job).equals(IN_PROGRESS)) {
+			MDC.put(MDC_JOB_ID, jobId);
+			logger.error(JOB_HAS_FAILED_LOG, jobId);
+
+			final JobStatusUpdate jobStatusUpdate = new ImmutableJobStatusUpdate(mapToJobInstanceId(job),
+					getCurrentTime());
+			myAgent.send(prepareJobStatusMessageForScheduler(myCloudNetwork, jobStatusUpdate, FAILED_JOB_ID));
+
+			if (myCloudNetwork.getNetworkJobs().get(job).equals(ACCEPTED)) {
+				myCloudNetwork.getGuiController().updateAllJobsCountByValue(-1);
+			}
+			myCloudNetwork.getNetworkJobs().remove(job);
+			myCloudNetwork.getServerForJobMap().remove(job.getJobId());
+			myCloudNetwork.manage().incrementJobCounter(mapToJobInstanceId(job), FAILED);
 		}
 	}
 }

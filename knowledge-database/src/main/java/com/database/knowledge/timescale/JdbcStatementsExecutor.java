@@ -284,7 +284,8 @@ public class JdbcStatementsExecutor {
 				objectMapper.readValue(resultSet.getObject(5).toString(), new TypeReference<>() {
 				}), // action_results
 				resultSet.getBoolean(6), // availability
-				resultSet.getInt(7) // runs
+				resultSet.getInt(7), // runs
+				resultSet.getDouble(8) // execution duration
 		);
 	}
 

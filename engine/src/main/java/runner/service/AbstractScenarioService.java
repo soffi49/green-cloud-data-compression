@@ -66,6 +66,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
+import rules.RulesController;
 
 /**
  * Abstract class serving as common base to Single and Multi Scenario Services.
@@ -169,10 +170,12 @@ public abstract class AbstractScenarioService {
 							managingAgentArgs.getDisabledActions()
 					});
 
+			final RulesController rulesController = new RulesController();
 			managingNode.setDatabaseClient(timescaleDatabase);
 			guiController.addAgentNodeToGraph(managingNode);
 			managingAgent.putO2AObject(guiController, ASYNC);
 			managingAgent.putO2AObject(managingNode, ASYNC);
+			managingAgent.putO2AObject(rulesController, ASYNC);
 
 			return managingAgent;
 		} catch (StaleProxyException e) {

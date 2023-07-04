@@ -14,6 +14,7 @@ import com.gui.message.ImmutableSetClientJobDurationMapMessage;
 import com.gui.message.ImmutableSetClientJobStatusMessage;
 import com.gui.message.ImmutableSetClientJobTimeFrameMessage;
 import com.gui.message.ImmutableSplitJobMessage;
+import com.gui.message.ImmutableUpdateJobExecutionProportionMessage;
 import com.gui.message.domain.ImmutableJobStatus;
 import com.gui.message.domain.ImmutableJobTimeFrame;
 import com.gui.message.domain.ImmutableSplitJob;
@@ -139,4 +140,20 @@ public class ClientAgentNode extends AbstractAgentNode {
 				.build());
 	}
 
+	/**
+	 * Function informs about the final job execution percentage
+	 * (i.e. how much of the job has been successfully executed)
+	 *
+	 * @param executionPercentage job execution percentage
+	 */
+	public void updateJobExecutionPercentage(final Double executionPercentage) {
+		getClientsWebSocket().send(ImmutableUpdateJobExecutionProportionMessage.builder()
+				.data(clampJobPercentage(executionPercentage))
+				.agentName(agentName)
+				.build());
+	}
+
+	private double clampJobPercentage(final double value) {
+		return Math.max(Math.min(1, value), 0);
+	}
 }

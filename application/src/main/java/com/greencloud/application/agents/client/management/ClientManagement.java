@@ -106,6 +106,7 @@ public class ClientManagement extends AbstractAgentManagement {
 		clientAgent.writeMonitoringData(CLIENT_JOB_EXECUTION, ImmutableClientJobExecutionData.builder()
 				.jobExecutionPercentage(executedPercentage)
 				.build());
+		((ClientAgentNode) clientAgent.getAgentNode()).updateJobExecutionPercentage(executedPercentage);
 	}
 
 	private void updateJobDurationMapGUI() {

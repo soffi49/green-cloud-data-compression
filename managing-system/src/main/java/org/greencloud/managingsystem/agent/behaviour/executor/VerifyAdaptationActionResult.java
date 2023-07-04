@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.goal.GoalEnum;
 import com.database.knowledge.timescale.TimescaleDatabase;
+import com.gui.agents.ManagingAgentNode;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -107,7 +108,9 @@ public class VerifyAdaptationActionResult extends WakerBehaviour {
 		logger.info(VERIFY_ACTION_START_LOG, performedAction, targetAgent, executionTime);
 
 		var actionResults = getActionResults();
-		databaseClient.updateAdaptationAction(performedAction.getActionId(), actionResults, executionDuration);
+		var adaptationAction = databaseClient.updateAdaptationAction(performedAction.getActionId(), actionResults,
+				executionDuration);
+		((ManagingAgentNode) myManagingAgent.getAgentNode()).updateAdaptationAction(adaptationAction);
 		enablePlanAction.run();
 
 		logger.info(VERIFY_ACTION_END_LOG, performedAction, actionResults);

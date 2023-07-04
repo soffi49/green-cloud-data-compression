@@ -52,12 +52,12 @@ public class GuiWebSocketListener extends GuiWebSocketClient {
 
 	@Override
 	public void onOpen(ServerHandshake serverHandshake) {
-		logger.info("Connected to event listener");
+		logger.info("Connected to message listener");
 	}
 
 	@Override
 	public void onMessage(String message) {
-		logger.info("Received event: {}", message);
+		logger.info("Received message: {}", message);
 		if (message.contains("POWER_SHORTAGE_EVENT")) {
 			handlePowerShortageMessage(message);
 		}

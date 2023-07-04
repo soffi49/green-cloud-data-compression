@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.action.AdaptationActionEnum;
 import com.database.knowledge.domain.action.AdaptationActionTypeEnum;
 import com.database.knowledge.domain.goal.AdaptationGoal;
@@ -15,8 +16,11 @@ import com.greencloud.commons.args.agent.managing.ManagingAgentArgs;
 import com.gui.message.ImmutableIncrementCounterMessage;
 import com.gui.message.ImmutableLogAdaptationActionMessage;
 import com.gui.message.ImmutableRegisterManagingAgentMessage;
+import com.gui.message.ImmutableUpdateAdaptationActionMessage;
 import com.gui.message.ImmutableUpdateSystemIndicatorsMessage;
+import com.gui.message.domain.ImmutableAdaptationAction;
 import com.gui.message.domain.ImmutableAdaptationLog;
+import com.gui.message.domain.ImmutableGoalQuality;
 
 /**
  * Agent node class representing the managing agent
@@ -54,6 +58,31 @@ public class ManagingAgentNode extends AbstractAgentNode {
 		getManagingSystemSocket().send(ImmutableUpdateSystemIndicatorsMessage.builder()
 				.systemIndicator(systemQualityIndicator)
 				.data(goalQualityMap)
+				.build());
+	}
+
+	/**
+	 * Method updates information about given adaptation action
+	 *
+	 * @param adaptationAction new adaptation action statistics
+	 */
+	public void updateAdaptationAction(final AdaptationAction adaptationAction) {
+		final List<ImmutableGoalQuality> goalQualities = adaptationAction.getActionResults().entrySet().stream()
+				.map(entry -> ImmutableGoalQuality.builder()
+						.avgQuality(entry.getValue().diff())
+						.name(entry.getKey().name().replace("_", " "))
+						.build())
+				.toList();
+		final ImmutableAdaptationAction action = ImmutableAdaptationAction.builder()
+				.avgGoalQualities(goalQualities)
+				.goal(adaptationAction.getGoal().name().replace("_", " "))
+				.name(adaptationAction.getAction().getName())
+				.runsNo(adaptationAction.getRuns())
+				.avgDuration(adaptationAction.getExecutionDuration())
+				.build();
+
+		getManagingSystemSocket().send(ImmutableUpdateAdaptationActionMessage.builder()
+				.data(action)
 				.build());
 	}
 

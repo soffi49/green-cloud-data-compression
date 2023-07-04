@@ -7,6 +7,7 @@ import static com.greencloud.commons.constants.LoggingConstant.MDC_JOB_ID;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareStringReply;
 import static com.greencloud.application.utils.JobUtils.getCurrentJobInstance;
 import static com.greencloud.application.utils.JobUtils.isJobStarted;
+import static jade.lang.acl.ACLMessage.FAILURE;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static jade.lang.acl.ACLMessage.REFUSE;
 import static java.util.Objects.nonNull;
@@ -69,8 +70,12 @@ public class ListenForJobStartCheckRequest extends CyclicBehaviour {
 
 	private ACLMessage createReplyWithJobStatus(final ACLMessage message,
 			final Map.Entry<ClientJob, JobExecutionStatusEnum> jobInstance) {
-		return nonNull(jobInstance) && isJobStarted(jobInstance.getValue()) ?
-				prepareStringReply(message, "JOB STARTED", INFORM) :
-				prepareStringReply(message, "JOB HAS NOT STARTED", REFUSE);
+		if(nonNull(jobInstance)) {
+			return isJobStarted(jobInstance.getValue()) ?
+					prepareStringReply(message, "JOB STARTED", INFORM) :
+					prepareStringReply(message, "JOB HAS NOT STARTED", REFUSE);
+		} else {
+			return prepareStringReply(message, "JOB NOT FOUND", FAILURE);
+		}
 	}
 }

@@ -11,6 +11,8 @@ public class JobHandlingInitiatorLog {
 			"Received job started confirmation. Sending information that the job {} execution has started";
 	public static final String JOB_HAS_NOT_STARTED_LOG =
 			"The job {} execution hasn't started yet. Sending delay information to client";
+	public static final String JOB_HAS_FAILED_LOG =
+			"The job {} execution has failed in the meantime. Sending failure information to client";
 
 	// FINDING JOB EXECUTOR LOG MESSAGES
 	public static final String NO_SERVER_RESPONSES_LOG = "No responses from servers were retrieved";

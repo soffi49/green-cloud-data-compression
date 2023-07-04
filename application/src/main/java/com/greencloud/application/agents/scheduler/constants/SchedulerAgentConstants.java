@@ -18,5 +18,5 @@ public class SchedulerAgentConstants {
 	public static final Integer JOB_RETRY_MINUTES_ADJUSTMENT = 10;
 	public static final int JOB_PROCESSING_TIME_ADJUSTMENT = 3000;
 	public static final int JOB_PROCESSING_DEADLINE_ADJUSTMENT = 1000;
-	public static final int SCHEDULER_MESSAGE_BATCH = 10;
+	public static final int SCHEDULER_MESSAGE_BATCH = 20;
 }

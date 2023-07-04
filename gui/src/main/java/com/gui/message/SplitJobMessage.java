@@ -6,12 +6,13 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.gui.message.domain.Message;
 import com.gui.message.domain.SplitJob;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableSplitJobMessage.class)
 @JsonDeserialize(as = ImmutableSplitJobMessage.class)
-public interface SplitJobMessage {
+public interface SplitJobMessage extends Message {
 
 	String getJobId();
 
