@@ -1,4 +1,5 @@
-export interface ReportEntry {
-    time: number
-    value: number
+import { CommonReportEntry } from "./common-report-entry";
+
+export interface ReportEntry extends CommonReportEntry {
+	value: number;
 }

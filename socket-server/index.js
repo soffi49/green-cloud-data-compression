@@ -11,7 +11,7 @@ const { handlePowerShortage, async } = require("./lib/module/agents/event-handle
 const { reportSimulationStatistics } = require("./lib/module/simulation/report-handler");
 const { parseData } = require("./lib/utils/parse-utils")
 const { logUserConnected, logNewMessage, logStateReset } = require("./lib/utils/logger-utils")
-const { resetSystemState, getSystemState, getReportsState, getAgentsState, getClientsState, getManagingState, getNetworkState, getClient, getGraphState, getAgent } = require("./lib/utils/state-utils");
+const { resetSystemState, getSystemState, getReportsState, getAgentsState, getClientsState, getManagingState, getNetworkState, getClient, getGraphState, getAgent, getNetworkReportsState, getClientsReportsState, getAgentsReportsState, getManaginReportsState } = require("./lib/utils/state-utils");
 const { AGENTS_REPORTS_STATE } = require("./lib/module/agents/agents-state");
 const { CLIENTS_REPORTS_STATE } = require("./lib/module/clients/clients-state");
 const { NETWORK_REPORTS_STATE } = require("./lib/module/network/network-state");
@@ -83,19 +83,19 @@ app.get(ROUTE_TYPES.FRONT + '/reset', async (req, res) => {
 })
 
 app.get(ROUTE_TYPES.FRONT + '/reports/agent', async (req, res) => {
-  res.send(JSON.stringify(AGENTS_REPORTS_STATE))
+  res.send(JSON.stringify(getAgentsReportsState()))
 })
 
 app.get(ROUTE_TYPES.FRONT + '/reports/client', async (req, res) => {
-  res.send(JSON.stringify(CLIENTS_REPORTS_STATE))
+  res.send(JSON.stringify(getClientsReportsState()))
 })
 
 app.get(ROUTE_TYPES.FRONT + '/reports/network', async (req, res) => {
-  res.send(JSON.stringify(NETWORK_REPORTS_STATE))
+  res.send(JSON.stringify(getNetworkReportsState()))
 })
 
 app.get(ROUTE_TYPES.FRONT + '/reports/managing', async (req, res) => {
-  res.send(JSON.stringify(MANAGING_SYSTEM_REPORTS))
+  res.send(JSON.stringify(getManaginReportsState()))
 })
 
 app.post(ROUTE_TYPES.FRONT + '/powerShortage', (req, res) => {

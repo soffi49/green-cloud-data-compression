@@ -47,5 +47,6 @@
 /green-cloud-ui/yarn.lock
 /node_modules/
 .DS_Store
+/.vscode/*
 /**/*/.DS_Store
 /managing-system/managing-system.iml

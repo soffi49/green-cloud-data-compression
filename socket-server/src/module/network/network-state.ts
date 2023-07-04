@@ -9,6 +9,7 @@ interface NetworkState {
 }
 
 interface NetworkReportsState {
+  [key: string]: ReportEntry[],
   failJobsReport: ReportEntry[],
   finishJobsReport: ReportEntry[],
   clientsReport: ReportEntry[],
@@ -49,6 +50,7 @@ const resetNetworkReportsState = () =>
 export {
   NETWORK_STATE,
   NETWORK_REPORTS_STATE,
+  NetworkReportsState,
   resetNetworkState,
   resetNetworkReportsState
 }

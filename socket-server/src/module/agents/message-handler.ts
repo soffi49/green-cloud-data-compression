@@ -207,7 +207,8 @@ const handleUpdateGreenEnergy = (msg) => {
     }
 }
 
-const handleServerDisabling = (msg) => changeCloudNetworkCapacityEvent(msg.cna, msg.server, msg.capacity, false)
+const handleServerDisabling = (msg) => changeCloudNetworkCapacityEvent(msg.cna, msg.server, msg.capacity, false, false)
+const handleServerEnabling = (msg) => changeCloudNetworkCapacityEvent(msg.cna, msg.server, msg.capacity, true, false)
 
 const handleRegisterAgent = (msg) => {
     const agentType = msg.agentType
@@ -264,5 +265,6 @@ export {
     addGreenSourcesToServer,
     addServersToCNA,
     handleRegisterAgent,
-    handleUpdateServerConnection
+    handleUpdateServerConnection,
+    handleServerEnabling
 }

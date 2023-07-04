@@ -10,6 +10,11 @@ const getCurrentTime = () => {
     }
 }
 
+const isWithinMonth = (time: number) => {
+    return time >= new Date(getCurrentTime() - 60 * 24 * 7 * 30 * 60 * 1000).getTime()
+}
+
 export {
-    getCurrentTime
+    getCurrentTime,
+    isWithinMonth
 }

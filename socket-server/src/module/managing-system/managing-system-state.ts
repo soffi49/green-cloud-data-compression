@@ -5,6 +5,11 @@ type AdaptationGoalQuality = {
     quality: number
 }
 
+type AdaptationGoalAvgQuality = {
+    name: string
+    avgQuality: number
+}
+
 enum LogType {
     RECONFIGURE = 'RECONFIGURE' as any,
     ADD_COMPONENT = 'ADD_COMPONENT' as any,
@@ -26,6 +31,13 @@ type AdaptationGoal = {
     weight: number
 }
 
+type AdaptationAction = {
+    name: string
+    goal: string
+    runsNo: number
+    avgGoalQualities: AdaptationGoalAvgQuality[]
+    avgDuration: number
+}
 
 interface ManagingSystemState {
     systemIndicator: number
@@ -35,6 +47,7 @@ interface ManagingSystemState {
     strongAdaptations: number
     adaptationLogs: AdaptationLog[]
     adaptationGoals: AdaptationGoal[]
+    adaptationActions: AdaptationAction[]
 }
 
 interface ManagingSystemReportsState {
@@ -56,7 +69,8 @@ let MANAGING_SYSTEM_STATE: ManagingSystemState = {
     weakAdaptations: 0,
     strongAdaptations: 0,
     adaptationLogs: [],
-    adaptationGoals: []
+    adaptationGoals: [],
+    adaptationActions: []
 }
 
 const resetManagingSystemState = () =>
@@ -68,7 +82,8 @@ const resetManagingSystemState = () =>
             weakAdaptations: 0,
             strongAdaptations: 0,
             adaptationLogs: [],
-            adaptationGoals: []
+            adaptationGoals: [],
+            adaptationActions: []
         }))
 
 const resetManagingSystemReportsState = () =>
@@ -84,6 +99,9 @@ export {
     AdaptationGoalQuality,
     AdaptationLog,
     ManagingSystemState,
+    AdaptationAction,
+    AdaptationGoalAvgQuality,
+    ManagingSystemReportsState,
     MANAGING_SYSTEM_STATE,
     MANAGING_SYSTEM_REPORTS,
     resetManagingSystemState,
