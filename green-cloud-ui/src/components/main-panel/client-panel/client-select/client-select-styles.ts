@@ -9,10 +9,10 @@ export const styles: Styles = {
    selectorContainer: {
       display: 'flex',
       width: '100%',
-      alignItems: 'center',
+      alignItems: 'center'
    },
    iconContainer: {
       cursor: 'pointer',
-      marginRight: '2px',
-   },
+      marginRight: '2px'
+   }
 }

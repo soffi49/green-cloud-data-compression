@@ -7,5 +7,5 @@ export enum JobStatus {
    ON_BACK_UP = 'ON BACK UP',
    ON_HOLD = 'ON HOLD',
    REJECTED = 'REJECTED',
-   FAILED = 'FAILED',
+   FAILED = 'FAILED'
 }

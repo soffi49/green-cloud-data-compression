@@ -3,7 +3,7 @@ import { FethGraphStateMessage, GraphStore } from '@types'
 
 const INITIAL_STATE: GraphStore = {
    nodes: [],
-   connections: [],
+   connections: []
 }
 
 /**
@@ -18,6 +18,6 @@ export const graphSlice = createSlice({
       },
       resetGraph(state) {
          Object.assign(state, INITIAL_STATE)
-      },
-   },
+      }
+   }
 })

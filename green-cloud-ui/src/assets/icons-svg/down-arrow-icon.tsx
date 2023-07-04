@@ -17,7 +17,7 @@ const IconCloudMenu = ({ size, color }: IconProps) => {
                style={{
                   stroke: 'none',
                   fillRule: 'nonzero',
-                  fill,
+                  fill
                }}
                d="M903.232 256l56.768 50.432L512 768 64 306.432 120.768 256 512 659.072z"
             />

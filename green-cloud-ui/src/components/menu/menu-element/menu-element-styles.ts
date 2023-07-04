@@ -14,7 +14,7 @@ export const styles: Styles = {
       backgroundColor: 'var(--gray-3)',
       opacity: 0.9,
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center'
    },
    menuIndicatorText: {
       textAlign: 'right',
@@ -24,11 +24,11 @@ export const styles: Styles = {
       color: 'var(--white)',
       fontWeight: 300,
       fontSize: 'var(--font-size-8)',
-      fontFamily: 'var(--font-1)',
+      fontFamily: 'var(--font-1)'
    },
    menuIcon: {
       marginBottom: '20px',
       opacity: 0.9,
-      cursor: 'pointer',
-   },
+      cursor: 'pointer'
+   }
 }

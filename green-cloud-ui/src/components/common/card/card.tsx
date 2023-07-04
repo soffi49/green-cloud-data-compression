@@ -32,7 +32,7 @@ const Card = ({ header, subHeader, children, containerStyle, contentStyle, remov
       cardSubHeader,
       cardSubHeaderText,
       cardHeaderWithSubheader,
-      cardHeaderContainer,
+      cardHeaderContainer
    } = styles
    const contentFinalStyle = removeScroll
       ? { ...cardContent, ...contentStyle }
@@ -49,7 +49,7 @@ const Card = ({ header, subHeader, children, containerStyle, contentStyle, remov
                   label: subHeader,
                   fieldContainerStyle: cardSubHeader,
                   fieldLabelStyle: cardSubHeaderText,
-                  isHeader: true,
+                  isHeader: true
                }}
             />
          </div>

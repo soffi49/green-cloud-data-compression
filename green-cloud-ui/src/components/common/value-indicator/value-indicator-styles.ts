@@ -15,19 +15,18 @@ export const styles: Styles = {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-around',
-      paddingTop: '30px',
       width: '80%',
       padding: '20px',
       minWidth: 'fit-content',
       boxShadow: 'var(--event-shadow)',
       borderRadius: 20,
-      margin: '5px 0px',
+      margin: '5px 0px 10px 0px'
    },
    container: {
       display: 'flex',
       justifyContent: 'space-evenly',
       alignItems: 'center',
-      width: '100%',
+      width: '100%'
    },
    titleStyle: {
       fontSize: '1vw',
@@ -35,19 +34,19 @@ export const styles: Styles = {
       color: 'var(--gray-3)',
       marginBottom: '25px',
       textAlign: 'left',
-      width: '100%',
+      width: '100%'
    },
    valueStyle: {
-      height: '70px',
+      minHeight: '70px',
       display: 'flex',
       alignItems: 'center',
-      fontSize: 'var(--font-size-1)',
-      borderLeft: 'var(--border-green-semi-bold)',
+      fontSize: '1.3vw',
+      borderLeft: 'var(--border-semi-bold-green)',
       paddingLeft: '10px',
-      width: '50%',
+      width: '50%'
    },
    iconStyle: {
-      size: '100px',
-      color: 'var(--green-1)',
-   },
+      size: '70px',
+      color: 'var(--green-1)'
+   }
 }

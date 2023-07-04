@@ -11,5 +11,5 @@ export interface CommonAgentInterface {
 
 export const DEFAULT_AGENT_START_COMMONS = {
    isActive: false,
-   adaptation: 'inactive',
+   adaptation: 'inactive'
 }

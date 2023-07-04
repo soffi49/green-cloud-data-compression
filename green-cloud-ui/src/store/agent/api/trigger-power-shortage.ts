@@ -11,9 +11,9 @@ export const triggerPowerShortage = (agentName: string, maxCapacity: number) => 
    const data: PowerShortageMessage = {
       agentName,
       data: {
-         newMaximumCapacity: maxCapacity,
+         newMaximumCapacity: maxCapacity
       },
-      type: EventType.POWER_SHORTAGE_EVENT,
+      type: EventType.POWER_SHORTAGE_EVENT
    }
 
    axios

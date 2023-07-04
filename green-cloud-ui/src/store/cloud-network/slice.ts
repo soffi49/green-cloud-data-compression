@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { CloudNetworkStore } from '@types'
+import { CloudNetworkStore, MenuTab } from '@types'
 import { resetServerState } from './api'
 
 const INITIAL_STATE: CloudNetworkStore = {
@@ -8,8 +9,11 @@ const INITIAL_STATE: CloudNetworkStore = {
    currPlannedJobsNo: 0,
    finishedJobsNo: 0,
    failedJobsNo: 0,
-   isServerConnected: null,
-   connectionToast: true,
+   isNetworkSocketConnected: null,
+   isAdaptationSocketConnected: null,
+   isClientSocketConnected: null,
+   isAgentSocketConnected: null,
+   connectionToast: true
 }
 
 /**
@@ -23,29 +27,82 @@ export const cloudNetworkSlice = createSlice({
          Object.assign(state, action.payload)
       },
       resetServerConnection(state) {
-         state.isServerConnected = null
-      },
-      openServerConnection(state) {
-         state.isServerConnected = true
+         state.isNetworkSocketConnected = null
+         state.isAdaptationSocketConnected = null
+         state.isAgentSocketConnected = null
+         state.isClientSocketConnected = null
          state.connectionToast = true
       },
-      closeServerConnection(state) {
-         state.isServerConnected = false
+      openServerConnection(state, action: PayloadAction<MenuTab>) {
+         const tabName = action.payload
+
+         if (tabName === MenuTab.ADAPTATION) {
+            state.isAdaptationSocketConnected = true
+         } else if (tabName === MenuTab.CLIENTS) {
+            state.isClientSocketConnected = true
+         } else if (tabName === MenuTab.CLOUD_SUMMARY) {
+            state.isNetworkSocketConnected = true
+         }
+         state.isAgentSocketConnected = true
+         state.connectionToast = true
+      },
+      closeServerConnection(state, action: PayloadAction<MenuTab>) {
+         const tabName = action.payload
+
+         if (tabName === MenuTab.ADAPTATION) {
+            state.isAdaptationSocketConnected = false
+         } else if (tabName === MenuTab.AGENTS) {
+            state.isAgentSocketConnected = false
+         } else if (tabName === MenuTab.CLIENTS) {
+            state.isClientSocketConnected = false
+         } else if (tabName === MenuTab.CLOUD_SUMMARY) {
+            state.isNetworkSocketConnected = false
+         }
          state.connectionToast = false
       },
       resetCloudNetwork(state) {
-         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-         const { isServerConnected, ...prevState } = INITIAL_STATE
+         const {
+            isAdaptationSocketConnected,
+            isAgentSocketConnected,
+            isClientSocketConnected,
+            isNetworkSocketConnected,
+            ...prevState
+         } = INITIAL_STATE
          Object.assign(state, { ...prevState })
-         if (state.isServerConnected) {
+
+         if (state.isAdaptationSocketConnected) {
             resetState()
          } else {
-            state.isServerConnected = true
+            state.isAdaptationSocketConnected = true
             state.connectionToast = true
             resetState()
          }
-      },
-   },
+
+         if (state.isAgentSocketConnected) {
+            resetState()
+         } else {
+            state.isAgentSocketConnected = true
+            state.connectionToast = true
+            resetState()
+         }
+
+         if (state.isClientSocketConnected) {
+            resetState()
+         } else {
+            state.isClientSocketConnected = true
+            state.connectionToast = true
+            resetState()
+         }
+
+         if (state.isNetworkSocketConnected) {
+            resetState()
+         } else {
+            state.isNetworkSocketConnected = true
+            state.connectionToast = true
+            resetState()
+         }
+      }
+   }
 })
 
 const resetState = () => {

@@ -1,7 +1,7 @@
-import { LiveStatisticReport } from '../live-statistic-report'
+import { LiveChartEntry } from '../live-charts/live-chart-entry/live-chart-entry'
 import { CommonAgentReports } from './common-agent-reports'
 
 export interface AgentServerStatisticReports extends CommonAgentReports {
-   greenPowerUsageReport: LiveStatisticReport[]
-   backUpPowerUsageReport: LiveStatisticReport[]
+   greenPowerUsageReport: LiveChartEntry[]
+   backUpPowerUsageReport: LiveChartEntry[]
 }

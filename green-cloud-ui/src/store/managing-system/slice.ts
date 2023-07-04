@@ -9,6 +9,7 @@ const INITIAL_STATE: ManagingSystemStore = {
    strongAdaptations: 0,
    adaptationLogs: [],
    adaptationGoals: [],
+   adaptationActions: []
 }
 
 /**
@@ -23,6 +24,6 @@ export const managingSystemSlice = createSlice({
       },
       resetAdaptationData(state) {
          Object.assign(state, INITIAL_STATE)
-      },
-   },
+      }
+   }
 })

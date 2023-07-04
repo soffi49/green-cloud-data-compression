@@ -6,6 +6,6 @@ interface Styles {
 
 export const styles: Styles = {
    fieldWrapper: {
-      marginBottom: '20px',
-   },
+      marginBottom: '20px'
+   }
 }

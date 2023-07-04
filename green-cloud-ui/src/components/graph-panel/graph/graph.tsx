@@ -30,7 +30,7 @@ export const DisplayGraph = ({ nodes, connections, setSelectedAgent, updateAgent
       () =>
          CytoscapeComponent.normalizeElements({
             nodes: nodes.map((node) => ({ data: { ...node } })),
-            edges: constructEdges(connections),
+            edges: constructEdges(connections)
          }),
       [nodes, connections]
    )
@@ -49,7 +49,6 @@ export const DisplayGraph = ({ nodes, connections, setSelectedAgent, updateAgent
       if (core) {
          core.on('tap', 'node', function (event: any) {
             const id = event.target.id()
-            console.warn(event)
 
             if (!selectedAgent || selectedAgent !== id) {
                setSelectedAgent(id)

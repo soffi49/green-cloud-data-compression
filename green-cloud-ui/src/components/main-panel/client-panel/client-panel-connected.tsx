@@ -6,14 +6,14 @@ import { GET_CLIENT_DATA } from 'store/saga-types'
 const mapStateToProps = (state: RootState) => {
    return {
       clients: selectClients(state),
-      selectedClient: selectChosenClient(state),
+      selectedClient: selectChosenClient(state)
    }
 }
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
    return {
       setSelectedClient: (client: string | null) => dispatch(clientActions.setSelectedClient(client)),
-      updateClientData: () => dispatch({ type: GET_CLIENT_DATA }),
+      updateClientData: () => dispatch({ type: GET_CLIENT_DATA })
    }
 }
 

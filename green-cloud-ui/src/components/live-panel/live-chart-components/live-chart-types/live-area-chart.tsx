@@ -3,14 +3,14 @@ import React from 'react'
 import { styles } from '../live-chart-common/live-chart-generic/live-chart-generic-styles'
 
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
-import { LiveChartLabeling, LiveChartNumericValues, LiveChartTimeValues } from '@types'
+import { LiveChartDataCategoryDescription, LiveChartEntryNumeric, LiveChartEntryTime } from '@types'
 import { renderChartDescription } from '../live-chart-common/live-chart-generic/live-chart-generic-config'
 import { ContentType } from 'recharts/types/component/Tooltip'
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 
 interface Props {
-   data: LiveChartTimeValues[] | LiveChartNumericValues[]
-   labels: LiveChartLabeling[]
+   data: LiveChartEntryTime[] | LiveChartEntryNumeric[]
+   labels: LiveChartDataCategoryDescription[]
    valueDomain?: number[]
    referenceValue?: number
    referenceLabel?: string
@@ -21,8 +21,8 @@ interface Props {
 /**
  * Component represents a default live area chart
  *
- * @param {LiveChartTimeValues[]}[data] - data displayed in the chart
- * @param {LiveChartLabeling[]}[labeling] - data used in chart labels
+ * @param {LiveChartEntryTime[]}[data] - data displayed in the chart
+ * @param {LiveChartDataCategoryDescription[]}[labeling] - data used in chart labels
  * @param {number[]}[valueDomain] - optional range displayed on y-axis
  * @param {func}[yAxisFormatter] - optional formatter for y-axis labels
  * @param {ContentType}[customTooltip] - optional custom tooltip formatting
@@ -35,6 +35,7 @@ export const LiveAreaChart = ({ data, labels, valueDomain, yAxisFormatter, custo
       labels.map((entry) => (
          <Area
             {...{
+               key: 'area-' + entry.name,
                type: 'monotone',
                dataKey: entry.name,
                stroke: entry.color,
@@ -42,7 +43,7 @@ export const LiveAreaChart = ({ data, labels, valueDomain, yAxisFormatter, custo
                fill: 'url(#gradient)',
                activeDot: true,
                dot: false,
-               isAnimationActive: false,
+               isAnimationActive: false
             }}
          />
       ))

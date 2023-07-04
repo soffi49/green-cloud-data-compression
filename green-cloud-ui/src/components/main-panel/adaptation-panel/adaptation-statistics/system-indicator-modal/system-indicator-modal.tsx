@@ -35,7 +35,7 @@ const SystemIndicatorModal = ({ isOpen, setIsOpen }: Props) => {
             isOpen,
             setIsOpen,
             header: headerContent,
-            contentStyle: modalStyle,
+            contentStyle: modalStyle
          }}
       >
          <div style={content}>{description}</div>

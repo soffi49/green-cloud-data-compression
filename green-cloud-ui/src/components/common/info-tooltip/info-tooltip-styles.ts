@@ -15,13 +15,13 @@ export const styles: Styles = {
       fontWeight: 400,
       fontFamily: 'var(--font-1)',
       fontSize: 'var(--font-size-2)',
-      borderRadius: 7,
+      borderRadius: 7
    },
    tooltipHeader: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center'
    },
    tooltipHeaderText: {
-      marginLeft: '5px',
-   },
+      marginLeft: '5px'
+   }
 }

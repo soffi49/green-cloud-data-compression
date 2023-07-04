@@ -32,7 +32,7 @@ const Menu = ({ changeTab }: Props) => {
                icon: button.icon,
                iconOffset: button.iconOffset,
                id: button.id,
-               changeTab,
+               changeTab
             }}
          />
       ))
@@ -53,7 +53,7 @@ const Menu = ({ changeTab }: Props) => {
                      <div>
                         <IconMenu size={ICON_SIZE} />
                      </div>
-                  ),
+                  )
                }}
             />
          </div>

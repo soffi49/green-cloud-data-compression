@@ -1,27 +1,27 @@
 import React from 'react'
 
 import { LiveChartWrapper, LiveLineChart } from '@components'
-import { LiveChartData, LiveStatisticReport } from '@types'
+import { LiveChartDataCategory, LiveChartEntry } from '@types'
 
 interface Props {
-   maxJobSizeReport: LiveStatisticReport[]
-   minJobSizeReport: LiveStatisticReport[]
-   avgJobSizeReport: LiveStatisticReport[]
+   maxJobSizeReport: LiveChartEntry[]
+   minJobSizeReport: LiveChartEntry[]
+   avgJobSizeReport: LiveChartEntry[]
 }
 
 /**
  * Live chart that displays the average, minimal and maximal job execution size over time
  *
- * @param {LiveStatisticReport}[maxJobSizeReport] - report of max job size
- * @param {LiveStatisticReport}[minJobSizeReport] - report of min job size
- * @param {LiveStatisticReport}[avgJobSizeReport] - report of avergae job size
+ * @param {LiveChartEntry}[maxJobSizeReport] - report of max job size
+ * @param {LiveChartEntry}[minJobSizeReport] - report of min job size
+ * @param {LiveChartEntry}[avgJobSizeReport] - report of avergae job size
  * @returns JSX Element
  */
 export const JobExecutionSizeLiveChart = ({ maxJobSizeReport, minJobSizeReport, avgJobSizeReport }: Props) => {
-   const chartData: LiveChartData[] = [
+   const chartData: LiveChartDataCategory[] = [
       { name: 'max. job size', color: 'var(--red-1)', statistics: maxJobSizeReport },
       { name: 'min. job size', color: 'var(--green-1)', statistics: minJobSizeReport },
-      { name: 'avg. job size', color: 'var(--orange-1)', statistics: avgJobSizeReport },
+      { name: 'avg. job size', color: 'var(--orange-1)', statistics: avgJobSizeReport }
    ]
 
    return <LiveChartWrapper {...{ title: 'Job size statistics over time', chart: LiveLineChart, data: chartData }} />

@@ -6,6 +6,6 @@ interface Styles {
 
 export const styles: Styles = {
    buttonIcon: {
-      fontSize: 'var(--font-size-9)',
-   },
+      fontSize: 'var(--font-size-9)'
+   }
 }

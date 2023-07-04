@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createSelector } from '@reduxjs/toolkit'
+import { MenuTab } from '@types'
+import { navigatorSelect } from 'store/navigator'
 import { RootState } from 'store/store'
 
 const cloudNetworkSelect = (state: RootState) => state.cloudNetwork
@@ -7,8 +10,20 @@ const cloudNetworkSelect = (state: RootState) => state.cloudNetwork
  * Method returns currect connection state
  */
 export const selectConnectionState = createSelector(
-   [cloudNetworkSelect],
-   (cloudNetworkSelect) => cloudNetworkSelect.isServerConnected
+   [cloudNetworkSelect, navigatorSelect],
+   (cloudNetworkSelect, navigatorSelect) => {
+      const selectedTab = navigatorSelect.selectedTab
+
+      if (selectedTab === MenuTab.ADAPTATION) {
+         return cloudNetworkSelect.isAdaptationSocketConnected
+      } else if (selectedTab === MenuTab.AGENTS) {
+         return cloudNetworkSelect.isAgentSocketConnected
+      } else if (selectedTab === MenuTab.CLIENTS) {
+         return cloudNetworkSelect.isClientSocketConnected
+      } else {
+         return cloudNetworkSelect.isNetworkSocketConnected
+      }
+   }
 )
 
 /**
@@ -23,6 +38,12 @@ export const selectConnectionToast = createSelector(
  * Method returns currect connection state
  */
 export const selectNetworkStatistics = createSelector([cloudNetworkSelect], (cloudNetworkSelect) => {
-   const { isServerConnected, ...statistics } = cloudNetworkSelect // eslint-disable-line @typescript-eslint/no-unused-vars
+   const {
+      isAdaptationSocketConnected,
+      isAgentSocketConnected,
+      isClientSocketConnected,
+      isNetworkSocketConnected,
+      ...statistics
+   } = cloudNetworkSelect
    return statistics
 })

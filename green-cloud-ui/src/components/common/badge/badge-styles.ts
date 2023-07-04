@@ -15,12 +15,12 @@ export const styles: Styles = {
       fontSize: 'var(--font-size-4)',
       fontWeight: '500',
       borderRadius: '10px',
-      padding: '0 20px',
+      padding: '5px 20px'
    },
    inActiveBadge: {
-      backgroundColor: 'var(--gray-6)',
+      backgroundColor: 'var(--gray-6)'
    },
    activeBadge: {
-      backgroundColor: 'var(--green-2)',
-   },
+      backgroundColor: 'var(--green-2)'
+   }
 }

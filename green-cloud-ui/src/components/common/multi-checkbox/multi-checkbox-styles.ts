@@ -12,12 +12,12 @@ export const styles: Styles = {
       color: 'var(--gray-3)',
       fontWeight: 600,
       paddingLeft: '5px',
-      paddingBottom: '10px',
+      paddingBottom: '10px'
    },
    checkContainer: {
       marginBottom: '10px',
       display: 'table',
       marginLeft: '5px',
-      textOverflow: 'ellipsis',
-   },
+      textOverflow: 'ellipsis'
+   }
 }

@@ -4,7 +4,8 @@ import { CircularProgressbar } from 'react-circular-progressbar'
 
 interface Props {
    title: string
-   value: number
+   value: number | string
+   width?: string
 }
 
 /**
@@ -12,22 +13,25 @@ interface Props {
  *
  * @param {number}[value] - percentage value
  * @param {string}[title] - title displayed over the indicator
+ * @param {string}[width] - optional width of the percentage indicator cycle
  * @returns JSX Element
  */
-const PercentageIndicator = ({ title, value }: Props) => {
+const PercentageIndicator = ({ title, value, width }: Props) => {
    const {
       percentageIndicatorWrapper,
       percentageIndicatorTitle,
       percentageIndicatorContent,
-      percentageIndicatorContainer,
+      percentageIndicatorContainer
    } = styles
+
+   const containerStyle = width ? { ...percentageIndicatorContainer, width } : percentageIndicatorContainer
 
    return (
       <div style={percentageIndicatorWrapper}>
          <div style={percentageIndicatorTitle}>{title.toUpperCase()}</div>
-         <div style={percentageIndicatorContainer}>
+         <div style={containerStyle}>
             <CircularProgressbar
-               {...{ value, text: `${value}%`, strokeWidth: 10, styles: percentageIndicatorContent }}
+               {...{ value: value as number, text: `${value}%`, strokeWidth: 10, styles: percentageIndicatorContent }}
             />
          </div>
       </div>

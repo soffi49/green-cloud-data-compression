@@ -11,6 +11,6 @@ export const styles: Styles = {
       height: '100%',
       marginLeft: '20px',
       minWidth: 'fit-content',
-      paddingBottom: '20px',
-   },
+      paddingBottom: '20px'
+   }
 }

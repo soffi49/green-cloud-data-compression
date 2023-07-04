@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { LiveChartWrapper } from '@components'
-import { AgentStatisticReport, CommonAgentReports, LiveChartData } from '@types'
+import { AgentStatisticReport, CommonAgentReports, LiveChartDataCategory } from '@types'
 import LiveBarChart from 'components/live-panel/live-chart-components/live-chart-types/live-bar-chart'
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
  * @returns JSX Element
  */
 export const TrafficDistributionLiveChart = ({ agentReports, title }: Props) => {
-   const getChartData = (): LiveChartData[] => {
+   const getChartData = (): LiveChartDataCategory[] => {
       const cnaTraffics = agentReports
          .map((agentReports) => (agentReports.reports as CommonAgentReports).trafficReport)
          .map((trafficReport) => (trafficReport.length === 0 ? 0 : trafficReport[trafficReport.length - 1]?.value ?? 0))
@@ -27,7 +27,7 @@ export const TrafficDistributionLiveChart = ({ agentReports, title }: Props) => 
       return agentReports.map((agent, idx) => ({
          name: `${agent.name} traffic`,
          color: `var(--green-${idx + 2})`,
-         statistics: overallTraffic === 0 ? 0 : (cnaTraffics[idx] / overallTraffic) * 100,
+         statistics: overallTraffic === 0 ? 0 : (cnaTraffics[idx] / overallTraffic) * 100
       }))
    }
 
@@ -41,9 +41,9 @@ export const TrafficDistributionLiveChart = ({ agentReports, title }: Props) => 
             data: getChartData(),
             additionalProps: {
                valueDomain: [0, 100],
-               yAxisFormatter: formatLabel,
+               yAxisFormatter: formatLabel
             },
-            disableTimeSelector: true,
+            disableTimeSelector: true
          }}
       />
    )

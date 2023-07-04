@@ -19,7 +19,7 @@ export function* watchFetchAgentsState() {
    while (true) {
       yield race({
          resetConnection: take(cloudNetworkActions.resetServerConnection),
-         selectTab: take(navigatorActions.setSelectedTab),
+         selectTab: take(navigatorActions.setSelectedTab)
       })
       const selectedTab: MenuTab = yield select(selectSelectedTab)
 
@@ -27,7 +27,7 @@ export function* watchFetchAgentsState() {
          yield race({
             fetch: call(fetchAgentsState),
             finish: take(cloudNetworkActions.closeServerConnection),
-            changeTab: take(navigatorActions.setSelectedTab),
+            changeTab: take(navigatorActions.setSelectedTab)
          })
       }
    }
@@ -42,7 +42,7 @@ export function* watchFetchGraphState() {
 
       yield race({
          fetch: call(fetchGraphState),
-         finish: take(cloudNetworkActions.closeServerConnection),
+         finish: take(cloudNetworkActions.closeServerConnection)
       })
    }
 }
@@ -74,7 +74,7 @@ export function* watchFetchClientsState() {
    while (true) {
       yield race({
          resetConnection: take(cloudNetworkActions.resetServerConnection),
-         selectTab: take(navigatorActions.setSelectedTab),
+         selectTab: take(navigatorActions.setSelectedTab)
       })
       const selectedTab: MenuTab = yield select(selectSelectedTab)
 
@@ -82,7 +82,7 @@ export function* watchFetchClientsState() {
          yield race({
             fetch: call(fetchClientsState),
             finish: take(cloudNetworkActions.closeServerConnection),
-            changeTab: take(navigatorActions.setSelectedTab),
+            changeTab: take(navigatorActions.setSelectedTab)
          })
       }
    }
@@ -95,7 +95,7 @@ export function* watchFetchManagingState() {
    while (true) {
       yield race({
          resetConnection: take(cloudNetworkActions.resetServerConnection),
-         selectTab: take(navigatorActions.setSelectedTab),
+         selectTab: take(navigatorActions.setSelectedTab)
       })
       const selectedTab: MenuTab = yield select(selectSelectedTab)
 
@@ -103,7 +103,7 @@ export function* watchFetchManagingState() {
          yield race({
             fetch: call(fetchManagingState),
             finish: take(cloudNetworkActions.closeServerConnection),
-            changeTab: take(navigatorActions.setSelectedTab),
+            changeTab: take(navigatorActions.setSelectedTab)
          })
       }
    }
@@ -116,7 +116,7 @@ export function* watchFetchNetworkState() {
    while (true) {
       yield race({
          resetConnection: take(cloudNetworkActions.resetServerConnection),
-         selectTab: take(navigatorActions.setSelectedTab),
+         selectTab: take(navigatorActions.setSelectedTab)
       })
       const selectedTab: MenuTab = yield select(selectSelectedTab)
 
@@ -124,7 +124,7 @@ export function* watchFetchNetworkState() {
          yield race({
             fetch: call(fetchNetworkState),
             finish: take(cloudNetworkActions.closeServerConnection),
-            changeTab: take(navigatorActions.setSelectedTab),
+            changeTab: take(navigatorActions.setSelectedTab)
          })
       }
    }
@@ -138,7 +138,7 @@ export function* watchFetchAgentReportsState() {
       yield take(cloudNetworkActions.resetServerConnection)
       yield race({
          fetch: call(fetchAgentReportsState),
-         finish: take(cloudNetworkActions.closeServerConnection),
+         finish: take(cloudNetworkActions.closeServerConnection)
       })
    }
 }
@@ -151,7 +151,7 @@ export function* watchFetchClientReportsState() {
       yield take(cloudNetworkActions.resetServerConnection)
       yield race({
          fetch: call(fetchClientReportsState),
-         finish: take(cloudNetworkActions.closeServerConnection),
+         finish: take(cloudNetworkActions.closeServerConnection)
       })
    }
 }
@@ -164,7 +164,7 @@ export function* watchFetchNetworkReportsState() {
       yield take(cloudNetworkActions.resetServerConnection)
       yield race({
          fetch: call(fetchNetworkReportsState),
-         finish: take(cloudNetworkActions.closeServerConnection),
+         finish: take(cloudNetworkActions.closeServerConnection)
       })
    }
 }
@@ -177,7 +177,7 @@ export function* watchFetchManagingReportsState() {
       yield take(cloudNetworkActions.resetServerConnection)
       yield race({
          fetch: call(fetchManagingSystemReportsState),
-         finish: take(cloudNetworkActions.closeServerConnection),
+         finish: take(cloudNetworkActions.closeServerConnection)
       })
    }
 }
@@ -197,6 +197,6 @@ export default function* rootSagas() {
       watchFetchNetworkReportsState(),
       watchFetchManagingReportsState(),
       watchGetClientState(),
-      watchGetAgentState(),
+      watchGetAgentState()
    ])
 }

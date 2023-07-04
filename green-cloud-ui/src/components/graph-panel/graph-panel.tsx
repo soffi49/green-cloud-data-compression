@@ -30,7 +30,7 @@ const GraphPanel = ({ selectedAgent }: Props) => {
    const isEventButtonDisabled = !selectedAgent || selectedAgent?.events.length === 0
    const buttonClassName = [
       'medium-green-button',
-      isEventButtonDisabled ? 'medium-green-button-disabled' : 'medium-green-button-active',
+      isEventButtonDisabled ? 'medium-green-button-disabled' : 'medium-green-button-active'
    ].join(' ')
    const tooltipInfo = !selectedAgent
       ? notSelected
@@ -48,7 +48,7 @@ const GraphPanel = ({ selectedAgent }: Props) => {
                   title: buttonTitle,
                   onClick: () => setIsOpen(!isOpen),
                   buttonClassName,
-                  isDisabled: isEventButtonDisabled,
+                  isDisabled: isEventButtonDisabled
                }}
             />
          </div>

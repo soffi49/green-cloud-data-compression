@@ -20,7 +20,7 @@ const Button = ({ buttonClassName, title, isDisabled = false, onClick }: Props) 
          {...{
             className: buttonClassName + ' common-button',
             onClick,
-            disabled: isDisabled,
+            disabled: isDisabled
          }}
       >
          {title}

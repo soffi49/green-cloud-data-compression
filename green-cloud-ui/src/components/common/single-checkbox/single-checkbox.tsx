@@ -30,7 +30,7 @@ const SingleCheckBox = ({ option, onChange }: Props) => {
             color: 'success',
             shape: 'curve',
             animation: 'smooth',
-            onChange: () => onChange(value as string, isSelected as boolean),
+            onChange: () => onChange(value as string, isSelected as boolean)
          }}
       >
          {value as string}

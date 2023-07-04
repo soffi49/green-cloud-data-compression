@@ -36,7 +36,7 @@ export const EventPanel = ({ selectedAgent, triggerPowerShortage, isOpen, setIsO
             label: 'Selected Agent',
             value: selectedAgent?.name,
             isHeader: true,
-            fieldContainerStyle: headerContainer,
+            fieldContainerStyle: headerContainer
          }}
       />
    )

@@ -9,24 +9,24 @@ export const MENU_BUTTONS = [
       header: 'CLOUD SUMMARY',
       icon: <IconCloudMenu size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: MenuTab.CLOUD_SUMMARY,
+      id: MenuTab.CLOUD_SUMMARY
    },
    {
       header: 'AGENTS',
       icon: <IconNetwork size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: MenuTab.AGENTS,
+      id: MenuTab.AGENTS
    },
    {
       header: 'CLIENTS',
       icon: <IconClients size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: MenuTab.CLIENTS,
+      id: MenuTab.CLIENTS
    },
    {
       header: 'ADAPTATION',
       icon: <IconGear size={ICON_SIZE} />,
       iconOffset: ICON_OFFSET,
-      id: MenuTab.ADAPTATION,
-   },
+      id: MenuTab.ADAPTATION
+   }
 ]

@@ -38,7 +38,7 @@ export const SchedulerStatistics = ({ scheduler }: Props) => {
          {...{
             buttonClassName: 'small-green-button',
             setIsOpen,
-            title: modalButtonText.toUpperCase(),
+            title: modalButtonText.toUpperCase()
          }}
       />
    )

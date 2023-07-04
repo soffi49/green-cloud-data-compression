@@ -4,7 +4,7 @@ import { AgentPanel } from './agent-panel'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      selectedAgent: selectChosenNetworkAgent(state),
+      selectedAgent: selectChosenNetworkAgent(state)
    }
 }
 

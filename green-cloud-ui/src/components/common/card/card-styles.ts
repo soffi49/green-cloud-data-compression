@@ -17,15 +17,15 @@ export const styles: Styles = {
       flexDirection: 'column',
       padding: '15px',
       boxShadow: 'var(--card-shadow)',
-      borderRadius: 20,
       boxSizing: 'border-box',
+      borderRadius: 20
    },
    cardHeader: {
       color: 'var(--gray-2)',
-      fontWeight: '500',
+      fontWeight: '500'
    },
    cardHeaderWithSubheader: {
-      width: '60%',
+      width: '60%'
    },
    cardSubHeader: {
       width: '30%',
@@ -33,18 +33,18 @@ export const styles: Styles = {
       minWidth: 'fit-content',
       margin: '0 15px',
       borderLeft: 'none',
-      borderRight: 'var(--border-left-green)',
+      borderRight: 'var(--border-bold-green)'
    },
    cardSubHeaderText: {
       textAlign: 'right',
       width: '100%',
       fontWeight: 500,
-      fontSize: 'var(--font-size-3)',
+      fontSize: 'var(--font-size-3)'
    },
    cardHeaderContainer: {
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'center'
    },
    cardContent: {
       flexGrow: 1,
@@ -52,10 +52,10 @@ export const styles: Styles = {
       marginTop: '20px',
       color: 'var(--gray-2)',
       fontWeight: '300',
-      minHeight: 0,
+      minHeight: 0
    },
    cardContentScroll: {
       overflowY: 'scroll',
-      overflowX: 'hidden',
-   },
+      overflowX: 'hidden'
+   }
 }

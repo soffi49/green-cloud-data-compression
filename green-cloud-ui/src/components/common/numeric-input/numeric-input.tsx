@@ -25,7 +25,7 @@ const NumericInput = ({ label, placeholder, value, max = 0, handleChange, disabl
    const numericInputStyle = disabled ? 'numeric-input numeric-input-inactive' : 'numeric-input numeric-input-active'
    const labelStyle = [
       'numeric-input-label',
-      disabled ? 'numeric-input-disabled-label' : 'numeric-input-active-label',
+      disabled ? 'numeric-input-disabled-label' : 'numeric-input-active-label'
    ].join(' ')
 
    return (
@@ -40,7 +40,7 @@ const NumericInput = ({ label, placeholder, value, max = 0, handleChange, disabl
                className: numericInputStyle,
                min: 0,
                max,
-               disabled,
+               disabled
             }}
          />
       </div>

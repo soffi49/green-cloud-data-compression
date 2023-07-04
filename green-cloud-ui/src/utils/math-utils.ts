@@ -10,3 +10,13 @@ export const getAverage = (arr: any[], field = '') => {
       ? 0
       : arr.reduce((sum, val2) => sum + (typeof val2 === 'number' ? val2 : val2[field]), 0) / arr.length
 }
+
+/**
+ * Method calculates the sum from the given array
+ *
+ * @param {number[]}[arr] - array from which the sum is to be calculated
+ * @returns number sum
+ */
+export const getSum = (arr: any[]) => {
+   return arr.reduce((prev, curr) => prev + curr, 0)
+}

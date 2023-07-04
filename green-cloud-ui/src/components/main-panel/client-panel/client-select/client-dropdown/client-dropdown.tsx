@@ -1,8 +1,8 @@
 import { MultiValue, SingleValue } from 'react-select'
-import { ClientAgent, ClientAgentStatus } from '@types'
+import { ClientAgent, ClientAgentStatus, DropdownOption, GroupedOption } from '@types'
 import { useMemo } from 'react'
 import { CLIENTS_ORDER } from '../../client-panel-config'
-import { Dropdown, GroupedOption, SelectOption } from 'components/common'
+import { Dropdown } from 'components/common'
 
 const selectPlaceholder = 'Provide client name'
 const selectNoOption = 'Client not found'
@@ -10,9 +10,9 @@ const selectNoClients = 'Client list is empty'
 
 interface Props {
    selectedClient: ClientAgent | null
-   changeSelectedClient: (client: SingleValue<SelectOption>) => void
+   changeSelectedClient: (client: SingleValue<DropdownOption>) => void
    clients: ClientAgentStatus[]
-   jobStatusMap: SelectOption[]
+   jobStatusMap: DropdownOption[]
    splitFilter: boolean | null
 }
 
@@ -59,8 +59,8 @@ const ClientDropdown = ({ selectedClient, changeSelectedClient, clients, jobStat
       [clients, jobStatusMap, splitFilter]
    )
 
-   const handleOnChange = (value: SingleValue<SelectOption> | MultiValue<SelectOption>) =>
-      changeSelectedClient(value as SingleValue<SelectOption>)
+   const handleOnChange = (value: SingleValue<DropdownOption> | MultiValue<DropdownOption>) =>
+      changeSelectedClient(value as SingleValue<DropdownOption>)
 
    const handleNoOption = () => (clients.length !== 0 ? selectNoOption : selectNoClients)
 
@@ -69,13 +69,13 @@ const ClientDropdown = ({ selectedClient, changeSelectedClient, clients, jobStat
          {...{
             value: {
                value: selectedClient,
-               label: selectedClient?.name ?? selectPlaceholder,
+               label: selectedClient?.name ?? selectPlaceholder
             },
             onChange: handleOnChange,
             placeholder: selectPlaceholder,
             noOptionsMessage: handleNoOption,
             options: selectData,
-            isMulti: false,
+            isMulti: false
          }}
       />
    )

@@ -16,7 +16,7 @@ export const styles: Styles = {
       fontWeight: '300',
       minWidth: 'fit-content',
       cursor: 'pointer',
-      marginBottom: '20px',
+      marginBottom: '20px'
    },
    commonTab: {
       display: 'flex',
@@ -25,15 +25,15 @@ export const styles: Styles = {
       textAlign: 'center',
       wordBreak: 'break-word',
       padding: '10px 5px',
-      width: '50%',
+      width: '50%'
    },
    selectedTab: {
       fontWeight: '400',
       backgroundColor: 'var(--gray-4)',
-      borderRadius: 10,
+      borderRadius: 10
    },
    deselectedTab: {
       color: 'var(--gray-8)',
-      fontSize: 'var(--font-size-2)',
-   },
+      fontSize: 'var(--font-size-2)'
+   }
 }

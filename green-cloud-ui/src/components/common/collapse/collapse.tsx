@@ -32,7 +32,7 @@ const Collapse = ({
    triggerClosedStyle,
    wrapperStyle,
    contentStyle,
-   children,
+   children
 }: Props) => {
    const { collapseStyle, collapseContentStyle, triggerIcon } = styles
    const [isOpen, setIsOpen] = useState(false)
@@ -56,7 +56,7 @@ const Collapse = ({
             triggerStyle: styleCollapse,
             containerElementProps: { style: { ...wrapperStyle } },
             onClosing: () => setIsOpen(false),
-            onOpening: () => setIsOpen(true),
+            onOpening: () => setIsOpen(true)
          }}
       >
          <div style={styleContent}>{children}</div>

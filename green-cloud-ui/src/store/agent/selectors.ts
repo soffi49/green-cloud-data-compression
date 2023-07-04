@@ -23,5 +23,5 @@ export const selectScheduledJobs = createSelector(
    [agentSelector],
    (agentSelector) =>
       (agentSelector.agents.find((agent) => agent.name === agentSelector.selectedAgent) as SchedulerAgent)
-         .scheduledJobs ?? null
+         ?.scheduledJobs ?? null
 )

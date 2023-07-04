@@ -12,30 +12,30 @@ interface Styles {
 export const styles: Styles = {
    containerStyle: {
       backgroundColor: 'var(--gray-7)',
-      borderLeft: 'var(--border-gray-bold)',
+      borderLeft: 'var(--border-bold-gray-1)',
       borderBottomLeftRadius: '8px',
       borderTopLeftRadius: '8px',
       padding: '10px',
-      marginBottom: '10px',
+      marginBottom: '10px'
    },
    headerStyle: {
       paddingBottom: '5px',
       width: '100%',
-      borderBottom: 'var(--border-gray)',
+      borderBottom: 'var(--border-thin-gray)',
       marginBottom: '15px',
       fontWeight: 400,
-      color: 'var(--gray-3)',
+      color: 'var(--gray-3)'
    },
    fieldContainerStyle: {
       backgroundColor: 'var(--gray-9)',
-      width: undefined,
+      width: undefined
    },
    fieldLabelStyle: {
       fontSize: 'var(--font-size-4)',
-      fontWeight: 400,
+      fontWeight: 400
    },
    fieldValueStyle: {
       fontWeight: 600,
-      fontSize: 'var(--font-size-9)',
-   },
+      fontSize: 'var(--font-size-9)'
+   }
 }

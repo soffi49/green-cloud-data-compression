@@ -45,7 +45,7 @@ const Dropdown = ({
    placeholder,
    isMulti,
    isClearable = true,
-   selectStyle,
+   selectStyle
 }: Props) => {
    const [isFocus, setIsFocus] = useState(false)
    const { select, selectTheme, headerStyle } = styles
@@ -57,7 +57,7 @@ const Dropdown = ({
 
    const getValueObject = () => ({
       value: (value as DropdownOption).value,
-      label: !isFocus ? (value as DropdownOption).label : '',
+      label: !isFocus ? (value as DropdownOption).label : ''
    })
 
    const handleOnChange = (
@@ -90,7 +90,7 @@ const Dropdown = ({
                isMulti,
                menuPortalTarget: document.getElementById('root'),
                menuPosition: 'fixed',
-               filterOption: customFilter,
+               filterOption: customFilter
             }}
          />
       </>

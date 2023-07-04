@@ -11,14 +11,14 @@ export const styles: Styles = {
       backgroundColor: 'var(--white)',
       height: '95%',
       marginLeft: '10px',
-      minWidth: 'fit-content',
+      minWidth: 'fit-content'
    },
    tabHeader: {
       padding: '5px 15px',
       color: 'var(--gray-2)',
       backgroundColor: 'var(--gray-4)',
-      borderLeft: 'var(--border-left-green)',
+      borderLeft: 'var(--border-bold-green)',
       fontSize: 'var(--font-size-9)',
-      fontWeight: '500',
-   },
+      fontWeight: '500'
+   }
 }

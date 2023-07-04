@@ -1,9 +1,9 @@
-import { LiveStatisticReport } from '../live-statistic-report'
+import { LiveChartEntry } from '../live-charts/live-chart-entry/live-chart-entry'
 
 export interface AgentSchedulerStatisticReports {
-   powerPriorityReport: LiveStatisticReport[]
-   deadlinePriorityReport: LiveStatisticReport[]
-   clientRequestReport: LiveStatisticReport[]
-   queueCapacityReport: LiveStatisticReport[]
-   trafficReport: LiveStatisticReport[]
+   powerPriorityReport: LiveChartEntry[]
+   deadlinePriorityReport: LiveChartEntry[]
+   clientRequestReport: LiveChartEntry[]
+   queueCapacityReport: LiveChartEntry[]
+   trafficReport: LiveChartEntry[]
 }

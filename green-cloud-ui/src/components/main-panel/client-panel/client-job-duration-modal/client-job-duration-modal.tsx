@@ -3,6 +3,7 @@ import { DetailsField } from 'components/common'
 import Modal from 'components/common/modal/modal'
 import React from 'react'
 import { styles } from './client-job-duration-modal-styles'
+import { getJobStatusDuration } from 'utils/job-utils'
 
 interface Props {
    isOpen: boolean
@@ -32,26 +33,12 @@ const ClientJobDurationModal = ({ isOpen, setIsOpen, client }: Props) => {
                {...{
                   key,
                   label: key,
-                  valueObject: getDuration(key, trueValue),
-                  fieldValueStyle: valueStyle,
+                  valueObject: getJobStatusDuration(key, trueValue),
+                  fieldValueStyle: valueStyle
                }}
             />
          )
       })
-   }
-
-   const getDuration = (key: string, val: number) => {
-      if (['PROCESSED', 'CREATED', 'SCHEDULED'].includes(key)) {
-         const minutes = Math.floor(val / 60000)
-         const seconds = parseInt(((val % 60000) / 1000).toFixed(0))
-
-         return minutes > 0 ? `${minutes} MINUTES ${seconds} SECONDS` : `${seconds} SECONDS`
-      }
-      const hours = Math.floor(val / 60)
-      const minutes = parseInt((val % 60).toFixed(0))
-      const minReminderFixed = minutes === 60 ? 0 : minutes
-
-      return hours > 0 ? `${hours} HOURS ${minReminderFixed} MINUTES` : `${minReminderFixed} MINUTES`
    }
 
    return (
@@ -60,7 +47,7 @@ const ClientJobDurationModal = ({ isOpen, setIsOpen, client }: Props) => {
             isOpen,
             setIsOpen,
             contentStyle: modalStyle,
-            header: header,
+            header: header
          }}
       >
          {getStatusesDuration()}

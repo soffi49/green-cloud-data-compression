@@ -24,7 +24,7 @@ export const AdaptationGoals = ({ goals }: Props) => {
          const goalVal = [goalArrow, thresholdPercentage].join(' ')
          const valuesMap = [
             { value: goalVal, label: 'Threshold' },
-            { value: weight, label: 'Weight' },
+            { value: weight, label: 'Weight' }
          ]
 
          return (
@@ -38,7 +38,7 @@ export const AdaptationGoals = ({ goals }: Props) => {
                         value,
                         fieldContainerStyle,
                         fieldLabelStyle,
-                        fieldValueStyle,
+                        fieldValueStyle
                      }}
                   />
                ))}

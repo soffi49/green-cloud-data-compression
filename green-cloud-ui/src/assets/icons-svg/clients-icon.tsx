@@ -18,7 +18,7 @@ const IconClients = ({ size, color }: IconProps) => {
             width: size,
             height: size,
             fill,
-            opacity: 0.9,
+            opacity: 0.9
          }}
       >
          <g>

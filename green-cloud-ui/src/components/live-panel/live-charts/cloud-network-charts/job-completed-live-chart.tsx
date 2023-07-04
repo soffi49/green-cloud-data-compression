@@ -1,24 +1,24 @@
 import React from 'react'
 
 import { LiveChartWrapper, LiveLineChart } from '@components'
-import { LiveChartData, LiveStatisticReport } from '@types'
+import { LiveChartDataCategory, LiveChartEntry } from '@types'
 
 interface Props {
-   finishJobReport: LiveStatisticReport[]
-   failJobReport: LiveStatisticReport[]
+   finishJobsReport: LiveChartEntry[]
+   failJobsReport: LiveChartEntry[]
 }
 
 /**
  * Live chart that displays the number of jobs which execution was successful/failed
  *
- * @param {string}[finishJobReport] - report of finished jobs
- * @param {string}[failJobReport] - report of failed jobs
+ * @param {string}[finishJobsReport] - report of finished jobs
+ * @param {string}[failJobsReport] - report of failed jobs
  * @returns JSX Element
  */
-export const JobCompletedLiveChart = ({ finishJobReport, failJobReport }: Props) => {
-   const chartData: LiveChartData[] = [
-      { name: 'finished jobs no.', color: 'var(--green-1)', statistics: finishJobReport },
-      { name: 'failed jobs no.', color: 'var(--red-1)', statistics: failJobReport },
+export const JobCompletedLiveChart = ({ finishJobsReport, failJobsReport }: Props) => {
+   const chartData: LiveChartDataCategory[] = [
+      { name: 'finished jobs no.', color: 'var(--green-1)', statistics: finishJobsReport },
+      { name: 'failed jobs no.', color: 'var(--red-1)', statistics: failJobsReport }
    ]
 
    return (

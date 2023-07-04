@@ -26,15 +26,15 @@ const COMMON_STYLESHEET: Array<cytoscape.Stylesheet> = [
          'text-border-color': '#242424',
          'text-background-padding': '3',
          'text-background-color': '#ffffff',
-         'text-background-opacity': 1,
-      },
+         'text-background-opacity': 1
+      }
    },
    {
       selector: 'edge',
       style: {
-         'curve-style': 'bezier',
-      },
-   },
+         'curve-style': 'bezier'
+      }
+   }
 ]
 
 const IMAGE_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -44,16 +44,16 @@ const IMAGE_STYLESHEET: Array<cytoscape.Stylesheet> = [
          'background-image': iconGearDark,
          'background-clip': 'none',
          'background-image-containment': 'over',
-         'bounds-expansion': '100',
-      },
+         'bounds-expansion': '100'
+      }
    },
    {
       selector: "node[type = 'GREEN_ENERGY'][adaptation = 'active']",
       style: {
          'background-width': '20',
          'background-height': '20',
-         'background-offset-y': '-50',
-      },
+         'background-offset-y': '-50'
+      }
    },
    {
       selector: "node[type = 'GREEN_ENERGY'][state = 'on_hold']",
@@ -61,8 +61,8 @@ const IMAGE_STYLESHEET: Array<cytoscape.Stylesheet> = [
          'border-color': '#DB432C',
          'background-color': '#DB432C',
          'background-image': iconPause,
-         'background-fit': 'cover',
-      },
+         'background-fit': 'cover'
+      }
    },
    {
       selector: "node[type = 'GREEN_ENERGY'][state = 'on_hold'][adaptation = 'active']",
@@ -70,65 +70,65 @@ const IMAGE_STYLESHEET: Array<cytoscape.Stylesheet> = [
          'border-color': '#DB432C',
          'background-color': '#DB432C',
          'background-image': [iconGearDark, iconPause],
-         'background-fit': ['none', 'contain'],
-      },
+         'background-fit': ['none', 'contain']
+      }
    },
    {
       selector: "node[type = 'SERVER'][adaptation = 'active']",
       style: {
          'background-width': '19',
          'background-height': '19',
-         'background-offset-y': '-60',
-      },
+         'background-offset-y': '-60'
+      }
    },
    {
       selector: "node[type = 'SERVER'][state = 'on_hold']",
       style: {
          'border-color': '#DB432C',
          'background-image': iconPause,
-         'background-fit': 'contain',
-      },
+         'background-fit': 'contain'
+      }
    },
    {
       selector: "node[type = 'SERVER'][state = 'back_up']",
       style: {
          'border-color': '#8AE423',
          'background-image': iconBattery,
-         'background-fit': 'contain',
-      },
+         'background-fit': 'contain'
+      }
    },
    {
       selector: "node[type = 'SERVER'][state = 'on_hold'][adaptation: 'active']",
       style: {
          'border-color': '#DB432C',
          'background-image': [iconGearDark, iconPause],
-         'background-fit': ['none', 'contain'],
-      },
+         'background-fit': ['none', 'contain']
+      }
    },
    {
       selector: "node[type = 'SERVER'][state = 'back_up'][adaptation: 'active']",
       style: {
          'border-color': '#8AE423',
          'background-image': [iconGearDark, iconBattery],
-         'background-fit': ['none', 'contain'],
-      },
+         'background-fit': ['none', 'contain']
+      }
    },
    {
       selector: "node[type = 'CLOUD_NETWORK'][adaptation = 'active']",
       style: {
          'background-width': '23',
          'background-height': '23',
-         'background-offset-y': '-75',
-      },
+         'background-offset-y': '-75'
+      }
    },
    {
       selector: "node[type = 'SCHEDULER']",
       style: {
          'background-width': '23',
          'background-height': '23',
-         'background-offset-y': '-80',
-      },
-   },
+         'background-offset-y': '-80'
+      }
+   }
 ]
 
 const SCHEDULER_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -143,9 +143,9 @@ const SCHEDULER_STYLESHEET: Array<cytoscape.Stylesheet> = [
          'border-style': 'double',
          'text-margin-y': -12,
          'border-opacity': 1,
-         'border-width': 8,
-      },
-   },
+         'border-width': 8
+      }
+   }
 ]
 
 const CNA_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -154,33 +154,33 @@ const CNA_STYLESHEET: Array<cytoscape.Stylesheet> = [
       style: {
          width: '60',
          height: '60',
-         shape: 'round-octagon',
-      },
+         shape: 'round-octagon'
+      }
    },
    {
       selector: "node[type = 'CLOUD_NETWORK'][state = 'inactive']",
       style: {
-         'background-color': '#8C8C8C',
-      },
+         'background-color': '#8C8C8C'
+      }
    },
    {
       selector: "node[type = 'CLOUD_NETWORK'][state = 'low']",
       style: {
-         'background-color': '#8AE423',
-      },
+         'background-color': '#8AE423'
+      }
    },
    {
       selector: "node[type = 'CLOUD_NETWORK'][state = 'medium']",
       style: {
-         'background-color': '#FDBB2A',
-      },
+         'background-color': '#FDBB2A'
+      }
    },
    {
       selector: "node[type = 'CLOUD_NETWORK'][state = 'high']",
       style: {
-         'background-color': '#DB432C',
-      },
-   },
+         'background-color': '#DB432C'
+      }
+   }
 ]
 
 const SERVER_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -192,21 +192,21 @@ const SERVER_STYLESHEET: Array<cytoscape.Stylesheet> = [
          shape: 'ellipse',
          'background-color': '#ffffff',
          'border-opacity': 1,
-         'border-width': 5,
-      },
+         'border-width': 5
+      }
    },
    {
       selector: "node[type = 'SERVER'][state = 'inactive']",
       style: {
-         'border-color': '#8C8C8C',
-      },
+         'border-color': '#8C8C8C'
+      }
    },
    {
       selector: "node[type = 'SERVER'][state = 'active']",
       style: {
-         'border-color': '#8AE423',
-      },
-   },
+         'border-color': '#8AE423'
+      }
+   }
 ]
 
 const GREEN_ENERGY_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -217,23 +217,23 @@ const GREEN_ENERGY_STYLESHEET: Array<cytoscape.Stylesheet> = [
          height: '20',
          shape: 'ellipse',
          'border-opacity': 1,
-         'border-width': 3,
-      },
+         'border-width': 3
+      }
    },
    {
       selector: "node[type = 'GREEN_ENERGY'][state = 'inactive']",
       style: {
          'border-color': '#6E6E6E',
-         'background-color': '#8C8C8C',
-      },
+         'background-color': '#8C8C8C'
+      }
    },
    {
       selector: "node[type = 'GREEN_ENERGY'][state = 'active']",
       style: {
          'border-color': '#58B905',
-         'background-color': '#8AE423',
-      },
-   },
+         'background-color': '#8AE423'
+      }
+   }
 ]
 
 const MONITORING_STYLESHEET: Array<cytoscape.Stylesheet> = [
@@ -248,20 +248,20 @@ const MONITORING_STYLESHEET: Array<cytoscape.Stylesheet> = [
          'background-image': iconWeather,
          'background-image-opacity': 1,
          'background-image-containment': 'over',
-         'background-fit': 'cover',
-      },
-   },
+         'background-fit': 'cover'
+      }
+   }
 ]
 
 export const EDGE_UNIDIRECTED_INACTIVE = {
    width: 1,
    'target-arrow-shape': 'none',
-   'line-color': '#242424',
+   'line-color': '#242424'
 }
 export const EDGE_UNIDIRECTED_ACTIVE = {
    width: 1,
    'target-arrow-shape': 'none',
-   'line-color': '#58B905',
+   'line-color': '#58B905'
 }
 
 export const GRAPH_STYLESHEET: Array<cytoscape.Stylesheet> = COMMON_STYLESHEET.concat(CNA_STYLESHEET)
@@ -285,10 +285,10 @@ export const GRAPH_LAYOUT: Cytoscape.LayoutOptions = {
    idealEdgeLength: 50,
    nodeSeparation: 80,
    sampleSize: 100,
-   samplingType: true,
+   samplingType: true
 }
 
 export const GRAPH_STYLE: React.CSSProperties = {
    width: '100%',
-   height: '100%',
+   height: '100%'
 }

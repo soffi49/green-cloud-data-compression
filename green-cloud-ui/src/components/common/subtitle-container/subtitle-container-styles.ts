@@ -11,10 +11,10 @@ export const styles: Styles = {
       paddingTop: '15px',
       paddingBottom: '10px',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center'
    },
    descriptionText: {
       fontSize: 'var(--font-size-6)',
-      marginLeft: '7px',
-   },
+      marginLeft: '7px'
+   }
 }

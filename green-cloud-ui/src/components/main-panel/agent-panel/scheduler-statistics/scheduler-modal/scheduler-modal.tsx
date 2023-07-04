@@ -33,7 +33,7 @@ export const ScheduleModal = ({ isOpen, setIsOpen, jobs }: Props) => {
                {...{
                   title: jobTitle,
                   fieldMap: JOB_FIELD_CONFIG,
-                  objectMap: job,
+                  objectMap: job
                }}
             />
          )
@@ -51,7 +51,7 @@ export const ScheduleModal = ({ isOpen, setIsOpen, jobs }: Props) => {
             isOpen,
             setIsOpen,
             contentStyle: modalStyle,
-            header: header.toUpperCase(),
+            header: header.toUpperCase()
          }}
       >
          {generateScheduledJobs()}

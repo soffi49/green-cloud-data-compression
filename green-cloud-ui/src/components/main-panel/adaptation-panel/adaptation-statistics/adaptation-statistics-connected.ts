@@ -5,7 +5,7 @@ import { AdaptationStatistics } from './adaptation-statistics'
 const mapStateToProps = (state: RootState) => {
    return {
       managingSystem: managingSystemSelect(state),
-      adaptationGoals: selectAdaptationGoals(state),
+      adaptationGoals: selectAdaptationGoals(state)
    }
 }
 

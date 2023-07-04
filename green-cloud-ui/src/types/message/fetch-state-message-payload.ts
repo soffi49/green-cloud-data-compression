@@ -1,6 +1,6 @@
 import { AgentNode } from 'types/agent-nodes'
 import { GraphEdge } from 'types/graph'
-import { LiveStatisticReport } from 'types/reports'
+import { LiveChartEntry } from 'types/reports'
 
 export type FethGraphStateMessage = {
    nodes: AgentNode[]
@@ -8,20 +8,20 @@ export type FethGraphStateMessage = {
 }
 
 export type FetchClientReportsMessage = {
-   executedJobsReport: LiveStatisticReport[]
-   avgJobSizeReport: LiveStatisticReport[]
-   minJobSizeReport: LiveStatisticReport[]
-   maxJobSizeReport: LiveStatisticReport[]
+   executedJobsReport: LiveChartEntry[]
+   avgJobSizeReport: LiveChartEntry[]
+   minJobSizeReport: LiveChartEntry[]
+   maxJobSizeReport: LiveChartEntry[]
 }
 
 export type FetchNetworkReportsMessage = {
-   finishJobsReport: LiveStatisticReport[]
-   failJobsReport: LiveStatisticReport[]
-   clientsReport: LiveStatisticReport[]
+   finishJobsReport: LiveChartEntry[]
+   failJobsReport: LiveChartEntry[]
+   clientsReport: LiveChartEntry[]
 }
 
 export type FetchManagingReportsMessage = {
-   jobSuccessRatioReport: LiveStatisticReport[]
-   trafficDistributionReport: LiveStatisticReport[]
-   backUpPowerUsageReport: LiveStatisticReport[]
+   jobSuccessRatioReport: LiveChartEntry[]
+   trafficDistributionReport: LiveChartEntry[]
+   backUpPowerUsageReport: LiveChartEntry[]
 }

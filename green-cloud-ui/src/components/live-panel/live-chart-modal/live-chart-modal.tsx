@@ -1,7 +1,7 @@
-import { AgentStatisticReport, ReportsStore } from '@types'
+import { AgentStatisticReport, LiveIndicatorAvgGeneratorType, LiveIndicatorConfiguration, ReportsStore } from '@types'
 import Modal from 'components/common/modal/modal'
 import React from 'react'
-import { CHART_MODALS } from '../live-panel-config'
+import { CHART_MODALS } from '../config/live-panel-config'
 import { styles } from './live-chart-modal-styles'
 
 interface Props {
@@ -36,7 +36,7 @@ const LiveChartModal = ({ isOpen, setIsOpen, reports, agentReports, selectedTabI
       headerText,
       chartWrapper,
       avgContainerWrapper,
-      avgContentWrapper,
+      avgContentWrapper
    } = styles
    const systemReports = CHART_MODALS[selectedTabId]
    const header = selectedTabId.startsWith('agents')
@@ -45,18 +45,38 @@ const LiveChartModal = ({ isOpen, setIsOpen, reports, agentReports, selectedTabI
    const hasAvgFields = systemReports.valueFields && systemReports.valueFields?.length > 0
    const chartStatisticsWidth = hasAvgFields ? '70%' : '100%'
 
+   const getIndicatorValue = (configuration: LiveIndicatorConfiguration) => {
+      const { type, value } = configuration
+
+      if (type === LiveIndicatorAvgGeneratorType.REPORT) return value(reports)
+      else return value(agentReports as AgentStatisticReport) ?? 0
+   }
+
    const getValueFields = () =>
       systemReports.valueFields?.map((configuration) => {
          const Field = configuration.indicator
          const icon = configuration.icon
-         return <Field {...{ title: configuration.title, value: configuration.value(reports), icon }} />
+         return (
+            <Field
+               {...{
+                  key: configuration.title,
+                  title: configuration.title,
+                  value: getIndicatorValue(configuration),
+                  icon
+               }}
+            />
+         )
       })
 
    const getCharts = () =>
       systemReports.charts.map((chartGenerator, idx) => {
          const isOddLast = idx === systemReports.charts.length - 1 && idx % 2 === 0
          const styleWrapper = { ...chartWrapper, ...{ gridColumn: isOddLast ? '1/-1' : undefined } }
-         return <div style={styleWrapper}>{chartGenerator(reports, agentReports)}</div>
+         return (
+            <div key={idx} style={styleWrapper}>
+               {chartGenerator(reports, agentReports)}
+            </div>
+         )
       })
 
    return (
@@ -67,7 +87,7 @@ const LiveChartModal = ({ isOpen, setIsOpen, reports, agentReports, selectedTabI
             contentStyle: modalStyle,
             header: `LIVE STATISTICS - ${header}`,
             disableScroll: true,
-            headerStyle: modalHeader,
+            headerStyle: modalHeader
          }}
       >
          <div style={wrapper}>

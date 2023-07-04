@@ -1,11 +1,10 @@
 import { styles } from './client-select-styles'
 import { SingleValue } from 'react-select'
-import { ClientAgent, ClientAgentStatus } from '@types'
+import { ClientAgent, ClientAgentStatus, DropdownOption } from '@types'
 import { useEffect, useState } from 'react'
 import { JOB_STATUS_MAP } from '../client-panel-config'
 import FilterModal from './filter-modal/filter-modal'
 import ClientDropdown from './client-dropdown/client-dropdown'
-import { SelectOption } from 'components/common'
 import { IconSettings } from '@assets'
 
 interface Props {
@@ -22,7 +21,7 @@ interface Props {
  */
 const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient, updateClientData }: Props) => {
    const { selectorContainer, iconContainer } = styles
-   const [jobStatusMap, setJobStatusMap] = useState<SelectOption[]>(JOB_STATUS_MAP)
+   const [jobStatusMap, setJobStatusMap] = useState<DropdownOption[]>(JOB_STATUS_MAP)
    const [splitFilter, setSplitFilter] = useState<boolean | null>(null)
    const [isOpen, setIsOpen] = useState<boolean>(false)
 
@@ -32,7 +31,7 @@ const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient, up
       }
    }, [clients])
 
-   const changeSelectedClient = (value: SingleValue<SelectOption>) => {
+   const changeSelectedClient = (value: SingleValue<DropdownOption>) => {
       setSelectedClient(value?.label ?? null)
       updateClientData()
    }
@@ -50,7 +49,7 @@ const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient, up
                setJobStatusMap,
                setSplitFilter: changeSplitFilter,
                isOpen,
-               setIsOpen,
+               setIsOpen
             }}
          />
          <div style={selectorContainer}>
@@ -63,7 +62,7 @@ const ClientStatisticsSelect = ({ clients, selectedClient, setSelectedClient, up
                   clients,
                   jobStatusMap,
                   changeSelectedClient,
-                  splitFilter,
+                  splitFilter
                }}
             />
          </div>

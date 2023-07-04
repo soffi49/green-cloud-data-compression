@@ -20,7 +20,7 @@ const ModalButton = ({ buttonClassName, title, setIsOpen }: Props) => {
          {...{
             onClick: () => setIsOpen((curr) => !curr),
             buttonClassName,
-            title,
+            title
          }}
       />
    )

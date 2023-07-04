@@ -4,7 +4,7 @@ import GraphPanel from './graph-panel'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      selectedAgent: selectChosenNetworkAgent(state),
+      selectedAgent: selectChosenNetworkAgent(state)
    }
 }
 

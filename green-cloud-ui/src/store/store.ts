@@ -23,11 +23,11 @@ export const store = configureStore({
       graph: graphSlice.reducer,
       reports: reportsSlice.reducer,
       managingSystem: managingSystemSlice.reducer,
-      navigator: navigatorSlice.reducer,
+      navigator: navigatorSlice.reducer
    },
    middleware: (getDefaultMiddleware) => {
       return getDefaultMiddleware({ thunk: false }).concat([crashMiddleware, sagaMiddleware, loggingMiddleware])
-   },
+   }
 })
 
 /**

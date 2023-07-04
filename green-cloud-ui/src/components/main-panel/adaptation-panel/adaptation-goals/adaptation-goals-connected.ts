@@ -4,7 +4,7 @@ import { AdaptationGoals } from './adaptation-goals'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      goals: selectAdaptationGoals(state),
+      goals: selectAdaptationGoals(state)
    }
 }
 

@@ -14,7 +14,7 @@ export function* getClientData() {
          const url = `/client?name=${selectedClient}`
          const { data } = yield call(() =>
             axios.get(process.env.REACT_APP_WEB_SOCKET_CLIENTS_FRONTEND_URL + url, {
-               timeout: 2000,
+               timeout: 2000
             })
          )
          yield put(clientActions.setClientData(data))

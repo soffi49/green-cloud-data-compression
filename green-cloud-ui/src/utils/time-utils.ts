@@ -26,6 +26,24 @@ export const convertTimeToString = (dateToParse: number | Date, isFullDate = tru
 }
 
 /**
+ * Method converts milliseconds to formatted time string
+ *
+ * @param {number}[ms] - number of milliseconds
+ * @returns formatted string
+ */
+export const convertMillisToString = (ms: number) => {
+   let seconds = Math.floor(ms / 1000)
+   const minutes = Math.floor(seconds / 60)
+
+   const millis = Math.round(ms % 1000)
+   seconds = Math.round(seconds % 60)
+
+   if (minutes === 0 && seconds === 0) return Math.round(ms) + 'ms'
+   if (minutes === 0) return seconds + 's ' + millis + 'ms'
+   return minutes + 'min ' + seconds + 's ' + millis + 'ms'
+}
+
+/**
  * Method retrieves current time (in real time) based on the simulation start time
  *
  * @returns unix time stamp

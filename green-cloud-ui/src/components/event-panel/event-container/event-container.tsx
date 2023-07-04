@@ -27,7 +27,7 @@ const EventContainer = ({ selectedAgent, event, triggerPowerShortage }: Props) =
       contentWrapper,
       triggerContainer,
       triggerDescription,
-      triggerTitle,
+      triggerTitle
    } = styles
    const eventEntry = { ...(EVENT_MAP as any) }[event.type]
 

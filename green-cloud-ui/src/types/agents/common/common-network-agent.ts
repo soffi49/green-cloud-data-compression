@@ -14,6 +14,6 @@ export const DEFAULT_NETWORK_AGENT_START_COMMONS = (data: any) => {
       currentMaximumCapacity: data.maximumCapacity,
       traffic: 0,
       numberOfExecutedJobs: 0,
-      numberOfJobsOnHold: 0,
+      numberOfJobsOnHold: 0
    }
 }

@@ -4,7 +4,7 @@ import { ScheduleModal } from './scheduler-modal'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      jobs: selectScheduledJobs(state),
+      jobs: selectScheduledJobs(state)
    }
 }
 

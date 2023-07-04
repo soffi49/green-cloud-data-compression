@@ -44,6 +44,7 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient, update
                ...(selectedClient.job as any),
                status: selectedClient.status as any,
                durationMap: selectedClient.durationMap as any,
+               jobExecutionProportion: selectedClient.jobExecutionProportion as any
             }[key]
             const value = getClientValue(key, clientVal)
             const property = ['status', 'durationMap'].includes(key) ? 'valueObject' : 'value'
@@ -71,6 +72,9 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient, update
       if (key === 'start' || key === 'end') {
          return typeof clientVal === 'number' ? convertTimeToString(clientVal) : clientVal
       }
+      if (key === 'jobExecutionProportion') {
+         return `${Math.round(clientVal * 100)}%`
+      }
       return clientVal
    }
 
@@ -79,7 +83,7 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient, update
          {...{
             buttonClassName: 'small-green-button',
             setIsOpen,
-            title: 'SPLIT JOBS',
+            title: 'SPLIT JOBS'
          }}
       />
    )
@@ -91,7 +95,7 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient, update
                {...{
                   isOpen,
                   setIsOpen,
-                  client: selectedClient,
+                  client: selectedClient
                }}
             />
          )
@@ -105,7 +109,7 @@ export const ClientPanel = ({ clients, selectedClient, setSelectedClient, update
                {...{
                   isOpen: isDurationOpen,
                   setIsOpen: setIsDurationOpen,
-                  client: selectedClient,
+                  client: selectedClient
                }}
             />
          )

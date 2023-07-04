@@ -11,6 +11,6 @@ export const styles: Styles = {
       height: '100%',
       marginRight: '10px',
       minWidth: 'fit-content',
-      boxShadow: 'none',
-   },
+      boxShadow: 'none'
+   }
 }

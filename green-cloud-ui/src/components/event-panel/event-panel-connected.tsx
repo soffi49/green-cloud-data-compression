@@ -5,13 +5,13 @@ import { EventPanel } from './event-panel'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      selectedAgent: selectChosenNetworkAgent(state),
+      selectedAgent: selectChosenNetworkAgent(state)
    }
 }
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
    return {
-      triggerPowerShortage: (data: PowerShortageEventData) => dispatch(agentsActions.triggerPowerShortage(data)),
+      triggerPowerShortage: (data: PowerShortageEventData) => dispatch(agentsActions.triggerPowerShortage(data))
    }
 }
 

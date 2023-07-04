@@ -1,3 +1,6 @@
 export * from './adaptation-log'
 export * from './adaptation-goal'
 export * from './adaptation-goal-quality'
+export * from './adaptation-action'
+export * from './adaptation-goal-avg-quality'
+export * from './adaptation-action-grouped'

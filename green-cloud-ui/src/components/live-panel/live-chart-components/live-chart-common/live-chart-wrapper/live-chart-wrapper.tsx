@@ -1,6 +1,13 @@
-import { LiveChartData, LiveChartLabeling, LiveChartNumericValues, LiveChartProps, LiveChartTimeValues } from '@types'
-import { Dropdown, SelectOption } from 'components/common'
-import { TIME_OPTIONS } from 'components/live-panel/live-panel-config'
+import {
+   DropdownOption,
+   LiveChartDataCategory,
+   LiveChartDataCategoryDescription,
+   LiveChartEntryNumeric,
+   LiveChartAdditionalProps,
+   LiveChartEntryTime
+} from '@types'
+import { Dropdown } from 'components/common'
+import { TIME_OPTIONS } from 'components/live-panel/config/live-panel-config'
 import React, { useState } from 'react'
 import LiveChartGeneric from '../live-chart-generic/live-chart-generic'
 
@@ -8,13 +15,13 @@ import { styles } from './live-chart-wrapper-styles'
 
 interface Props {
    chart: React.ElementType<{
-      data: LiveChartTimeValues[] | LiveChartNumericValues[]
-      labels: LiveChartLabeling[]
+      data: LiveChartEntryTime[] | LiveChartEntryNumeric[]
+      labels: LiveChartDataCategoryDescription[]
       [key: string]: any
    }>
    title: string
-   data: LiveChartData[]
-   additionalProps?: LiveChartProps
+   data: LiveChartDataCategory[]
+   additionalProps?: LiveChartAdditionalProps
    disableTimeSelector?: boolean
 }
 
@@ -23,14 +30,14 @@ interface Props {
  *
  * @param {ReactNode}[chart] - chart that is to be displayed
  * @param {string}[title] - title of the chart
- * @param {LiveChartData[]}[data] - data displayed in the chart
+ * @param {LiveChartDataCategory[]}[data] - data displayed in the chart
  * @param {boolean}[disableTimeSelector] - optional flag indicating if the time selector is to be disabled
  * @returns JSX Element
  */
 export const LiveChartWrapper = ({ chart, title, data, additionalProps, disableTimeSelector }: Props) => {
    const { chartWrapper, chartTitle, headerWrapper, selectStyle } = styles
 
-   const [selectedTime, setSelectedTime] = useState<SelectOption>(TIME_OPTIONS.DAY)
+   const [selectedTime, setSelectedTime] = useState<DropdownOption>(TIME_OPTIONS.DAY)
    const onChange = (val: any) => setSelectedTime(val ? val : TIME_OPTIONS.DAY)
 
    return (
@@ -45,7 +52,7 @@ export const LiveChartWrapper = ({ chart, title, data, additionalProps, disableT
                      onChange,
                      isMulti: false,
                      isClearable: false,
-                     selectStyle,
+                     selectStyle
                   }}
                />
             )}

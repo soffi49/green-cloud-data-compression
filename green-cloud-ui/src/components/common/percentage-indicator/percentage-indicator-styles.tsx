@@ -14,13 +14,14 @@ export const styles: Styles = {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-around',
-      paddingTop: '30px',
       width: '80%',
-      padding: '20px',
+      height: '98%',
+      maxHeight: '300px',
+      padding: '15px 10px 10px 10px',
       minWidth: 'fit-content',
       boxShadow: 'var(--event-shadow)',
       borderRadius: 20,
-      margin: '5px 0px',
+      margin: '5px 0px'
    },
    percentageIndicatorTitle: {
       fontSize: '1vw',
@@ -28,22 +29,23 @@ export const styles: Styles = {
       color: 'var(--gray-3)',
       marginBottom: '25px',
       textAlign: 'left',
-      width: '100%',
+      width: '100%'
    },
    percentageIndicatorContainer: {
-      width: '50%',
+      width: '10vw',
       display: 'flex',
       flexShrink: 0,
+      paddingBottom: '10px'
    },
    percentageIndicatorContent: {
       path: {
          stroke: `var(--green-1)`,
-         strokeLinecap: 'round',
+         strokeLinecap: 'round'
       },
       trail: {
          stroke: 'var(--gray-5)',
          strokeLinecap: 'round',
-         transformOrigin: 'center center',
+         transformOrigin: 'center center'
       },
       text: {
          fill: 'var(--gray-3)',
@@ -51,7 +53,7 @@ export const styles: Styles = {
          fontSize: 'var(--font-size-8)',
          textAnchor: 'middle',
          alignmentBaseline: 'middle',
-         transformOrigin: 'center center',
-      },
-   },
+         transformOrigin: 'center center'
+      }
+   }
 }

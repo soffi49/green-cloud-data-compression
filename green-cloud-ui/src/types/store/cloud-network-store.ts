@@ -4,6 +4,9 @@ export type CloudNetworkStore = {
    currPlannedJobsNo: number
    finishedJobsNo: number
    failedJobsNo: number
-   isServerConnected?: boolean | null
+   isNetworkSocketConnected?: boolean | null
+   isAgentSocketConnected?: boolean | null
+   isClientSocketConnected?: boolean | null
+   isAdaptationSocketConnected?: boolean | null
    connectionToast: boolean
 }

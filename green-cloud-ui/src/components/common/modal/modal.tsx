@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactModal from 'react-modal'
 import { styles } from './modal-styles'
+import Button from '../button/button'
 
 interface Props {
    isOpen: boolean
@@ -27,13 +28,13 @@ interface Props {
  * @returns JSX Element
  */
 const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, headerStyle, isNested, disableScroll }: Props) => {
-   const { modalStyle, modalTitle, mainContainer, contentWrapper, nested } = styles
+   const { modalStyle, modalTitle, modalHeaderStyle, mainContainer, contentWrapper, nested } = styles
    const { content, overlay, ...otherStyles } = modalStyle
 
    const styleModal = {
       content: { ...content, ...contentStyle },
       overlay: { ...overlay, ...(isNested ? nested : undefined) },
-      ...otherStyles,
+      ...otherStyles
    }
    const styleHeader = { ...modalTitle, ...headerStyle }
    const scroll: React.CSSProperties = { overflowY: disableScroll ? 'hidden' : 'auto' }
@@ -46,11 +47,20 @@ const Modal = ({ isOpen, setIsOpen, header, children, contentStyle, headerStyle,
             isOpen,
             appElement: document.getElementById('root') as HTMLElement,
             onRequestClose: () => setIsOpen(false),
-            shouldCloseOnOverlayClick: true,
+            shouldCloseOnOverlayClick: true
          }}
       >
          <div style={contentWrapper}>
-            <div style={styleHeader}>{header}</div>
+            <div style={styleHeader}>
+               <div style={modalHeaderStyle}>{header}</div>
+               <Button
+                  {...{
+                     title: 'Close',
+                     onClick: () => setIsOpen(false),
+                     buttonClassName: 'medium-gray-button medium-gray-button-active'
+                  }}
+               />
+            </div>
             <div style={styleMainContainer}>{children}</div>
          </div>
       </ReactModal>

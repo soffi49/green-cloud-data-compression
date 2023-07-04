@@ -31,7 +31,7 @@ const ClientSplitJobModal = ({ isOpen, setIsOpen, client }: Props) => {
          const jobTitle = ['JOB', parseSplitJobId(job.splitJobId)].join(' ')
          const parsedJob = Object.assign({}, job, {
             start: convertTimeToString((job as SplitJob).start),
-            end: convertTimeToString((job as SplitJob).end),
+            end: convertTimeToString((job as SplitJob).end)
          })
          return (
             <DetailsCard
@@ -39,7 +39,7 @@ const ClientSplitJobModal = ({ isOpen, setIsOpen, client }: Props) => {
                {...{
                   title: jobTitle,
                   fieldMap: SPLIT_JOB_STATISTICS,
-                  objectMap: parsedJob,
+                  objectMap: parsedJob
                }}
             />
          )
@@ -52,7 +52,7 @@ const ClientSplitJobModal = ({ isOpen, setIsOpen, client }: Props) => {
             isOpen,
             setIsOpen,
             contentStyle: modalStyle,
-            header: header,
+            header: header
          }}
       >
          {getSplitJobs()}

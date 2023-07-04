@@ -23,7 +23,7 @@ export const MainView = ({ resetServerConnection, setSelectedTab }: Props) => {
       graphPanelContainer,
       leftSectionContainer,
       rightSectionContainer,
-      sectionContainer,
+      sectionContainer
    } = styles
 
    useEffect(() => {

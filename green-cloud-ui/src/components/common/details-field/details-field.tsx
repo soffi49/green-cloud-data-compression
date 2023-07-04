@@ -30,7 +30,7 @@ const DetailsField = ({
    fieldContainerStyle,
    fieldValueStyle,
    fieldLabelStyle,
-   isHeader = false,
+   isHeader = false
 }: Props) => {
    const { valueText, headerLabel, detailsContainer, headerContainer } = styles
 

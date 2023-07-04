@@ -20,7 +20,7 @@ const Navigator = ({ tabTitles, selectedTabIdx, setSelectedTabIdx }: Props) => {
 
    const getHeaderStyle = (tabIndex: number) => ({
       ...commonTab,
-      ...(tabIndex === selectedTabIdx ? selectedTab : deselectedTab),
+      ...(tabIndex === selectedTabIdx ? selectedTab : deselectedTab)
    })
 
    const generateTabs = () => {

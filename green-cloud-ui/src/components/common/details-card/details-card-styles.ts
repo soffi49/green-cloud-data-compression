@@ -13,25 +13,25 @@ export const styles: Styles = {
       padding: '10px',
       marginTop: '10px',
       backgroundColor: 'var(--gray-4)',
-      borderLeft: 'var(--border-left-green)',
-      borderRadius: '7px',
+      borderLeft: 'var(--border-bold-green)',
+      borderRadius: '7px'
    },
    titleStyle: {
       fontSize: 'var(--font-size-3)',
       marginBottom: '10px',
-      fontWeight: 500,
+      fontWeight: 500
    },
    fieldWrapper: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginBottom: '3px',
+      marginBottom: '3px'
    },
    fieldLabel: {
       fontWeight: 400,
-      fontSize: 'var(--font-size-5)',
+      fontSize: 'var(--font-size-5)'
    },
    fieldValue: {
       fontWeight: 500,
-      fontSize: 'var(--font-size-3)',
-   },
+      fontSize: 'var(--font-size-3)'
+   }
 }

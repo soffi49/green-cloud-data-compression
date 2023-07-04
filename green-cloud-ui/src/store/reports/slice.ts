@@ -7,7 +7,7 @@ import {
    FetchManagingReportsMessage,
    FetchNetworkReportsMessage,
    ReportsStore,
-   SystemTimeMessage,
+   SystemTimeMessage
 } from '@types'
 
 const INITIAL_STATE: ReportsStore = {
@@ -25,6 +25,12 @@ const INITIAL_STATE: ReportsStore = {
    jobSuccessRatioReport: [],
    trafficDistributionReport: [],
    backUpPowerUsageReport: [],
+   clientsStatusReport: [],
+   jobsExecutedAsWhole: [],
+   jobsExecutedInParts: [],
+   avgClientsExecutionPercentage: [],
+   minClientsExecutionPercentage: [],
+   maxClientsExecutionPercentage: []
 }
 
 /**
@@ -59,6 +65,6 @@ export const reportsSlice = createSlice({
       },
       resetReports(state) {
          Object.assign(state, INITIAL_STATE)
-      },
-   },
+      }
+   }
 })

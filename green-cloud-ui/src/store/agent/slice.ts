@@ -6,7 +6,7 @@ import { triggerPowerShortage } from './api/trigger-power-shortage'
 const INITIAL_STATE: AgentStore = {
    agents: [],
    selectedAgent: null,
-   agentData: null,
+   agentData: null
 }
 
 /**
@@ -34,6 +34,6 @@ export const agentSlice = createSlice({
       },
       resetAgents(state) {
          Object.assign(state, INITIAL_STATE)
-      },
-   },
+      }
+   }
 })

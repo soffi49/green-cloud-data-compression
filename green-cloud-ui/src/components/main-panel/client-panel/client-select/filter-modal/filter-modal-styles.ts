@@ -9,12 +9,12 @@ interface Styles {
 export const styles: Styles = {
    checkBoxContainer: {
       marginTop: '30px',
-      marginBottom: '10px',
+      marginBottom: '10px'
    },
    modalContainer: {
       width: '40%',
       minWidth: '0',
-      height: 'fit-content',
+      height: 'fit-content'
    },
    modalHeader: {
       color: 'var(--white)',
@@ -23,6 +23,6 @@ export const styles: Styles = {
       borderRadius: '100px',
       paddingTop: '5px',
       marginBottom: '10px',
-      fontWeight: 500,
-   },
+      fontWeight: 500
+   }
 }

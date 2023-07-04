@@ -15,24 +15,24 @@ export const styles: Styles = {
       backgroundColor: 'var(--green-1)',
       boxShadow: 'var(--banner-shadow)',
       height: '100%',
-      width: '130px',
+      width: '130px'
    },
    menuContainer: {
       marginTop: '70px',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'column'
    },
    menuContent: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-between',
-      height: '100%',
+      height: '100%'
    },
    menuModalIcon: {
       height: '55px',
       opacity: 0.95,
-      marginBottom: '20px',
+      marginBottom: '20px'
    },
    logoContainer: {
       display: 'flex',
@@ -45,7 +45,7 @@ export const styles: Styles = {
       paddingLeft: '5px',
       paddingRight: '5px',
       paddingTop: '25px',
-      height: '50px',
+      height: '50px'
    },
    menuHeader: {
       paddingTop: '15px',
@@ -53,10 +53,10 @@ export const styles: Styles = {
       width: '70%',
       fontSize: 'var(--font-size-3)',
       textAlign: 'center',
-      fontWeight: 400,
+      fontWeight: 400
    },
    menuCloudIcon: {
       height: '90%',
-      opacity: '0.85',
-   },
+      opacity: '0.85'
+   }
 }

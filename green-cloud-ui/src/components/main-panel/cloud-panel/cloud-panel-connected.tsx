@@ -4,7 +4,7 @@ import { CloudStatistics } from './cloud-panel'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      cloudStatistics: selectNetworkStatistics(state),
+      cloudStatistics: selectNetworkStatistics(state)
    }
 }
 

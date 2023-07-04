@@ -6,7 +6,7 @@ import 'animate.css/animate.min.css'
 const bounce = cssTransition({
    collapseDuration: 1000,
    enter: 'animate__animated animate__bounceIn',
-   exit: 'animate__animated animate__bounceOut',
+   exit: 'animate__animated animate__bounceOut'
 })
 
 /**

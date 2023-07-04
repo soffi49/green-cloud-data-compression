@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { MenuTab, NavigatorStoreState } from '@types'
 
 const INITIAL_STATE: NavigatorStoreState = {
-   selectedTab: MenuTab.CLOUD_SUMMARY,
+   selectedTab: MenuTab.CLOUD_SUMMARY
 }
 
 /**
@@ -17,6 +17,6 @@ export const navigatorSlice = createSlice({
       },
       resetNavigatorState(state) {
          Object.assign(state, INITIAL_STATE)
-      },
-   },
+      }
+   }
 })

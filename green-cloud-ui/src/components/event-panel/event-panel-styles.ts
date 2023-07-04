@@ -10,7 +10,7 @@ export const styles: Styles = {
    modalContainer: {
       backgroundColor: 'var(--white)',
       height: '55%',
-      width: '30%',
+      width: '30%'
    },
    singleEventParentContainer: {
       height: '100%',
@@ -18,9 +18,9 @@ export const styles: Styles = {
       flexDirection: 'column',
       justifyContent: 'flex-start',
       minWidth: 'fit-content',
-      marginTop: '20px',
+      marginTop: '20px'
    },
    headerContainer: {
-      width: 'none',
-   },
+      width: 'none'
+   }
 }

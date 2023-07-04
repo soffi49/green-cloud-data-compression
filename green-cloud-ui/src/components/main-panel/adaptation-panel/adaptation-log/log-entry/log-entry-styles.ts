@@ -14,7 +14,7 @@ interface Styles {
 export const styles: Styles = {
    wrapperContainer: {
       display: 'flex',
-      marginBottom: '10px',
+      marginBottom: '10px'
    },
    iconContainer: {
       backgroundColor: 'var(--gray-2)',
@@ -23,23 +23,23 @@ export const styles: Styles = {
       display: 'flex',
       alignItems: 'center',
       borderTopLeftRadius: '15px',
-      borderBottomLeftRadius: '15px',
+      borderBottomLeftRadius: '15px'
    },
    iconSize: {
       width: '30',
-      height: '30',
+      height: '30'
    },
    contentContainer: {
       backgroundColor: 'var(--gray-7)',
       padding: '10px',
       display: 'flex',
       width: '100%',
-      flexDirection: 'column',
+      flexDirection: 'column'
    },
    descriptionContainer: {
       margin: '5px 0px',
       fontSize: 'var(--font-size-4)',
-      fontWeight: 300,
+      fontWeight: 300
    },
    headerContainer: {
       fontWeight: 400,
@@ -47,7 +47,7 @@ export const styles: Styles = {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: '5px',
+      marginBottom: '5px'
    },
    agentName: {
       fontSize: 'var(--font-size-9)',
@@ -57,9 +57,9 @@ export const styles: Styles = {
       color: 'var(--gray-3)',
       borderBottom: '1px solid var(--gray-1)',
       marginLeft: '5px',
-      overflowWrap: 'anywhere',
+      overflowWrap: 'anywhere'
    },
    dateContainer: {
-      overflowWrap: 'anywhere',
-   },
+      overflowWrap: 'anywhere'
+   }
 }

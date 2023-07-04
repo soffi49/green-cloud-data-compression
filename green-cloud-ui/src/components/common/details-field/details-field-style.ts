@@ -18,23 +18,23 @@ export const styles: Styles = {
       paddingTop: '5px',
       paddingBottom: '5px',
       backgroundColor: 'var(--gray-4)',
-      borderLeft: 'var(--border-detail)',
-      borderRadius: 7,
+      borderLeft: 'var(--border-semi-bold-gray)',
+      borderRadius: 7
    },
    headerLabel: {
       color: 'var(--gray-3)',
       fontSize: 'var(--font-size-8)',
-      fontWeight: '500',
+      fontWeight: '500'
    },
    headerContainer: {
-      borderLeft: 'var(--border-left-green)',
+      borderLeft: 'var(--border-bold-green)'
    },
    label: {
       textAlign: 'left',
       width: '70%',
       paddingLeft: '10px',
       fontWeight: '300',
-      fontSize: 'var(--font-size-2)',
+      fontSize: 'var(--font-size-2)'
    },
    value: {
       display: 'flex',
@@ -42,10 +42,10 @@ export const styles: Styles = {
       marginRight: '5px',
       width: '50%',
       textAlign: 'right',
-      paddingRight: '10px',
+      paddingRight: '10px'
    },
    valueText: {
       fontWeight: '400',
-      fontSize: 'var(--font-size-3)',
-   },
+      fontSize: 'var(--font-size-3)'
+   }
 }

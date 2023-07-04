@@ -10,20 +10,21 @@ interface Styles {
 
 export const styles: Styles = {
    modalStyle: {
-      width: '20%',
-      height: 'fit-content',
+      width: '40%',
+      minWidth: 0,
+      height: 'fit-content'
    },
    title: {
-      marginLeft: '5px',
+      marginLeft: '5px'
    },
    iconStyle: {
       size: '1.3rem',
-      color: 'var(--gray-3)',
+      color: 'var(--gray-3)'
    },
    content: {
       marginTop: '10px',
       textAlign: 'center',
       fontWeight: 300,
-      color: 'var(--gray-3)',
-   },
+      color: 'var(--gray-3)'
+   }
 }

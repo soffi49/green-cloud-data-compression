@@ -2,15 +2,17 @@ import React, { useState } from 'react'
 import { styles } from './menu-modal-styles'
 import { Modal, Button } from 'components'
 import ThirdPartyLibraries from './third-party-libraries/third-party-libraries'
+import { MenuTab } from '@types'
 
 interface Props {
    isMenuOpen: boolean
    setIsMenuOpen: (state: boolean) => void
    isServerConnected?: boolean | null
+   menuTab: MenuTab
    resetCloudNetwork: () => void
    resetAgents: () => void
    resetReports: () => void
-   closeServerConnection: () => void
+   closeServerConnection: (tab: MenuTab) => void
    resetServerConnection: () => void
 }
 
@@ -25,11 +27,12 @@ export const MenuModal = ({
    isMenuOpen,
    setIsMenuOpen,
    isServerConnected,
+   menuTab,
    resetCloudNetwork,
    resetAgents,
    resetReports,
    closeServerConnection,
-   resetServerConnection,
+   resetServerConnection
 }: Props) => {
    const [isThirdPartyOpen, setIsThirdPartyOpen] = useState(false)
    const { modalStyle } = styles
@@ -44,7 +47,7 @@ export const MenuModal = ({
 
    const handleOnStop = () => {
       if (isServerConnected) {
-         closeServerConnection()
+         closeServerConnection(menuTab)
       } else {
          resetServerConnection()
       }
@@ -72,28 +75,28 @@ export const MenuModal = ({
             isOpen: isMenuOpen,
             setIsOpen: setIsMenuOpen,
             header,
-            contentStyle: modalStyle,
+            contentStyle: modalStyle
          }}
       >
          <Button
             {...{
                buttonClassName: 'button-banner',
                onClick: handleOnReset,
-               title: 'RESET SIMULATION',
+               title: 'RESET SIMULATION'
             }}
          />
          <Button
             {...{
                buttonClassName: 'button-banner ' + serverConnectionButtonClass,
                onClick: handleOnStop,
-               title: isServerConnected ? 'DISCONNECT SERVER' : 'CONNECT TO SERVER',
+               title: isServerConnected ? 'DISCONNECT SERVER' : 'CONNECT TO SERVER'
             }}
          />
          <Button
             {...{
                buttonClassName: 'button-banner button-banner-gray',
                onClick: () => setIsThirdPartyOpen(true),
-               title: 'THIRD-PARTY LIBRARIES',
+               title: 'THIRD-PARTY LIBRARIES'
             }}
          />
          <ThirdPartyLibraries {...{ isOpen: isThirdPartyOpen, setIsOpen: setIsThirdPartyOpen }} />

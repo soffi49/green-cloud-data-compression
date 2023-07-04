@@ -20,3 +20,11 @@ export const selectAdaptationGoals = createSelector(
    [managingSystemSelect],
    (managingSystemSelect) => managingSystemSelect.adaptationGoals
 )
+
+/**
+ * Method returns adaptation actions data
+ */
+export const selectAdaptationActions = createSelector(
+   [managingSystemSelect],
+   (managingSystemSelect) => managingSystemSelect.adaptationActions
+)

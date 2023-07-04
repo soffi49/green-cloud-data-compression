@@ -4,7 +4,7 @@ import { AdaptationLogPanel } from './adaptation-log'
 
 const mapStateToProps = (state: RootState) => {
    return {
-      sortedLogs: selectSortedAdaptationLogs(state),
+      sortedLogs: selectSortedAdaptationLogs(state)
    }
 }
 

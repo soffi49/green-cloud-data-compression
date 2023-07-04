@@ -1,29 +1,29 @@
 import React from 'react'
 import {
-   LiveChartData,
-   LiveChartLabeling,
-   LiveChartNumericValues,
-   LiveChartProps,
-   LiveChartTimeValues,
-   LiveStatisticReport,
+   LiveChartDataCategory,
+   LiveChartDataCategoryDescription,
+   LiveChartEntryNumeric,
+   LiveChartAdditionalProps,
+   LiveChartEntryTime,
+   LiveChartEntry
 } from '@types'
 import { isTimeWithinBounds } from 'utils/time-utils'
 
 interface Props {
-   data: LiveChartData[]
+   data: LiveChartDataCategory[]
    chart: React.ElementType<{
-      data: LiveChartTimeValues[] | LiveChartNumericValues[]
-      labels: LiveChartLabeling[]
+      data: LiveChartEntryTime[] | LiveChartEntryNumeric[]
+      labels: LiveChartDataCategoryDescription[]
       [key: string]: any
    }>
    timeRestriction?: number
-   additionalProps?: LiveChartProps
+   additionalProps?: LiveChartAdditionalProps
 }
 
 /**
  * Component represents a generic live chart
  *
- * @param {LiveChartData[]}[data] - data displayed in the chart
+ * @param {LiveChartDataCategory[]}[data] - data displayed in the chart
  * @param {ReactNode}[chart] - chart to be displayed
  * @param {number}[timeRestriction] - optional restriction on time domain
  * @returns JSX Element
@@ -34,12 +34,12 @@ export const LiveChartGeneric = ({ data, timeRestriction, chart, additionalProps
    const formatNumericData = () => data.map((el) => ({ name: el.name, value: Math.round(el.statistics as number) }))
 
    const formatTimeData = () =>
-      (data[0].statistics as LiveStatisticReport[])
+      (data[0].statistics as LiveChartEntry[])
          .map((entry, idx) => ({
             ...data
-               .map((el) => ({ [el.name]: Math.round((el.statistics as LiveStatisticReport[])[idx].value) }))
+               .map((el) => ({ [el.name]: Math.round((el.statistics as LiveChartEntry[])[idx].value) }))
                .reduce((prev, curr) => ({ ...prev, ...curr }), {}),
-            time: new Date(entry.time),
+            time: new Date(entry.time)
          }))
          .filter((entry) => !timeRestriction || isTimeWithinBounds(entry.time, timeRestriction))
 

@@ -6,16 +6,16 @@ const CLOUD_NETWORK_STATISTICS_STATE = [
    { key: 'totalNumberOfClients', label: 'Number of clients' },
    {
       key: 'totalNumberOfExecutedJobs',
-      label: 'Number of currently executed job instances',
-   },
+      label: 'Number of currently executed job instances'
+   }
 ]
 
 const CLOUD_NETWORK_STATISTICS_QUALITY = [
    { key: 'traffic', label: 'Current traffic' },
    {
       key: 'successRatio',
-      label: 'Current job execution success ratio',
-   },
+      label: 'Current job execution success ratio'
+   }
 ]
 
 const SERVER_STATISTICS_STATE = [
@@ -25,9 +25,9 @@ const SERVER_STATISTICS_STATE = [
    { key: 'totalNumberOfClients', label: 'Number of planned job instances' },
    {
       key: 'numberOfExecutedJobs',
-      label: 'Number of currently executed job instances',
+      label: 'Number of currently executed job instances'
    },
-   { key: 'numberOfJobsOnHold', label: 'Number of job instances on-hold' },
+   { key: 'numberOfJobsOnHold', label: 'Number of job instances on-hold' }
 ]
 
 const SERVER_STATISTICS_QUALITY = [
@@ -35,8 +35,8 @@ const SERVER_STATISTICS_QUALITY = [
    { key: 'backUpTraffic', label: 'Current back-up traffic' },
    {
       key: 'successRatio',
-      label: 'Current job execution success ratio',
-   },
+      label: 'Current job execution success ratio'
+   }
 ]
 
 const GREEN_SOURCE_STATISTICS_STATE = [
@@ -46,16 +46,16 @@ const GREEN_SOURCE_STATISTICS_STATE = [
    { key: 'initialMaximumCapacity', label: 'Maximum capacity' },
    { key: 'currentMaximumCapacity', label: 'Current maximium capacity' },
    { key: 'numberOfExecutedJobs', label: 'Number of currently executed jobs' },
-   { key: 'numberOfJobsOnHold', label: 'Number of jobs on-hold' },
+   { key: 'numberOfJobsOnHold', label: 'Number of jobs on-hold' }
 ]
 
 const GREEN_SOURCE_STATISTICS_QUALITY = [
    { key: 'traffic', label: 'Current traffic' },
    {
       key: 'successRatio',
-      label: 'Current job execution success ratio',
+      label: 'Current job execution success ratio'
    },
-   { key: 'weatherPredictionError', label: 'Current weather prediction error' },
+   { key: 'weatherPredictionError', label: 'Current weather prediction error' }
 ]
 
 const MONITORING_STATISTICS = [{ key: 'greenEnergyAgent', label: 'Connected Green Energy Source' }]
@@ -84,7 +84,7 @@ const mapMonitoringAgentFields = (agent: MonitoringAgent) => {
 
 export const MAP_TYPE = {
    QUALITY: 'QUALITY',
-   STATE: 'STATE',
+   STATE: 'STATE'
 }
 
 export const getStatisticsMapForAgent = (agent: Agent, type?: string) => {

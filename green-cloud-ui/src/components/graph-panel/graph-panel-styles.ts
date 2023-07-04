@@ -11,17 +11,17 @@ export const styles: Styles = {
       flexGrow: 1,
       backgroundColor: 'var(--white)',
       height: '100%',
-      minWidth: 'fit-content',
+      minWidth: 'fit-content'
    },
    headerContainer: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingBottom: '10px',
-      borderBottom: 'var(--border-gray)',
+      borderBottom: 'var(--border-thin-gray)'
    },
    headerStyle: {
       color: 'var(--gray-2)',
-      fontWeight: 500,
-   },
+      fontWeight: 500
+   }
 }

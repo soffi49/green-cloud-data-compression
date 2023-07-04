@@ -8,4 +8,5 @@ export interface ClientAgent extends CommonAgentInterface {
    isSplit: boolean
    splitJobs: SplitJob[]
    durationMap: JobDurationMap
+   jobExecutionProportion: number
 }

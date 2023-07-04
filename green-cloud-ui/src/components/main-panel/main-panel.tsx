@@ -27,7 +27,7 @@ export const MainPanel = ({ selectedTab, selectedAgent }: Props) => {
             containerStyle: mainContainer,
             header: tab.header,
             subHeader,
-            removeScroll: tab.removeScroll,
+            removeScroll: tab.removeScroll
          }}
       >
          {tab.panel}

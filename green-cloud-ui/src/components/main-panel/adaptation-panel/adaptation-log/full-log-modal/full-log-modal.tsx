@@ -32,7 +32,7 @@ const FullLogModal = ({ isOpen, setIsOpen, sortedLogs }: Props) => {
             isOpen,
             setIsOpen,
             header: header.toUpperCase(),
-            contentStyle: modalStyle,
+            contentStyle: modalStyle
          }}
       >
          {generateAdaptationLogs()}

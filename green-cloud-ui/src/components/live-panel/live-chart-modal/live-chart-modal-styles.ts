@@ -18,35 +18,34 @@ export const styles: Styles = {
       width: '80%',
       height: '85%',
       paddingTop: '10px',
-      overflowX: 'hidden',
+      overflowX: 'hidden'
    },
    modalHeader: {
       border: 'none',
-      justifyContent: 'flex-start',
       fontWeight: 600,
       paddingLeft: '10px',
       paddingTop: '10px',
       color: 'var(--gray-3)',
-      fontSize: 'var(--font-size-11)',
+      fontSize: 'var(--font-size-11)'
    },
    headerText: {
-      padding: '10px 20px',
+      padding: '10px 20px'
    },
    headerContainer: {
       borderTopLeftRadius: '20px',
       borderTopRightRadius: '20px',
       width: '100%',
       color: 'var(--white)',
-      fontSize: 'var(--font-size-3)',
+      fontSize: 'var(--font-size-4)',
       fontWeight: 500,
-      backgroundColor: 'var(--gray-12)',
+      backgroundColor: 'var(--gray-12)'
    },
    wrapper: {
       height: '97%',
       width: '100%',
       display: 'flex',
       flexDirection: 'row',
-      minWidth: 'fit-content',
+      minWidth: 'fit-content'
    },
    chartContentWrapper: {
       height: '100%',
@@ -57,7 +56,7 @@ export const styles: Styles = {
       width: '70%',
       display: 'flex',
       flexDirection: 'column',
-      minWidth: '0',
+      minWidth: '0'
    },
    chartContainerWrapper: {
       padding: '20px 20px 30px 20px',
@@ -66,7 +65,7 @@ export const styles: Styles = {
       rowGap: '25px',
       columnGap: '15px',
       overflowY: 'scroll',
-      overflowX: 'hidden',
+      overflowX: 'hidden'
    },
    avgContentWrapper: {
       height: '100%',
@@ -77,7 +76,7 @@ export const styles: Styles = {
       margin: '10px',
       width: '30%',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'column'
    },
    avgContainerWrapper: {
       padding: '10px 0px',
@@ -87,13 +86,13 @@ export const styles: Styles = {
       width: '100%',
       flexGrow: 1,
       flexDirection: 'column',
-      alignItems: 'center',
+      alignItems: 'center'
    },
    chartWrapper: {
       height: '225px',
       width: '100%',
       borderRadius: 20,
       minHeight: 0,
-      minWidth: '0',
-   },
+      minWidth: '0'
+   }
 }

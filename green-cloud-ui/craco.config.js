@@ -9,7 +9,7 @@ module.exports = {
          '@types': path.resolve(__dirname, 'src/types'),
          '@store': path.resolve(__dirname, 'src/store'),
          '@middleware': path.resolve(__dirname, 'src/middleware'),
-         '@utils': path.resolve(__dirname, 'src/utils'),
-      },
-   },
+         '@utils': path.resolve(__dirname, 'src/utils')
+      }
+   }
 }

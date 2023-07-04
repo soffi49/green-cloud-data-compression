@@ -6,7 +6,7 @@ import {
    getStatisticsMapForAgent,
    MAP_TYPE,
    NETWORK_AGENTS,
-   PERCENTAGE_VALUES,
+   PERCENTAGE_VALUES
 } from './agent-statistics-config'
 import SubtitleContainer from '../../../common/subtitle-container/subtitle-container'
 

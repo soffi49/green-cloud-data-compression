@@ -58,7 +58,7 @@ const PowerShortageEvent = ({ event, label, agentName, maxCapacity, triggerPower
          toast.warn(`Power shortage ${message} in ${agentName}`)
          triggerPowerShortage({
             agentName,
-            newMaximumCapacity: inputVal as number,
+            newMaximumCapacity: inputVal as number
          })
          setInputVal(0)
       }
@@ -74,7 +74,7 @@ const PowerShortageEvent = ({ event, label, agentName, maxCapacity, triggerPower
                   label: topButtonLabel,
                   max: maxCapacity,
                   disabled,
-                  placeholder,
+                  placeholder
                }}
             />
          </div>
@@ -83,7 +83,7 @@ const PowerShortageEvent = ({ event, label, agentName, maxCapacity, triggerPower
                buttonClassName: getButtonStyle(),
                onClick: handlePowerShortageTrigger,
                isDisabled: event.disabled,
-               title: buttonLabel.toUpperCase(),
+               title: buttonLabel.toUpperCase()
             }}
          />
       </>

@@ -6,7 +6,7 @@ import { selectSelectedTab } from 'store/navigator'
 const mapStateToProps = (state: RootState) => {
    return {
       selectedAgent: selectChosenNetworkAgent(state),
-      selectedTab: selectSelectedTab(state),
+      selectedTab: selectSelectedTab(state)
    }
 }
 

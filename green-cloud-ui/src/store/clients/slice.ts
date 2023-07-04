@@ -4,7 +4,7 @@ import { ClientAgent, ClientAgentStatus, ClientStoreState } from '@types'
 const INITIAL_STATE: ClientStoreState = {
    clients: [],
    clientData: null,
-   selectedClient: null,
+   selectedClient: null
 }
 
 /**
@@ -25,6 +25,6 @@ export const clientSlice = createSlice({
       },
       resetClients(state) {
          Object.assign(state, INITIAL_STATE)
-      },
-   },
+      }
+   }
 })

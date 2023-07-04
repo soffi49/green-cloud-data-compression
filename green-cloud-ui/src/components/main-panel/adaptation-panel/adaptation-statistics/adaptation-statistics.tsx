@@ -32,7 +32,7 @@ export const AdaptationStatistics = ({ managingSystem, adaptationGoals }: Props)
       iconStyle,
       goalWrapper,
       qualityText,
-      tooltipContent,
+      tooltipContent
    } = styles
 
    const tooltipIconContent = (
@@ -53,11 +53,11 @@ export const AdaptationStatistics = ({ managingSystem, adaptationGoals }: Props)
    const prepareStatisticsForDisplay = () => {
       const { goalQualityIndicators, ...otherProperties } = managingSystem
       const goalQualityMap = goalQualityIndicators.map((entry) => ({
-         ['goalId' + entry.id]: entry.quality,
+         ['goalId' + entry.id]: entry.quality
       }))
       return {
          ...(Object.assign({}, ...(goalQualityMap as [])) as any),
-         ...(otherProperties as any),
+         ...(otherProperties as any)
       }
    }
 
@@ -72,14 +72,14 @@ export const AdaptationStatistics = ({ managingSystem, adaptationGoals }: Props)
          return {
             parsedVal: percentageVal,
             parsedLabel: getIndicatorLabel(label),
-            type: 'value',
+            type: 'value'
          }
       }
 
       return {
          parsedVal: parseGoalQuality(percentageVal, key, value),
          parsedLabel: label,
-         type: 'valueObject',
+         type: 'valueObject'
       }
    }
 
@@ -127,7 +127,7 @@ export const AdaptationStatistics = ({ managingSystem, adaptationGoals }: Props)
                      [type]: parsedVal,
                      fieldContainerStyle,
                      fieldValueStyle,
-                     fieldLabelStyle,
+                     fieldLabelStyle
                   }}
                />
             )

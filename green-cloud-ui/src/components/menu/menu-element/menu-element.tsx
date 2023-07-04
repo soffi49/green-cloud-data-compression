@@ -33,7 +33,7 @@ const MenuElement = ({ header, icon, id, iconOffset, changeTab }: Props) => {
                style: menuIcon,
                'data-tooltip-id': id.toString(),
                'data-tooltip-offset': iconOffset,
-               onClick: () => changeTab(id),
+               onClick: () => changeTab(id)
             }}
          >
             {icon}

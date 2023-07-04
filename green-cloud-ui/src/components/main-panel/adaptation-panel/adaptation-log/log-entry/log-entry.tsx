@@ -24,7 +24,7 @@ const LogEntry = ({ adaptationLog }: Props) => {
       descriptionContainer,
       headerContainer,
       agentName,
-      dateContainer,
+      dateContainer
    } = styles
    const icon = { ...(ICON_MAP as any) }[adaptationLog?.type.toString()]
    const date = convertTimeToString(adaptationLog?.time)

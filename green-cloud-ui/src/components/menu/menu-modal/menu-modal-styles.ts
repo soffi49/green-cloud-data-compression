@@ -7,6 +7,6 @@ interface Styles {
 export const styles: Styles = {
    modalStyle: {
       width: '20%',
-      height: '50%',
-   },
+      height: '50%'
+   }
 }

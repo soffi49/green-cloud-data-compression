@@ -9,24 +9,24 @@ export const PANEL_TABS = [
       header: 'Cloud network statistics',
       id: MenuTab.CLOUD_SUMMARY,
       panel: <CloudStatistics />,
-      removeScroll: false,
+      removeScroll: false
    },
    {
       header: 'Agents statistics',
       id: MenuTab.AGENTS,
       panel: <AgentPanel />,
-      removeScroll: false,
+      removeScroll: false
    },
    {
       header: 'Clients statistics',
       id: MenuTab.CLIENTS,
       panel: <ClientStatistics />,
-      removeScroll: true,
+      removeScroll: true
    },
    {
       header: 'System adaptation statistics',
       id: MenuTab.ADAPTATION,
       panel: <AdaptationPanel />,
-      removeScroll: false,
-   },
+      removeScroll: false
+   }
 ]

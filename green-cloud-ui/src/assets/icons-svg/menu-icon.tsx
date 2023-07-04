@@ -18,7 +18,7 @@ const IconMenu = ({ size, color }: IconProps) => {
             width: size,
             height: size,
             fill,
-            opacity: 0.8,
+            opacity: 0.8
          }}
       >
          <g id="surface249774927">

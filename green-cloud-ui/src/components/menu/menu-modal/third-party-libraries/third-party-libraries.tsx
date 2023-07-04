@@ -23,7 +23,7 @@ const ThirdPartyLibraries = ({ isOpen, setIsOpen }: Props) => {
                {...{
                   title: library.framework,
                   triggerStyle: collapseHeader,
-                  wrapperStyle: collapseContent,
+                  wrapperStyle: collapseContent
                }}
             >
                {generateThirdPartyContent(library)}
@@ -66,7 +66,7 @@ const ThirdPartyLibraries = ({ isOpen, setIsOpen }: Props) => {
             setIsOpen,
             header: 'THIRD PARTY LIBRARIES',
             contentStyle: modalStyle,
-            isNested: true,
+            isNested: true
          }}
       >
          {generateThirdPartyFields()}

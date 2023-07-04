@@ -21,7 +21,7 @@ const AdaptationPanel = () => {
             {...{
                tabTitles: INITIAL_TABS.map((tab) => tab.title),
                selectedTabIdx,
-               setSelectedTabIdx,
+               setSelectedTabIdx
             }}
          />
          {selectedTab}

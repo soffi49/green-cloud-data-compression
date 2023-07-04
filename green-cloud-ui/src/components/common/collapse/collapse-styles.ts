@@ -15,15 +15,15 @@ export const styles: Styles = {
       justifyContent: 'space-between',
       alignItems: 'center',
       cursor: 'pointer',
-      marginBottom: '10px',
+      marginBottom: '10px'
    },
    collapseContentStyle: {
       width: '90%',
       margin: 'auto',
-      marginBottom: '10px',
+      marginBottom: '10px'
    },
    triggerIcon: {
       size: '25px',
-      color: 'var(--gray-3)',
-   },
+      color: 'var(--gray-3)'
+   }
 }

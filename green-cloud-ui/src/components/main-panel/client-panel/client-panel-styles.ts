@@ -9,12 +9,12 @@ export const styles: Styles = {
    clientContent: {
       height: '100%',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'column'
    },
    clientStatistics: {
       marginTop: '10px',
       overflowX: 'hidden',
       overflowY: 'scroll',
-      height: '100%',
-   },
+      height: '100%'
+   }
 }

@@ -1,12 +1,13 @@
 import { styles } from './filter-modal-styles'
 import { useState } from 'react'
 import { ActionMeta, MultiValue, SingleValue } from 'react-select'
-import { Dropdown, Modal, MultiCheckBox, SelectOption, SingleCheckBox } from 'components/common'
+import { Dropdown, Modal, MultiCheckBox, SingleCheckBox } from 'components/common'
 import { ALL_STATUS, INITIAL_JOB_SPLIT_SELECT_OPTIONS } from '../../client-panel-config'
+import { DropdownOption } from '@types'
 
 interface Props {
-   jobStatusMap: SelectOption[]
-   setJobStatusMap: React.Dispatch<React.SetStateAction<SelectOption[]>>
+   jobStatusMap: DropdownOption[]
+   setJobStatusMap: React.Dispatch<React.SetStateAction<DropdownOption[]>>
    setSplitFilter: (newValue: boolean | null) => void
    isOpen: boolean
    setIsOpen: (state: boolean) => void
@@ -23,8 +24,10 @@ interface Props {
  * @returns JSX Element
  */
 const FilterModal = ({ jobStatusMap, setJobStatusMap, setSplitFilter, isOpen, setIsOpen }: Props) => {
-   const [jobSplitFilterOptions, setJobSplitFilterOptions] = useState<SelectOption[]>(INITIAL_JOB_SPLIT_SELECT_OPTIONS)
-   const [isAllSelected, setIsAllSelected] = useState<SelectOption>(ALL_STATUS)
+   const [jobSplitFilterOptions, setJobSplitFilterOptions] = useState<DropdownOption[]>(
+      INITIAL_JOB_SPLIT_SELECT_OPTIONS
+   )
+   const [isAllSelected, setIsAllSelected] = useState<DropdownOption>(ALL_STATUS)
 
    const { checkBoxContainer, modalContainer, modalHeader } = styles
 
@@ -52,10 +55,10 @@ const FilterModal = ({ jobStatusMap, setJobStatusMap, setSplitFilter, isOpen, se
    }
 
    const onChange = (
-      selectedValues: SingleValue<SelectOption> | MultiValue<SelectOption>,
-      action: ActionMeta<SelectOption>
+      selectedValues: SingleValue<DropdownOption> | MultiValue<DropdownOption>,
+      action: ActionMeta<DropdownOption>
    ) => {
-      const values = selectedValues as MultiValue<SelectOption>
+      const values = selectedValues as MultiValue<DropdownOption>
       const removedValue = action.removedValue
       const areAllSelected = values.every((value) => value.isSelected) && !removedValue && action.action !== 'clear'
 
@@ -92,7 +95,7 @@ const FilterModal = ({ jobStatusMap, setJobStatusMap, setSplitFilter, isOpen, se
                   isOptionSelected: (option) => option.isSelected ?? true,
                   placeholder: 'Select job statuses',
                   onChange,
-                  isMulti: true,
+                  isMulti: true
                }}
             />
             <SingleCheckBox {...{ option: isAllSelected, onChange: onChangeAll }} />
@@ -102,7 +105,7 @@ const FilterModal = ({ jobStatusMap, setJobStatusMap, setSplitFilter, isOpen, se
                {...{
                   options: jobSplitFilterOptions,
                   onChange: handleJobSplitSelectChange,
-                  header: 'FILTER BY JOB SPLIT STATE',
+                  header: 'FILTER BY JOB SPLIT STATE'
                }}
             />
          </div>

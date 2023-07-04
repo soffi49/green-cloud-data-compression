@@ -6,6 +6,6 @@ interface Styles {
 
 export const styles: Styles = {
    configContainer: {
-      marginTop: '20px',
-   },
+      marginTop: '20px'
+   }
 }

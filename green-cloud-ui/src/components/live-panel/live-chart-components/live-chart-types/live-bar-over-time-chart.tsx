@@ -3,21 +3,21 @@ import React from 'react'
 import { styles } from '../live-chart-common/live-chart-generic/live-chart-generic-styles'
 
 import { Bar, BarChart, ResponsiveContainer } from 'recharts'
-import { LiveChartLabeling, LiveChartNumericValues, LiveChartTimeValues } from '@types'
+import { LiveChartDataCategoryDescription, LiveChartEntryNumeric, LiveChartEntryTime } from '@types'
 import { renderChartDescription } from '../live-chart-common/live-chart-generic/live-chart-generic-config'
 
 interface Props {
-   data: LiveChartTimeValues[] | LiveChartNumericValues[]
-   labels: LiveChartLabeling[]
+   data: LiveChartEntryTime[] | LiveChartEntryNumeric[]
+   labels: LiveChartDataCategoryDescription[]
    valueDomain?: number[]
    yAxisFormatter?: (data: any) => string
 }
 
 /**
- * Component represents a default live area chart
+ * Component represents a default live bar chart over time
  *
- * @param {LiveChartTimeValues[]}[data] - data displayed in the chart
- * @param {LiveChartLabeling[]}[labeling] - data used in chart labels
+ * @param {LiveChartEntryTime[]}[data] - data displayed in the chart
+ * @param {LiveChartDataCategoryDescription[]}[labeling] - data used in chart labels
  * @param {number[]}[valueDomain] - optional range displayed on y-axis
  * @param {func}[yAxisFormatter] - optional formatter for y-axis labels
  * @returns JSX Element
@@ -29,7 +29,7 @@ export const LiveBarOverTimeChart = ({ data, labels, valueDomain, yAxisFormatter
          <Bar
             {...{
                dataKey: entry.name,
-               fill: entry.color,
+               fill: entry.color
             }}
          />
       ))
