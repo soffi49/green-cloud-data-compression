@@ -12,6 +12,7 @@ import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORI
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.WEATHER_SHORTAGES;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.database.knowledge.domain.goal.GoalEnum.MINIMIZE_USED_BACKUP_POWER;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
@@ -122,17 +123,17 @@ class PlannerServiceUnitTest {
 	@DisplayName("Test planner trigger for executor not called")
 	void testPlannerTriggerForExecutorNotCalled() {
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(ADD_SERVER), 30.0,
-				getAdaptationAction(INCREASE_DEADLINE_PRIORITY), 12.0,
-				getAdaptationAction(CONNECT_GREEN_SOURCE), 5.0
+				getAdaptationAction(ADD_SERVER).get(0), 30.0,
+				getAdaptationAction(INCREASE_DEADLINE_PRIORITY).get(0), 12.0,
+				getAdaptationAction(CONNECT_GREEN_SOURCE).get(0), 5.0
 		);
 
-		plannerService.trigger(Collections.emptyMap());
+		plannerService.trigger(Collections.emptyMap(), MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verifyNoInteractions(managingAgent.execute());
 
 		plannerService.setPlanForActionMap(Collections.emptyMap());
-		plannerService.trigger(testActions);
+		plannerService.trigger(testActions, MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verifyNoInteractions(managingAgent.execute());
 	}
@@ -144,56 +145,58 @@ class PlannerServiceUnitTest {
 		doReturn("test_agent").when(mockAgent).getName();
 
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(ADD_SERVER), 30.0,
-				getAdaptationAction(INCREASE_DEADLINE_PRIORITY), 12.0,
-				getAdaptationAction(CONNECT_GREEN_SOURCE), 5.0
+				getAdaptationAction(ADD_SERVER).get(0), 30.0,
+				getAdaptationAction(INCREASE_DEADLINE_PRIORITY).get(0), 12.0,
+				getAdaptationAction(CONNECT_GREEN_SOURCE).get(0), 5.0
 		);
 		plannerService.setPlanForActionMap(Map.of(
 				ADD_SERVER, getTestAdaptationPlan(managingAgent, mockAgent,
 						ImmutableAdjustGreenSourceErrorParameters.builder().percentageChange(0.07).build())
 		));
-		doNothing().when(plannerService).initializePlansForActions();
+		doNothing().when(plannerService).initializePlansForActions(MAXIMIZE_JOB_SUCCESS_RATIO);
 
-		plannerService.trigger(testActions);
+		plannerService.trigger(testActions, MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verify(managingAgent).execute();
 		verify(executorService).executeAdaptationAction(argThat((plan) ->
 				plan.getTargetAgent().equals(mockAgent)
-				&& plan.getActionParameters() instanceof AdjustGreenSourceErrorParameters
-				&& ((AdjustGreenSourceErrorParameters) plan.getActionParameters()).getPercentageChange()
-				   == 0.07));
+						&& plan.getActionParameters() instanceof AdjustGreenSourceErrorParameters
+						&& ((AdjustGreenSourceErrorParameters) plan.getActionParameters()).getPercentageChange()
+						== 0.07));
 	}
 
 	@Test
 	@DisplayName("Test planner trigger for selection of green source increment error plan")
 	void testPlannerTriggerForIncrementingGreenSourceErrorPlan() {
 		plannerService.setPlanForActionMap(Map.of(
-				INCREASE_GREEN_SOURCE_ERROR, new IncrementGreenSourceErrorPlan(managingAgent)
+				INCREASE_GREEN_SOURCE_ERROR,
+				new IncrementGreenSourceErrorPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO)
 		));
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(INCREASE_GREEN_SOURCE_ERROR), 20.0
+				getAdaptationAction(INCREASE_GREEN_SOURCE_ERROR).get(0), 20.0
 		);
 		mockHealthCheckData();
 		doReturn(prepareGSData()).when(database).readLastMonitoringDataForDataTypes(List.of(GREEN_SOURCE_MONITORING));
 		doReturn(preparePowerShortageData()).when(database)
 				.readMonitoringDataForDataTypeAndAID(eq(WEATHER_SHORTAGES), eq(List.of("test_gs1", "test_gs2")),
 						anyDouble());
-		plannerService.trigger(testActions);
+		plannerService.trigger(testActions, MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verify(managingAgent).execute();
 		verify(executorService).executeAdaptationAction(argThat((val) ->
 				val.getTargetAgent().getName().equals("test_gs2") &&
-				val.getActionParameters() instanceof AdjustGreenSourceErrorParameters));
+						val.getActionParameters() instanceof AdjustGreenSourceErrorParameters));
 	}
 
 	@Test
 	@DisplayName("Test planner trigger for selection of green source decrement error plan")
 	void testPlannerTriggerForDecrementingGreenSourceErrorPlan() {
 		plannerService.setPlanForActionMap(Map.of(
-				DECREASE_GREEN_SOURCE_ERROR, new DecrementGreenSourceErrorPlan(managingAgent)
+				DECREASE_GREEN_SOURCE_ERROR,
+				new DecrementGreenSourceErrorPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO)
 		));
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(DECREASE_GREEN_SOURCE_ERROR), 20.0
+				getAdaptationAction(DECREASE_GREEN_SOURCE_ERROR).get(0), 20.0
 		);
 		mockHealthCheckData();
 		prepareGreenSourceStructure();
@@ -209,12 +212,12 @@ class PlannerServiceUnitTest {
 		doReturn(preparePowerShortageData()).when(database)
 				.readMonitoringDataForDataTypeAndAID(eq(WEATHER_SHORTAGES), eq(List.of("test_gs3")),
 						anyDouble());
-		plannerService.trigger(testActions);
+		plannerService.trigger(testActions, MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verify(managingAgent).execute();
 		verify(executorService).executeAdaptationAction(argThat((val) ->
 				val.getTargetAgent().getName().equals("test_gs3") &&
-				val.getActionParameters() instanceof AdjustGreenSourceErrorParameters));
+						val.getActionParameters() instanceof AdjustGreenSourceErrorParameters));
 	}
 
 	private void prepareGreenSourceStructure() {
@@ -297,15 +300,15 @@ class PlannerServiceUnitTest {
 	@MethodSource("parametersGetPlanTest")
 	@DisplayName("Test getting plan for adaptation action")
 	void testGetPlanForAdaptationAction(final AdaptationActionEnum adaptation, final Class<?> expectedPlan) {
-		plannerService.initializePlansForActions();
-		assertThat(plannerService.getPlanForAdaptationAction(getAdaptationAction(adaptation)))
+		plannerService.initializePlansForActions(MAXIMIZE_JOB_SUCCESS_RATIO);
+		assertThat(plannerService.getPlanForAdaptationAction(getAdaptationAction(adaptation).get(0)))
 				.isInstanceOf(expectedPlan);
 	}
 
 	@Test
 	@DisplayName("Test getting plans which can be executed")
 	void testGetPlansWhichCanBeExecuted() {
-		final AbstractPlan plan1 = new AbstractPlan(ADD_SERVER, managingAgent) {
+		final AbstractPlan plan1 = new AbstractPlan(ADD_SERVER, managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO) {
 			@Override
 			public boolean isPlanExecutable() {
 				return false;
@@ -316,7 +319,8 @@ class PlannerServiceUnitTest {
 				return this;
 			}
 		};
-		final AbstractPlan plan2 = new AbstractPlan(INCREASE_DEADLINE_PRIORITY, managingAgent) {
+		final AbstractPlan plan2 = new AbstractPlan(INCREASE_DEADLINE_PRIORITY, managingAgent,
+				MAXIMIZE_JOB_SUCCESS_RATIO) {
 			@Override
 			public boolean isPlanExecutable() {
 				return true;
@@ -330,9 +334,9 @@ class PlannerServiceUnitTest {
 		plannerService.setPlanForActionMap(Map.of(ADD_SERVER, plan1, INCREASE_DEADLINE_PRIORITY, plan2));
 
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(ADD_SERVER), 10.0,
-				getAdaptationAction(INCREASE_DEADLINE_PRIORITY), 12.0,
-				getAdaptationAction(CONNECT_GREEN_SOURCE), 5.0
+				getAdaptationAction(ADD_SERVER).get(0), 10.0,
+				getAdaptationAction(INCREASE_DEADLINE_PRIORITY).get(0), 12.0,
+				getAdaptationAction(CONNECT_GREEN_SOURCE).get(0), 5.0
 		);
 
 		var result = plannerService.getPlansWhichCanBeExecuted(testActions);
@@ -342,7 +346,7 @@ class PlannerServiceUnitTest {
 				.hasSize(1)
 				.as("Result should contain correct field")
 				.allSatisfy((entry) -> {
-					assertThat(entry.getKey()).isEqualTo(getAdaptationAction(INCREASE_DEADLINE_PRIORITY));
+					assertThat(entry.getKey()).isEqualTo(getAdaptationAction(INCREASE_DEADLINE_PRIORITY).get(0));
 					assertThat(entry.getValue()).isEqualTo(12.0);
 				});
 	}
@@ -351,25 +355,25 @@ class PlannerServiceUnitTest {
 	@DisplayName("Test selection of the best action")
 	void testSelectBestAction() {
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(ADD_SERVER), 30.0,
-				getAdaptationAction(INCREASE_DEADLINE_PRIORITY), 12.0,
-				getAdaptationAction(CONNECT_GREEN_SOURCE), 5.0
+				getAdaptationAction(ADD_SERVER).get(0), 30.0,
+				getAdaptationAction(INCREASE_DEADLINE_PRIORITY).get(0), 12.0,
+				getAdaptationAction(CONNECT_GREEN_SOURCE).get(0), 5.0
 		);
 
 		var result = plannerService.selectBestAction(testActions);
 
-		assertThat(result).isEqualTo(getAdaptationAction(ADD_SERVER));
+		assertThat(result).isEqualTo(getAdaptationAction(ADD_SERVER).get(0));
 	}
 
 	@Test
 	@DisplayName("Test selection of the best action for map size 1")
 	void testSelectBestActionMapSize1() {
 		final Map<AdaptationAction, Double> testActions = Map.of(
-				getAdaptationAction(ADD_SERVER), 30.0
+				getAdaptationAction(ADD_SERVER).get(0), 30.0
 		);
 
 		var result = plannerService.selectBestAction(testActions);
 
-		assertThat(result).isEqualTo(getAdaptationAction(ADD_SERVER));
+		assertThat(result).isEqualTo(getAdaptationAction(ADD_SERVER).get(0));
 	}
 }

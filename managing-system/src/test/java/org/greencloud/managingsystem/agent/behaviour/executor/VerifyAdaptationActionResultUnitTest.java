@@ -40,7 +40,7 @@ import com.gui.agents.ManagingAgentNode;
 class VerifyAdaptationActionResultUnitTest {
 
 	private static final Instant ACTION_TIMESTAMP = parse("2022-01-01T10:30:00.000Z");
-	private static final AdaptationAction ACTION = getAdaptationAction(ADD_SERVER);
+	private static final AdaptationAction ACTION = getAdaptationAction(ADD_SERVER).get(0);
 	private static final Map<GoalEnum, Double> INITIAL_QUALITIES = Map.of(
 			MINIMIZE_USED_BACKUP_POWER, 0.1,
 			MAXIMIZE_JOB_SUCCESS_RATIO, 0.8,
@@ -48,6 +48,7 @@ class VerifyAdaptationActionResultUnitTest {
 	private static final Double RESULT_QUALITY_SUCCESS_RATIO = 0.7;
 	private static final Double RESULT_QUALITY_BACK_UP_POWER = 0.2;
 	private static final Double RESULT_QUALITY_TRAFFIC = 0.3;
+	private static final long DURATION = 7;
 
 	@Mock
 	ManagingAgent managingAgent;
@@ -73,15 +74,15 @@ class VerifyAdaptationActionResultUnitTest {
 		when(managingAgentNode.getDatabaseClient()).thenReturn(database);
 		when(managingAgent.monitor()).thenReturn(monitoringService);
 		when(database.readAdaptationAction(ACTION.getActionId())).thenReturn(ACTION);
-		adaptationPlan = new AddServerPlan(managingAgent);
+		adaptationPlan = new AddServerPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
 	}
 
 	@Test
 	void shouldCorrectlyProcessAfterWakeUp() {
 		// given
-		verifyAdaptationActionResult = new VerifyAdaptationActionResult(managingAgent, ACTION_TIMESTAMP,
-				adaptationPlan.getAdaptationActionEnum(), null, INITIAL_QUALITIES, adaptationPlan.enablePlanAction(),
-				5, null);
+		verifyAdaptationActionResult = new VerifyAdaptationActionResult(managingAgent, ACTION_TIMESTAMP, DURATION,
+				ACTION.getActionId(), null, INITIAL_QUALITIES, adaptationPlan.enablePlanAction(),
+				5);
 
 		when(monitoringService.getGoalService(MAXIMIZE_JOB_SUCCESS_RATIO)).thenReturn(jobSuccessRatioService);
 		when(monitoringService.getGoalService(MINIMIZE_USED_BACKUP_POWER)).thenReturn(backUpPowerUsageService);
@@ -102,10 +103,10 @@ class VerifyAdaptationActionResultUnitTest {
 		);
 		final ArgumentCaptor<Map<GoalEnum, Double>> mapCaptor = forClass(Map.class);
 
-		verify(database).updateAdaptationAction(eq(ACTION.getActionId()), mapCaptor.capture());
+		verify(database).updateAdaptationAction(eq(ACTION.getActionId()), mapCaptor.capture(), eq(7L));
 		verify(database).setAdaptationActionAvailability(ACTION.getActionId(), true);
 
 		assertThat(mapCaptor.getValue())
-				.allSatisfy((goal, val) -> assertThat(expectedMap.get(goal)).isCloseTo(val, Offset.offset(0.001)));
+				.allSatisfy((goal, val) -> assertThat(expectedMap.get(goal)).isCloseTo(val, Offset.offset(0.00001)));
 	}
 }

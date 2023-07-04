@@ -3,6 +3,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.WEATHER_SHORTAGES;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.database.knowledge.domain.goal.GoalEnum.MINIMIZE_USED_BACKUP_POWER;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static com.greencloud.commons.agent.AgentType.SERVER;
@@ -67,7 +68,7 @@ class DecrementGreenSourceErrorPlanUnitTest {
 		mockDatabase = mock(TimescaleDatabase.class);
 		mockMonitoring = spy(new MonitoringService(mockManagingAgent));
 
-		decrementGreenSourceErrorPlan = new DecrementGreenSourceErrorPlan(mockManagingAgent);
+		decrementGreenSourceErrorPlan = new DecrementGreenSourceErrorPlan(mockManagingAgent, MINIMIZE_USED_BACKUP_POWER);
 
 		doReturn(mockMonitoring).when(mockManagingAgent).monitor();
 		doReturn(mockAgentNode).when(mockManagingAgent).getAgentNode();

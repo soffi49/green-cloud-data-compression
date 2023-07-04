@@ -260,15 +260,19 @@ class TimescaleDatabaseIntegrationTest {
 			Map<Integer, Double> expectedActionResults) {
 		// given
 		int actionId = 1;
+		long executionDuration = 7;
 
 		// when
-		actionResults.forEach(actionResult -> database.updateAdaptationAction(actionId, actionResult));
+		actionResults.forEach(actionResult -> database.updateAdaptationAction(actionId, actionResult, executionDuration));
 
 		// then
 		var updatedAction = database.readAdaptationAction(actionId);
 		assertThat(updatedAction.getRuns())
 				.as("action number of runs should be equal to number of updates")
 				.isEqualTo(actionResults.size());
+		assertThat(updatedAction.getExecutionDuration())
+				.as("expected duration should be equal to expected result")
+				.isEqualTo(executionDuration);
 		assertThat(updatedAction.getActionResultDifferences())
 				.as("final action results should have the expected values")
 				.usingRecursiveComparison()
@@ -279,12 +283,13 @@ class TimescaleDatabaseIntegrationTest {
 	void shouldCorrectlyReleaseAdaptationAction() {
 		// given
 		int actionId = 1;
+		long executionDuration = 7;
 		var actionResults = Map.of(
 				MAXIMIZE_JOB_SUCCESS_RATIO, 0.5,
 				MINIMIZE_USED_BACKUP_POWER, 0.25,
 				DISTRIBUTE_TRAFFIC_EVENLY, -0.25
 		);
-		database.updateAdaptationAction(actionId, actionResults);
+		database.updateAdaptationAction(actionId, actionResults, executionDuration);
 
 		// when
 		var blockedAction = database.setAdaptationActionAvailability(actionId, false);

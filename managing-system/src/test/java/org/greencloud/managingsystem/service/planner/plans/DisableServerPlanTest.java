@@ -1,6 +1,7 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
+import static com.database.knowledge.domain.goal.GoalEnum.DISTRIBUTE_TRAFFIC_EVENLY;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -45,7 +46,7 @@ class DisableServerPlanTest {
 		timescaleDatabase = mock(TimescaleDatabase.class);
 		managingAgentNode = mock(ManagingAgentNode.class);
 
-		disableServerPlan = new DisableServerPlan(managingAgent);
+		disableServerPlan = new DisableServerPlan(managingAgent, DISTRIBUTE_TRAFFIC_EVENLY);
 		doReturn(timescaleDatabase).when(managingAgentNode).getDatabaseClient();
 		doReturn(managingAgentNode).when(managingAgent).getAgentNode();
 		doReturn(monitoringService).when(managingAgent).monitor();

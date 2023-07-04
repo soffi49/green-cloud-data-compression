@@ -80,7 +80,7 @@ class ListenForAdaptationActionGreenSourceUnitTest {
 		listenForAdaptationAction.action();
 
 		verify(greenEnergyAgent).executeAction(
-				argThat((data -> data.getAction().equals(INCREASE_GREEN_SOURCE_ERROR))),
+				argThat((data -> data.equals(INCREASE_GREEN_SOURCE_ERROR))),
 				argThat((data) -> data instanceof AdjustGreenSourceErrorParameters &&
 						((AdjustGreenSourceErrorParameters) data).getPercentageChange() == 0.05));
 
@@ -98,7 +98,7 @@ class ListenForAdaptationActionGreenSourceUnitTest {
 		listenForAdaptationAction.action();
 
 		verify(greenEnergyAgent).executeAction(
-				argThat((data -> data.getAction().equals(DECREASE_GREEN_SOURCE_ERROR))),
+				argThat((data -> data.equals(DECREASE_GREEN_SOURCE_ERROR))),
 				argThat((data) -> data instanceof AdjustGreenSourceErrorParameters &&
 						((AdjustGreenSourceErrorParameters) data).getPercentageChange() == -0.01));
 
@@ -116,7 +116,7 @@ class ListenForAdaptationActionGreenSourceUnitTest {
 		listenForAdaptationAction.action();
 
 		verify(greenEnergyAgent).executeAction(
-				argThat((data -> data.getAction().equals(CONNECT_GREEN_SOURCE))),
+				argThat((data -> data.equals(CONNECT_GREEN_SOURCE))),
 				argThat((data) -> data instanceof ChangeGreenSourceConnectionParameters &&
 						Objects.equals(((ChangeGreenSourceConnectionParameters) data).getServerName(), "test_server")),
 				eq(testMessage));
@@ -133,7 +133,7 @@ class ListenForAdaptationActionGreenSourceUnitTest {
 		listenForAdaptationAction.action();
 
 		verify(greenEnergyAgent).executeAction(
-				argThat((data -> data.getAction().equals(DISCONNECT_GREEN_SOURCE))),
+				argThat((data -> data.equals(DISCONNECT_GREEN_SOURCE))),
 				argThat((data) -> data instanceof ChangeGreenSourceConnectionParameters &&
 						Objects.equals(((ChangeGreenSourceConnectionParameters) data).getServerName(), "test_server")),
 				eq(testMessage));

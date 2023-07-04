@@ -140,7 +140,7 @@ class ExecutorServiceDatabaseTest {
 		doNothing().when(mobilityService).moveContainers(any(), any());
 		yellowPagesService.when(() -> search(any(), any(), eq(CNA_SERVICE_TYPE)))
 				.thenReturn(Set.of(new AID("CNA1", true)));
-		adaptationPlan = new AddServerPlan(managingAgent);
+		adaptationPlan = new AddServerPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
 		adaptationPlan.isPlanExecutable();
 		adaptationPlan.constructAdaptationPlan();
 

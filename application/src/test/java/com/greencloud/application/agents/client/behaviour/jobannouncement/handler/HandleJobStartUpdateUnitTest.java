@@ -3,13 +3,10 @@ package com.greencloud.application.agents.client.behaviour.jobannouncement.handl
 import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJobStatusUpdate;
 import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
 import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClientMultipleJobParts;
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_START_DELAY_LOG;
-import static com.greencloud.application.agents.client.behaviour.jobannouncement.handler.logs.JobAnnouncementHandlerLog.CLIENT_JOB_START_ON_TIME_LOG;
 import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.STARTED_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
 import static jade.lang.acl.ACLMessage.INFORM;
-import static java.time.Instant.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -21,7 +18,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,8 +31,6 @@ import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.commons.message.MessageBuilder;
 import com.gui.agents.ClientAgentNode;
 import com.gui.controller.GuiController;
-
-import nl.altindag.log.LogCaptor;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
@@ -128,44 +122,5 @@ class HandleJobStartUpdateUnitTest {
 		assertThat(mockClientAgent.getJobParts()).containsKey("1#part1");
 		assertThat(mockClientAgent.getJobParts().get("1#part1").getJobStatus()).isEqualTo(IN_PROGRESS);
 		assertThat(mockClientAgent.getJobExecution().getJobStatus()).isEqualTo(IN_PROGRESS);
-	}
-
-	@Test
-	@Disabled
-	@DisplayName("Test check job start time - start with delay")
-	void testCheckIfJobStartedOnTimeWithDelay() {
-		// given
-		var jobStartTime = parse("2022-01-01T11:00:00.000Z");
-		var actualStartTime = parse("2022-01-01T11:30:00.100Z");
-		var expectedLog = CLIENT_JOB_START_DELAY_LOG.replace("{}", "-21601");
-
-		// prepare
-		var logCaptor = LogCaptor.forClass(HandleJobStartUpdate.class);
-		logCaptor.setLogLevelToInfo();
-
-		// when
-		testBehaviour.checkIfJobStartedOnTime(jobStartTime, actualStartTime);
-
-		// then
-		assertThat(logCaptor.getInfoLogs()).containsExactly(expectedLog);
-	}
-
-	@Test
-	@Disabled
-	@DisplayName("Test check job start time - start with no delay")
-	void testCheckIfJobStartedOnTimeNoDelay() {
-		// given
-		var jobStartTime = parse("2022-01-01T11:00:00.000Z");
-		var actualStartTime = parse("2022-01-01T11:00:00.100Z");
-
-		// prepare
-		var logCaptor = LogCaptor.forClass(HandleJobStartUpdate.class);
-		logCaptor.setLogLevelToInfo();
-
-		// when
-		testBehaviour.checkIfJobStartedOnTime(jobStartTime, actualStartTime);
-
-		// then
-		assertThat(logCaptor.getInfoLogs()).containsExactly(CLIENT_JOB_START_ON_TIME_LOG);
 	}
 }

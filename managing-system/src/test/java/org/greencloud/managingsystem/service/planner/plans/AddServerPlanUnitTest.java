@@ -1,6 +1,7 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.google.common.collect.ImmutableList.of;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
@@ -57,7 +58,7 @@ class AddServerPlanUnitTest {
 	@BeforeEach
 	void init() {
 		mobilityService = spy(new MobilityService(managingAgent));
-		addServerPlan = new AddServerPlan(managingAgent);
+		addServerPlan = new AddServerPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
 		ServerAgentArgs serverAgentArgs = ImmutableServerAgentArgs.builder()
 				.jobProcessingLimit("200")
 				.name("Server1")

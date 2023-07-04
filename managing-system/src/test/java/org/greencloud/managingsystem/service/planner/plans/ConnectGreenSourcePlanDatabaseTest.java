@@ -1,6 +1,7 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.AVAILABLE_GREEN_ENERGY;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -47,7 +48,7 @@ class ConnectGreenSourcePlanDatabaseTest {
 		doReturn(new MonitoringService(mockManagingAgent)).when(mockManagingAgent).monitor();
 		doReturn(mockAgentNode).when(mockManagingAgent).getAgentNode();
 		doReturn(database).when(mockAgentNode).getDatabaseClient();
-		connectGreenSourcePlan = new ConnectGreenSourcePlan(mockManagingAgent);
+		connectGreenSourcePlan = new ConnectGreenSourcePlan(mockManagingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
 	}
 
 	@AfterEach

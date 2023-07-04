@@ -4,6 +4,7 @@ import static com.greencloud.application.agents.client.fixtures.Fixtures.buildJo
 import static com.greencloud.application.agents.client.fixtures.Fixtures.setUpClient;
 import static com.greencloud.application.agents.client.domain.enums.ClientJobUpdateEnum.ON_HOLD_JOB_ID;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.CREATED;
+import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PROGRESS;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_HOLD;
 import static jade.lang.acl.ACLMessage.INFORM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import com.greencloud.application.agents.client.ClientAgent;
 import com.greencloud.application.agents.client.management.ClientManagement;
 import com.greencloud.application.domain.job.JobStatusUpdate;
+import com.greencloud.commons.domain.job.enums.JobClientStatusEnum;
 import com.greencloud.commons.message.MessageBuilder;
 import com.gui.agents.ClientAgentNode;
 
@@ -60,6 +62,7 @@ class HandleGenericJobStatusUpdateUnitTest {
 		var message = MessageBuilder.builder()
 				.withPerformative(INFORM)
 				.withObjectContent(JOB_STATUS)
+				.withConversationId(ON_HOLD.getStatus())
 				.build();
 
 		mockClientAgent = setUpClient();

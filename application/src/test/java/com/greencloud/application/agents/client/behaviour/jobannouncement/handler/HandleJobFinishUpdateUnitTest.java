@@ -22,7 +22,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,8 +36,6 @@ import com.greencloud.application.domain.job.JobStatusUpdate;
 import com.greencloud.commons.message.MessageBuilder;
 import com.gui.agents.ClientAgentNode;
 import com.gui.controller.GuiController;
-
-import nl.altindag.log.LogCaptor;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
@@ -141,85 +138,4 @@ class HandleJobFinishUpdateUnitTest {
 		doNothing().when(mockClientAgent).writeMonitoringData(any(), any());
 	}
 
-	@Test
-	@Disabled
-	@DisplayName("Test check job finish time - finish before deadline but with delay")
-	void testCheckIfJobFinishedBeforeDeadlineWithDelay() {
-		// given
-		var jobEndTime = parse("2022-01-01T10:00:00.000Z");
-		var actualEndTime = parse("2022-01-01T11:00:00.000Z");
-		var deadline = parse("2022-01-01T12:00:00.000Z");
-		var expectedLog = CLIENT_JOB_FINISH_DELAY_BEFORE_DEADLINE_DELAY_LOG.replace("{}", "43200");
-
-		// prepare
-		var logCaptor = LogCaptor.forClass(HandleJobFinishUpdate.class);
-		logCaptor.setLogLevelToInfo();
-
-		// when
-		testBehaviour.checkIfJobFinishedOnTime(actualEndTime, jobEndTime, deadline);
-
-		// then
-		assertThat(logCaptor.getInfoLogs()).containsExactly(expectedLog);
-	}
-
-	@Test
-	@Disabled
-	@DisplayName("Test check job finish time - finish on time")
-	void testCheckIfJobFinishedOnTime() {
-		// given
-		var jobEndTime = parse("2022-01-01T10:00:00.000Z");
-		var actualEndTime = parse("2022-01-01T10:00:00.000Z");
-		var deadline = parse("2022-01-01T12:00:00.000Z");
-
-		// prepare
-		var logCaptor = LogCaptor.forClass(HandleJobFinishUpdate.class);
-		logCaptor.setLogLevelToInfo();
-
-		// when
-		testBehaviour.checkIfJobFinishedOnTime(actualEndTime, jobEndTime, deadline);
-
-		// then
-		assertThat(logCaptor.getInfoLogs()).containsExactly(CLIENT_JOB_FINISH_DELAY_BEFORE_DEADLINE_LOG);
-	}
-
-	@Test
-	@Disabled
-	@DisplayName("Test check job finish time - finish after deadline with small delay")
-	void testCheckIfJobFinishedAfterDeadlineSmallDelay() {
-		// given
-		var jobEndTime = parse("2022-01-01T10:00:00.000Z");
-		var actualEndTime = parse("2022-01-01T12:00:00.100Z");
-		var deadline = parse("2022-01-01T12:00:00.000Z");
-
-		// prepare
-		var logCaptor = LogCaptor.forClass(HandleJobFinishUpdate.class);
-		logCaptor.setLogLevelToInfo();
-
-		// when
-		testBehaviour.checkIfJobFinishedOnTime(actualEndTime, jobEndTime, deadline);
-
-		// then
-		assertThat(logCaptor.getInfoLogs()).containsExactly(CLIENT_JOB_FINISH_ON_TIME_LOG);
-	}
-
-	@Test
-	@Disabled
-	@DisplayName("Test check job finish time - finish after deadline")
-	void testCheckIfJobFinishedAfterDeadline() {
-		// given
-		var jobEndTime = parse("2022-01-01T10:00:00.000Z");
-		var actualEndTime = parse("2022-01-01T13:00:00.000Z");
-		var deadline = parse("2022-01-01T12:00:00.000Z");
-		var expectedLog = CLIENT_JOB_FINISH_DELAY_LOG.replace("{}", "-3600000");
-
-		// prepare
-		var logCaptor = LogCaptor.forClass(HandleJobFinishUpdate.class);
-		logCaptor.setLogLevelToInfo();
-
-		// when
-		testBehaviour.checkIfJobFinishedOnTime(actualEndTime, jobEndTime, deadline);
-
-		// then
-		assertThat(logCaptor.getInfoLogs()).containsExactly(expectedLog);
-	}
 }

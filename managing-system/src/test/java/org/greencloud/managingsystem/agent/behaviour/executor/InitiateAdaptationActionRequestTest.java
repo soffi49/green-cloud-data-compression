@@ -46,6 +46,7 @@ class InitiateAdaptationActionRequestTest {
 			DISTRIBUTE_TRAFFIC_EVENLY, 0.6);
 	private static final AdaptationActionEnum ADAPTATION_ACTION_TYPE = AdaptationActionEnum.ADD_SERVER;
 	private static final AID TEST_AID = new AID("test", ISGUID);
+	private static final long DURATION = 7;
 
 	@Mock
 	ManagingAgent managingAgent;
@@ -74,14 +75,15 @@ class InitiateAdaptationActionRequestTest {
 		doNothing().when(managingAgentNode).logNewAdaptation(any(), any(), any());
 
 		behaviour = new InitiateAdaptationActionRequest(managingAgent, message, GOAL_QUALITIES, mockRunnable,
-				mockRunnable, null);
+				mockRunnable, getAdaptationAction(ADAPTATION_ACTION_TYPE).get(0));
 
 	}
 
 	@Test
 	void shouldCorrectlyHandleInform() {
 		// given
-		var expectedVerifyBehaviour = createForAgentAction(managingAgent, now(), ADAPTATION_ACTION_TYPE,
+		var expectedVerifyBehaviour = createForAgentAction(managingAgent, now(), DURATION,
+				getAdaptationAction(ADAPTATION_ACTION_TYPE).get(0),
 				TEST_AID, GOAL_QUALITIES, mockRunnable);
 
 		// when
@@ -94,7 +96,8 @@ class InitiateAdaptationActionRequestTest {
 				.as("Created behaviour should be equal to the expected one")
 				.usingRecursiveComparison()
 				.ignoringFields("actionTimestamp")
-				.ignoringFields("actionExecutionTime")
+				.ignoringFields("executionTime")
+				.ignoringFields("executionDuration")
 				.isEqualTo(expectedVerifyBehaviour);
 	}
 
@@ -105,6 +108,6 @@ class InitiateAdaptationActionRequestTest {
 
 		// then
 		verify(timescaleDatabase).setAdaptationActionAvailability(
-				getAdaptationAction(ADAPTATION_ACTION_TYPE).getActionId(), true);
+				getAdaptationAction(ADAPTATION_ACTION_TYPE).get(0).getActionId(), true);
 	}
 }

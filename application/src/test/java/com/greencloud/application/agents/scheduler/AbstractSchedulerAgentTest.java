@@ -2,7 +2,6 @@ package com.greencloud.application.agents.scheduler;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_DEADLINE_PRIORITY;
 import static com.database.knowledge.domain.action.AdaptationActionEnum.INCREASE_POWER_PRIORITY;
-import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -54,8 +53,7 @@ class AbstractSchedulerAgentTest {
 	@Test
 	@DisplayName("Test executing adaptation action for incrementing deadline weight")
 	void testExecuteIncreaseDeadline() {
-		var adaptationAction = getAdaptationAction(INCREASE_DEADLINE_PRIORITY);
-		schedulerAgent.executeAction(adaptationAction, null);
+		schedulerAgent.executeAction(INCREASE_DEADLINE_PRIORITY, null);
 
 		assertThat(schedulerAgent.getDeadlinePriority()).isEqualTo(2);
 	}
@@ -63,8 +61,7 @@ class AbstractSchedulerAgentTest {
 	@Test
 	@DisplayName("Test executing adaptation action for incrementing power division weight")
 	void testExecuteIncreasePowerDivision() {
-		var adaptationAction = getAdaptationAction(INCREASE_POWER_PRIORITY);
-		schedulerAgent.executeAction(adaptationAction, null);
+		schedulerAgent.executeAction(INCREASE_POWER_PRIORITY, null);
 
 		assertThat(schedulerAgent.getPowerPriority()).isEqualTo(2);
 	}

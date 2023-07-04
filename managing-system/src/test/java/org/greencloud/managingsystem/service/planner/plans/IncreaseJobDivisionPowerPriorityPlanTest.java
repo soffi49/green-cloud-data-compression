@@ -1,6 +1,7 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static java.time.Instant.now;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +43,8 @@ class IncreaseJobDivisionPowerPriorityPlanTest {
 		timescaleDatabase = mock(TimescaleDatabase.class);
 		managingAgentNode = mock(ManagingAgentNode.class);
 
-		increaseJobDivisionPowerPriorityPlan = new IncreaseJobDivisionPowerPriorityPlan(managingAgent);
+		increaseJobDivisionPowerPriorityPlan = new IncreaseJobDivisionPowerPriorityPlan(managingAgent,
+				MAXIMIZE_JOB_SUCCESS_RATIO);
 		doReturn(timescaleDatabase).when(managingAgentNode).getDatabaseClient();
 		doReturn(managingAgentNode).when(managingAgent).getAgentNode();
 		doReturn(new MonitoringService(managingAgent)).when(managingAgent).monitor();

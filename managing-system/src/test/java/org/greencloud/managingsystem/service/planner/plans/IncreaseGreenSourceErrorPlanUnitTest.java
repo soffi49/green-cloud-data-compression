@@ -3,6 +3,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.agent.DataType.WEATHER_SHORTAGES;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_HEALTH_PERIOD;
@@ -51,7 +52,7 @@ class IncreaseGreenSourceErrorPlanUnitTest {
 		mockManagingAgentNode = mock(ManagingAgentNode.class);
 		mockDatabase = mock(TimescaleDatabase.class);
 
-		incrementGreenSourceErrorPlan = new IncrementGreenSourceErrorPlan(mockManagingAgent);
+		incrementGreenSourceErrorPlan = new IncrementGreenSourceErrorPlan(mockManagingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
 		doReturn(mockManagingAgentNode).when(mockManagingAgent).getAgentNode();
 		doReturn(mockDatabase).when(mockManagingAgentNode).getDatabaseClient();
 		doReturn(new MonitoringService(mockManagingAgent)).when(mockManagingAgent).monitor();

@@ -3,6 +3,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
+import static com.database.knowledge.domain.goal.GoalEnum.DISTRIBUTE_TRAFFIC_EVENLY;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.time.Instant.now;
@@ -73,7 +74,7 @@ class DisconnectGreenSourcePlanUnitTest {
 		doReturn(mockMonitoring).when(mockManagingAgent).monitor();
 		doReturn(mockAgentNode).when(mockManagingAgent).getAgentNode();
 		doReturn(mockDatabase).when(mockAgentNode).getDatabaseClient();
-		disconnectGreenSourcePlan = spy(new DisconnectGreenSourcePlan(mockManagingAgent));
+		disconnectGreenSourcePlan = spy(new DisconnectGreenSourcePlan(mockManagingAgent, DISTRIBUTE_TRAFFIC_EVENLY));
 
 		prepareNetworkStructure();
 		prepareMockGreenSourceData();

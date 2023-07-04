@@ -96,13 +96,13 @@ class AnalyzerServiceDatabaseTest {
 	void testTrigger() {
 		database.readAdaptationActions()
 				.forEach(action -> database.setAdaptationActionAvailability(action.getActionId(), false));
-		analyzerService.trigger(GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO);
+		analyzerService.trigger(MAXIMIZE_JOB_SUCCESS_RATIO);
 
 		verify(mockManagingAgent).getSystemQualityThreshold();
 		verify(database, times(2)).readAdaptationActions();
 		verify(mockManagingAgent).plan();
 		verify(plannerService).trigger(argThat(
-				adaptationActionDoubleMap -> adaptationActionDoubleMap.values().stream().allMatch(val -> val == 0)));
+				adaptationActionDoubleMap -> adaptationActionDoubleMap.values().stream().allMatch(val -> val == 0)), MAXIMIZE_JOB_SUCCESS_RATIO);
 	}
 
 	@Test

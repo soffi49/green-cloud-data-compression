@@ -68,13 +68,13 @@ public abstract class AbstractJobUpdateHandler extends OneShotBehaviour {
 	 * @param jobUpdate data of job update
 	 */
 	protected void measureTimeToRetrieveTheMessage(final JobStatusUpdate jobUpdate) {
-//		final Instant timeWhenTheMessageWasSent = jobUpdate.getChangeTime();
-//		final Instant timeWhenTheMessageWasReceived = getCurrentTime();
-//		final long elapsedTime = Duration.between(timeWhenTheMessageWasSent, timeWhenTheMessageWasReceived).toMillis();
-//
-//		myClient.writeMonitoringData(CLIENT_STATISTICS, ImmutableClientStatisticsData.builder()
-//				.messageRetrievalTime(elapsedTime)
-//				.build());
+		final Instant timeWhenTheMessageWasSent = jobUpdate.getChangeTime();
+		final Instant timeWhenTheMessageWasReceived = getCurrentTime();
+		final long elapsedTime = Duration.between(timeWhenTheMessageWasSent, timeWhenTheMessageWasReceived).toMillis();
+
+		myClient.writeMonitoringData(CLIENT_STATISTICS, ImmutableClientStatisticsData.builder()
+				.messageRetrievalTime(elapsedTime)
+				.build());
 	}
 
 	/**

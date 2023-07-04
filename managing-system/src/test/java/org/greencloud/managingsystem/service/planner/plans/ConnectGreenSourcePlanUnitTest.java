@@ -2,6 +2,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static com.greencloud.commons.agent.AgentType.SERVER;
 import static java.util.Collections.emptyList;
@@ -59,7 +60,7 @@ class ConnectGreenSourcePlanUnitTest {
 
 		doReturn(mockStructure).when(mockManagingAgent).getGreenCloudStructure();
 		doReturn(mockMonitoring).when(mockManagingAgent).monitor();
-		connectGreenSourcePlan = spy(new ConnectGreenSourcePlan(mockManagingAgent));
+		connectGreenSourcePlan = spy(new ConnectGreenSourcePlan(mockManagingAgent, MAXIMIZE_JOB_SUCCESS_RATIO));
 	}
 
 	@Test
@@ -302,6 +303,8 @@ class ConnectGreenSourcePlanUnitTest {
 				"test_server3@192.168.56.1:6996/JADE", 0.6
 		)).when(mockMonitoring).getAverageTrafficForNetworkComponent(List.of("test_server3@192.168.56.1:6996/JADE"),
 				SERVER_MONITORING);
+		doReturn(List.of("test_server1@192.168.56.1:6996/JADE", "test_server2@192.168.56.1:6996/JADE",
+				"test_server3@192.168.56.1:6996/JADE")).when(mockMonitoring).getActiveServers();
 
 		var expectedMap = Map.of(
 				"test_cna1", List.of(new AgentsTraffic("test_server1@192.168.56.1:6996/JADE", 0.7)),

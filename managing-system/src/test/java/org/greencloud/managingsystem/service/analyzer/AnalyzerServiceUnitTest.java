@@ -45,14 +45,14 @@ class AnalyzerServiceUnitTest {
 								MAXIMIZE_JOB_SUCCESS_RATIO, new ActionResult(0.3, 1),
 								MINIMIZE_USED_BACKUP_POWER, new ActionResult(0.5, 1),
 								DISTRIBUTE_TRAFFIC_EVENLY, new ActionResult(0.4, 1)
-						), true, 1);
+						), true, 1, 7.0);
 		final AdaptationAction action2 =
 				new AdaptationAction(2, ADD_SERVER, RECONFIGURE, MAXIMIZE_JOB_SUCCESS_RATIO,
 						Map.of(
 								MAXIMIZE_JOB_SUCCESS_RATIO, new ActionResult(0.7, 1),
 								MINIMIZE_USED_BACKUP_POWER, new ActionResult(0.4, 1),
 								DISTRIBUTE_TRAFFIC_EVENLY, new ActionResult(0.3, 1)
-						), true, 1);
+						), true, 1, 7.0);
 
 		return Stream.of(
 				Arguments.of(action1, 0.34),

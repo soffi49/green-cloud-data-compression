@@ -6,13 +6,16 @@ import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.IN_PRO
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.ON_BACK_UP;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.PROCESSED;
 import static com.greencloud.commons.domain.job.enums.JobClientStatusEnum.SCHEDULED;
+import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.quality.Strictness.LENIENT;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,6 +70,7 @@ class ClientManagementDatabaseTest {
 		doReturn(database).when(mockNode).getDatabaseClient();
 		doReturn(mockOriginalJob).when(mockClient).getJobExecution();
 		doNothing().when(mockNode).updateJobDurationMap(anyMap());
+		doNothing().when(mockNode).updateJobExecutionPercentage(anyDouble());
 	}
 
 	@AfterEach
@@ -108,11 +112,13 @@ class ClientManagementDatabaseTest {
 	void testWriteClientDataWithSplit() {
 		// given
 		mockOriginalJob.setJobStatus(FINISHED);
+		mockOriginalJob.setJobSimulatedStart(now());
+		mockOriginalJob.setJobSimulatedEnd(now());
 		doReturn(true).when(mockClient).isSplit();
 		prepareJobParts();
 
 		// when
-		mockClientManagement.writeClientData(true);
+		mockClientManagement.writeClientData(false);
 		List<AgentData> result = database.readMonitoringData();
 
 		// then
@@ -122,7 +128,7 @@ class ClientManagementDatabaseTest {
 				.matches(data -> data.monitoringData() instanceof ClientMonitoringData)
 				.matches(data -> {
 					final ClientMonitoringData clientData = (ClientMonitoringData) data.monitoringData();
-					return clientData.getIsFinished() &&
+					return !clientData.getIsFinished() &&
 							clientData.getCurrentJobStatus().equals(FINISHED) &&
 							clientData.getJobStatusDurationMap().get(IN_PROGRESS).equals(300L) &&
 							clientData.getJobStatusDurationMap().get(ON_BACK_UP).equals(200L);

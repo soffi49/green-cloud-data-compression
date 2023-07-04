@@ -1,11 +1,15 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
+import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
+import static com.database.knowledge.domain.goal.GoalEnum.MINIMIZE_USED_BACKUP_POWER;
 import static com.google.common.collect.ImmutableList.of;
 import static jade.core.AID.ISGUID;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_HEALTH_PERIOD;
 import static org.greencloud.managingsystem.domain.ManagingSystemConstants.MONITOR_SYSTEM_DATA_TIME_PERIOD;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -17,6 +21,7 @@ import java.util.List;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.mobility.MobilityService;
+import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -29,8 +34,10 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import com.database.knowledge.domain.agent.AgentData;
+import com.database.knowledge.domain.agent.HealthCheck;
 import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
 import com.database.knowledge.timescale.TimescaleDatabase;
+import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.server.ImmutableServerAgentArgs;
 import com.greencloud.commons.args.agent.server.ServerAgentArgs;
@@ -55,6 +62,7 @@ class AddGreenSourcePlanUnitTest {
 	private TimescaleDatabase timescaleDatabase;
 
 	private MobilityService mobilityService;
+	private MonitoringService monitoringService;
 	private AddGreenSourcePlan addGreenSourcePlan;
 	private ScenarioStructureArgs greenCloudStructure;
 	private String serverName;
@@ -62,7 +70,9 @@ class AddGreenSourcePlanUnitTest {
 	@BeforeEach
 	void init() {
 		mobilityService = spy(new MobilityService(managingAgent));
-		addGreenSourcePlan = new AddGreenSourcePlan(managingAgent);
+		monitoringService = spy(new MonitoringService(managingAgent));
+
+		addGreenSourcePlan = new AddGreenSourcePlan(managingAgent, MINIMIZE_USED_BACKUP_POWER);
 		ServerAgentArgs server1AgentArgs = ImmutableServerAgentArgs.builder()
 				.jobProcessingLimit("200")
 				.name("Server1")
@@ -87,16 +97,20 @@ class AddGreenSourcePlanUnitTest {
 		when(managingAgent.getAgentNode()).thenReturn(managingAgentNode);
 		when((managingAgentNode.getDatabaseClient())).thenReturn(timescaleDatabase);
 		when(managingAgent.move()).thenReturn(mobilityService);
+		when(managingAgent.monitor()).thenReturn(monitoringService);
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "0,0,false", "10,10,false", "15,15,false", "10,30,true", "25,10,true", "50,0,true" })
+	@CsvSource({ "0,0,false", "10,10,false", "15,15,false", "10,30,false", "25,10,true", "50,0,true" })
 	void shouldReturnThatPlanIsNotExecutable(int backUpPowerValue1, int backUpPowerValue2, boolean expectedResult) {
 		// given
 		serverName = "Server1";
 		when(timescaleDatabase.readMonitoringDataForDataTypes(of(SERVER_MONITORING), MONITOR_SYSTEM_DATA_TIME_PERIOD))
 				.thenReturn(generateTestDataForTrafficValue(backUpPowerValue1, backUpPowerValue2));
-
+		when(timescaleDatabase.readLastMonitoringDataForDataTypes(singletonList(SERVER_MONITORING)))
+				.thenReturn(generateTestDataForTrafficValue(backUpPowerValue1, backUpPowerValue2).subList(0,1));
+		when(timescaleDatabase.readLastMonitoringDataForDataTypes(singletonList(HEALTH_CHECK),
+				MONITOR_SYSTEM_DATA_HEALTH_PERIOD)).thenReturn(generateHealthTestData());
 		// when
 		boolean result = addGreenSourcePlan.isPlanExecutable();
 
@@ -154,5 +168,11 @@ class AddGreenSourcePlanUnitTest {
 						.serverJobs(10)
 						.isDisabled(false)
 						.build()));
+	}
+
+	private List<AgentData> generateHealthTestData() {
+		return of(
+				new AgentData(now(), "Server1", HEALTH_CHECK, new HealthCheck(true, AgentType.SERVER)),
+				new AgentData(now(), serverName, HEALTH_CHECK, new HealthCheck(true, AgentType.SERVER)));
 	}
 }

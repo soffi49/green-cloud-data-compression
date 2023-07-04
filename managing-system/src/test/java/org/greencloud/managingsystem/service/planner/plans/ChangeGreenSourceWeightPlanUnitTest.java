@@ -2,9 +2,11 @@ package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.CHANGE_GREEN_SOURCE_WEIGHT;
 import static com.database.knowledge.domain.agent.DataType.SHORTAGES;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.google.common.collect.ImmutableList.of;
 import static com.greencloud.application.yellowpages.YellowPagesService.search;
 import static com.greencloud.application.yellowpages.domain.DFServiceConstants.SA_SERVICE_TYPE;
+import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +14,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -37,6 +40,7 @@ import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.greensource.Shortages;
 import com.database.knowledge.timescale.TimescaleDatabase;
 import com.greencloud.application.yellowpages.YellowPagesService;
+import com.greencloud.commons.agent.AgentType;
 import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
 import com.greencloud.commons.args.agent.greenenergy.ImmutableGreenEnergyAgentArgs;
 import com.greencloud.commons.managingsystem.planner.ChangeGreenSourceWeights;
@@ -61,14 +65,14 @@ class ChangeGreenSourceWeightPlanUnitTest {
 
 	private ChangeGreenSourceWeightPlan changeGreenSourceWeightPlan;
 	private ScenarioStructureArgs greenCloudStructure;
-	private String serverName;
 
 	@BeforeEach
 	void init() {
 		yellowPagesService = mockStatic(YellowPagesService.class);
+		mockMonitoring = spy(new MonitoringService(managingAgent));
 		yellowPagesService.when(() -> search(eq(managingAgent), any(), eq(SA_SERVICE_TYPE)))
 				.thenReturn(Set.of(new AID("Server1", AID.ISGUID)));
-		changeGreenSourceWeightPlan = new ChangeGreenSourceWeightPlan(managingAgent);
+		changeGreenSourceWeightPlan = new ChangeGreenSourceWeightPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
 		GreenEnergyAgentArgs greenEnergyAgentArgs1 = ImmutableGreenEnergyAgentArgs.builder()
 				.weatherPredictionError("0.2")
 				.energyType("WIND")
@@ -108,7 +112,7 @@ class ChangeGreenSourceWeightPlanUnitTest {
 	void shouldCorrectlyTestIfPlanIsExecutable(List<AgentData> shortages, boolean expectedResult) {
 		// given
 		when(timescaleDatabase.readLastMonitoringDataForDataTypes(of(SHORTAGES))).thenReturn(shortages);
-
+		when(mockMonitoring.getAliveAgents(GREEN_SOURCE)).thenReturn(List.of("Wind1", "Wind2"));
 		// when
 		var result = changeGreenSourceWeightPlan.isPlanExecutable();
 
@@ -129,6 +133,7 @@ class ChangeGreenSourceWeightPlanUnitTest {
 		// given
 		when(timescaleDatabase.readLastMonitoringDataForDataTypes(of(SHORTAGES)))
 				.thenReturn(of(generateTestData("Wind1")));
+		when(mockMonitoring.getAliveAgents(GREEN_SOURCE)).thenReturn(List.of("Wind1", "Wind2"));
 		var firstResult = changeGreenSourceWeightPlan.isPlanExecutable();
 
 		// when
@@ -142,6 +147,7 @@ class ChangeGreenSourceWeightPlanUnitTest {
 	@Test
 	void shouldReturnTrueIfNewShortagesHappened() {
 		// given
+		when(mockMonitoring.getAliveAgents(GREEN_SOURCE)).thenReturn(List.of("Wind1", "Wind2"));
 		when(timescaleDatabase.readLastMonitoringDataForDataTypes(of(SHORTAGES)))
 				.thenReturn(of(generateTestData("Wind1")));
 		var firstResult = changeGreenSourceWeightPlan.isPlanExecutable();
@@ -159,6 +165,7 @@ class ChangeGreenSourceWeightPlanUnitTest {
 	@Test
 	void shouldCorrectlyBuildAdaptationPlan() {
 		// given
+		when(mockMonitoring.getAliveAgents(GREEN_SOURCE)).thenReturn(List.of("Wind1"));
 		when(timescaleDatabase.readLastMonitoringDataForDataTypes(of(SHORTAGES)))
 				.thenReturn(of(generateTestData("Wind1")));
 		var isPlanExecutable = changeGreenSourceWeightPlan.isPlanExecutable();

@@ -1,10 +1,12 @@
 package org.greencloud.managingsystem.service.common;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_SERVER;
+import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.planner.plans.AbstractPlan;
 
+import com.database.knowledge.domain.goal.GoalEnum;
 import com.greencloud.commons.managingsystem.planner.AdaptationActionParameters;
 
 import jade.core.AID;
@@ -13,7 +15,7 @@ public class TestAdaptationPlanFactory {
 
 	public static AbstractPlan getTestAdaptationPlan(ManagingAgent managingAgent, AID targetAid,
 			AdaptationActionParameters parameters) {
-		return new AbstractPlan(ADD_SERVER, managingAgent) {
+		return new AbstractPlan(ADD_SERVER, managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO) {
 
 			@Override
 			public boolean isPlanExecutable() {
