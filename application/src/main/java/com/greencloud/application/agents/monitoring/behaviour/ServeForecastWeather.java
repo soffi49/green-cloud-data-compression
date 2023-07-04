@@ -4,7 +4,6 @@ import static com.greencloud.application.agents.monitoring.behaviour.logs.Weathe
 import static com.greencloud.application.agents.monitoring.behaviour.templates.WeatherServingMessageTemplates.SERVE_FORECAST_TEMPLATE;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.BAD_STUB_DATA;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.MAX_NUMBER_OF_WEATHER_REQUESTS;
-import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.OFFLINE_MODE;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.STUB_DATA;
 import static com.greencloud.application.agents.monitoring.domain.MonitoringAgentConstants.WEATHER_REQUESTS_IN_BATCH;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.PERIODIC_WEATHER_CHECK_PROTOCOL;
@@ -77,7 +76,7 @@ public class ServeForecastWeather extends CyclicBehaviour implements Serializabl
 
 	private MonitoringData getWeatherForecast(final ACLMessage message) {
 		final GreenSourceForecastData requestData = readMessageContent(message, GreenSourceForecastData.class);
-		return OFFLINE_MODE ? STUB_DATA : monitoringAgent.manageWeather().getForecast(requestData);
+		return monitoringAgent.isOfflineMode() ? STUB_DATA : monitoringAgent.manageWeather().getForecast(requestData);
 	}
 
 	private MonitoringData getWeatherDataForPeriodicCheck(final ACLMessage message) {
@@ -88,7 +87,9 @@ public class ServeForecastWeather extends CyclicBehaviour implements Serializabl
 		if ((double) STUB_DATA_RANDOM.nextInt(100) / 100 < badWeatherPredictionProbability) {
 			return BAD_STUB_DATA;
 		} else {
-			return OFFLINE_MODE ? STUB_DATA : monitoringAgent.manageWeather().getWeather(requestData);
+			return monitoringAgent.isOfflineMode() ?
+					STUB_DATA :
+					monitoringAgent.manageWeather().getWeather(requestData);
 		}
 	}
 

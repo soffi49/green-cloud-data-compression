@@ -105,6 +105,83 @@
 	</dependencyManagement>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>copy-files</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<overWrite>true</overWrite>
+							<fileSets>
+								<!-- Copying configuration of application module -->
+								<fileSet>
+									<sourceFile>config/application/config.properties</sourceFile>
+									<destinationFile>application/src/main/resources/config.properties</destinationFile>
+								</fileSet>
+								<!-- Copying configuration of green-cloud-ui module -->
+								<fileSet>
+									<sourceFile>config/green-cloud-ui/.env</sourceFile>
+									<destinationFile>green-cloud-ui/.env</destinationFile>
+								</fileSet>
+								<!-- Copying configuration of socket-server module -->
+								<fileSet>
+									<sourceFile>config/socket-server/.env</sourceFile>
+									<destinationFile>socket-server/.env</destinationFile>
+								</fileSet>
+							</fileSets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Copying configuration of engine module -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-engine-structure-files</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>engine/src/main/resources/scenarios</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/engine/scenarios</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-engine-properties-files</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>engine/src/main/resources/properties</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/engine/properties</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 	</build>

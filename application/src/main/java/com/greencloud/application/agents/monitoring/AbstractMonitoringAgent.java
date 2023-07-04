@@ -12,6 +12,7 @@ import com.greencloud.application.agents.monitoring.management.MonitoringWeather
 public abstract class AbstractMonitoringAgent extends AbstractAgent {
 
 	protected double badStubProbability;
+	protected boolean offlineMode;
 
 	/**
 	 * Default agent constructor
@@ -29,5 +30,9 @@ public abstract class AbstractMonitoringAgent extends AbstractAgent {
 
 	public double getBadStubProbability() {
 		return badStubProbability;
+	}
+
+	public boolean isOfflineMode() {
+		return offlineMode;
 	}
 }

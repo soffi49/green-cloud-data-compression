@@ -52,7 +52,7 @@ public class OpenWeatherMapApi {
 		}
 
 		this.apiKey = ofNullable(System.getenv("GC_WEATHER_API_KEY"))
-				.orElse(properties.getProperty("weather_api_key"));
+				.orElse(properties.getProperty("weather.api.key"));
 		this.client = new OkHttpClient();
 	}
 

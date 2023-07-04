@@ -50,3 +50,7 @@
 /.vscode/*
 /**/*/.DS_Store
 /managing-system/managing-system.iml
+/agent-factory/target/classes/
+/rules-controller/target/
+/engine/src/main/resources/properties/*
+/engine/src/main/resources/scenarios/*

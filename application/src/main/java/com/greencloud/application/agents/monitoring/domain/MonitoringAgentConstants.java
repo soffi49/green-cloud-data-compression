@@ -9,7 +9,6 @@ import com.greencloud.application.domain.weather.MonitoringData;
 /**
  * Class stores all predefined constants for Monitoring Agent
  *
- * <p> OFFLINE_MODE 				  - flag indicating if the monitoring agent should use API or stub data </p>
  * <p> BAD_STUB_PROBABILITY 		  - probability for stubbing data insufficient for job execution </p>
  * <p> STUB_DATA 					  - predefined weather data used instead of real API response </p>
  * <p> BAD_STUB_DATA 				  - predefined weather data that is insufficient for job execution </p>
@@ -18,7 +17,6 @@ import com.greencloud.application.domain.weather.MonitoringData;
  */
 public class MonitoringAgentConstants {
 
-	public static final boolean OFFLINE_MODE = true;
 	public static final double BAD_STUB_PROBABILITY = 0.02;
 	public static final MonitoringData STUB_DATA =
 			ImmutableMonitoringData.builder()

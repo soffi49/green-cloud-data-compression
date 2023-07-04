@@ -12,6 +12,8 @@ class AdaptationActionsDefinitionsUnitTest {
 	@Test
 	@DisplayName("Test getting adaptation action by enum")
 	void testGetAdaptationAction() {
-		getAdaptationActions().forEach(action -> assertThat(getAdaptationAction(action.getAction())).isEqualTo(action));
+		getAdaptationActions().forEach(
+				action -> assertThat(getAdaptationAction(action.getAction()).get(0).getAction()).isEqualTo(
+						action.getAction()));
 	}
 }

@@ -11,12 +11,10 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import com.greencloud.commons.exception.InvalidPropertiesException;
-
 import com.gui.websocket.enums.SocketTypeEnum;
 
 import runner.service.AbstractScenarioService;
@@ -28,8 +26,6 @@ import runner.service.AbstractScenarioService;
 public final class EngineConfiguration {
 
 	private static final String PROPERTIES_DIR = "properties";
-	private static String SYSTEM_PROPERTIES_FILE = "system.properties";
-
 	/**
 	 * Port used for the intra-platform (i.e. inside the platform) agent communication
 	 */
@@ -65,7 +61,9 @@ public final class EngineConfiguration {
 	 */
 	public static String platformId;
 	/**
-	 * Address of the host that runs the main container of the entire system
+	 * In case of the sub-container of the platform (i.e. when containerId field is used), it indicates the host
+	 * in which the platform's main container is running. Otherwise, it is the address of the host that runs
+	 * the main container of entire system.
 	 */
 	public static String mainHostIp;
 	/**
@@ -75,7 +73,8 @@ public final class EngineConfiguration {
 	public static String mainHostPlatformId;
 	/**
 	 * Port used for the inter-platform (i.e. between the platforms) agent communication of the agent platform
-	 * that runs main container of the entire system
+	 * that runs main container of the entire system (or main container with respect to the given sub-container -
+	 * when containerId field is used)
 	 * This parameter is used to find the relevant DF
 	 */
 	public static String mainHostInterPort;
@@ -125,6 +124,7 @@ public final class EngineConfiguration {
 	 * Flag indicates if the JADE Sniffer should be started along with the main container
 	 */
 	public static boolean runJadeSniffer;
+	private static String SYSTEM_PROPERTIES_FILE = "system.properties";
 
 	/**
 	 * Method sets the system properties file
