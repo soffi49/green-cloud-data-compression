@@ -30,6 +30,7 @@ import jade.core.AID;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
+import rules.RulesController;
 
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
@@ -99,10 +100,12 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 			}
 
 			if (nonNull(agentController)) {
+				final RulesController rulesController = new RulesController();
 				agentNode.setDatabaseClient(timescaleDatabase);
 				guiController.addAgentNodeToGraph(agentNode);
 				agentController.putO2AObject(guiController, ASYNC);
 				agentController.putO2AObject(agentNode, ASYNC);
+				agentController.putO2AObject(rulesController, ASYNC);
 			}
 
 			return agentController;

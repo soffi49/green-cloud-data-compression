@@ -18,6 +18,7 @@
 		<module>knowledge-database</module>
 		<module>managing-system</module>
 		<module>agent-factory</module>
+		<module>rules-controller</module>
 	</modules>
 
 	<properties>
@@ -33,6 +34,12 @@
 				<artifactId>jade</artifactId>
 				<type>jar</type>
 				<version>4.6</version>
+			</dependency>
+			<!-- Jeasy rules -->
+			<dependency>
+				<groupId>org.jeasy</groupId>
+				<artifactId>easy-rules</artifactId>
+				<version>4.1.0</version>
 			</dependency>
 			<!-- Logging -->
 			<dependency>

@@ -41,7 +41,7 @@ public class ReceiveGUIController extends CyclicBehaviour {
 		if (object != null) {
 			connectAgentObject(abstractAgent, objectCounter, object);
 
-			if (objectCounter == 1) {
+			if (objectCounter == 2) {
 				final ParallelBehaviour behaviour = new ParallelBehaviour();
 				initialBehaviours.forEach(behaviour::addSubBehaviour);
 				behaviour.addSubBehaviour(new ReportHealthCheck(abstractAgent));

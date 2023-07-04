@@ -9,6 +9,8 @@ import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.gui.agents.AbstractAgentNode;
 import com.gui.controller.GuiController;
 
+import rules.RulesController;
+
 /**
  * Class defines set of utilities used together with GUI Controller
  */
@@ -24,6 +26,7 @@ public class GuiUtils {
 	public static void connectToGui(AbstractAgent abstractAgent) {
 		connectAgentObject(abstractAgent, 0, abstractAgent.getO2AObject());
 		connectAgentObject(abstractAgent, 1, abstractAgent.getO2AObject());
+		connectAgentObject(abstractAgent, 2, abstractAgent.getO2AObject());
 	}
 
 	/**
@@ -38,6 +41,9 @@ public class GuiUtils {
 			abstractAgent.setGuiController(guiController);
 		} else if (currentObject instanceof AbstractAgentNode node) {
 			abstractAgent.setAgentNode(node);
+		} else if (currentObject instanceof RulesController rulesController) {
+			abstractAgent.setRulesController(rulesController);
+			logger.info("[{}] Agent connected with the rules controller", abstractAgent.getName());
 		}
 		if (objectCounter == 1) {
 			logger.info("[{}] Agent connected with the controller", abstractAgent.getName());

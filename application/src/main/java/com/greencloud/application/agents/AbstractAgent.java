@@ -12,6 +12,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jeasy.rules.api.Facts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -33,6 +34,7 @@ import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.ControllerException;
+import rules.RulesController;
 
 /**
  * Abstract class representing agent which has the connection with GUI controller
@@ -45,11 +47,12 @@ public abstract class AbstractAgent extends Agent {
 	protected AID parentDFAddress;
 	protected GuiController guiController;
 	protected AbstractAgentNode agentNode;
+	protected RulesController rulesController;
 	protected transient Map<AgentManagementEnum, AbstractAgentManagement> agentManagementServices;
 	protected ParallelBehaviour mainBehaviour;
 
 	protected AbstractAgent() {
-		setEnabledO2ACommunication(true, 2);
+		setEnabledO2ACommunication(true, 3);
 		this.agentManagementServices = new EnumMap<>(AgentManagementEnum.class);
 	}
 
@@ -115,6 +118,15 @@ public abstract class AbstractAgent extends Agent {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Method used to select rule based on given fact
+	 * @param facts set of facts based on which given rule is triggered
+	 */
+	public void fireOnFacts(final Facts facts)
+	{
+		rulesController.fire(facts);
+	}
+
 	@Override
 	public void clean(boolean ok) {
 		if (!ok && nonNull(getAgentNode()) && !agentType.equals(CLIENT)) {
@@ -153,6 +165,12 @@ public abstract class AbstractAgent extends Agent {
 
 	@Override
 	protected void takeDown() {
+		if (agentType.equals(CLIENT)) {
+			MDC.put(MDC_CLIENT_NAME, super.getLocalName());
+		} else {
+			MDC.put(MDC_AGENT_NAME, super.getLocalName());
+		}
+
 		logger.info("I'm finished. Bye!");
 		super.takeDown();
 	}
@@ -194,6 +212,11 @@ public abstract class AbstractAgent extends Agent {
 
 	public void setGuiController(GuiController guiController) {
 		this.guiController = guiController;
+	}
+
+	public void setRulesController(RulesController rulesController) {
+		this.rulesController = rulesController;
+		rulesController.setAgent(this);
 	}
 
 	public void setMainBehaviour(ParallelBehaviour mainBehaviour) {
