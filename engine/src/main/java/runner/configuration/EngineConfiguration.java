@@ -6,7 +6,6 @@ import static com.gui.websocket.enums.SocketTypeEnum.CLIENTS_WEB_SOCKET;
 import static com.gui.websocket.enums.SocketTypeEnum.EVENTS_WEB_SOCKET;
 import static com.gui.websocket.enums.SocketTypeEnum.MANAGING_SYSTEM_WEB_SOCKET;
 import static com.gui.websocket.enums.SocketTypeEnum.NETWORK_WEB_SOCKET;
-import static java.io.File.separator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 
@@ -17,15 +16,16 @@ import java.util.Properties;
 import com.greencloud.commons.exception.InvalidPropertiesException;
 import com.gui.websocket.enums.SocketTypeEnum;
 
-import runner.service.AbstractScenarioService;
+import runner.EngineRunner;
 
 /**
  * Constants used to set up the system (mostly agent platforms)
  * The configuration is by default injected from .properties files
  */
-public final class EngineConfiguration {
+public final class EngineConfiguration extends AbstractConfiguration {
 
 	private static final String PROPERTIES_DIR = "properties";
+
 	/**
 	 * Port used for the intra-platform (i.e. inside the platform) agent communication
 	 */
@@ -139,11 +139,10 @@ public final class EngineConfiguration {
 	 * Method reads the properties set for the system set up at the given .properties file
 	 */
 	public static void readSystemProperties() {
-		final String propertiesFile = separator + PROPERTIES_DIR + separator + SYSTEM_PROPERTIES_FILE;
 		final Properties props = new Properties();
-
 		try {
-			props.load(AbstractScenarioService.class.getClassLoader().getResourceAsStream(propertiesFile));
+			final String pathToSystemProps = buildResourceFilePath(PROPERTIES_DIR, SYSTEM_PROPERTIES_FILE);
+			props.load(EngineRunner.class.getClassLoader().getResourceAsStream(pathToSystemProps));
 
 			setUpCommunication(props);
 			setUpContainer(props);
@@ -151,7 +150,7 @@ public final class EngineConfiguration {
 			setUpExternalConnection(props);
 			setUpJADEGUISettings(props);
 
-		} catch (final IOException e) {
+		} catch (final IOException | NullPointerException e) {
 			throw new InvalidPropertiesException("Could not read properties file:", e);
 		}
 	}

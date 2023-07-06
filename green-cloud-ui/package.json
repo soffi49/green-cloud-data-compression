@@ -50,6 +50,7 @@
       "start": "craco start",
       "startDev": "craco build & craco start",
       "build": "craco build",
+      "clean": "rm -rf node_modules/",
       "test": "react-scripts test",
       "eject": "react-scripts eject",
       "pretty": "prettier --write \"./**/*.{js,jsx,ts,tsx,json}\""

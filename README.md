@@ -54,7 +54,11 @@ The system is using _OpenWeatherMap API_ to retrieve weather predictions: https:
 
 ## System configuration and running
 
-The instruction on how to configure the system can be found in: [Configuration Instruction](config/README.md).
+All files used to configure the system are placed in `./config`. The instruction on how to configure the system can be
+found in: [Configuration Instruction](config/CONFIG_INSTRUCTION.md).
+
+Similarly, the scripts used to compile the project are in `./compile`. In order to compile and run the project, refer
+to: [Compilation Instruction](compile/COMPILE_INSTRUCTION.md).
 
 
 

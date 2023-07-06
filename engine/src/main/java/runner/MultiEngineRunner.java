@@ -1,9 +1,9 @@
 package runner;
 
-import static runner.constants.EngineConstants.GUI_SETUP_MILLISECONDS_DELAY;
 import static runner.configuration.EngineConfiguration.localHostIp;
 import static runner.configuration.EngineConfiguration.readSystemProperties;
 import static runner.configuration.ScenarioConfiguration.readScenarioProperties;
+import static runner.constants.EngineConstants.GUI_SETUP_MILLISECONDS_DELAY;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -1,8 +1,8 @@
 package runner;
 
-import static runner.constants.EngineConstants.GUI_SETUP_MILLISECONDS_DELAY;
 import static runner.configuration.EngineConfiguration.readSystemProperties;
 import static runner.configuration.ScenarioConfiguration.readScenarioProperties;
+import static runner.constants.EngineConstants.GUI_SETUP_MILLISECONDS_DELAY;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;

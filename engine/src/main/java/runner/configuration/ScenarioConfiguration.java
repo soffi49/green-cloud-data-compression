@@ -10,13 +10,14 @@ import java.util.Optional;
 import java.util.Properties;
 
 import com.greencloud.commons.exception.InvalidPropertiesException;
-import runner.service.AbstractScenarioService;
+
+import runner.EngineRunner;
 
 /**
  * Constants used to set up the scenario run in the system
  * The configuration is by default injected from .properties files
  */
-public class ScenarioConfiguration {
+public class ScenarioConfiguration extends AbstractConfiguration {
 
 	private static final String SCENARIOS_DIR = "scenarios";
 	private static final String SCENARIO_PROPERTIES_FILE = "scenario.properties";
@@ -74,20 +75,19 @@ public class ScenarioConfiguration {
 	 * Method reads the properties set for the given scenario execution
 	 */
 	public static void readScenarioProperties() {
-		final String propertiesFile = separator + PROPERTIES_DIR + separator + SCENARIO_PROPERTIES_FILE;
 		final Properties props = new Properties();
-
 		try {
-			props.load(AbstractScenarioService.class.getClassLoader().getResourceAsStream(propertiesFile));
+			final String pathToScenarioProps = buildResourceFilePath(PROPERTIES_DIR, SCENARIO_PROPERTIES_FILE);
+			props.load(EngineRunner.class.getClassLoader().getResourceAsStream(pathToScenarioProps));
 
 			final boolean useSubDirectory = parseBoolean(props.getProperty("scenario.usesubdirectory"));
 			final boolean useEvents = parseBoolean(props.getProperty("scenario.runEvents"));
 
 			final String scenarioPath = useSubDirectory ? retrieveScenarioSubDirectory(props) : SCENARIOS_DIR;
 
-			scenarioFilePath = scenarioPath + separator + props.getProperty("scenario.structure");
+			scenarioFilePath = buildResourceFilePath(scenarioPath, props.getProperty("scenario.structure"));
 			eventFilePath = useEvents
-					? Optional.of(scenarioPath + separator + props.getProperty("scenario.events"))
+					? Optional.of(buildResourceFilePath(scenarioPath, props.getProperty("scenario.events")))
 					: Optional.empty();
 			clientNumber = parseInt(props.getProperty("scenario.clients.number"));
 			minJobPower = parseInt(props.getProperty("scenario.clients.minpower"));
@@ -107,6 +107,6 @@ public class ScenarioConfiguration {
 	 */
 	protected static String retrieveScenarioSubDirectory(final Properties props) {
 		final String subDirectory = props.getProperty("scenario.subdirectory").replace(".", separator);
-		return SCENARIOS_DIR + separator + subDirectory;
+		return buildResourceFilePath(SCENARIOS_DIR, subDirectory);
 	}
 }
