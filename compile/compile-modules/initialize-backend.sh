@@ -29,6 +29,11 @@ mvn package &&
 cp -R ./engine/src/main/resources/scenarios ./engine/strategy
 cp -R ./engine/src/main/resources/properties ./engine/strategy
 
+# COPY CONFIGURATION FILES TO STRATEGY FOLDER
+cp -R ./engine/src/main/resources/scenarios .
+cp -R .engine/src/main/resources/properties .
+
+
 echo "Initialization of the application has finished!"
 
 # NAVIGATE BACK TO COMPILE DIRECTORY

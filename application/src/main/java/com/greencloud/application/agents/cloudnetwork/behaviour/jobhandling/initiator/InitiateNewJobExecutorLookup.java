@@ -7,14 +7,12 @@ import static com.greencloud.application.mapper.JobMapper.mapToJobInstanceId;
 import static com.greencloud.application.messages.constants.MessageProtocolConstants.CNA_JOB_CFP_PROTOCOL;
 import static com.greencloud.application.messages.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static com.greencloud.application.messages.factory.ReplyMessageFactory.prepareRefuseReply;
-import static com.greencloud.application.utils.PowerUtils.getCurrentPowerInUse;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Vector;
 
 import org.slf4j.Logger;
 
-import com.google.common.collect.Iterables;
 import com.greencloud.application.agents.cloudnetwork.CloudNetworkAgent;
 import com.greencloud.application.behaviours.initiator.AbstractCFPInitiator;
 import com.greencloud.application.domain.agent.ServerData;
@@ -31,19 +29,14 @@ public class InitiateNewJobExecutorLookup extends AbstractCFPInitiator<ServerDat
 
 	private final ClientJob job;
 	private final CloudNetworkAgent myCloudNetworkAgent;
-	private final int nextContainerIdx;
-	private final int requestCount;
 
 	protected InitiateNewJobExecutorLookup(final CloudNetworkAgent agent, final ACLMessage cfp,
-			final ACLMessage schedulerMessage, final ClientJob job, final int nextContainerIdx,
-			final int requestCount) {
+			final ACLMessage schedulerMessage, final ClientJob job) {
 		super(agent, cfp, schedulerMessage, mapToJobInstanceId(job), agent.manage().offerComparator(),
 				ServerData.class);
 
 		this.job = job;
 		this.myCloudNetworkAgent = agent;
-		this.nextContainerIdx = nextContainerIdx;
-		this.requestCount = requestCount;
 	}
 
 	/**
@@ -52,19 +45,13 @@ public class InitiateNewJobExecutorLookup extends AbstractCFPInitiator<ServerDat
 	 * @param agent            agent which is executing the behaviour
 	 * @param schedulerMessage CFP message received from the scheduler
 	 * @param job              job of interest
-	 * @param containerIdx     index in container map from which the servers are to be taken
-	 * @param requestCount     count on how many request has been sent
 	 * @return InitiateNewJobExecutorLookup
 	 */
 	public static InitiateNewJobExecutorLookup create(final CloudNetworkAgent agent, final ACLMessage schedulerMessage,
-			final ClientJob job, final int containerIdx, final int requestCount) {
-		final String container = Iterables.get(agent.getServerContainers().keySet(), containerIdx);
-		final ACLMessage cfp = prepareCallForProposal(job, agent.manage().getActiveServersForContainer(container),
+			final ClientJob job) {
+		final ACLMessage cfp = prepareCallForProposal(job, agent.manage().getOwnedActiveServers(),
 				CNA_JOB_CFP_PROTOCOL);
-		final int nextContainerIdx =
-				containerIdx == agent.getServerContainers().keySet().size() - 1 ? 0 : containerIdx + 1;
-		return new InitiateNewJobExecutorLookup(agent, cfp, schedulerMessage, job, nextContainerIdx,
-				requestCount + 1);
+		return new InitiateNewJobExecutorLookup(agent, cfp, schedulerMessage, job);
 	}
 
 	/**
@@ -108,22 +95,14 @@ public class InitiateNewJobExecutorLookup extends AbstractCFPInitiator<ServerDat
 	protected void handleSelectedOffer(final ServerData serverData) {
 		logger.info(CHOSEN_SERVER_FOR_JOB_LOG, job.getJobId(), bestProposal.getSender().getName());
 
-		final double availablePower = myCloudNetworkAgent.getMaximumCapacity() -
-				getCurrentPowerInUse(myCloudNetworkAgent.getNetworkJobs());
-
 		myCloudNetworkAgent.getServerForJobMap().put(job.getJobId(), bestProposal.getSender());
-		myCloudNetworkAgent.addBehaviour(InitiateNewJobOffer.create(myCloudNetworkAgent, availablePower,
-				serverData, bestProposal, originalMessage));
+		myCloudNetworkAgent.addBehaviour(
+				InitiateNewJobOffer.create(myCloudNetworkAgent, serverData, bestProposal, originalMessage));
 	}
 
 	private void handleRejectedJob() {
-		if (requestCount == myCloudNetworkAgent.getServerContainers().keys().size()) {
-			myCloudNetworkAgent.getNetworkJobs().remove(job);
-			myCloudNetworkAgent.manage().updateGUI();
-			myAgent.send(prepareRefuseReply(originalMessage));
-		} else {
-			myAgent.addBehaviour(InitiateNewJobExecutorLookup.create(myCloudNetworkAgent, originalMessage, job,
-					nextContainerIdx, requestCount));
-		}
+		myCloudNetworkAgent.getNetworkJobs().remove(job);
+		myCloudNetworkAgent.manage().updateGUI();
+		myAgent.send(prepareRefuseReply(originalMessage));
 	}
 }

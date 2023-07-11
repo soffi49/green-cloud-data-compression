@@ -90,7 +90,7 @@ public class CloudNetworkStateManagement extends AbstractStateManagement {
 
 			final Comparator<ServerData> comparator = (server1Data, server2Data) -> {
 				final int powerDifference =
-						(server2Data.getAvailablePower() * weight2) - (server1Data.getAvailablePower() * weight1);
+						(server1Data.getAvailablePower() * weight2) - (server2Data.getAvailablePower() * weight1);
 				final double priceDifference =
 						((server1Data.getServicePrice() * 1 / weight1) - (server2Data.getServicePrice() * 1 / weight2));
 
@@ -134,7 +134,6 @@ public class CloudNetworkStateManagement extends AbstractStateManagement {
 
 	/**
 	 * Method returns current success ratio of given network region
-	 *
 	 * @return job execution success ratio
 	 */
 	public double getSuccessRatio() {
