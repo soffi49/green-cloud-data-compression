@@ -24,8 +24,8 @@ fi
 
 if [ "$2" == "COPY" ]
 then
-cp -R ../src/main/resources/scenarios ./scenarios
-cp -R ../src/main/resources/properties ./properties
+cp -R ../src/main/resources/scenarios .
+cp -R ../src/main/resources/properties .
 
 jar -uvf "${PACKAGE_NAME}" -C properties ./properties
 jar -uvf "${PACKAGE_NAME}" -C scenarios ./scenarios
