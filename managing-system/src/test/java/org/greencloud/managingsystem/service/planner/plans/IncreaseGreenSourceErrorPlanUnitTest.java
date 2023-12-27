@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.greencloud.commons.args.adaptation.singleagent.AdjustGreenSourceErrorParameters;
+import org.greencloud.commons.args.agent.AgentType;
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +34,6 @@ import com.database.knowledge.domain.agent.HealthCheck;
 import com.database.knowledge.domain.agent.greensource.ImmutableGreenSourceMonitoringData;
 import com.database.knowledge.domain.agent.greensource.WeatherShortages;
 import com.database.knowledge.timescale.TimescaleDatabase;
-import com.greencloud.commons.agent.AgentType;
-import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
-import com.gui.agents.ManagingAgentNode;
 
 class IncreaseGreenSourceErrorPlanUnitTest {
 
@@ -52,7 +52,8 @@ class IncreaseGreenSourceErrorPlanUnitTest {
 		mockManagingAgentNode = mock(ManagingAgentNode.class);
 		mockDatabase = mock(TimescaleDatabase.class);
 
-		incrementGreenSourceErrorPlan = new IncrementGreenSourceErrorPlan(mockManagingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
+		incrementGreenSourceErrorPlan = new IncrementGreenSourceErrorPlan(mockManagingAgent,
+				MAXIMIZE_JOB_SUCCESS_RATIO);
 		doReturn(mockManagingAgentNode).when(mockManagingAgent).getAgentNode();
 		doReturn(mockDatabase).when(mockManagingAgentNode).getDatabaseClient();
 		doReturn(new MonitoringService(mockManagingAgent)).when(mockManagingAgent).monitor();
@@ -197,9 +198,9 @@ class IncreaseGreenSourceErrorPlanUnitTest {
 	}
 
 	private void mockHealthCheckData() {
-		var healthCheck1 = new HealthCheck(true, AgentType.GREEN_SOURCE);
-		var healthCheck2 = new HealthCheck(true, AgentType.GREEN_SOURCE);
-		var healthCheck3 = new HealthCheck(true, AgentType.GREEN_SOURCE);
+		var healthCheck1 = new HealthCheck(true, AgentType.GREEN_ENERGY);
+		var healthCheck2 = new HealthCheck(true, AgentType.GREEN_ENERGY);
+		var healthCheck3 = new HealthCheck(true, AgentType.GREEN_ENERGY);
 
 		var mockData = List.of(
 				new AgentData(now(), "test_gs1", HEALTH_CHECK, healthCheck1),

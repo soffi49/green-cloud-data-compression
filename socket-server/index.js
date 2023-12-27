@@ -7,15 +7,12 @@ require('dotenv').config();
 
 const { WELCOMING_MESSAGE, ROUTE_TYPES } = require("./lib/constants/constants");
 const { MESSAGE_HANDLERS } = require("./lib/constants/message-handlers");
-const { handlePowerShortage, async } = require("./lib/module/agents/event-handler");
+const { handlePowerShortage, async, handleWeatherDrop, handleServerSwitchOnOff, handleServerMaintenanceSend, handleServerMaintenanceReset } = require("./lib/module/agents/event-handler");
 const { reportSimulationStatistics } = require("./lib/module/simulation/report-handler");
 const { parseData } = require("./lib/utils/parse-utils")
 const { logUserConnected, logNewMessage, logStateReset } = require("./lib/utils/logger-utils")
-const { resetSystemState, getSystemState, getReportsState, getAgentsState, getClientsState, getManagingState, getNetworkState, getClient, getGraphState, getAgent, getNetworkReportsState, getClientsReportsState, getAgentsReportsState, getManaginReportsState } = require("./lib/utils/state-utils");
-const { AGENTS_REPORTS_STATE } = require("./lib/module/agents/agents-state");
-const { CLIENTS_REPORTS_STATE } = require("./lib/module/clients/clients-state");
-const { NETWORK_REPORTS_STATE } = require("./lib/module/network/network-state");
-const { MANAGING_SYSTEM_REPORTS } = require("./lib/module/managing-system/managing-system-state");
+const { resetSystemState, getSystemState, getAgentsState, getClientsState, getManagingState, getNetworkState, getClient, getGraphState, getAgent, getNetworkReportsState, getClientsReportsState, getAgentsReportsState, getManaginReportsState } = require("./lib/utils/state-utils");
+const { handleCreateClientEvent, handleCreateGreenSourceEvent, handleCreateServerEvent } = require("./lib/module/network/event-handlers");
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -38,8 +35,8 @@ app.ws("/", function (ws, _) {
   });
 });
 
-app.ws("/powerShortage", function (ws, _) {
-  ws.route = '/powerShortage'
+app.ws("/event", function (ws, _) {
+  ws.route = '/event'
   logUserConnected()
   ws.send(JSON.stringify(WELCOMING_MESSAGE))
 });
@@ -102,10 +99,75 @@ app.post(ROUTE_TYPES.FRONT + '/powerShortage', (req, res) => {
   const msg = req.body
   const dataToPass = handlePowerShortage(msg)
   expressWs.getWss().clients.forEach(client => {
-    if (client.route === '/powerShortage') {
+    if (client.route === '/event') {
       client.send(JSON.stringify(dataToPass))
     }
   })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/weatherDrop', (req, res) => {
+  const msg = req.body
+  const dataToPass = handleWeatherDrop(msg)
+  expressWs.getWss().clients.forEach(client => {
+    if (client.route === '/event') {
+      client.send(JSON.stringify(dataToPass))
+    }
+  })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/switchOnOffServer', (req, res) => {
+  const msg = req.body
+  const dataToPass = handleServerSwitchOnOff(msg)
+  expressWs.getWss().clients.forEach(client => {
+    if (client.route === '/event') {
+      client.send(JSON.stringify(dataToPass))
+    }
+  })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/serverMaintenance', (req, res) => {
+  const msg = req.body
+  const dataToPass = handleServerMaintenanceSend(msg)
+  expressWs.getWss().clients.forEach(client => {
+    if (client.route === '/event') {
+      client.send(JSON.stringify(dataToPass))
+    }
+  })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/createClient', (req, res) => {
+  const msg = req.body
+  const dataToPass = handleCreateClientEvent(msg)
+  expressWs.getWss().clients.forEach(client => {
+    if (client.route === '/event') {
+      client.send(JSON.stringify(dataToPass))
+    }
+  })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/createGreenSource', (req, res) => {
+  const msg = req.body
+  const dataToPass = handleCreateGreenSourceEvent(msg)
+  expressWs.getWss().clients.forEach(client => {
+    if (client.route === '/event') {
+      client.send(JSON.stringify(dataToPass))
+    }
+  })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/createServer', (req, res) => {
+  const msg = req.body
+  const dataToPass = handleCreateServerEvent(msg)
+  expressWs.getWss().clients.forEach(client => {
+    if (client.route === '/event') {
+      client.send(JSON.stringify(dataToPass))
+    }
+  })
+})
+
+app.post(ROUTE_TYPES.FRONT + '/resetServerMaintenance', (req, res) => {
+  const msg = req.body
+  handleServerMaintenanceReset(msg)
 })
 
 reportSimulationStatistics

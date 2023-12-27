@@ -36,6 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.greencloud.commons.args.adaptation.singleagent.AdjustGreenSourceErrorParameters;
+import org.greencloud.commons.args.adaptation.singleagent.ImmutableAdjustGreenSourceErrorParameters;
+import org.greencloud.commons.args.agent.AgentType;
+import org.greencloud.commons.args.scenario.ScenarioStructureArgs;
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.executor.ExecutorService;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
@@ -67,11 +72,6 @@ import com.database.knowledge.domain.agent.greensource.WeatherShortages;
 import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
 import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.database.knowledge.timescale.TimescaleDatabase;
-import com.greencloud.commons.agent.AgentType;
-import com.greencloud.commons.managingsystem.planner.AdjustGreenSourceErrorParameters;
-import com.greencloud.commons.managingsystem.planner.ImmutableAdjustGreenSourceErrorParameters;
-import com.greencloud.commons.scenario.ScenarioStructureArgs;
-import com.gui.agents.ManagingAgentNode;
 
 import jade.core.AID;
 
@@ -229,12 +229,12 @@ class PlannerServiceUnitTest {
 	private List<AgentData> prepareServerData() {
 		var data1 = ImmutableServerMonitoringData.builder()
 				.successRatio(0.8)
-				.currentBackUpPowerUsage(0.8)
 				.currentTraffic(0.4)
-				.availablePower(30D)
-				.currentMaximumCapacity(200)
 				.isDisabled(false)
 				.serverJobs(10)
+				.idlePowerConsumption(10)
+				.currentBackUpPowerTraffic(0.6)
+				.currentPowerConsumption(0.7)
 				.build();
 
 		return List.of(
@@ -280,9 +280,9 @@ class PlannerServiceUnitTest {
 	}
 
 	private void mockHealthCheckData() {
-		var healthCheck1 = new HealthCheck(true, AgentType.GREEN_SOURCE);
-		var healthCheck2 = new HealthCheck(true, AgentType.GREEN_SOURCE);
-		var healthCheck3 = new HealthCheck(true, AgentType.GREEN_SOURCE);
+		var healthCheck1 = new HealthCheck(true, AgentType.GREEN_ENERGY);
+		var healthCheck2 = new HealthCheck(true, AgentType.GREEN_ENERGY);
+		var healthCheck3 = new HealthCheck(true, AgentType.GREEN_ENERGY);
 		var healthCheck4 = new HealthCheck(true, AgentType.SERVER);
 
 		var mockData = List.of(

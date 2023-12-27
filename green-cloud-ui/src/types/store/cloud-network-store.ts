@@ -1,11 +1,11 @@
 export type CloudNetworkStore = {
    currClientsNo: number
    currActiveJobsNo: number
-   currActiveJobsInCloudNo: number
+   currActiveInCloudJobsNo: number
    currPlannedJobsNo: number
    finishedJobsNo: number
-   failedJobsNo: number
    finishedJobsInCloudNo: number
+   failedJobsNo: number
    isNetworkSocketConnected?: boolean | null
    isAgentSocketConnected?: boolean | null
    isClientSocketConnected?: boolean | null

@@ -11,6 +11,8 @@ import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
+import org.greencloud.commons.args.agent.AgentType;
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,10 +22,7 @@ import org.mockito.Mock;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.HealthCheck;
-import com.database.knowledge.domain.goal.GoalEnum;
 import com.database.knowledge.timescale.TimescaleDatabase;
-import com.greencloud.commons.agent.AgentType;
-import com.gui.agents.ManagingAgentNode;
 
 class IncreaseDeadlinePriorityPlanTest {
 

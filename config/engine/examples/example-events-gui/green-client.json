@@ -1,0 +1,65 @@
+{
+  "clientName": "GreenClient",
+  "jobCreator": {
+    "processorName": "green-task",
+    "resources": {
+      "cpu": {
+        "characteristics": {
+          "amount": {
+            "value": 2,
+            "unit": "core"
+          }
+        }
+      },
+      "memory": {
+        "characteristics": {
+          "amount": {
+            "value": 10,
+            "unit": "GB",
+            "toCommonUnitConverter": "TO_GB_FROM_BYTE_CONVERTER",
+            "fromCommonUnitConverter": "FROM_GB_TO_BYTE_CONVERTER"
+          }
+        }
+      }
+    },
+    "selectionPreference": "bestProposal.getPriceForJob() - newProposal.getPriceForJob();",
+    "deadline": 0,
+    "duration": 3,
+    "steps": [
+      {
+        "name": "execution",
+        "duration": 10800,
+        "requiredResources": {
+          "cpu": {
+            "characteristics": {
+              "amount": {
+                "value": 2,
+                "unit": "core"
+              }
+            }
+          },
+          "memory": {
+            "characteristics": {
+              "amount": {
+                "value": 10,
+                "unit": "GB",
+                "toCommonUnitConverter": "TO_GB_FROM_BYTE_CONVERTER",
+                "fromCommonUnitConverter": "FROM_GB_TO_BYTE_CONVERTER"
+              }
+            }
+          },
+          "gpu": {
+            "characteristics": {
+              "amount": {
+                "value": 40,
+                "unit": "kCUDA cores",
+                "toCommonUnitConverter": "FROM_KI_CUDA_CORES_CONVERTER",
+                "fromCommonUnitConverter": "TO_KI_CUDA_CORES_CONVERTER"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

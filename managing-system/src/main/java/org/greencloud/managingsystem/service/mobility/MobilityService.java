@@ -19,6 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.greencloud.commons.args.agent.AgentArgs;
+import org.greencloud.commons.args.agent.greenenergy.factory.GreenEnergyArgs;
+import org.greencloud.commons.args.agent.monitoring.factory.MonitoringArgs;
+import org.greencloud.commons.args.agent.server.factory.ServerArgs;
+import org.greencloud.commons.exception.MapperException;
 import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.service.AbstractManagingService;
 import org.jetbrains.annotations.Nullable;
@@ -26,11 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.database.knowledge.domain.agent.AMSData;
-import com.greencloud.commons.args.agent.AgentArgs;
-import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
-import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
-import com.greencloud.commons.args.agent.server.ServerAgentArgs;
-import com.greencloud.commons.exception.MapperException;
 
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
@@ -62,13 +62,13 @@ public class MobilityService extends AbstractManagingService {
 	 */
 	public void addAgentsToStructure(final List<AgentArgs> agentArgs) {
 		for (AgentArgs args : agentArgs) {
-			if (args instanceof ServerAgentArgs serverAgentArgs) {
+			if (args instanceof ServerArgs serverAgentArgs) {
 				managingAgent.getGreenCloudStructure().getServerAgentsArgs().add(serverAgentArgs);
 			}
-			if (args instanceof GreenEnergyAgentArgs greenEnergyAgentArgs) {
+			if (args instanceof GreenEnergyArgs greenEnergyAgentArgs) {
 				managingAgent.getGreenCloudStructure().getGreenEnergyAgentsArgs().add(greenEnergyAgentArgs);
 			}
-			if (args instanceof MonitoringAgentArgs monitoringAgentArgs) {
+			if (args instanceof MonitoringArgs monitoringAgentArgs) {
 				managingAgent.getGreenCloudStructure().getMonitoringAgentsArgs().add(monitoringAgentArgs);
 			}
 		}
@@ -91,19 +91,19 @@ public class MobilityService extends AbstractManagingService {
 	}
 
 	/**
-	 * Method retrieved the location of agent container which corresponds to the given Cloud Network Agent
+	 * Method retrieved the location of agent container which corresponds to the given Regional Manager Agent
 	 *
-	 * @param candidateCloudNetwork - name of the cloud network agent of interest
+	 * @param candidateRegionalManager - name of the regional manager agent of interest
 	 * @return location of the container
 	 */
-	public Map.Entry<Location, AID> findTargetLocation(final String candidateCloudNetwork) {
+	public Map.Entry<Location, AID> findTargetLocation(final String candidateRegionalManager) {
 		if (managingAgent.getContainersLocations() == null) {
 			managingAgent.setContainersLocations(findContainersLocations());
 		}
-		var cloudNetworkContainer = getContainerLocations(candidateCloudNetwork);
-		return isNull(cloudNetworkContainer)
+		var regionalManagerContainer = getContainerLocations(candidateRegionalManager);
+		return isNull(regionalManagerContainer)
 				? getContainerLocations("Main-Container")
-				: cloudNetworkContainer;
+				: regionalManagerContainer;
 	}
 
 	/**
@@ -130,6 +130,10 @@ public class MobilityService extends AbstractManagingService {
 	private Map<Location, AID> findContainersLocations() {
 		final List<AMSData> amsAgents = getAMSData();
 
+		if (amsAgents.isEmpty()) {
+			return findContainerLocally();
+		}
+
 		final Map<Location, AID> map = amsAgents.stream()
 				.map(amsAgent -> {
 					final AID ams = new AID(amsAgent.name(), AID.ISGUID);
@@ -146,6 +150,18 @@ public class MobilityService extends AbstractManagingService {
 		final String locationsString = map.keySet().stream().map(Location::getName).collect(joining(", "));
 		logger.info(FOUND_CONTAINERS_LOG, map.size(), locationsString);
 		return map;
+	}
+
+	private Map<Location, AID> findContainerLocally() {
+		final AID ams = new AID(managingAgent.getAMS().getName(), AID.ISGUID);
+		prepareAndSendPlatformLocationsQuery(ams);
+		final Result result = receiveLocationsResponseFromAms(ams);
+		final List<Location> locations = getLocationsFromQueryResult(result);
+
+		final String locationsString = locations.stream().map(Location::getName).collect(joining(", "));
+		logger.info(FOUND_CONTAINERS_LOG, locations.size(), locationsString);
+
+		return locations.stream().collect(toMap(location -> location, location -> ams));
 	}
 
 	private void prepareAndSendPlatformLocationsQuery(final AID ams) {

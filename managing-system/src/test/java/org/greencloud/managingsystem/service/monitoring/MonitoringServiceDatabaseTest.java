@@ -3,10 +3,10 @@ package org.greencloud.managingsystem.service.monitoring;
 import static com.database.knowledge.domain.agent.DataType.GREEN_SOURCE_MONITORING;
 import static com.database.knowledge.domain.agent.DataType.HEALTH_CHECK;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
-import static com.greencloud.commons.agent.AgentType.GREEN_SOURCE;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.greencloud.commons.args.agent.AgentType.GREEN_ENERGY;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,6 @@ import com.database.knowledge.domain.agent.greensource.ImmutableGreenSourceMonit
 import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
 import com.database.knowledge.domain.goal.AdaptationGoal;
 import com.database.knowledge.timescale.TimescaleDatabase;
-import com.gui.agents.ManagingAgentNode;
 
 @Disabled
 class MonitoringServiceDatabaseTest {
@@ -88,7 +88,7 @@ class MonitoringServiceDatabaseTest {
 	@DisplayName("Test get alive agents for green sources")
 	void testGetAliveAgentsForGreenSources() {
 		mockHealthCheckData();
-		var result = monitoringService.getAliveAgents(GREEN_SOURCE);
+		var result = monitoringService.getAliveAgents(GREEN_ENERGY);
 
 		assertThat(result)
 				.hasSize(3)
@@ -130,21 +130,15 @@ class MonitoringServiceDatabaseTest {
 	@DisplayName("Test getting average traffic for network components for distinct data set")
 	void testGetAverageTrafficForNetworkComponentForDistinctDataSet() {
 		var mockData1 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
 				.currentTraffic(0.6)
 				.serverJobs(10)
 				.successRatio(0.9)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
 				.build();
 		var mockData2 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
 				.currentTraffic(0.8)
 				.successRatio(0.9)
 				.serverJobs(10)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
 				.build();
 
@@ -163,30 +157,21 @@ class MonitoringServiceDatabaseTest {
 	@DisplayName("Test getting average traffic for network components for many rows data set")
 	void testGetAverageTrafficForNetworkComponentForManyRowsDataSet() {
 		var mockData1 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
 				.currentTraffic(0.6)
 				.successRatio(0.9)
 				.serverJobs(10)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
 				.build();
 		var mockData2 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
 				.currentTraffic(0.8)
 				.successRatio(0.9)
 				.serverJobs(10)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
 				.build();
 		var mockData3 = ImmutableServerMonitoringData.builder()
-				.currentMaximumCapacity(100)
 				.currentTraffic(0.5)
 				.successRatio(0.9)
 				.serverJobs(10)
-				.availablePower(30D)
-				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
 				.build();
 
@@ -204,9 +189,9 @@ class MonitoringServiceDatabaseTest {
 	}
 
 	private void mockHealthCheckData() {
-		var healthCheck1 = new HealthCheck(true, GREEN_SOURCE);
-		var healthCheck2 = new HealthCheck(true, GREEN_SOURCE);
-		var healthCheck3 = new HealthCheck(true, GREEN_SOURCE);
+		var healthCheck1 = new HealthCheck(true, GREEN_ENERGY);
+		var healthCheck2 = new HealthCheck(true, GREEN_ENERGY);
+		var healthCheck3 = new HealthCheck(true, GREEN_ENERGY);
 
 		var mockData = List.of(
 				new AgentData(now(), "test_gs1", HEALTH_CHECK, healthCheck1),

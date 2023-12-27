@@ -1,10 +1,15 @@
 package org.greencloud.managingsystem.agent;
 
-import static com.greencloud.commons.agent.AgentType.MANAGING;
+import static org.greencloud.commons.args.agent.AgentType.MANAGING;
 
 import java.util.List;
 import java.util.Map;
 
+import org.greencloud.agentsystem.agents.AbstractAgent;
+import org.greencloud.commons.args.agent.AgentProps;
+import org.greencloud.commons.args.agent.egcs.agent.EGCSAgentProps;
+import org.greencloud.commons.args.scenario.ScenarioStructureArgs;
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.service.analyzer.AnalyzerService;
 import org.greencloud.managingsystem.service.executor.ExecutorService;
 import org.greencloud.managingsystem.service.mobility.MobilityService;
@@ -12,8 +17,7 @@ import org.greencloud.managingsystem.service.monitoring.MonitoringService;
 import org.greencloud.managingsystem.service.planner.PlannerService;
 
 import com.database.knowledge.domain.goal.AdaptationGoal;
-import com.greencloud.application.agents.AbstractAgent;
-import com.greencloud.commons.scenario.ScenarioStructureArgs;
+import com.greencloud.connector.gui.GuiController;
 
 import jade.core.AID;
 import jade.core.Location;
@@ -22,10 +26,11 @@ import jade.wrapper.ContainerController;
 /**
  * Abstract agent class storing data of the Managing Agent
  */
-public abstract class AbstractManagingAgent extends AbstractAgent {
+public abstract class AbstractManagingAgent extends AbstractAgent<ManagingAgentNode, AgentProps> {
 
 	protected ScenarioStructureArgs greenCloudStructure;
 	protected ContainerController greenCloudController;
+	protected GuiController guiController;
 	protected Map<Location, AID> containersLocations;
 
 	protected List<AdaptationGoal> adaptationGoalList;
@@ -42,7 +47,7 @@ public abstract class AbstractManagingAgent extends AbstractAgent {
 	 */
 	protected AbstractManagingAgent() {
 		super();
-		agentType = MANAGING;
+		this.properties = new EGCSAgentProps(MANAGING, getName());
 	}
 
 	public ScenarioStructureArgs getGreenCloudStructure() {
@@ -64,7 +69,14 @@ public abstract class AbstractManagingAgent extends AbstractAgent {
 	public ExecutorService execute() {
 		return executorService;
 	}
-	public MobilityService move() {return  mobilityService;}
+
+	public MobilityService move() {
+		return mobilityService;
+	}
+
+	public GuiController getGuiController() {
+		return guiController;
+	}
 
 	public double getSystemQualityThreshold() {
 		return systemQualityThreshold;

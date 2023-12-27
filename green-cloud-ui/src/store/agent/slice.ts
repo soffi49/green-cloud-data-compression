@@ -1,7 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Agent, AgentStore, PowerShortageEventData } from '@types'
+import {
+   Agent,
+   AgentStore,
+   PowerShortageEventData,
+   ServerMaintenanceEventData,
+   SwitchOnOffEventData,
+   WeatherDropEventData
+} from '@types'
 import { getAgentByName } from './api/get-agent-by-name'
-import { triggerPowerShortage } from './api/trigger-power-shortage'
+import {
+   triggerPowerShortage,
+   sendMaintenanceData,
+   triggerServerMaintenanceReset,
+   triggerSwitchOnOffServer,
+   triggerWeatherDrop
+} from './api/trigger-events'
 
 const INITIAL_STATE: AgentStore = {
    agents: [],
@@ -17,10 +30,38 @@ export const agentSlice = createSlice({
    initialState: INITIAL_STATE,
    reducers: {
       triggerPowerShortage(state, action: PayloadAction<PowerShortageEventData>) {
-         const { agentName, newMaximumCapacity } = action.payload
+         const { agentName } = action.payload
 
          if (getAgentByName(state.agents, agentName)) {
-            triggerPowerShortage(agentName, newMaximumCapacity)
+            triggerPowerShortage(agentName)
+         }
+      },
+      triggerWeatherDrop(state, action: PayloadAction<WeatherDropEventData>) {
+         const { agentName, duration } = action.payload
+
+         if (getAgentByName(state.agents, agentName)) {
+            triggerWeatherDrop(agentName, duration)
+         }
+      },
+      triggerSwitchOnOfServer(state, action: PayloadAction<SwitchOnOffEventData>) {
+         const { agentName } = action.payload
+
+         if (getAgentByName(state.agents, agentName)) {
+            triggerSwitchOnOffServer(agentName)
+         }
+      },
+      triggerServerMaintenance(state, action: PayloadAction<ServerMaintenanceEventData>) {
+         const { agentName, newResources } = action.payload
+
+         if (getAgentByName(state.agents, agentName)) {
+            sendMaintenanceData(agentName, newResources)
+         }
+      },
+      resetServerMaintenance(state, action: PayloadAction<string>) {
+         const agentName = action.payload
+
+         if (getAgentByName(state.agents, agentName)) {
+            triggerServerMaintenanceReset(agentName)
          }
       },
       setAgents(state, action: PayloadAction<Agent[]>) {

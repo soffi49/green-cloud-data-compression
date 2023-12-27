@@ -12,18 +12,22 @@
 
 	<modules>
 		<module>engine</module>
-		<module>application</module>
-		<module>gui</module>
+		<module>agent-system</module>
 		<module>commons</module>
+		<module>rules-controller</module>
 		<module>knowledge-database</module>
 		<module>managing-system</module>
-		<module>agent-factory</module>
-		<module>rules-controller</module>
+		<module>agent-connector</module>
+		<module>weather-api</module>
+		<module>articles</module>
+		<module>gui</module>
 	</modules>
 
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
 	<dependencyManagement>
@@ -45,17 +49,17 @@
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-api</artifactId>
-				<version>2.7</version>
+				<version>2.14.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
-				<version>2.7</version>
+				<version>2.14.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-slf4j-impl</artifactId>
-				<version>2.7</version>
+				<version>2.14.1</version>
 			</dependency>
 			<!-- Jackson -->
 			<dependency>
@@ -92,7 +96,7 @@
 			<dependency>
 				<groupId>org.immutables</groupId>
 				<artifactId>value</artifactId>
-				<version>2.8.2</version>
+				<version>2.9.2</version>
 				<scope>provided</scope>
 			</dependency>
 			<!-- Apache IO -->
@@ -121,10 +125,15 @@
 						<configuration>
 							<overWrite>true</overWrite>
 							<fileSets>
-								<!-- Copying configuration of application module -->
+								<!-- Copying configuration of weather-api module -->
 								<fileSet>
-									<sourceFile>config/application/config.properties</sourceFile>
-									<destinationFile>application/src/main/resources/config.properties</destinationFile>
+									<sourceFile>config/weather-api/api.properties</sourceFile>
+									<destinationFile>weather-api/src/main/resources/api.properties</destinationFile>
+								</fileSet>
+								<!-- Copying configuration of agent-system module -->
+								<fileSet>
+									<sourceFile>config/agent-system/config.properties</sourceFile>
+									<destinationFile>agent-system/src/main/resources/config.properties</destinationFile>
 								</fileSet>
 								<!-- Copying configuration of green-cloud-ui module -->
 								<fileSet>
@@ -135,6 +144,11 @@
 								<fileSet>
 									<sourceFile>config/socket-server/.env</sourceFile>
 									<destinationFile>socket-server/.env</destinationFile>
+								</fileSet>
+								<!-- Copying configuration of data-clustering module -->
+								<fileSet>
+									<sourceFile>config/data-clustering/.env</sourceFile>
+									<destinationFile>data-clustering/.env</destinationFile>
 								</fileSet>
 							</fileSets>
 						</configuration>
@@ -147,6 +161,54 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
 				<executions>
+					<execution>
+						<id>copy-rule-sets</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>rules-controller/src/main/resources/rulesets</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/rules-controller/rulesets</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-spring-file</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>rules-controller/src/main/resources/META-INF</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/rules-controller/META-INF</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-engine-spring-file</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>engine/src/main/resources/META-INF</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/engine/META-INF</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 					<execution>
 						<id>copy-engine-structure-files</id>
 						<phase>generate-sources</phase>
@@ -175,6 +237,38 @@
 							<resources>
 								<resource>
 									<directory>config/engine/properties</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-engine-samples-files</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>engine/src/main/resources/samples</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/engine/samples</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-engine-knowledge-files</id>
+						<phase>generate-sources</phase>
+						<inherited>false</inherited>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>engine/src/main/resources/knowledge</outputDirectory>
+							<resources>
+								<resource>
+									<directory>config/engine/knowledge</directory>
 								</resource>
 							</resources>
 						</configuration>

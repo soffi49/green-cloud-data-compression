@@ -1,7 +1,7 @@
 package org.greencloud.managingsystem.service.planner.plans;
 
 import static com.database.knowledge.domain.action.AdaptationActionEnum.ADD_GREEN_SOURCE;
-import static com.greencloud.commons.agent.AgentType.SERVER;
+import static org.greencloud.commons.args.agent.AgentType.SERVER;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
@@ -12,16 +12,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.DoublePredicate;
 
+import org.greencloud.commons.args.agent.regionalmanager.factory.RegionalManagerArgs;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
 import com.database.knowledge.domain.goal.GoalEnum;
-import com.greencloud.commons.args.agent.cloudnetwork.CloudNetworkArgs;
-import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
-import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
-import com.greencloud.commons.args.agent.server.ServerAgentArgs;
-import com.greencloud.commons.managingsystem.planner.AddGreenSourceActionParameters;
+
+import org.greencloud.commons.args.agent.greenenergy.factory.GreenEnergyArgs;
+import org.greencloud.commons.args.agent.monitoring.factory.MonitoringArgs;
+import org.greencloud.commons.args.agent.server.factory.ServerArgs;
+import org.greencloud.commons.args.adaptation.system.AddGreenSourceActionParameters;
 
 import jade.core.AID;
 import jade.core.Location;
@@ -67,7 +68,7 @@ public class AddGreenSourcePlan extends SystemPlan {
 			return null;
 		}
 
-		final ServerAgentArgs targetServerArgs = managingAgent.getGreenCloudStructure()
+		final ServerArgs targetServerArgs = managingAgent.getGreenCloudStructure()
 				.getServerAgentsArgs().stream()
 				.filter(serverAgentArgs -> targetServer.contains(serverAgentArgs.getName()))
 				.findFirst()
@@ -77,24 +78,24 @@ public class AddGreenSourcePlan extends SystemPlan {
 			return null;
 		}
 
-		final String targetCloudNetworkAgent = targetServerArgs.getOwnerCloudNetwork();
-		final CloudNetworkArgs cloudNetwork = managingAgent.getGreenCloudStructure().getCloudNetworkAgentsArgs()
+		final String targetRegionalManagerAgent = targetServerArgs.getOwnerRegionalManager();
+		final RegionalManagerArgs regionalManager = managingAgent.getGreenCloudStructure().getRegionalManagerAgentsArgs()
 				.stream()
-				.filter(cna -> cna.getName().equals(targetCloudNetworkAgent))
+				.filter(rma -> rma.getName().equals(targetRegionalManagerAgent))
 				.findFirst()
 				.orElse(null);
 
-		if (isNull(cloudNetwork)) {
+		if (isNull(regionalManager)) {
 			return null;
 		}
 
-		final String cloudNetworkLocation = defaultIfNull(cloudNetwork.getLocationId(),
-				targetServerArgs.getOwnerCloudNetwork());
-		final MonitoringAgentArgs extraMonitoringAgentArguments = agentFactory.createMonitoringAgent();
-		final GreenEnergyAgentArgs extraGreenEnergyArguments = agentFactory.createDefaultGreenEnergyAgent(
+		final String regionalManagerLocation = defaultIfNull(regionalManager.getLocationId(),
+				targetServerArgs.getOwnerRegionalManager());
+		final MonitoringArgs extraMonitoringAgentArguments = agentFactory.createMonitoringAgent();
+		final GreenEnergyArgs extraGreenEnergyArguments = agentFactory.createDefaultGreenEnergyAgent(
 				extraMonitoringAgentArguments.getName(), targetServerArgs.getName());
 		final Map.Entry<Location, AID> targetLocation = managingAgent.move()
-				.findTargetLocation(cloudNetworkLocation);
+				.findTargetLocation(regionalManagerLocation);
 
 		if (isNull(targetLocation)) {
 			return null;
@@ -115,7 +116,7 @@ public class AddGreenSourcePlan extends SystemPlan {
 
 	private Double getBackUpPowerForServer(final AgentData dataPerServer) {
 		final ServerMonitoringData data = (ServerMonitoringData) dataPerServer.monitoringData();
-		return data.getCurrentBackUpPowerUsage() / (data.getCurrentTraffic() + data.getCurrentBackUpPowerUsage());
+		return data.getCurrentBackUpPowerTraffic() / (data.getCurrentTraffic() + data.getCurrentBackUpPowerTraffic());
 
 	}
 }

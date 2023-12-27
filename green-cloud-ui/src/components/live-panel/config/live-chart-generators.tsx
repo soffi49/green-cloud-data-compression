@@ -1,43 +1,37 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-   AgentCloudNetworkStatisticReports,
+   AgentRegionalManagerStatisticReports,
    AgentGreenSourceStatisticReports,
    AgentSchedulerStatisticReports,
    AgentServerStatisticReports,
    AgentStatisticReport,
-   AgentType,
-   CloudNetworkAgent,
    CommonAgentReports,
    JobStatus,
    JobStatusMap,
    LiveChartGenerator,
-   ReportsStore,
-   ServerAgent
+   ReportsStore
 } from '@types'
 import {
-   AgentMaximumCapacityLiveChart,
    AvailableGreenPowerLiveChart,
-   ClientJobExecutionLiveChart,
+   ClientJobCPUChart,
    ClientJobExecutionPercentageChart,
-   ClientJobProportionExecutionChart,
    ClientJobStatusTimeChart,
+   ClientTypePieChart,
    ClientsNumberLiveChart,
    GreenPowerToBackUpUsageLiveChart,
    GreenToOnHoldLiveChart,
    JobCompletedLiveChart,
    JobExecutionLiveChart,
-   JobExecutionTypeChart,
    QueueCapacityLiveChart,
    SchedulerPriorityLiveChart,
    SuccessRatioChart,
    TrafficDistributionLiveChart,
    TrafficLiveChart
 } from '../live-charts'
-import { useSelector } from 'react-redux'
-import { RootState, selectAdaptationGoals, selectChosenNetworkAgent, selectNetworkStatistics } from '@store'
 import { GoalContributionLiveChart, QualityPropertiesLiveChart } from '../live-charts/managing-system-charts'
+import JobExecutionTypeChart from '../live-charts/cloud-network-charts/job-execution-type-chart'
 
-const getJobCompletationChart: LiveChartGenerator = (reports, _) => {
+const getJobCompletionChart: LiveChartGenerator = (reports, _) => {
    const { failJobsReport, finishJobsReport } = reports as ReportsStore
    return <JobCompletedLiveChart {...{ failJobsReport, finishJobsReport }} />
 }
@@ -52,29 +46,23 @@ const getSystemClientsChart: LiveChartGenerator = (reports, _) => {
    return <ClientsNumberLiveChart {...{ title: 'Number of clients over time', clientsReport }} />
 }
 
-const getJobExecutionTypeChart: LiveChartGenerator = (reports, _) => {
-   const { finishedJobsInCloudNo, finishedJobsNo } = useSelector((state: RootState) => selectNetworkStatistics(state))
-   const jobsExecutedInCloud = (finishedJobsNo !== 0 ? finishedJobsInCloudNo / finishedJobsNo : 0) * 100
-   const jobsExecutedWithGreen = finishedJobsNo !== 0 ? 100 - jobsExecutedInCloud : 0
-   return <JobExecutionTypeChart {...{ jobsExecutedInCloud, jobsExecutedWithGreen }} />
-}
-
 const getSystemJobExecutionChart: LiveChartGenerator = (reports, _) => {
-   const { executedJobsReport, avgJobSizeReport, minJobSizeReport, maxJobSizeReport } = reports as ReportsStore
-   return <JobExecutionLiveChart {...{ executedJobsReport, avgJobSizeReport, minJobSizeReport, maxJobSizeReport }} />
+   const { executedJobsReport, avgCpuReport, minCpuReport, maxCpuReport } = reports as ReportsStore
+   return <JobExecutionLiveChart {...{ executedJobsReport, avgCpuReport, minCpuReport, maxCpuReport }} />
 }
 
 const getSystemTrafficDistributionChart: LiveChartGenerator = (reports, _) => {
-   const agentReports = (reports as ReportsStore).agentsReports.filter(
-      (report) => report.type === AgentType.CLOUD_NETWORK
-   )
-   return <TrafficDistributionLiveChart {...{ title: 'Traffic distribution per CNA', agentReports }} />
+   return <TrafficDistributionLiveChart {...{ reports: reports as ReportsStore }} />
+}
+
+const getSystemJobTypeChart: LiveChartGenerator = (reports, _) => {
+   return <JobExecutionTypeChart />
 }
 
 const getAgentClientsChart: LiveChartGenerator = (_, agentReports) => {
    const reportsMapped = agentReports as AgentStatisticReport
-   const cnaReports = reportsMapped.reports as AgentCloudNetworkStatisticReports
-   const { clientsReport } = cnaReports
+   const rmaReports = reportsMapped.reports as AgentRegionalManagerStatisticReports
+   const { clientsReport } = rmaReports
    return <ClientsNumberLiveChart {...{ title: `Number of ${reportsMapped.name} clients over time`, clientsReport }} />
 }
 
@@ -90,9 +78,9 @@ const getAgentSuccessRatioChart: LiveChartGenerator = (_, agentReports) => {
    return <SuccessRatioChart {...{ title: `${reportsMapped.name} success ratio over time`, successRatio }} />
 }
 
-const getagentBackUpUsageChart: LiveChartGenerator = (_, agentReports) => {
+const getAgentBackUpUsageChart: LiveChartGenerator = (_, agentReports) => {
    const reportsMapped = agentReports as AgentStatisticReport
-   const { greenPowerUsageReport: greenPowerReport, backUpPowerUsageReport: backUpPowerReport } =
+   const { powerConsumptionReport: greenPowerReport, backUpPowerConsumptionReport: backUpPowerReport } =
       reportsMapped.reports as AgentServerStatisticReports
    return (
       <GreenPowerToBackUpUsageLiveChart
@@ -111,48 +99,26 @@ const getAgentJobsOnHoldChart: LiveChartGenerator = (_, agentReports) => {
    )
 }
 
-const getAgentAvailableGreenPowerChart: LiveChartGenerator = (_, agentReports) => {
+const getAgentUsedGreenEnergyChart: LiveChartGenerator = (_, agentReports) => {
    const reportsMapped = agentReports as AgentStatisticReport
-   const availableGreenPower = (reportsMapped.reports as AgentGreenSourceStatisticReports).availableGreenPowerReport
+   const availableGreenPower = (reportsMapped.reports as AgentGreenSourceStatisticReports).energyInUseReport
    return (
       <AvailableGreenPowerLiveChart
-         {...{ title: `${reportsMapped.name} available green power over time`, availableGreenPower }}
+         {...{ title: `${reportsMapped.name} supplied green energy over time`, availableGreenPower }}
       />
    )
 }
 
-const getAgentTrafficDistributionChart: LiveChartGenerator = (reports) => {
-   const selectedAgent = useSelector((state: RootState) => selectChosenNetworkAgent(state))
-   const connectedAgents =
-      selectedAgent?.type === AgentType.CLOUD_NETWORK
-         ? { type: 'Servers', agents: (selectedAgent as CloudNetworkAgent).serverAgents }
-         : { type: 'Green Sources', agents: (selectedAgent as ServerAgent).greenEnergyAgents }
-
-   const reportsStore = reports as ReportsStore
-   const agentReports = reportsStore.agentsReports.filter((report) => connectedAgents.agents.includes(report.name))
-   return (
-      <TrafficDistributionLiveChart
-         {...{ title: `${selectedAgent?.name} traffic distribution per ${connectedAgents.type}`, agentReports }}
-      />
-   )
-}
-
-const getAgentMaximumCapacityChart: LiveChartGenerator = (_, agentReports) => {
-   const reportsMapped = agentReports as AgentStatisticReport
-   const { capacityReport } = reportsMapped.reports as CommonAgentReports
-   return (
-      <AgentMaximumCapacityLiveChart
-         {...{ title: `Maximum capacity of ${reportsMapped.name} over time`, capacityReport }}
-      />
-   )
-}
+const getAgentTrafficDistributionChart: LiveChartGenerator = (reports, _) => (
+   <TrafficDistributionLiveChart {...{ reports: reports as ReportsStore }} />
+)
 
 const getAgentSchedulerPrioritiesChart: LiveChartGenerator = (_, agentReports) => {
    const reportsMapped = agentReports as AgentStatisticReport
-   const { powerPriorityReport, deadlinePriorityReport } = reportsMapped.reports as AgentSchedulerStatisticReports
+   const { cpuPriorityReport, deadlinePriorityReport } = reportsMapped.reports as AgentSchedulerStatisticReports
    return (
       <SchedulerPriorityLiveChart
-         {...{ title: `${reportsMapped.name} job priority over time`, powerPriorityReport, deadlinePriorityReport }}
+         {...{ title: `${reportsMapped.name} job priority over time`, cpuPriorityReport, deadlinePriorityReport }}
       />
    )
 }
@@ -167,10 +133,10 @@ const getAgentQueueCapacityChart: LiveChartGenerator = (_, agentReports) => {
    )
 }
 
-const getClientJobExecutionSizeChart: LiveChartGenerator = (reports, _) => {
+const getClientJobCPURequirementChart: LiveChartGenerator = (reports, _) => {
    const reportsMapped = reports as ReportsStore
-   const { avgJobSizeReport, maxJobSizeReport, minJobSizeReport } = reportsMapped
-   return <ClientJobExecutionLiveChart {...{ avgJobSizeReport, minJobSizeReport, maxJobSizeReport }} />
+   const { avgCpuReport, minCpuReport, maxCpuReport } = reportsMapped
+   return <ClientJobCPUChart {...{ avgCpuReport, minCpuReport, maxCpuReport }} />
 }
 
 const getClientJobExecutionTimeChart: LiveChartGenerator = (reports, _) => {
@@ -191,11 +157,6 @@ const getClientJobExecutionTimeChart: LiveChartGenerator = (reports, _) => {
    return <ClientJobStatusTimeChart {...{ aggregatedValues, reportLength: reportsSize }} />
 }
 
-const getClientJobProportionChart: LiveChartGenerator = (reports, _) => {
-   const { jobsExecutedAsWhole, jobsExecutedInParts } = reports as ReportsStore
-   return <ClientJobProportionExecutionChart {...{ jobsExecutedAsWhole, jobsExecutedInParts }} />
-}
-
 const getClientJobExecutionPercentageChart: LiveChartGenerator = (reports, _) => {
    const { avgClientsExecutionPercentage, minClientsExecutionPercentage, maxClientsExecutionPercentage } =
       reports as ReportsStore
@@ -204,6 +165,10 @@ const getClientJobExecutionPercentageChart: LiveChartGenerator = (reports, _) =>
          {...{ avgClientsExecutionPercentage, minClientsExecutionPercentage, maxClientsExecutionPercentage }}
       />
    )
+}
+
+const getClientProcessorTypeChart: LiveChartGenerator = (reports, _) => {
+   return <ClientTypePieChart />
 }
 
 const getManagingGoalQualitiesChart: LiveChartGenerator = (reports, _) => {
@@ -215,31 +180,29 @@ const getManagingGoalQualitiesChart: LiveChartGenerator = (reports, _) => {
 }
 
 const getManagingGoalContributionChart: LiveChartGenerator = (reports, _) => {
-   const goals = useSelector((state: RootState) => selectAdaptationGoals(state))
-   return <GoalContributionLiveChart {...{ goals }} />
+   return <GoalContributionLiveChart />
 }
 
 export {
    getAgentClientsChart,
-   getJobCompletationChart,
+   getJobCompletionChart,
    getSystemClientsChart,
    getSystemJobExecutionChart,
    getSystemTrafficChart,
    getSystemTrafficDistributionChart,
-   getAgentAvailableGreenPowerChart,
+   getAgentUsedGreenEnergyChart,
+   getClientProcessorTypeChart,
    getAgentJobsOnHoldChart,
-   getAgentMaximumCapacityChart,
    getAgentQueueCapacityChart,
    getAgentSchedulerPrioritiesChart,
    getAgentSuccessRatioChart,
    getAgentTrafficChart,
    getAgentTrafficDistributionChart,
-   getClientJobExecutionSizeChart,
    getManagingGoalQualitiesChart,
-   getagentBackUpUsageChart,
+   getAgentBackUpUsageChart,
+   getClientJobCPURequirementChart,
    getManagingGoalContributionChart,
-   getJobExecutionTypeChart,
    getClientJobExecutionTimeChart,
-   getClientJobProportionChart,
-   getClientJobExecutionPercentageChart
+   getClientJobExecutionPercentageChart,
+   getSystemJobTypeChart
 }

@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { CloudNetworkStore, MenuTab } from '@types'
+import { AgentType, CloudNetworkStore, MenuTab } from '@types'
 import { resetServerState } from './api'
+import {
+   CreateAgentEventData,
+   CreateClientEventData,
+   CreateGreenSourceEventData,
+   CreateServerEventData
+} from 'types/event'
+import { createClientAgent, createGreenSourceAgent, createServerAgent } from './api/create-agents-api'
 
 const INITIAL_STATE: CloudNetworkStore = {
    currClientsNo: 0,
    currActiveJobsNo: 0,
-   currActiveJobsInCloudNo: 0,
+   currActiveInCloudJobsNo: 0,
    currPlannedJobsNo: 0,
    finishedJobsNo: 0,
    finishedJobsInCloudNo: 0,
@@ -19,7 +26,7 @@ const INITIAL_STATE: CloudNetworkStore = {
 }
 
 /**
- * Slice storing current state of cloud netork summary data
+ * Slice storing current state of regional manager summary data
  */
 export const cloudNetworkSlice = createSlice({
    name: 'cloudNetwork',
@@ -27,6 +34,18 @@ export const cloudNetworkSlice = createSlice({
    reducers: {
       setNetworkData(state, action: PayloadAction<CloudNetworkStore>) {
          Object.assign(state, action.payload)
+      },
+      createAgent(state, action: PayloadAction<CreateAgentEventData>) {
+         const { agentType } = action.payload
+         if (agentType === AgentType.CLIENT) {
+            createClientAgent((action.payload as CreateClientEventData).clientData)
+         }
+         if (agentType === AgentType.GREEN_ENERGY) {
+            createGreenSourceAgent((action.payload as CreateGreenSourceEventData).greenSourceData)
+         }
+         if (agentType === AgentType.SERVER) {
+            createServerAgent((action.payload as CreateServerEventData).serverData)
+         }
       },
       resetServerConnection(state) {
          state.isNetworkSocketConnected = null

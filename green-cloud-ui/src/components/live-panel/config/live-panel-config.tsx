@@ -6,59 +6,60 @@ import {
    TimeOptions
 } from '@types'
 import { PercentageIndicator, ValueIndicator } from 'components/common'
-import { IconClients, IconGear } from '@assets'
+import { IconChip, IconClients, IconGear } from '@assets'
 import {
-   getAgentAvailableGreenPowerChart,
+   getAgentUsedGreenEnergyChart,
    getAgentClientsChart,
    getAgentJobsOnHoldChart,
-   getAgentMaximumCapacityChart,
    getAgentQueueCapacityChart,
    getAgentSchedulerPrioritiesChart,
    getAgentSuccessRatioChart,
    getAgentTrafficChart,
    getAgentTrafficDistributionChart,
    getClientJobExecutionPercentageChart,
-   getClientJobExecutionSizeChart,
    getClientJobExecutionTimeChart,
-   getClientJobProportionChart,
-   getJobCompletationChart,
-   getJobExecutionTypeChart,
+   getJobCompletionChart,
    getManagingGoalContributionChart,
    getManagingGoalQualitiesChart,
    getSystemClientsChart,
    getSystemJobExecutionChart,
    getSystemTrafficChart,
    getSystemTrafficDistributionChart,
-   getagentBackUpUsageChart
+   getAgentBackUpUsageChart,
+   getClientProcessorTypeChart,
+   getClientJobCPURequirementChart,
+   getSystemJobTypeChart
 } from './live-chart-generators'
 import {
+   getAverageBackUpPowerConsumption,
+   getAverageCpu,
    getAverageJobExecutionPercentage,
    getAvgInProgressJobTime,
+   getAvgInUseCpuIndicator,
    getSystemAvgClientsIndicator,
    getSystemAvgJobsIndicator,
    getSystemAvgTrafficIndicator
 } from './live-indicator-generator'
 
 export const CHARTS = {
-   systemJobFinishSuccess: getJobCompletationChart,
+   systemJobFinishSuccess: getJobCompletionChart,
    systemTraffic: getSystemTrafficChart,
    systemClients: getSystemClientsChart,
    systemJobExecution: getSystemJobExecutionChart,
-   systemJobExecutionTypeRatio: getJobExecutionTypeChart,
    systemTrafficDistribution: getSystemTrafficDistributionChart,
+   systemJobExecutionTypeChart: getSystemJobTypeChart,
    agentClients: getAgentClientsChart,
    agentTraffic: getAgentTrafficChart,
    agentSuccessRatio: getAgentSuccessRatioChart,
-   agentBackUpUsage: getagentBackUpUsageChart,
+   agentBackUpUsage: getAgentBackUpUsageChart,
    agentJobsOnHold: getAgentJobsOnHoldChart,
-   agentAvailableGreenPower: getAgentAvailableGreenPowerChart,
+   agentAvailableGreenPower: getAgentUsedGreenEnergyChart,
    agentTrafficDistribution: getAgentTrafficDistributionChart,
-   agentMaximumCapacity: getAgentMaximumCapacityChart,
    agentSchedulerPriorities: getAgentSchedulerPrioritiesChart,
    agentQueueCapacity: getAgentQueueCapacityChart,
-   clientJobExecutionSize: getClientJobExecutionSizeChart,
+   clientJobCpuChart: getClientJobCPURequirementChart,
    clientJobStatusTime: getClientJobExecutionTimeChart,
-   clientJobSplit: getClientJobProportionChart,
+   clientProcessorTypes: getClientProcessorTypeChart,
    clientJobExecutionPercentage: getClientJobExecutionPercentageChart,
    managingGoalQualities: getManagingGoalQualitiesChart,
    managingGoalContribution: getManagingGoalContributionChart
@@ -70,6 +71,9 @@ interface AvgOptions {
    systemAvgJobs: LiveIndicatorConfiguration
    jobExecutionAvgTime: LiveIndicatorConfiguration
    jobExecutionAvgPercentage: LiveIndicatorConfiguration
+   clientsAvgCpu: LiveIndicatorConfiguration
+   serverInUseCpu: LiveIndicatorConfiguration
+   serverAvgBackUpPowerConsumption: LiveIndicatorConfiguration
 }
 
 const AVG_INDICATORS: AvgOptions = {
@@ -97,7 +101,6 @@ const AVG_INDICATORS: AvgOptions = {
       title: 'Average job execution time',
       type: LiveIndicatorAvgGeneratorType.REPORT,
       value: getAvgInProgressJobTime,
-      icon: IconGear,
       indicator: ValueIndicator
    },
    jobExecutionAvgPercentage: {
@@ -105,6 +108,25 @@ const AVG_INDICATORS: AvgOptions = {
       type: LiveIndicatorAvgGeneratorType.REPORT,
       value: getAverageJobExecutionPercentage,
       indicator: PercentageIndicator
+   },
+   serverInUseCpu: {
+      title: 'Average CPU utilization',
+      type: LiveIndicatorAvgGeneratorType.AGENT_REPORT,
+      value: getAvgInUseCpuIndicator,
+      indicator: PercentageIndicator
+   },
+   serverAvgBackUpPowerConsumption: {
+      title: 'Average back-up utilization',
+      type: LiveIndicatorAvgGeneratorType.AGENT_REPORT,
+      value: getAverageBackUpPowerConsumption,
+      indicator: PercentageIndicator
+   },
+   clientsAvgCpu: {
+      title: 'Average CPU',
+      type: LiveIndicatorAvgGeneratorType.REPORT,
+      value: getAverageCpu,
+      icon: IconChip,
+      indicator: ValueIndicator
    }
 }
 
@@ -113,7 +135,7 @@ export const CHART_MODALS: LiveChartDashboard = {
       name: 'System statistics reports',
       charts: [
          CHARTS.systemClients,
-         CHARTS.systemJobExecutionTypeRatio,
+         CHARTS.systemJobExecutionTypeChart,
          CHARTS.systemJobExecution,
          CHARTS.systemJobFinishSuccess,
          CHARTS.systemTraffic,
@@ -125,14 +147,18 @@ export const CHART_MODALS: LiveChartDashboard = {
    clients: {
       name: 'Clients statistics reports',
       charts: [
-         CHARTS.clientJobExecutionSize,
          CHARTS.clientJobExecutionPercentage,
-         CHARTS.clientJobSplit,
-         CHARTS.clientJobStatusTime
+         CHARTS.clientJobStatusTime,
+         CHARTS.clientJobCpuChart,
+         CHARTS.clientProcessorTypes
       ],
       mainChartId: 0,
       disableChartDashboard: false,
-      valueFields: [AVG_INDICATORS.jobExecutionAvgPercentage, AVG_INDICATORS.jobExecutionAvgTime]
+      valueFields: [
+         AVG_INDICATORS.jobExecutionAvgPercentage,
+         AVG_INDICATORS.jobExecutionAvgTime,
+         AVG_INDICATORS.clientsAvgCpu
+      ]
    },
    adaptation: {
       name: 'Managing system reports',
@@ -148,29 +174,17 @@ export const CHART_MODALS: LiveChartDashboard = {
       mainChartId: 0,
       valueFields: []
    },
-   [`agent${AgentType.CLOUD_NETWORK}`]: {
-      name: 'Cloud Network Agent reports',
-      charts: [
-         CHARTS.agentClients,
-         CHARTS.agentSuccessRatio,
-         CHARTS.agentMaximumCapacity,
-         CHARTS.agentTraffic,
-         CHARTS.agentTrafficDistribution
-      ],
-      mainChartId: 3,
+   [`agent${AgentType.REGIONAL_MANAGER}`]: {
+      name: 'Regional Manager Agent reports',
+      charts: [CHARTS.agentClients, CHARTS.agentSuccessRatio, CHARTS.agentTraffic, CHARTS.agentTrafficDistribution],
+      mainChartId: 2,
       valueFields: []
    },
    [`agent${AgentType.SERVER}`]: {
       name: 'Server Agent reports',
-      charts: [
-         CHARTS.agentSuccessRatio,
-         CHARTS.agentTraffic,
-         CHARTS.agentBackUpUsage,
-         CHARTS.agentMaximumCapacity,
-         CHARTS.agentTrafficDistribution
-      ],
+      charts: [CHARTS.agentSuccessRatio, CHARTS.agentTraffic, CHARTS.agentBackUpUsage, CHARTS.agentTrafficDistribution],
       mainChartId: 1,
-      valueFields: []
+      valueFields: [AVG_INDICATORS.serverInUseCpu, AVG_INDICATORS.serverAvgBackUpPowerConsumption]
    },
    [`agent${AgentType.GREEN_ENERGY}`]: {
       name: 'Green Energy Agent reports',
@@ -198,7 +212,7 @@ export const getColorByName = (name: string) => {
    return GOALS_COLORS.BACK_UP_POWER
 }
 
-export const JOB_STATUS_COLORS = [
+export const PIE_COLORS = [
    'var(--green-1)',
    'var(--green-4)',
    'var(--green-6)',

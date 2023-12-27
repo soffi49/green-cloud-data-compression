@@ -2,7 +2,7 @@ import React from 'react'
 
 import { LiveChartWrapper } from '@components'
 import { JobStatus, JobStatusMap, JobStatusReport, LiveChartDataCategory, LiveChartTooltip } from '@types'
-import { JOB_STATUS_COLORS } from 'components/live-panel/config/live-panel-config'
+import { PIE_COLORS } from 'components/live-panel/config/live-panel-config'
 import LiveBarChart from 'components/live-panel/live-chart-components/live-chart-types/live-bar-chart'
 import { getJobStatusDuration, getJobStatusTimeInMin } from 'utils/job-utils'
 import { ContentType } from 'recharts/types/component/Tooltip'
@@ -14,10 +14,11 @@ interface Props {
    reportLength: number
 }
 
-const STATUESES_OF_INTEREST = [
+const STATUSES_OF_INTEREST = [
    JobStatus.CREATED,
    JobStatus.DELAYED,
    JobStatus.IN_PROGRESS,
+   JobStatus.IN_PROGRESS_CLOUD,
    JobStatus.ON_BACK_UP,
    JobStatus.ON_HOLD,
    JobStatus.PROCESSED
@@ -36,11 +37,11 @@ export const JobAverageStatusTimeChart = ({ aggregatedValues, reportLength }: Pr
          status: entry[0],
          value: reportLength === 0 ? 0 : getJobStatusTimeInMin(entry[0], entry[1] / reportLength)
       }))
-      .filter((entry) => STATUESES_OF_INTEREST.includes(entry.status))
+      .filter((entry) => STATUSES_OF_INTEREST.includes(entry.status))
 
    const chartData: LiveChartDataCategory[] = jobStatusReport.map((report, idx) => ({
       name: report.status.replaceAll('_', ' ').toLowerCase(),
-      color: JOB_STATUS_COLORS[idx],
+      color: PIE_COLORS[idx],
       statistics: report.value
    }))
 

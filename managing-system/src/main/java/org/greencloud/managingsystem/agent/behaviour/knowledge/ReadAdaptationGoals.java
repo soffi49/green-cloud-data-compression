@@ -3,8 +3,7 @@ package org.greencloud.managingsystem.agent.behaviour.knowledge;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.agent.behaviour.monitoring.MonitorSystemState;
 
-import com.greencloud.factory.AgentControllerFactoryImpl;
-import com.gui.agents.ManagingAgentNode;
+import com.greencloud.connector.factory.AgentControllerFactoryImpl;
 
 import jade.core.behaviours.OneShotBehaviour;
 
@@ -35,6 +34,6 @@ public class ReadAdaptationGoals extends OneShotBehaviour {
 				managingAgent.getAgentNode().getDatabaseClient(), managingAgent.getGuiController()));
 
 		managingAgent.getAgentNode().getDatabaseClient().readAdaptationActions()
-				.forEach(action -> ((ManagingAgentNode) managingAgent.getAgentNode()).updateAdaptationAction(action));
+				.forEach(action -> managingAgent.getAgentNode().updateAdaptationAction(action));
 	}
 }

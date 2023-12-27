@@ -10,12 +10,12 @@ import static java.util.stream.Collectors.toMap;
 import java.util.List;
 import java.util.Map;
 
+import org.greencloud.commons.args.adaptation.singleagent.ImmutableEnableServerActionParameters;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
 import com.database.knowledge.domain.goal.GoalEnum;
-import com.greencloud.commons.managingsystem.planner.ImmutableEnableServerActionParameters;
 
 import jade.core.AID;
 
@@ -68,13 +68,13 @@ public class EnableServerPlan extends AbstractPlan {
 		// getting servers data
 		consideredServers = disabledServers.stream()
 				.collect(toMap(AgentData::aid,
-						data -> ((ServerMonitoringData) data.monitoringData()).getCurrentMaximumCapacity()));
+						data -> ((ServerMonitoringData) data.monitoringData()).getIdlePowerConsumption()));
 
 		return true;
 	}
 
 	/**
-	 * The plan select the server that has the highest capacity among available candidates
+	 * The plan select the server that has the lowest idle power consumption
 	 *
 	 * @return prepared adaptation plan
 	 */

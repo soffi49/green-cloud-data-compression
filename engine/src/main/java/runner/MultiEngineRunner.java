@@ -38,7 +38,6 @@ public class MultiEngineRunner {
 		try {
 			final MultiContainerScenarioService scenarioService = new MultiContainerScenarioService();
 			scenarioService.run();
-
 		} catch (StaleProxyException | ExecutionException | InterruptedException exception) {
 			Thread.currentThread().interrupt();
 			logger.error("Failed to run scenario due to exception {}", exception.getMessage());

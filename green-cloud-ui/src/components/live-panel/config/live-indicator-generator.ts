@@ -1,12 +1,29 @@
-import { LiveIndicatorAvgGenerator, ReportsStore } from '@types'
+import {
+   AgentServerStatisticReports,
+   AgentStatisticReport,
+   LiveIndicatorAvgGenerator,
+   ReportsStore,
+   ServerAgent
+} from '@types'
 import { getAverage } from '@utils'
-import { getJobStatusDuration } from 'utils/job-utils'
+import { useSelector } from 'react-redux'
+import { RootState, selectChosenNetworkAgent } from '@store'
+import { getJobResourceVal, getJobStatusDuration } from 'utils/job-utils'
 
 const getSystemAvgTrafficIndicator: LiveIndicatorAvgGenerator = (reports) =>
    Math.round(getAverage((reports as ReportsStore).systemTrafficReport, 'value'))
 
 const getSystemAvgClientsIndicator: LiveIndicatorAvgGenerator = (reports) =>
    Math.round(getAverage((reports as ReportsStore).clientsReport, 'value'))
+
+const getAvgInUseCpuIndicator: LiveIndicatorAvgGenerator = (reports) => {
+   const selectedAgent = useSelector((state: RootState) => selectChosenNetworkAgent(state)) as ServerAgent
+   const reportsMapped = reports as AgentStatisticReport
+   const { cpuInUseReport } = reportsMapped.reports as AgentServerStatisticReports
+   return (
+      getAverage(cpuInUseReport, 'value') / selectedAgent.resources?.['cpu'].characteristics['amount']?.value ?? 0
+   ).toFixed(1)
+}
 
 const getSystemAvgJobsIndicator: LiveIndicatorAvgGenerator = (reports) =>
    Math.round(getAverage((reports as ReportsStore).executedJobsReport, 'value'))
@@ -25,10 +42,26 @@ const getAvgInProgressJobTime: LiveIndicatorAvgGenerator = (reports) => {
 const getAverageJobExecutionPercentage: LiveIndicatorAvgGenerator = (reports) =>
    Math.round((reports as ReportsStore).avgClientsExecutionPercentage.slice(-1)[0]?.value ?? 0)
 
+const getAverageCpu: LiveIndicatorAvgGenerator = (reports) =>
+   getJobResourceVal(Math.round(getAverage((reports as ReportsStore).avgCpuReport, 'value')))
+
+const getAverageBackUpPowerConsumption: LiveIndicatorAvgGenerator = (reports) =>
+   getJobResourceVal(
+      Math.round(
+         getAverage(
+            ((reports as AgentStatisticReport).reports as AgentServerStatisticReports).backUpPowerConsumptionReport,
+            'value'
+         )
+      )
+   )
+
 export {
    getSystemAvgClientsIndicator,
    getSystemAvgJobsIndicator,
    getSystemAvgTrafficIndicator,
    getAverageJobExecutionPercentage,
-   getAvgInProgressJobTime
+   getAvgInProgressJobTime,
+   getAvgInUseCpuIndicator,
+   getAverageCpu,
+   getAverageBackUpPowerConsumption
 }

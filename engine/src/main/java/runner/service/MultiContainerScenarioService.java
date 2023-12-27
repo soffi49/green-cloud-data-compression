@@ -1,17 +1,19 @@
 package runner.service;
 
-import static com.greencloud.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
+import static com.greencloud.connector.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.greencloud.rulescontroller.rest.RuleSetRestApi.startRulesControllerRest;
 import static runner.configuration.EngineConfiguration.containerId;
 import static runner.configuration.EngineConfiguration.locationId;
 import static runner.configuration.EngineConfiguration.mainDFAddress;
 import static runner.configuration.EngineConfiguration.mainHost;
 import static runner.configuration.EngineConfiguration.mainHostPlatformId;
 import static runner.configuration.EngineConfiguration.newPlatform;
-import static runner.configuration.ScenarioConfiguration.eventFilePath;
+import static runner.configuration.ScenarioConfiguration.knowledgeFilePath;
 import static runner.configuration.ScenarioConfiguration.scenarioFilePath;
 import static runner.configuration.enums.ContainerTypeEnum.CLIENTS_CONTAINER_ID;
+import static org.greencloud.commons.utils.filereader.FileReader.readFile;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,16 +24,13 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.greencloud.commons.args.agent.AgentArgs;
-import com.greencloud.commons.args.agent.cloudnetwork.CloudNetworkArgs;
-import com.greencloud.commons.args.agent.greenenergy.GreenEnergyAgentArgs;
-import com.greencloud.commons.args.agent.managing.ManagingAgentArgs;
-import com.greencloud.commons.args.agent.monitoring.MonitoringAgentArgs;
-import com.greencloud.commons.args.agent.server.ServerAgentArgs;
-import com.greencloud.commons.exception.JadeControllerException;
-import com.greencloud.commons.scenario.ScenarioStructureArgs;
-import com.greencloud.factory.AgentControllerFactoryImpl;
-import com.greencloud.factory.AgentNodeFactoryImpl;
+import org.greencloud.commons.args.agent.AgentArgs;
+import org.greencloud.commons.args.agent.regionalmanager.factory.RegionalManagerArgs;
+import org.greencloud.commons.args.agent.greenenergy.factory.GreenEnergyArgs;
+import org.greencloud.commons.args.agent.monitoring.factory.MonitoringArgs;
+import org.greencloud.commons.args.agent.server.factory.ServerArgs;
+import org.greencloud.commons.args.scenario.ScenarioStructureArgs;
+import com.greencloud.connector.factory.AgentControllerFactoryImpl;
 
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
@@ -39,7 +38,7 @@ import jade.wrapper.StaleProxyException;
 
 /**
  * Scenario service responsible for running Green Cloud dispersed among multiple hosts.
- * Each host is responsible for running for single Cloud Network. Additionally, to that
+ * Each host is responsible for running for single Regional Manager. Additionally, to that
  */
 public class MultiContainerScenarioService extends AbstractScenarioService implements Runnable {
 
@@ -53,19 +52,24 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 			throws StaleProxyException, ExecutionException, InterruptedException {
 		super();
 		final ContainerController container = mainHost ? mainContainer : agentContainer;
+		final File scenarioFile = readFile(scenarioFilePath);
+		final File initialKnowledgeFile = readFile(knowledgeFilePath);
+		systemKnowledge = parseKnowledgeStructure(initialKnowledgeFile);
+		scenario = parseScenarioStructure(scenarioFile);
+
 		this.factory = new AgentControllerFactoryImpl(container, timescaleDatabase, guiController, mainDFAddress,
-				mainHostPlatformId);
+				mainHostPlatformId, systemKnowledge);
+		guiController.connectWithAgentFactory(factory);
 	}
 
 	/**
-	 * Runs AgentContainer. For example host with id = 1 would run all agents for first CNA declared
+	 * Runs AgentContainer. For example host with id = 1 would run all agents for first RMA declared
 	 * in the XML scenario document. A special case is host with id = 0, such host is responsible
 	 * for generating Client Agents.
 	 */
 	@Override
 	public void run() {
-		final File scenarioFile = readFile(scenarioFilePath);
-		scenario = parseScenarioStructure(scenarioFile);
+		startRulesControllerRest();
 		updateSystemStartTime();
 
 		if (mainHost) {
@@ -74,13 +78,9 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 		}
 
 		if (nonNull(locationId) && locationId.contains(CLIENTS_CONTAINER_ID.getName())) {
-			if (eventFilePath.isPresent()) {
-				eventService.runScenarioEvents();
-			} else {
-				runClientAgents();
-			}
+			workloadGenerator.generateWorkloadForSimulation();
 		} else {
-			final List<AgentController> controllers = runCloudNetworkContainers(scenario);
+			final List<AgentController> controllers = runRegionalManagerContainers(scenario);
 			if (controllers.isEmpty()) {
 				logger.info("No agents to be run! Make sure that you passed a correct configuration.");
 			} else {
@@ -98,8 +98,8 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 		factory.runAgentController(managingAgentController, RUN_AGENT_DELAY);
 	}
 
-	private List<AgentController> runCloudNetworkContainers(final ScenarioStructureArgs scenario) {
-		var clouds = selectCloudNetworksForContainers();
+	private List<AgentController> runRegionalManagerContainers(final ScenarioStructureArgs scenario) {
+		var clouds = selectRegionalManagersForContainers();
 		var servers = selectServersForContainer(clouds);
 		var sources = selectGreenSourcesForContainer(servers);
 		var monitors = selectMonitoringForContainer(sources);
@@ -115,26 +115,26 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 		return controllers;
 	}
 
-	private List<CloudNetworkArgs> selectCloudNetworksForContainers() {
-		final List<CloudNetworkArgs> cloudNetworkArgs = scenario.getCloudNetworkAgentsArgs();
+	private List<RegionalManagerArgs> selectRegionalManagersForContainers() {
+		final List<RegionalManagerArgs> regionalManagerArgs = scenario.getRegionalManagerAgentsArgs();
 
-		return cloudNetworkArgs.stream()
-				.filter(cnaArgs -> Objects.equals(cnaArgs.getLocationId(), locationId))
+		return regionalManagerArgs.stream()
+				.filter(rmaArgs -> Objects.equals(rmaArgs.getLocationId(), locationId))
 				.toList();
 	}
 
-	private List<ServerAgentArgs> selectServersForContainer(final List<CloudNetworkArgs> cloudNetworkArgs) {
-		final List<ServerAgentArgs> serverAgentsArgs = scenario.getServerAgentsArgs();
+	private List<ServerArgs> selectServersForContainer(final List<RegionalManagerArgs> regionalManagerArgs) {
+		final List<ServerArgs> serverAgentsArgs = scenario.getServerAgentsArgs();
 
 		return serverAgentsArgs.stream()
-				.filter(serverArgs -> cloudNetworkArgs.stream().map(AgentArgs::getName).toList()
-						.contains(serverArgs.getOwnerCloudNetwork()))
+				.filter(serverArgs -> regionalManagerArgs.stream().map(AgentArgs::getName).toList()
+						.contains(serverArgs.getOwnerRegionalManager()))
 				.filter(serverArgs -> Objects.equals(serverArgs.getContainerId(), containerId))
 				.toList();
 	}
 
-	private List<GreenEnergyAgentArgs> selectGreenSourcesForContainer(final List<ServerAgentArgs> serverAgentArgs) {
-		final List<GreenEnergyAgentArgs> greenEnergyAgentArgs = scenario.getGreenEnergyAgentsArgs();
+	private List<GreenEnergyArgs> selectGreenSourcesForContainer(final List<ServerArgs> serverAgentArgs) {
+		final List<GreenEnergyArgs> greenEnergyAgentArgs = scenario.getGreenEnergyAgentsArgs();
 
 		return greenEnergyAgentArgs.stream()
 				.filter(sourceArgs ->
@@ -142,12 +142,12 @@ public class MultiContainerScenarioService extends AbstractScenarioService imple
 				.toList();
 	}
 
-	private List<MonitoringAgentArgs> selectMonitoringForContainer(
-			final List<GreenEnergyAgentArgs> greenEnergyAgentArgs) {
-		final List<MonitoringAgentArgs> monitoringAgentArgs = scenario.getMonitoringAgentsArgs();
+	private List<MonitoringArgs> selectMonitoringForContainer(
+			final List<GreenEnergyArgs> greenEnergyAgentArgs) {
+		final List<MonitoringArgs> monitoringAgentArgs = scenario.getMonitoringAgentsArgs();
 
 		return monitoringAgentArgs.stream()
-				.filter(monitorArgs -> greenEnergyAgentArgs.stream().map(GreenEnergyAgentArgs::getMonitoringAgent)
+				.filter(monitorArgs -> greenEnergyAgentArgs.stream().map(GreenEnergyArgs::getMonitoringAgent)
 						.toList()
 						.contains(monitorArgs.getName()))
 				.toList();

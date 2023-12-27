@@ -3,6 +3,7 @@ package org.greencloud.managingsystem.service.planner.plans;
 import static com.database.knowledge.domain.agent.DataType.SERVER_MONITORING;
 import static com.database.knowledge.domain.goal.GoalEnum.MAXIMIZE_JOB_SUCCESS_RATIO;
 import static com.google.common.collect.ImmutableList.of;
+import static com.greencloud.connector.factory.constants.AgentTemplatesConstants.TEMPLATE_SERVER_RESOURCES;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +16,11 @@ import static org.mockito.Mockito.when;
 import java.util.AbstractMap;
 import java.util.List;
 
+import org.greencloud.commons.args.adaptation.system.AddServerActionParameters;
+import org.greencloud.commons.args.agent.server.factory.ImmutableServerArgs;
+import org.greencloud.commons.args.agent.server.factory.ServerArgs;
+import org.greencloud.commons.args.scenario.ScenarioStructureArgs;
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.service.mobility.MobilityService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,11 +37,6 @@ import org.mockito.quality.Strictness;
 import com.database.knowledge.domain.agent.AgentData;
 import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
 import com.database.knowledge.timescale.TimescaleDatabase;
-import com.greencloud.commons.args.agent.server.ImmutableServerAgentArgs;
-import com.greencloud.commons.args.agent.server.ServerAgentArgs;
-import com.greencloud.commons.managingsystem.planner.AddServerActionParameters;
-import com.greencloud.commons.scenario.ScenarioStructureArgs;
-import com.gui.agents.ManagingAgentNode;
 
 import jade.core.AID;
 import jade.core.Location;
@@ -59,14 +60,14 @@ class AddServerPlanUnitTest {
 	void init() {
 		mobilityService = spy(new MobilityService(managingAgent));
 		addServerPlan = new AddServerPlan(managingAgent, MAXIMIZE_JOB_SUCCESS_RATIO);
-		ServerAgentArgs serverAgentArgs = ImmutableServerAgentArgs.builder()
-				.jobProcessingLimit("200")
+		ServerArgs serverAgentArgs = ImmutableServerArgs.builder()
+				.jobProcessingLimit(200)
 				.name("Server1")
-				.latitude("latitude")
-				.longitude("longitude")
-				.maximumCapacity("200")
-				.ownerCloudNetwork("CNA1")
-				.price("5.0")
+				.ownerRegionalManager("RMA1")
+				.price(5.0)
+				.maxPower(100)
+				.idlePower(50)
+				.resources(TEMPLATE_SERVER_RESOURCES)
 				.build();
 		greenCloudStructure = new ScenarioStructureArgs(null, null, emptyList(), List.of(serverAgentArgs), emptyList(),
 				emptyList());
@@ -98,7 +99,7 @@ class AddServerPlanUnitTest {
 		var trafficValue = 0.9;
 		var aid = new AID("test", AID.ISGUID);
 		when(managingAgent.getGreenCloudStructure()).thenReturn(greenCloudStructure);
-		when(mobilityService.getContainerLocations("CNA1")).thenReturn(null);
+		when(mobilityService.getContainerLocations("RMA1")).thenReturn(null);
 		when(mobilityService.getContainerLocations("Main-Container")).thenReturn(
 				new AbstractMap.SimpleEntry<>(mock(Location.class), aid));
 		when(timescaleDatabase.readLastMonitoringDataForDataTypes(of(SERVER_MONITORING),
@@ -118,12 +119,12 @@ class AddServerPlanUnitTest {
 	private List<AgentData> generateTestDataForTrafficValue(Double trafficValue) {
 		return of(new AgentData(now(), "Server1", SERVER_MONITORING, ImmutableServerMonitoringData.builder()
 				.successRatio(1.0)
-				.currentMaximumCapacity(200)
-				.availablePower(30D)
 				.currentTraffic(trafficValue)
-				.currentBackUpPowerUsage(0.4)
 				.isDisabled(false)
 				.serverJobs(10)
+				.idlePowerConsumption(20)
+				.currentPowerConsumption(0.8)
+				.currentBackUpPowerTraffic(0.7)
 				.build()));
 	}
 }

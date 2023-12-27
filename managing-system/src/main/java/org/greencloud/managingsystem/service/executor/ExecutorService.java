@@ -1,16 +1,19 @@
 package org.greencloud.managingsystem.service.executor;
 
 import static com.database.knowledge.domain.action.AdaptationActionsDefinitions.getAdaptationAction;
-import static com.greencloud.application.utils.TimeUtils.getCurrentTime;
-import static com.greencloud.commons.managingsystem.executor.ExecutorMessageProtocols.EXECUTE_ACTION_PROTOCOL;
-import static com.greencloud.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
+import static com.greencloud.connector.factory.constants.AgentControllerConstants.RUN_AGENT_DELAY;
 import static jade.lang.acl.ACLMessage.REQUEST;
 import static java.util.Optional.empty;
+import static org.greencloud.commons.utils.messaging.constants.MessageProtocolConstants.EXECUTE_ACTION_PROTOCOL;
+import static org.greencloud.commons.utils.time.TimeSimulation.getCurrentTime;
 import static org.greencloud.managingsystem.service.executor.logs.ManagingAgentExecutorLog.EXECUTING_ADAPTATION_ACTION_LOG;
 
 import java.util.List;
 import java.util.Map;
 
+import org.greencloud.commons.args.agent.AgentArgs;
+import org.greencloud.commons.utils.messaging.MessageBuilder;
+import org.greencloud.gui.agents.managing.ManagingAgentNode;
 import org.greencloud.managingsystem.agent.AbstractManagingAgent;
 import org.greencloud.managingsystem.agent.ManagingAgent;
 import org.greencloud.managingsystem.agent.behaviour.executor.InitiateAdaptationActionRequest;
@@ -24,10 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.database.knowledge.domain.action.AdaptationAction;
 import com.database.knowledge.domain.goal.GoalEnum;
 import com.google.common.annotations.VisibleForTesting;
-import com.greencloud.commons.args.agent.AgentArgs;
-import com.greencloud.commons.message.MessageBuilder;
-import com.greencloud.factory.AgentControllerFactory;
-import com.gui.agents.ManagingAgentNode;
+import com.greencloud.connector.factory.AgentControllerFactory;
 
 import jade.core.Location;
 import jade.lang.acl.ACLMessage;
@@ -75,7 +75,7 @@ public class ExecutorService extends AbstractManagingService {
 
 	private void executeAdaptationActionOnAgent(final AbstractPlan adaptationPlan,
 			final Map<GoalEnum, Double> initialGoalQualities, final AdaptationAction actionToBeExecuted) {
-		final ACLMessage adaptationActionRequest = MessageBuilder.builder()
+		final ACLMessage adaptationActionRequest = MessageBuilder.builder(0)
 				.withPerformative(REQUEST)
 				.withConversationId(adaptationPlan.getAdaptationActionEnum().toString())
 				.withMessageProtocol(EXECUTE_ACTION_PROTOCOL)

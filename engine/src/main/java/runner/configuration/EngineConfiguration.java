@@ -1,11 +1,12 @@
 package runner.configuration;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.gui.websocket.enums.SocketTypeEnum.AGENTS_WEB_SOCKET;
-import static com.gui.websocket.enums.SocketTypeEnum.CLIENTS_WEB_SOCKET;
-import static com.gui.websocket.enums.SocketTypeEnum.EVENTS_WEB_SOCKET;
-import static com.gui.websocket.enums.SocketTypeEnum.MANAGING_SYSTEM_WEB_SOCKET;
-import static com.gui.websocket.enums.SocketTypeEnum.NETWORK_WEB_SOCKET;
+import static org.greencloud.commons.utils.filereader.FileReader.buildResourceFilePath;
+import static org.greencloud.gui.websocket.enums.SocketTypeEnum.AGENTS_WEB_SOCKET;
+import static org.greencloud.gui.websocket.enums.SocketTypeEnum.CLIENTS_WEB_SOCKET;
+import static org.greencloud.gui.websocket.enums.SocketTypeEnum.EVENTS_WEB_SOCKET;
+import static org.greencloud.gui.websocket.enums.SocketTypeEnum.MANAGING_SYSTEM_WEB_SOCKET;
+import static org.greencloud.gui.websocket.enums.SocketTypeEnum.NETWORK_WEB_SOCKET;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 
@@ -13,8 +14,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import com.greencloud.commons.exception.InvalidPropertiesException;
-import com.gui.websocket.enums.SocketTypeEnum;
+import org.greencloud.commons.exception.InvalidPropertiesException;
+import org.greencloud.gui.websocket.enums.SocketTypeEnum;
 
 import runner.EngineRunner;
 
@@ -44,14 +45,14 @@ public final class EngineConfiguration extends AbstractConfiguration {
 	 */
 	public static boolean newPlatform;
 	/**
-	 * Identifier value denoting which CNA is to be started at the given container.
-	 * If the value is null then it starts all CNAs without specified locationId at the same container.
+	 * Identifier value denoting which RMA is to be started at the given container.
+	 * If the value is null then it starts all RMAs without specified locationId at the same container.
 	 * If it is set to "Clients<number>" then it denotes that the container which generates clients is to be started
 	 */
 	public static String locationId;
 	/**
 	 * Identifier value denoting which Servers are to be run at the given container
-	 * If the identifier is null then it means that it will run the container with CNA and Servers which have no
+	 * If the identifier is null then it means that it will run the container with RMA and Servers which have no
 	 * containerId specified.
 	 * The value is treated as null if the newPlatform value is set to true.
 	 */
@@ -105,7 +106,7 @@ public final class EngineConfiguration extends AbstractConfiguration {
 	 */
 	public static String managingWebsocketHostIp;
 	/**
-	 * Local IP of the host running socket server processing cloud network statistics data.
+	 * Local IP of the host running socket server processing regional manager statistics data.
 	 */
 	public static String networkWebsocketHostIp;
 	/**
@@ -199,9 +200,5 @@ public final class EngineConfiguration extends AbstractConfiguration {
 	private static void setUpJADEGUISettings(final Properties props) {
 		runJadeGUI = parseBoolean(ifNotBlankThenGetOrElse(props.getProperty("jade.rungui"), "true"));
 		runJadeSniffer = parseBoolean(ifNotBlankThenGetOrElse(props.getProperty("jade.runsniffer"), "false"));
-	}
-
-	private static String ifNotBlankThenGetOrElse(final String property, final String defaultVal) {
-		return isNullOrEmpty(property) ? defaultVal : property;
 	}
 }
