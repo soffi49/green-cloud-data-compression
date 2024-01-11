@@ -9,9 +9,10 @@ function navigate() {
 }
 
 # NAVIGATE TO ENGINE DIR
+PROJECT_NAME="green-cloud-data-compression"
 PROJECT_DIR=$(pwd)
-PARENT_DIR=${PROJECT_DIR%/"green-cloud"*}
-cd "${PARENT_DIR}/green-cloud/socket-server" || exit
+PARENT_DIR=${PROJECT_DIR%/${PROJECT_NAME}*}
+cd "${PARENT_DIR}/${PROJECT_NAME}/socket-server" || exit
 
 # RUN GUI
 npm start

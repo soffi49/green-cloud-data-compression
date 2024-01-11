@@ -2,9 +2,10 @@
 echo "Recompiling backend application"
 
 # NAVIGATE TO MAIN PROJECT DIR
+PROJECT_NAME="green-cloud-data-compression"
 PROJECT_DIR=$(pwd)
-PARENT_DIR=${PROJECT_DIR%/"green-cloud"*}
-cd "${PARENT_DIR}/green-cloud" || exit
+PARENT_DIR=${PROJECT_DIR%/${PROJECT_NAME}*}
+cd "${PARENT_DIR}/${PROJECT_NAME}" || exit
 
 mvn clean compile package
 
