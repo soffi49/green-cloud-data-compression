@@ -24,7 +24,7 @@ import org.greencloud.rulescontroller.rule.AgentRule;
 import org.greencloud.rulescontroller.rule.combined.AgentCombinedRule;
 import org.greencloud.rulescontroller.ruleset.defaultruleset.rules.server.events.shortagegreensource.processing.ProcessPowerShortageTransferRequestJobFinishedRule;
 import org.greencloud.rulescontroller.ruleset.defaultruleset.rules.server.events.shortagegreensource.processing.ProcessPowerShortageTransferRequestTransferRMARule;
-import org.greencloud.rulescontroller.ruleset.defaultruleset.rules.server.events.shortagegreensource.processing.ProcessPowerShortageTransferRequestTransferGreenSourceRule;
+import org.greencloud.rulescontroller.ruleset.defaultruleset.rules.server.events.shortagegreensource.processing.ProcessPowerShortageTransferRequestGreenSourceRule;
 
 public class ProcessPowerShortageTransferRequestCombinedRule extends AgentCombinedRule<ServerAgentProps, ServerNode> {
 
@@ -45,7 +45,7 @@ public class ProcessPowerShortageTransferRequestCombinedRule extends AgentCombin
 		return List.of(
 				new ProcessPowerShortageTransferRequestJobFinishedRule(controller),
 				new ProcessPowerShortageTransferRequestTransferRMARule(controller),
-				new ProcessPowerShortageTransferRequestTransferGreenSourceRule(controller)
+				new ProcessPowerShortageTransferRequestGreenSourceRule(controller)
 		);
 	}
 

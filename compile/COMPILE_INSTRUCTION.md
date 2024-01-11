@@ -37,6 +37,10 @@ _managing-system_, _rules-controller_ and _weather_api_. Specifically, it will:
 - build all target sources
 - place the configuration files in their designated directories
 
+IMPORTANT! If the name of the main project directory is different from "green-cloud" then the value of variable 
+_PROJECT_NAME_ within `initialize-backend.sh` has to changed accordingly (note that this is a temporary fix - 
+more neat solution is to be provided in the next release).
+
 #### Recompiling
 
 To recompile the agent system (in case of any changes) execute:
@@ -156,7 +160,7 @@ name of the _.jar_ package (strategy) that is to be run. If the `package name` i
 the package from _./engine/runnable_ that corresponds to the provided name. The user does not have to specify
 the name of the package. In such case, the engine selects a default package with name _green-cloud-engine.jar._
 A given package will use the configuration files placed in _./engine/src/main/resources_ (see
-[Configuration Instruction](config/CONFIG_INSTRUCTION.md))
+[Configuration Instruction](/config/CONFIG_INSTRUCTION.md))
 
 ### Running GUI
 

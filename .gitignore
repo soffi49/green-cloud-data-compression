@@ -4,16 +4,13 @@
 /MTPs-Main-Container.txt
 /MTPs-container.txt
 /APDescription.txt
-/agent-factory/target/
 /agent-system/target/
 /engine/target/
 /logs/
 /agent-system/src/main/resources/config.properties
 /rules-controller/src/main/resources/config.properties
-/previous/target/
 /agent-system/APDescription.txt
 /agent-system/agent-system.iml
-/test/target/
 /agent-system/MTPs-Main-Container.txt
 /test.iml
 /engine/engine.iml
@@ -36,7 +33,6 @@
 /commons/target/*
 /knowledge-database/target
 /knowledge-database/target/*
-/previous/gui.iml
 /knowledge-database.iml
 /knowledge-database/knowledge-database.iml
 /commons.iml
@@ -104,10 +100,6 @@ weather-api/target/generated-sources/annotations/org/greencloud/weatherapi/domai
 weather-api/target/generated-sources/annotations/org/greencloud/weatherapi/domain/ImmutableMain.java
 weather-api/target/generated-sources/annotations/org/greencloud/weatherapi/domain/ImmutableWeather.java
 weather-api/target/generated-sources/annotations/org/greencloud/weatherapi/domain/ImmutableWind.java
-/engine/strategy/logs
-/engine/strategy/*.txt
-/engine/strategy/scenarios/*
-/engine/strategy/properties/*
 /articles/target/
 /weather-api.iml
 /agent-connector/target/
@@ -116,7 +108,6 @@ weather-api/target/generated-sources/annotations/org/greencloud/weatherapi/domai
 /rules-controller/src/main/resources/*
 /weather-api/src/main/resources/*
 /commons/target
-/gui/target
 /engine/runnable/logs
 /engine/runnable/APDescription.txt
 /engine/runnable/MTPs-Main-Container.txt

@@ -2,9 +2,10 @@
 echo "Initializing backend application"
 
 # NAVIGATE TO MAIN PROJECT DIR
+PROJECT_NAME="green-cloud"
 PROJECT_DIR=$(pwd)
-PARENT_DIR=${PROJECT_DIR%/"green-cloud"*}
-cd "${PARENT_DIR}/green-cloud" || exit
+PARENT_DIR=${PROJECT_DIR%/${PROJECT_NAME}*}
+cd "${PARENT_DIR}/${PROJECT_NAME}" || exit
 
 # INITIALIZE BACKEND APPLICATION
 echo "Cleaning previous compilation..."
