@@ -21,6 +21,7 @@
 		<module>weather-api</module>
 		<module>articles</module>
 		<module>gui</module>
+		<module>compression</module>
 	</modules>
 
 	<properties>
