@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.greencloud.commons.args.agent.server.agent.ServerAgentProps;
 import org.greencloud.commons.domain.resources.Resource;
+import org.greencloud.enums.CompressionMethodEnum;
 import org.slf4j.Logger;
 
 import jade.core.AID;
@@ -26,7 +27,7 @@ public class ServerAgent extends AbstractServerAgent {
 
 	@Override
 	protected void initializeAgent(final Object[] args) {
-		if (args.length >= 9) {
+		if (args.length >= 10) {
 			final AID ownerRegionalManagerAgentAgent = new AID(args[0].toString(), AID.ISLOCALNAME);
 
 			try {
@@ -35,12 +36,13 @@ public class ServerAgent extends AbstractServerAgent {
 				final int idlePowerConsumption = parseInt(args[3].toString());
 				final int jobProcessingLimit = parseInt(args[4].toString());
 				final Map<String, Resource> resources = (Map<String, Resource>) (args[5]);
+				final CompressionMethodEnum compressionMethod = (CompressionMethodEnum) (args[6]);
 				this.properties = new ServerAgentProps(getName(), ownerRegionalManagerAgentAgent, resources,
-						maxPowerConsumption, idlePowerConsumption, pricePerHour, jobProcessingLimit);
+						maxPowerConsumption, idlePowerConsumption, pricePerHour, jobProcessingLimit, compressionMethod);
 
 				// Additional argument indicates if the ServerAgent is going to be moved to another container
 				// In such case, its service should be registered after moving
-				if (args.length != 9 || !parseBoolean(args[6].toString())) {
+				if (args.length != 10 || !parseBoolean(args[7].toString())) {
 					register(this, getDefaultDF(), SA_SERVICE_TYPE, SA_SERVICE_NAME,
 							properties.getOwnerRegionalManagerAgent().getName());
 				}
