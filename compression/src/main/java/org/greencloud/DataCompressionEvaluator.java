@@ -33,6 +33,7 @@ public class DataCompressionEvaluator {
             TIFFAlgorithm tiffAlgorithm = new TIFFAlgorithm();
             LZWAlgorithm lzwAlgorithm = new LZWAlgorithm(12);
 
+
             // Evaluate compression and decompression time for each image
             for (File imageFile : imageFiles) {
                 try {
