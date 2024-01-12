@@ -248,6 +248,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 						serverAgent.getIdlePower(),
 						serverAgent.getJobProcessingLimit(),
 						serverAgent.getResources(),
+						serverAgent.getCompressionMethod(),
 						ofNullable(systemKnowledge),
 						isInformer,
 						managingAgent });
