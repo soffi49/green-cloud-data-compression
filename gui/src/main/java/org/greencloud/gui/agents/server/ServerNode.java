@@ -110,6 +110,8 @@ public class ServerNode extends EGCSNetworkNode<ServerNodeArgs, ServerAgentProps
 				.estimatedTransferCost(exchangeMessageData.getEstimatedTransferCost())
 				.bytesSentToBytesReceived(exchangeMessageData.getBytesSentToBytesReceived())
 				.compressionTime(exchangeMessageData.getCompressionTime())
+				.compressionRatio(exchangeMessageData.getCompressionRatio())
+				.transferredSize(exchangeMessageData.getTransferredSize())
 				.messageRetrievalDuration(exchangeMessageData.getMessageRetrievalDuration())
 				.build();
 

@@ -9,6 +9,7 @@ public class HuffmanAlgorithm extends Algorithm {
 	private HashMap<Integer, String> charPrefixHashMap = new HashMap<>();
 	private SimpleCharPriorityQueueNode rootNode;
 
+	@Override
 	public byte[] compress(byte[] input) throws IOException {
 		int[] charFreqs = new int[256];
 		for (byte b : input)
@@ -22,6 +23,7 @@ public class HuffmanAlgorithm extends Algorithm {
 		return sBuilder.toString().getBytes();
 	}
 
+	@Override
 	public byte[] decompress(byte[] compressedData) throws IOException {
 		String s = new String(compressedData);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.greencloud.commons.args.agent.AgentArgs;
 import org.greencloud.commons.domain.resources.Resource;
+import org.greencloud.enums.CompressionMethodEnum;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.jetbrains.annotations.Nullable;
@@ -52,6 +53,14 @@ public interface ServerArgs extends AgentArgs {
 	 * @return price per 1-hour
 	 */
 	Double getPrice();
+
+	/**
+	 * @return compression method of given server
+	 */
+	@Value.Default
+	 default CompressionMethodEnum getCompressionMethod() {
+		return CompressionMethodEnum.NONE;
+	}
 
 	@Nullable
 	String getContainerId();

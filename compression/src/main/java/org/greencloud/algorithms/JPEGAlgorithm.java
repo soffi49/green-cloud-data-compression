@@ -11,7 +11,7 @@ public class JPEGAlgorithm extends Algorithm {
 	public JPEGAlgorithm(float quality) {
 		this.quality = quality;
 	}
-
+	
 	@Override
 	public byte[] compress(byte[] data) throws IOException {
 		ByteArrayInputStream bais = new ByteArrayInputStream(data);

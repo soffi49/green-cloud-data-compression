@@ -21,4 +21,6 @@ public interface ServerTransmissionData extends MonitoringData {
 	CompressionMethodEnum getCompressionMethod();
 	Double getBytesSentToBytesReceived();
 	Long getEstimatedTransferCost();
+	Long getTransferredSize();
+	Double getCompressionRatio();
 }

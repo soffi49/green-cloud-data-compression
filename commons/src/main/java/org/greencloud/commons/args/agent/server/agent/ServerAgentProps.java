@@ -30,6 +30,7 @@ import static org.greencloud.commons.utils.resources.ResourcesUtilization.getMax
 import static org.greencloud.enums.CompressionMethodEnum.NONE;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.greencloud.commons.args.agent.egcs.agent.EGCSAgentProps;
 import org.greencloud.commons.domain.facts.RuleSetFacts;
 import org.greencloud.commons.domain.job.basic.ClientJob;
@@ -50,8 +52,11 @@ import org.greencloud.commons.domain.job.instance.JobInstanceIdentifier;
 import org.greencloud.commons.domain.job.instance.JobInstanceWithPrice;
 import org.greencloud.commons.domain.job.transfer.JobPowerShortageTransfer;
 import org.greencloud.commons.domain.resources.Resource;
+import org.greencloud.commons.domain.timer.Timer;
 import org.greencloud.commons.enums.job.JobExecutionResultEnum;
 import org.greencloud.commons.enums.job.JobExecutionStatusEnum;
+import org.greencloud.commons.exception.CompressionException;
+import org.greencloud.commons.exception.DecompressionException;
 import org.greencloud.commons.mapper.JobMapper;
 import org.greencloud.domain.CompressedDataSent;
 import org.greencloud.domain.ImmutableCompressedDataSent;
@@ -109,13 +114,15 @@ public class ServerAgentProps extends EGCSAgentProps {
 	 * @param idlePowerConsumption      power consumption of a server when no jobs are running
 	 * @param pricePerHour              price of job execution calculated for an hour
 	 * @param jobProcessingLimit        limit of job requests that a server can process in at once
+	 * @param compressionMethod         method used to compress data upon data transfer
 	 */
 	public ServerAgentProps(final String agentName, final AID ownerRegionalManagerAgent,
 			final Map<String, Resource> resources,
 			final Integer maxPowerConsumption,
 			final Integer idlePowerConsumption,
 			final double pricePerHour,
-			final int jobProcessingLimit) {
+			final int jobProcessingLimit,
+			final CompressionMethodEnum compressionMethod) {
 		this(agentName);
 		this.ownerRegionalManagerAgent = ownerRegionalManagerAgent;
 		this.resources = new HashMap<>(resources);
@@ -123,7 +130,7 @@ public class ServerAgentProps extends EGCSAgentProps {
 		this.idlePowerConsumption = idlePowerConsumption;
 		this.pricePerHour = pricePerHour;
 		this.jobProcessingLimit = jobProcessingLimit;
-		this.defaultCompressionMethod = NONE;
+		this.defaultCompressionMethod = compressionMethod;
 
 		this.serverJobs = new ConcurrentHashMap<>();
 		this.ruleSetForJob = new ConcurrentHashMap<>();
@@ -183,13 +190,41 @@ public class ServerAgentProps extends EGCSAgentProps {
 				.get(DATA)
 				.getValue();
 
-		// TODO: ADD DATA COMPRESSION HERE
-		return of(ImmutableCompressedDataSent.builder()
-				.dataSentTime(now())
-				.inputData(inputData)
-				.compressionDuration(0L)
-				.compressionMethod(NONE)
-				.build());
+		try {
+			final Timer compressionTimer = new Timer();
+			compressionTimer.startTimeMeasure(now());
+			final byte[] compressedInput = defaultCompressionMethod.getAlgorithm().compress(inputData);
+			final long compressionDuration = compressionTimer.stopTimeMeasure(now());
+			return of(ImmutableCompressedDataSent.builder()
+					.dataSentTime(now())
+					.inputDataLength((long) inputData.length)
+					.inputData(compressedInput)
+					.compressionDuration(compressionDuration)
+					.compressionMethod(defaultCompressionMethod)
+					.build());
+		} catch (IOException e) {
+			throw new CompressionException();
+		}
+	}
+
+	/**
+	 * Method decompresses received data.
+	 *
+	 * @param compressedDataInfo information about compression
+	 * @param receivedData       received data
+	 * @return decompressed data
+	 */
+	public Pair<byte[], Long> decompressDataTransfer(final CompressedDataSent compressedDataInfo,
+			final byte[] receivedData) {
+		try {
+			final Timer decompressionTimer = new Timer();
+			decompressionTimer.startTimeMeasure(now());
+			final byte[] result = defaultCompressionMethod.getAlgorithm().decompress(receivedData);
+			final long compressionDuration = decompressionTimer.stopTimeMeasure(now());
+			return Pair.of(result, compressionDuration);
+		} catch (IOException e) {
+			throw new DecompressionException();
+		}
 	}
 
 	/**

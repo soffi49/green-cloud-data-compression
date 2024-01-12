@@ -9,12 +9,12 @@ import static org.greencloud.commons.constants.resource.ResourceCharacteristicCo
 import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.INPUT;
 import static org.greencloud.commons.enums.rules.RuleType.NEW_JOB_RECEIVER_HANDLER_RULE;
 import static org.greencloud.commons.mapper.JsonMapper.getMapper;
-import static org.greencloud.enums.CompressionMethodEnum.NONE;
 import static org.greencloud.rulescontroller.rule.combined.domain.AgentCombinedRuleType.EXECUTE_FIRST;
 
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.greencloud.commons.args.agent.server.agent.ServerAgentProps;
 import org.greencloud.commons.domain.facts.RuleSetFacts;
 import org.greencloud.commons.domain.job.basic.ClientJob;
@@ -75,18 +75,23 @@ public class ProcessRMANewJobCombinedRule extends AgentCombinedRule<ServerAgentP
 		facts.put(RESOURCES, resources);
 	}
 
-	public ExchangeMessageData decompressDataTransfer(final CompressedDataSent compressedDataInfo,
-			final byte[] inputData) {
-		// TODO: ADD DATA DECOMPRESSION HERE
-		final byte[] dataAfterDecompression = inputData;
-		final double byteRatio = (double) dataAfterDecompression.length / compressedDataInfo.getInputData().length;
+	private ExchangeMessageData decompressDataTransfer(final CompressedDataSent compressedDataInfo,
+			final byte[] receivedData) {
+		final Pair<byte[], Long> dataDecompression = agentProps.decompressDataTransfer(compressedDataInfo,
+				receivedData);
+		final byte[] decompressedData = dataDecompression.getLeft();
+		final double byteRatio = (double) decompressedData.length / compressedDataInfo.getInputDataLength();
+		final double compressionRatio =
+				(double) compressedDataInfo.getInputDataLength() / compressedDataInfo.getInputData().length;
 		final long duration = between(compressedDataInfo.getDataSentTime(), now()).toMillis();
 
 		return ImmutableExchangeMessageData.builder()
-				.compressionMethod(NONE)
+				.compressionMethod(compressedDataInfo.getCompressionMethod())
 				.bytesSentToBytesReceived(byteRatio)
-				.decompressionTime(0L)
+				.decompressionTime(dataDecompression.getRight())
 				.compressionTime(compressedDataInfo.getCompressionDuration())
+				.compressionRatio(compressionRatio)
+				.transferredSize((long) compressedDataInfo.getInputData().length)
 				.estimatedTransferCost(0L)
 				.messageRetrievalDuration(duration)
 				.build();

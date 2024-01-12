@@ -28,6 +28,11 @@ public interface CompressedDataSent {
 	byte[] getInputData();
 
 	/**
+	 * @return input data original length
+	 */
+	Long getInputDataLength();
+
+	/**
 	 * @return method used to compress data
 	 */
 	CompressionMethodEnum getCompressionMethod();

@@ -55,15 +55,15 @@ public class CompareServersProposalsOfJobExecution extends AgentBasicRule<Region
 
 		final double powerDiff =
 				(bestProposal.getPowerConsumption() * weight2) - (newProposal.getPowerConsumption() * weight1);
-		final double priceDiff = ((bestProposal.getPriceForJob() * 1 / weight1) - (newProposal.getPriceForJob() * 1
+		final double priceDiff = ((newProposal.getPriceForJob() * 1 / weight1) - (bestProposal.getPriceForJob() * 1
 				/ weight2));
 
 		MDC.put(MDC_JOB_ID, job.getJobId());
 		MDC.put(MDC_RULE_SET_ID, valueOf((int) facts.get(RULE_SET_IDX)));
 		logger.info("Comparing Servers offers using default comparator.");
-		final int comparisonResult = MAX_POWER_DIFFERENCE.isValidIntValue((int) powerDiff) ?
-				(int) priceDiff :
-				(int) powerDiff;
-		facts.put(RESULT, comparisonResult);
+		final int comparisonResult = MAX_POWER_DIFFERENCE.isValidIntValue(Math.round(powerDiff)) ?
+				(int) Math.round(priceDiff) :
+				(int) Math.round(powerDiff);
+		facts.put(RESULT, (int) Math.round(priceDiff));
 	}
 }

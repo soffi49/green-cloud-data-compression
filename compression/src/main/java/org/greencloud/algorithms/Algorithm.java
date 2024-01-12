@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Algorithm {
+public class Algorithm {
 
     /**
      * Compresses the given byte array using the specific compression algorithm.
@@ -13,7 +13,9 @@ public abstract class Algorithm {
      * @return Compressed binary data
      * @throws IOException If an I/O error occurs during compression
      */
-    public abstract byte[] compress(byte[] data) throws IOException;
+    public byte[] compress(byte[] data) throws IOException {
+		return data;
+	}
 
     /**
      * Decompresses the given compressed binary data using the specific decompression algorithm.
@@ -22,7 +24,9 @@ public abstract class Algorithm {
      * @return Decompressed byte array
      * @throws IOException If an I/O error occurs during decompression
      */
-    public abstract byte[] decompress(byte[] compressedData) throws IOException;
+    public byte[] decompress(byte[] compressedData) throws IOException {
+		return compressedData;
+	}
 
 	/**
 	 * Converts a binary string to a byte array.

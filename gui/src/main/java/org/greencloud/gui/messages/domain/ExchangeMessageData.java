@@ -22,4 +22,6 @@ public interface ExchangeMessageData {
 	Double getBytesSentToBytesReceived();
 
 	Long getEstimatedTransferCost();
+	Long getTransferredSize();
+	Double getCompressionRatio();
 }
