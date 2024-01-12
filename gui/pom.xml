@@ -40,6 +40,13 @@
 			<version>1.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
+		<!-- Compression -->
+		<dependency>
+			<groupId>org.greencloud.compression</groupId>
+			<artifactId>compression</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
 		<!-- JADE Dependencies-->
 		<dependency>
 			<groupId>com.tilab.jade</groupId>

@@ -33,6 +33,7 @@ public class FactTypeConstants {
 
 	// JOB FACTS
 	public static final String JOB = "job";
+	public static final String JOB_COMPRESSION = "job-compression";
 	public static final String JOB_DIVIDED = "job-divided";
 	public static final String JOB_PREVIOUS = "job-previous";
 	public static final String JOB_IS_STARTED = "job-is-started";

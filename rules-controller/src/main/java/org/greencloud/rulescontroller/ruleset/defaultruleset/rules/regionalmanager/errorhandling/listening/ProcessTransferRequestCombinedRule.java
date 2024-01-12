@@ -2,6 +2,7 @@ package org.greencloud.rulescontroller.ruleset.defaultruleset.rules.regionalmana
 
 import static java.util.Optional.ofNullable;
 import static org.greencloud.commons.constants.FactTypeConstants.JOB;
+import static org.greencloud.commons.constants.FactTypeConstants.JOB_COMPRESSION;
 import static org.greencloud.commons.constants.FactTypeConstants.JOB_ID;
 import static org.greencloud.commons.constants.FactTypeConstants.MESSAGE_CONTENT;
 import static org.greencloud.commons.enums.rules.RuleType.LISTEN_FOR_JOB_TRANSFER_HANDLER_RULE;
@@ -51,6 +52,7 @@ public class ProcessTransferRequestCombinedRule extends AgentCombinedRule<Region
 		final ClientJob job = getJobById(jobId, agentProps.getNetworkJobs());
 
 		facts.put(JOB, ofNullable(job));
+		facts.put(JOB_COMPRESSION, ofNullable(transferData.getDataInputInformation()));
 		facts.put(JOB_ID, jobId);
 	}
 }

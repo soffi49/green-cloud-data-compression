@@ -1,17 +1,20 @@
 package org.greencloud.commons.utils.filereader;
 
 import static java.io.File.separator;
+import static java.nio.file.Files.readAllBytes;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.greencloud.commons.exception.InvalidPropertiesException;
 import org.greencloud.commons.exception.InvalidScenarioException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -95,5 +98,19 @@ public class FileReader {
 			return String.join("/", pathElements);
 		}
 		return String.join(separator, pathElements);
+	}
+
+	/**
+	 * Method reads bytes of input data.
+	 *
+	 * @param sourcePath path to the input data
+	 * @return bytes of input data
+	 */
+	public static byte[] readDataSourceFile(final String sourcePath) {
+		try {
+			return readAllBytes(Path.of(sourcePath));
+		} catch (IOException e) {
+			throw new InvalidPropertiesException("Could not parse the input data from the indicated path", e);
+		}
 	}
 }

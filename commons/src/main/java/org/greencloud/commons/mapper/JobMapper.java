@@ -35,6 +35,7 @@ import org.greencloud.commons.domain.resources.ImmutableResource;
 import org.greencloud.commons.domain.resources.ImmutableResourceCharacteristic;
 import org.greencloud.commons.domain.resources.Resource;
 import org.greencloud.commons.utils.time.TimeConverter;
+import org.greencloud.domain.CompressedDataSent;
 
 import jade.core.AID;
 
@@ -282,7 +283,26 @@ public class JobMapper {
 				new Pair<>(mapToJobInstanceId(jobInstances.getFirstInstance()),
 						mapToJobInstanceId(jobInstances.getSecondInstance()));
 		return new ImmutableJobPowerShortageTransfer(originalJobInstanceId, mappedInstances.getFirst(),
-				mappedInstances.getSecond(), startTime);
+				mappedInstances.getSecond(), startTime, null);
+	}
+
+	/**
+	 * @param originalJobInstanceId unique identifier of original job
+	 * @param jobInstances          pair of job instances
+	 * @param startTime             power shortage start time
+	 * @param compressedDataSent    information about input data
+	 * @return JobPowerShortageTransfer
+	 */
+	public static <T extends PowerJob> JobPowerShortageTransfer mapToPowerShortageJob(
+			final String originalJobInstanceId, final JobDivided<T> jobInstances, final Instant startTime,
+			final CompressedDataSent compressedDataSent) {
+		final Pair<JobInstanceIdentifier, JobInstanceIdentifier> mappedInstances = isNull(
+				jobInstances.getFirstInstance()) ?
+				new Pair<>(null, mapToJobInstanceId(jobInstances.getSecondInstance())) :
+				new Pair<>(mapToJobInstanceId(jobInstances.getFirstInstance()),
+						mapToJobInstanceId(jobInstances.getSecondInstance()));
+		return new ImmutableJobPowerShortageTransfer(originalJobInstanceId, mappedInstances.getFirst(),
+				mappedInstances.getSecond(), startTime, compressedDataSent);
 	}
 
 	/**
@@ -292,7 +312,18 @@ public class JobMapper {
 	 */
 	public static JobPowerShortageTransfer mapToPowerShortageJob(final JobInstanceIdentifier jobInstance,
 			final Instant startTime) {
-		return new ImmutableJobPowerShortageTransfer(null, null, jobInstance, startTime);
+		return new ImmutableJobPowerShortageTransfer(null, null, jobInstance, startTime, null);
+	}
+
+	/**
+	 * @param jobInstance        job identifier of job that is to be transferred
+	 * @param startTime          power shortage start time
+	 * @param compressedDataSent information about input data
+	 * @return JobPowerShortageTransfer
+	 */
+	public static JobPowerShortageTransfer mapToPowerShortageJob(final JobInstanceIdentifier jobInstance,
+			final Instant startTime, final CompressedDataSent compressedDataSent) {
+		return new ImmutableJobPowerShortageTransfer(null, null, jobInstance, startTime, compressedDataSent);
 	}
 
 	/**

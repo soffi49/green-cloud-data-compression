@@ -22,6 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.greencloud.commons.args.agent.server.agent.ServerAgentProps;
 import org.greencloud.commons.domain.facts.RuleSetFacts;
@@ -29,6 +30,7 @@ import org.greencloud.commons.domain.job.basic.ClientJob;
 import org.greencloud.commons.domain.job.transfer.JobDivided;
 import org.greencloud.commons.domain.job.transfer.JobPowerShortageTransfer;
 import org.greencloud.commons.mapper.JobMapper;
+import org.greencloud.domain.CompressedDataSent;
 import org.greencloud.gui.agents.server.ServerNode;
 import org.greencloud.rulescontroller.RulesController;
 import org.greencloud.rulescontroller.behaviour.initiate.InitiateRequest;
@@ -75,8 +77,10 @@ public class ProcessPowerShortageStartWithAffectedJobsRule extends AgentBasicRul
 					facts.get(RULE_SET_IDX));
 			controller.fire(divisionFacts);
 			final JobDivided<ClientJob> instances = divisionFacts.get(RESULT);
-			final JobPowerShortageTransfer jobTransfer = mapToPowerShortageJob(job.getJobInstanceId(), instances,
-					startTime);
+			final Optional<CompressedDataSent> compressedData = agentProps.compressDataForTransfer(job);
+			final JobPowerShortageTransfer jobTransfer = compressedData
+					.map(data -> mapToPowerShortageJob(job.getJobInstanceId(), instances, startTime, data))
+					.orElse(mapToPowerShortageJob(job.getJobInstanceId(), instances, startTime));
 
 			final RuleSetFacts initiatorFacts = new RuleSetFacts(facts.get(RULE_SET_IDX));
 			initiatorFacts.put(JOB, jobTransfer);

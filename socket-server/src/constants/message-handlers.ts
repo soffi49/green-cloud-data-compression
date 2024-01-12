@@ -43,6 +43,7 @@ import {
 	handleRemoveAgent,
 	handleUpdateDefaultResources,
 	handleUpdateServerMaintenanceState,
+	handleNewExchangedMessageData
 } from "../module/agents/message-handlers";
 
 export const MESSAGE_HANDLERS = {
@@ -88,4 +89,5 @@ export const MESSAGE_HANDLERS = {
 	UPDATE_SERVER_FOR_CLIENT: handleUpdateJobExecutor,
 	UPDATE_FINAL_COST_FOR_CLIENT: handleUpdateJobFinalPrice,
 	UPDATE_ESTIMATED_COST_FOR_CLIENT: handleUpdateJobEstimatedPrice,
+	ADD_EXCHANGED_MESSAGE_DATA: handleNewExchangedMessageData
 };

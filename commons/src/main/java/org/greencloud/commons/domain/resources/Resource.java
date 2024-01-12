@@ -50,6 +50,14 @@ public interface Resource {
 	}
 
 	/**
+	 * @return boolean indicating if given resource should be taken into account in sufficiency evaluation
+	 */
+	@Value.Default
+	default boolean getIsRequired() {
+		return true;
+	}
+
+	/**
 	 * @return validation function that verifies if the characteristics of a given resource are sufficient
 	 */
 	@Nullable

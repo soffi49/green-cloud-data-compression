@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.max;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.SetUtils.union;
 import static org.greencloud.commons.constants.TimeConstants.MILLIS_IN_MIN;
 import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.AMOUNT;
@@ -289,8 +290,13 @@ public class ResourcesUtilization {
 	 */
 	public static boolean areSufficient(final Map<String, Resource> resources,
 			final Map<String, Resource> requiredResources) {
+		final Set<String> filteredResources = requiredResources.entrySet().stream()
+				.filter(resource -> resource.getValue().getIsRequired())
+				.map(Map.Entry::getKey)
+				.collect(toSet());
+
 		// if server does not own all resources
-		if (!resources.keySet().containsAll(requiredResources.keySet())) {
+		if (!resources.keySet().containsAll(filteredResources)) {
 			return false;
 		}
 
@@ -302,9 +308,14 @@ public class ResourcesUtilization {
 					}
 					final Resource resourceRequirement = requiredResources.get(entry.getKey());
 
+					final Set<String> requiredCharacteristics = resourceRequirement.getCharacteristics().entrySet()
+							.stream()
+							.filter(characteristic -> characteristic.getValue().getIsRequired())
+							.map(Map.Entry::getKey)
+							.collect(toSet());
+
 					// if given resource does not define all required characteristics then it is not sufficient
-					if (!entry.getValue().getCharacteristics().keySet()
-							.containsAll(resourceRequirement.getCharacteristics().keySet())) {
+					if (!entry.getValue().getCharacteristics().keySet().containsAll(requiredCharacteristics)) {
 						return false;
 					}
 
@@ -320,7 +331,7 @@ public class ResourcesUtilization {
 	 * @param resources2 second resources
 	 * @return aggregated resources
 	 */
-	public synchronized static Map<String, Resource> addResources(final Map<String, Resource> resources1,
+	public static synchronized Map<String, Resource> addResources(final Map<String, Resource> resources1,
 			final Map<String, Resource> resources2) {
 		final Set<String> resourceKeys = union(resources1.keySet(), resources2.keySet());
 		final Map<String, Resource> aggregatedResources = new HashMap<>();

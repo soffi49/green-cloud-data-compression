@@ -15,8 +15,8 @@ import static org.greencloud.commons.enums.rules.RuleType.PROCESS_TRANSFER_REQUE
 import static org.greencloud.commons.utils.messaging.MessageComparator.compareMessages;
 import static org.greencloud.commons.utils.messaging.MessageReader.readMessageContent;
 import static org.greencloud.commons.utils.messaging.constants.MessageContentConstants.NO_SERVER_AVAILABLE_CAUSE_MESSAGE;
-import static org.greencloud.commons.utils.messaging.constants.MessageProtocolConstants.RMA_JOB_CFP_PROTOCOL;
 import static org.greencloud.commons.utils.messaging.constants.MessageProtocolConstants.POWER_SHORTAGE_POWER_TRANSFER_PROTOCOL;
+import static org.greencloud.commons.utils.messaging.constants.MessageProtocolConstants.RMA_JOB_CFP_PROTOCOL;
 import static org.greencloud.commons.utils.messaging.factory.CallForProposalMessageFactory.prepareCallForProposal;
 import static org.greencloud.commons.utils.messaging.factory.ReplyMessageFactory.prepareAcceptJobOfferReply;
 import static org.greencloud.commons.utils.messaging.factory.ReplyMessageFactory.prepareReply;

@@ -84,6 +84,6 @@ public class AgentProps {
 
 	public void setSystemKnowledge(
 			final Map<String, Map<String, Object>> systemKnowledge) {
-			this.systemKnowledge = new HashMap<>(systemKnowledge);
+		this.systemKnowledge = new HashMap<>(systemKnowledge);
 	}
 }

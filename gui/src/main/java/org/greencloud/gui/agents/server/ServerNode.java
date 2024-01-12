@@ -22,15 +22,19 @@ import org.greencloud.gui.agents.egcs.EGCSNetworkNode;
 import org.greencloud.gui.event.AbstractEvent;
 import org.greencloud.gui.messages.ImmutableDisableServerMessage;
 import org.greencloud.gui.messages.ImmutableEnableServerMessage;
+import org.greencloud.gui.messages.ImmutableExchangedMessageDataMessage;
 import org.greencloud.gui.messages.ImmutableSetNumericValueMessage;
 import org.greencloud.gui.messages.ImmutableUpdateDefaultResourcesMessage;
 import org.greencloud.gui.messages.ImmutableUpdateResourcesMessage;
 import org.greencloud.gui.messages.ImmutableUpdateServerMaintenanceMessage;
 import org.greencloud.gui.messages.ImmutableUpdateSingleValueMessage;
+import org.greencloud.gui.messages.domain.ExchangeMessageData;
 
 import com.database.knowledge.domain.agent.DataType;
 import com.database.knowledge.domain.agent.server.ImmutableServerMonitoringData;
+import com.database.knowledge.domain.agent.server.ImmutableServerTransmissionData;
 import com.database.knowledge.domain.agent.server.ServerMonitoringData;
+import com.database.knowledge.domain.agent.server.ServerTransmissionData;
 
 import jade.util.leap.Serializable;
 
@@ -90,6 +94,29 @@ public class ServerNode extends EGCSNetworkNode<ServerNodeArgs, ServerAgentProps
 	public void updateDefaultResources(final Map<String, Resource> resources) {
 		getAgentsWebSocket().send(ImmutableUpdateDefaultResourcesMessage.builder()
 				.resources(resources)
+				.agentName(agentName)
+				.build());
+	}
+
+	/**
+	 * Function adds information about message exchange
+	 *
+	 * @param exchangeMessageData information about results of message exchange
+	 */
+	public void addDataAboutMessageExchange(final ExchangeMessageData exchangeMessageData) {
+		final ServerTransmissionData transmissionData = ImmutableServerTransmissionData.builder()
+				.compressionMethod(exchangeMessageData.getCompressionMethod())
+				.decompressionTime(exchangeMessageData.getDecompressionTime())
+				.estimatedTransferCost(exchangeMessageData.getEstimatedTransferCost())
+				.bytesSentToBytesReceived(exchangeMessageData.getBytesSentToBytesReceived())
+				.compressionTime(exchangeMessageData.getCompressionTime())
+				.messageRetrievalDuration(exchangeMessageData.getMessageRetrievalDuration())
+				.build();
+
+		writeMonitoringData(DataType.SERVER_TRANSMISSION, transmissionData, agentName);
+
+		getAgentsWebSocket().send(ImmutableExchangedMessageDataMessage.builder()
+				.data(exchangeMessageData)
 				.agentName(agentName)
 				.build());
 	}

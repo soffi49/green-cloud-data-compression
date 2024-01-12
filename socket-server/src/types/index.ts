@@ -6,3 +6,4 @@ export * from "./report-event-entry-type";
 export * from "./resource-type";
 export * from "./resource-characteristic-type";
 export * from "./resource-map-type";
+export * from './message-exchange-data-type'

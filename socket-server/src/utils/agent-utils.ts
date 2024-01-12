@@ -167,6 +167,11 @@ const registerServer = (data): ServerAgent => {
 			powerConsumptionReport: [],
 			backUpPowerConsumptionReport: [],
 			successRatioReport: [],
+			avgTransmissionTime: [],
+			avgBytesSentToBytesReceived: [],
+			avgCompressionTime: [],
+			avgDecompressionTime: [],
+			avgTransmissionCost: []
 		},
 		events: [],
 	});
@@ -195,6 +200,7 @@ const registerServer = (data): ServerAgent => {
 		numberOfExecutedJobs: 0,
 		numberOfJobsOnHold: 0,
 		successRatio: 0,
+		exchangedMessagesData: [],
 		resources: mapServerResources(resources),
 		...remainingData,
 	};

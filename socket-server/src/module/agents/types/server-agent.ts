@@ -1,4 +1,4 @@
-import { ResourceMap } from "../../../types";
+import { MessageExchangeData, ResourceMap } from "../../../types";
 import { CommonAgent } from "./common-agent";
 
 export interface ServerAgentStatic {
@@ -20,6 +20,7 @@ export interface ServerAgentDynamic {
 	numberOfExecutedJobs: number;
 	numberOfJobsOnHold: number;
 	successRatio: number;
+	exchangedMessagesData: MessageExchangeData[];
 }
 
 export type ServerAgent = CommonAgent & ServerAgentStatic & ServerAgentDynamic;

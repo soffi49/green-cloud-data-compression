@@ -1,8 +1,11 @@
 package org.greencloud.commons.args.agent.server.agent;
 
+import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.greencloud.commons.args.agent.AgentType.SERVER;
@@ -10,6 +13,8 @@ import static org.greencloud.commons.args.agent.server.agent.logs.ServerAgentPro
 import static org.greencloud.commons.args.agent.server.agent.logs.ServerAgentPropsLog.COUNT_JOB_FINISH_LOG;
 import static org.greencloud.commons.args.agent.server.agent.logs.ServerAgentPropsLog.COUNT_JOB_PROCESS_LOG;
 import static org.greencloud.commons.args.agent.server.agent.logs.ServerAgentPropsLog.COUNT_JOB_START_LOG;
+import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.DATA;
+import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.INPUT;
 import static org.greencloud.commons.constants.resource.ResourceTypesConstants.CPU;
 import static org.greencloud.commons.enums.job.JobExecutionResultEnum.ACCEPTED;
 import static org.greencloud.commons.enums.job.JobExecutionResultEnum.FAILED;
@@ -22,12 +27,14 @@ import static org.greencloud.commons.enums.job.JobIdentificationEnum.JOB_INSTANC
 import static org.greencloud.commons.utils.resources.ResourcesUtilization.computeResourceDifference;
 import static org.greencloud.commons.utils.resources.ResourcesUtilization.getInUseResourcesForJobs;
 import static org.greencloud.commons.utils.resources.ResourcesUtilization.getMaximumUsedResourcesDuringTimeStamp;
+import static org.greencloud.enums.CompressionMethodEnum.NONE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,6 +52,9 @@ import org.greencloud.commons.domain.resources.Resource;
 import org.greencloud.commons.enums.job.JobExecutionResultEnum;
 import org.greencloud.commons.enums.job.JobExecutionStatusEnum;
 import org.greencloud.commons.mapper.JobMapper;
+import org.greencloud.domain.CompressedDataSent;
+import org.greencloud.domain.ImmutableCompressedDataSent;
+import org.greencloud.enums.CompressionMethodEnum;
 import org.slf4j.Logger;
 
 import jade.core.AID;
@@ -72,6 +82,7 @@ public class ServerAgentProps extends EGCSAgentProps {
 	protected ConcurrentMap<String, Double> totalPriceForJob;
 	protected JobExecutionDuration<ClientJob> jobsExecutionTime;
 	protected AID ownerRegionalManagerAgent;
+	protected CompressionMethodEnum defaultCompressionMethod;
 
 	@Accessors(fluent = true)
 	protected Map<String, Resource> resources;
@@ -100,7 +111,9 @@ public class ServerAgentProps extends EGCSAgentProps {
 	 */
 	public ServerAgentProps(final String agentName, final AID ownerRegionalManagerAgent,
 			final Map<String, Resource> resources,
-			final Integer maxPowerConsumption, final Integer idlePowerConsumption, final double pricePerHour,
+			final Integer maxPowerConsumption,
+			final Integer idlePowerConsumption,
+			final double pricePerHour,
 			final int jobProcessingLimit) {
 		this(agentName);
 		this.ownerRegionalManagerAgent = ownerRegionalManagerAgent;
@@ -109,6 +122,7 @@ public class ServerAgentProps extends EGCSAgentProps {
 		this.idlePowerConsumption = idlePowerConsumption;
 		this.pricePerHour = pricePerHour;
 		this.jobProcessingLimit = jobProcessingLimit;
+		this.defaultCompressionMethod = NONE;
 
 		this.serverJobs = new ConcurrentHashMap<>();
 		this.ruleSetForJob = new ConcurrentHashMap<>();
@@ -149,6 +163,32 @@ public class ServerAgentProps extends EGCSAgentProps {
 		energyExecutionCost.remove(job.getJobInstanceId());
 		jobsExecutionTime.removeDurationMap(job);
 		return ruleSetForJob.remove(job);
+	}
+
+	/**
+	 * Method prepares information about compressed input data for transfer
+	 *
+	 * @param job job that is to be compressed
+	 * @return compressed input data information
+	 */
+	public Optional<CompressedDataSent> compressDataForTransfer(final ClientJob job) {
+		if (!job.getRequiredResources().get(INPUT).getCharacteristics().containsKey(DATA)) {
+			return empty();
+		}
+
+		final byte[] inputData = (byte[]) job.getRequiredResources()
+				.get(INPUT)
+				.getCharacteristics()
+				.get(DATA)
+				.getValue();
+
+		// TODO: ADD DATA COMPRESSION HERE
+		return of(ImmutableCompressedDataSent.builder()
+				.dataSentTime(now())
+				.inputDataSize((long) inputData.length)
+				.compressionDuration(0L)
+				.compressionMethod(NONE)
+				.build());
 	}
 
 	/**

@@ -20,6 +20,7 @@ import static org.greencloud.commons.enums.job.JobExecutionStatusEnum.ON_HOLD_TR
 import static org.greencloud.commons.enums.rules.RuleType.HANDLE_POWER_SHORTAGE_TRANSFER_RULE;
 import static org.greencloud.commons.enums.rules.RuleType.LISTEN_FOR_JOB_TRANSFER_CONFIRMATION_RULE;
 import static org.greencloud.commons.enums.rules.RuleType.TRANSFER_JOB_FOR_GS_IN_RMA_RULE;
+import static org.greencloud.commons.mapper.JobMapper.mapClientJobToJobInstanceId;
 import static org.greencloud.commons.mapper.JobMapper.mapToPowerShortageJob;
 import static org.greencloud.commons.mapper.JsonMapper.getMapper;
 import static org.greencloud.commons.utils.job.JobUtils.getJobByInstanceId;
@@ -34,6 +35,7 @@ import static org.greencloud.rulescontroller.ruleset.RuleSetSelector.SELECT_BY_F
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import org.greencloud.commons.args.agent.server.agent.ServerAgentProps;
 import org.greencloud.commons.domain.facts.RuleSetFacts;
@@ -42,7 +44,7 @@ import org.greencloud.commons.domain.job.instance.JobInstanceIdentifier;
 import org.greencloud.commons.domain.job.transfer.JobDivided;
 import org.greencloud.commons.domain.job.transfer.JobPowerShortageTransfer;
 import org.greencloud.commons.enums.job.JobExecutionStatusEnum;
-import org.greencloud.commons.mapper.JobMapper;
+import org.greencloud.domain.CompressedDataSent;
 import org.greencloud.gui.agents.server.ServerNode;
 import org.greencloud.rulescontroller.RulesController;
 import org.greencloud.rulescontroller.behaviour.initiate.InitiateRequest;
@@ -80,7 +82,7 @@ public class ListenForPowerShortageTransferConfirmationRule
 	protected MessageTemplate constructMessageTemplate(final RuleSetFacts facts) {
 		try {
 			final ClientJob job = facts.get(JOB);
-			final String expectedContent = getMapper().writeValueAsString(JobMapper.mapClientJobToJobInstanceId(job));
+			final String expectedContent = getMapper().writeValueAsString(mapClientJobToJobInstanceId(job));
 			return and(MatchContent(expectedContent), LISTEN_FOR_SOURCE_TRANSFER_CONFIRMATION);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
@@ -141,12 +143,15 @@ public class ListenForPowerShortageTransferConfirmationRule
 		MDC.put(MDC_JOB_ID, jobId);
 		MDC.put(MDC_RULE_SET_ID, valueOf((int) facts.get(RULE_SET_IDX)));
 		logger.info("Job {} transfer has failed in green source. Passing transfer request to Regional Manager", jobId);
-		final JobInstanceIdentifier jobInstance = JobMapper.mapClientJobToJobInstanceId(
-				newJobInstances.getSecondInstance());
-		final JobPowerShortageTransfer job = mapToPowerShortageJob(jobInstance, shortageStart);
+		final ClientJob job = newJobInstances.getSecondInstance();
+		final JobInstanceIdentifier jobInstance = mapClientJobToJobInstanceId(job);
+		final Optional<CompressedDataSent> compressedData = agentProps.compressDataForTransfer(job);
+		final JobPowerShortageTransfer jobTransfer = compressedData
+				.map(data -> mapToPowerShortageJob(jobInstance, shortageStart, data))
+				.orElse(mapToPowerShortageJob(jobInstance, shortageStart));
 
 		final RuleSetFacts rmaTransferFacts = new RuleSetFacts(facts.get(RULE_SET_IDX));
-		rmaTransferFacts.put(JOB, job);
+		rmaTransferFacts.put(JOB, jobTransfer);
 		rmaTransferFacts.put(JOB_ID, jobInstance);
 		rmaTransferFacts.put(MESSAGE, gsRequest);
 

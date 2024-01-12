@@ -1,5 +1,5 @@
 import { AGENT_TYPES, EVENT_TYPE } from "../../../constants";
-import { ServerMaintenanceEvent, SwitchOnOffEvent } from "../../../types";
+import { MessageExchangeData, ServerMaintenanceEvent, SwitchOnOffEvent } from "../../../types";
 import { getAgentByName, getAgentNodeById, getAgentsByName, getNodeState, mapServerResources } from "../../../utils";
 import { GRAPH_STATE } from "../../graph";
 import { AGENTS_STATE } from "../agents-state";
@@ -76,6 +76,12 @@ const handleUpdateServerMaintenanceState = (msg) => {
 	}
 };
 
+const handleNewExchangedMessageData = (msg) => {
+	const agent: ServerAgent = getAgentByName(AGENTS_STATE.agents, msg.agentName);
+	const messageData: MessageExchangeData = msg.data
+	agent.exchangedMessagesData.push(messageData)
+};
+
 const handleServerDisabling = (msg) => {
 	const agent: ServerAgent = getAgentByName(AGENTS_STATE.agents, msg.server);
 	const node = getAgentNodeById(GRAPH_STATE.nodes, msg.server);
@@ -108,4 +114,5 @@ export {
 	handleServerEnabling,
 	handleUpdateDefaultResources,
 	handleUpdateServerMaintenanceState,
+	handleNewExchangedMessageData
 };

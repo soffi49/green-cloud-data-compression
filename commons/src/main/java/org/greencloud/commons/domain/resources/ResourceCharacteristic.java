@@ -33,6 +33,14 @@ public interface ResourceCharacteristic {
 	Object getValue();
 
 	/**
+	 * @return boolean indicating if given resource characteristic should be taken into account in sufficiency evaluation
+	 */
+	@Value.Default
+	default boolean getIsRequired() {
+		return true;
+	}
+
+	/**
 	 * @return unit in which a given resource is described
 	 */
 	@Nullable

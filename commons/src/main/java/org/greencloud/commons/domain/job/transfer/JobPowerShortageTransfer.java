@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.greencloud.commons.domain.ImmutableConfig;
 import org.greencloud.commons.domain.job.instance.JobInstanceIdentifier;
+import org.greencloud.domain.CompressedDataSent;
 import org.immutables.value.Value;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,4 +41,10 @@ public interface JobPowerShortageTransfer {
 	 * @return time when transfer will happen
 	 */
 	Instant getPowerShortageStart();
+
+	/**
+	 * @return optional information about input data
+	 */
+	@Nullable
+	CompressedDataSent getDataInputInformation();
 }

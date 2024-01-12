@@ -26,6 +26,12 @@
 	</properties>
 
 	<dependencies>
+		<!-- Compression module -->
+		<dependency>
+			<groupId>org.greencloud.compression</groupId>
+			<artifactId>compression</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
 		<!-- JADE Dependencies-->
 		<dependency>
 			<groupId>com.tilab.jade</groupId>

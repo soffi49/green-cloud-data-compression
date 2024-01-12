@@ -2,12 +2,12 @@ package org.greencloud.commons.domain.job.basic;
 
 import javax.annotation.Nullable;
 
+import org.greencloud.commons.domain.ImmutableConfig;
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.greencloud.commons.domain.ImmutableConfig;
 
 /**
  * Object storing the data describing the client's job
