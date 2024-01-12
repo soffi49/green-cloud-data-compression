@@ -54,6 +54,18 @@
 				<type>jar</type>
 				<version>1.1.3</version>
 			</dependency>
+			<dependency>
+				<groupId>javax.media.jai</groupId>
+				<artifactId>jai_core</artifactId>
+				<type>jar</type>
+				<version>1.1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.media.jai</groupId>
+				<artifactId>jai_codec</artifactId>
+				<type>jar</type>
+				<version>1.1.3</version>
+			</dependency>
 			<!-- Jeasy rules -->
 			<dependency>
 				<groupId>org.jeasy</groupId>
