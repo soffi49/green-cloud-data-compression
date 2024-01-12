@@ -109,6 +109,7 @@ weather-api/target/generated-sources/annotations/org/greencloud/weatherapi/domai
 /weather-api/src/main/resources/*
 /commons/target
 /engine/runnable/logs
+/compression/target/
 /engine/runnable/APDescription.txt
 /engine/runnable/MTPs-Main-Container.txt
 /engine/runnable/knowledge/*

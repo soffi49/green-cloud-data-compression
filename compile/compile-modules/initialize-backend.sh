@@ -14,6 +14,9 @@ mvn clean &&
 echo "Installing modified JADE dependency..."
 mvn install:install-file -Dfile='.\lib\jade.jar' -DgroupId='com.tilab.jade' -DartifactId=jade -Dversion='4.6' -Dpackaging=jar &&
 
+echo "Installing modified Jai codec dependency..."
+mvn install:install-file -Dfile='.\lib\codec.jar' -DgroupId='com.sun.media' -DartifactId=jai_codec -Dversion='1.1.3' -Dpackaging=jar &&
+
 echo "Initializing database..."
 (source ./knowledge-database/run_database.sh || echo "Database could not be initialized") &&
 
