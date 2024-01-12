@@ -5,7 +5,7 @@ import { ServerAgent } from "../types/server-agent";
 const calculateAverageFromExchangedMessage = (agent: ServerAgent, field: keyof MessageExchangeData) => {
 	const dataLength = agent.exchangedMessagesData.length
 
-	return dataLength === 0 ?
+	return dataLength === 0 || field === 'compressionMethod' ?
 		0.0 :
 		agent.exchangedMessagesData.reduce((prev, curr) => curr[field] + prev, 0) / dataLength
 }

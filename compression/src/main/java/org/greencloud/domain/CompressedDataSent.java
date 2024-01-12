@@ -23,9 +23,9 @@ public interface CompressedDataSent {
 	Instant getDataSentTime();
 
 	/**
-	 * @return size of the data that was sent
+	 * @return input data that was sent
 	 */
-	Long getInputDataSize();
+	byte[] getInputData();
 
 	/**
 	 * @return method used to compress data

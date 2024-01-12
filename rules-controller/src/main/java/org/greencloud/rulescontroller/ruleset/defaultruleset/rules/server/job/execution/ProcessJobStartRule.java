@@ -107,31 +107,7 @@ public class ProcessJobStartRule extends AgentBasicRule<ServerAgentProps, Server
 		final String pathToInput = (String) job.getRequiredResources().get(INPUT).getCharacteristics().get(PATH)
 				.getValue();
 		final byte[] inputData = readDataSourceFile(pathToInput);
-		job = addInputDataToJobResources(inputData);
-	}
-
-	private synchronized ClientJob addInputDataToJobResources(final byte[] inputData) {
-		final Resource inputResource = job.getRequiredResources().get(INPUT);
-		final ResourceCharacteristic dataCharacteristic = ImmutableResourceCharacteristic.builder()
-				.value(inputData)
-				.isRequired(false)
-				.build();
-		final Resource updatedResource = mapToResourceWithNewCharacteristic(inputResource, dataCharacteristic, DATA);
-		final Map<String, Resource> newResources = new HashMap<>(job.getRequiredResources());
-		newResources.replace(INPUT, updatedResource);
-
-		final ClientJob updatedClientJob = ImmutableClientJob.copyOf(job).withRequiredResources(newResources);
-
-		final JobExecutionStatusEnum status = agentProps.getServerJobs().remove(job);
-		final ConcurrentMap<JobExecutionStatusEnum, JobStatusWithTime> durationMap =
-				agentProps.getJobsExecutionTime().getForJob(job);
-		final Integer ruleSet = agentProps.getRuleSetForJob().remove(job);
-
-		agentProps.getServerJobs().put(updatedClientJob, status);
-		agentProps.getJobsExecutionTime().addDurationMap(updatedClientJob, durationMap);
-		agentProps.getRuleSetForJob().put(updatedClientJob, ruleSet);
-
-		return updatedClientJob;
+		job = agentProps.addInputDataToJobResources(job, inputData);
 	}
 
 	private void sendJobStartMessage(final Facts facts) {

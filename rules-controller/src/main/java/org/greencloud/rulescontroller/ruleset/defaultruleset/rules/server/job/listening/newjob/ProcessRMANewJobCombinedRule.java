@@ -6,9 +6,9 @@ import static org.greencloud.commons.constants.FactTypeConstants.JOB;
 import static org.greencloud.commons.constants.FactTypeConstants.MESSAGE_CONTENT;
 import static org.greencloud.commons.constants.FactTypeConstants.RESOURCES;
 import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.COMPRESSION;
-import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.DATA;
 import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.INPUT;
 import static org.greencloud.commons.enums.rules.RuleType.NEW_JOB_RECEIVER_HANDLER_RULE;
+import static org.greencloud.commons.mapper.JsonMapper.getMapper;
 import static org.greencloud.enums.CompressionMethodEnum.NONE;
 import static org.greencloud.rulescontroller.rule.combined.domain.AgentCombinedRuleType.EXECUTE_FIRST;
 
@@ -58,15 +58,16 @@ public class ProcessRMANewJobCombinedRule extends AgentCombinedRule<ServerAgentP
 
 	@Override
 	public void executeRule(final RuleSetFacts facts) {
-		final ClientJob job = facts.get(MESSAGE_CONTENT);
+		ClientJob job = facts.get(MESSAGE_CONTENT);
 		final Map<String, Resource> resources = agentProps.getAvailableResources(job, null, null);
 
 		if (job.getRequiredResources().containsKey(INPUT) &&
 				job.getRequiredResources().get(INPUT).getCharacteristics().containsKey(COMPRESSION)) {
-			final CompressedDataSent compressedData = (CompressedDataSent) job.getRequiredResources().get(INPUT)
-					.getCharacteristics().get(COMPRESSION).getValue();
-			final byte[] inputData = (byte[]) job.getRequiredResources().get(INPUT).getCharacteristics()
-					.get(DATA).getValue();
+			final CompressedDataSent compressedData = getMapper().convertValue(job.getRequiredResources().get(INPUT)
+					.getCharacteristics().get(COMPRESSION).getValue(), CompressedDataSent.class);
+			final byte[] inputData = compressedData.getInputData();
+
+			job = job.addInputDataToJobResources(inputData);
 			agentNode.addDataAboutMessageExchange(decompressDataTransfer(compressedData, inputData));
 		}
 
@@ -78,7 +79,7 @@ public class ProcessRMANewJobCombinedRule extends AgentCombinedRule<ServerAgentP
 			final byte[] inputData) {
 		// TODO: ADD DATA DECOMPRESSION HERE
 		final byte[] dataAfterDecompression = inputData;
-		final double byteRatio = (double) dataAfterDecompression.length / compressedDataInfo.getInputDataSize();
+		final double byteRatio = (double) dataAfterDecompression.length / compressedDataInfo.getInputData().length;
 		final long duration = between(compressedDataInfo.getDataSentTime(), now()).toMillis();
 
 		return ImmutableExchangeMessageData.builder()

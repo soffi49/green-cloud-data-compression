@@ -45,6 +45,7 @@ import org.greencloud.commons.domain.facts.RuleSetFacts;
 import org.greencloud.commons.domain.job.basic.ClientJob;
 import org.greencloud.commons.domain.job.counter.JobCounter;
 import org.greencloud.commons.domain.job.duration.JobExecutionDuration;
+import org.greencloud.commons.domain.job.extended.JobStatusWithTime;
 import org.greencloud.commons.domain.job.instance.JobInstanceIdentifier;
 import org.greencloud.commons.domain.job.instance.JobInstanceWithPrice;
 import org.greencloud.commons.domain.job.transfer.JobPowerShortageTransfer;
@@ -185,10 +186,31 @@ public class ServerAgentProps extends EGCSAgentProps {
 		// TODO: ADD DATA COMPRESSION HERE
 		return of(ImmutableCompressedDataSent.builder()
 				.dataSentTime(now())
-				.inputDataSize((long) inputData.length)
+				.inputData(inputData)
 				.compressionDuration(0L)
 				.compressionMethod(NONE)
 				.build());
+	}
+
+	/**
+	 * Methods add information about input to client job.
+	 *
+	 * @param job       client job
+	 * @param inputData input data
+	 * @return updated job
+	 */
+	public synchronized ClientJob addInputDataToJobResources(final ClientJob job, final byte[] inputData) {
+		final ClientJob updatedClientJob = job.addInputDataToJobResources(inputData);
+
+		final JobExecutionStatusEnum status = serverJobs.remove(job);
+		final ConcurrentMap<JobExecutionStatusEnum, JobStatusWithTime> durationMap = jobsExecutionTime.getForJob(job);
+		final Integer ruleSet = ruleSetForJob.remove(job);
+
+		serverJobs.put(updatedClientJob, status);
+		jobsExecutionTime.addDurationMap(updatedClientJob, durationMap);
+		ruleSetForJob.put(updatedClientJob, ruleSet);
+
+		return updatedClientJob;
 	}
 
 	/**

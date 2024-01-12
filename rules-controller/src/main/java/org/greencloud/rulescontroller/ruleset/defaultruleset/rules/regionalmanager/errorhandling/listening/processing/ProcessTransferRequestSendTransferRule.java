@@ -9,7 +9,6 @@ import static org.greencloud.commons.constants.FactTypeConstants.RULE_SET_IDX;
 import static org.greencloud.commons.constants.LoggingConstants.MDC_JOB_ID;
 import static org.greencloud.commons.constants.LoggingConstants.MDC_RULE_SET_ID;
 import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.COMPRESSION;
-import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.DATA;
 import static org.greencloud.commons.constants.resource.ResourceCharacteristicConstants.INPUT;
 import static org.greencloud.commons.enums.rules.RuleType.LISTEN_FOR_JOB_TRANSFER_HANDLE_TRANSFER_RULE;
 import static org.greencloud.commons.enums.rules.RuleType.LISTEN_FOR_JOB_TRANSFER_HANDLE_TRANSFER_SEND_TRANSFER_RULE;
@@ -86,12 +85,12 @@ public class ProcessTransferRequestSendTransferRule
 					.value(jobCompressionData.get())
 					.isRequired(false)
 					.build();
-			final Resource updatedResource = mapToResourceWithNewCharacteristic(
+			final Resource resourceWithCompression = mapToResourceWithNewCharacteristic(
 					jobToTransfer.getRequiredResources().get(INPUT),
 					compressionInfoCharacteristic,
 					COMPRESSION);
 			final Map<String, Resource> newResources = new HashMap<>(job.getRequiredResources());
-			newResources.replace(INPUT, updatedResource);
+			newResources.replace(INPUT, resourceWithCompression);
 
 			jobToTransfer = ImmutableClientJob.copyOf(jobToTransfer).withRequiredResources(newResources);
 		}
