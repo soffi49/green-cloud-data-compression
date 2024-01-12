@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import xarray as xr
+from PIL import Image
 
 # To avoid warning messages
 import warnings
@@ -29,3 +31,6 @@ for i in range(1950, 2101):
     # plt.legend().remove()
     plt.savefig(f"{i}.png", bbox_inches="tight", pad_inches=0, dpi=300)
     plt.close()
+
+    image_path = f"{i}.png"
+    Image.open(image_path).convert('RGB').save(image_path)
